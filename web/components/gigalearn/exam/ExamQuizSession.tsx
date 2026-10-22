@@ -8,6 +8,7 @@ import {
   rewardForSessionScore,
 } from "@/lib/gigalearn/examPractice/rewardCopy";
 import type { ExamPracticeQuestion, ExamPracticeSetMeta } from "@/lib/gigalearn/examPractice/types";
+import { optionFeedbackNotes } from "@/lib/gigalearn/examPractice/optionFeedback";
 import { optionIds, scoreQuiz, type QuizAnswerMap } from "@/lib/gigalearn/examPractice/quizEngine";
 import { cn } from "@/lib/utils";
 import { Check, X } from "lucide-react";
@@ -301,6 +302,29 @@ export function ExamQuizSession({
                 Correct answer: <strong>{current.correct}</strong>.{" "}
                 {current.options[current.correct]}
               </p>
+              <ul className="exam-session-option-notes mt-3 space-y-2">
+                {optionIds().map((oid) => {
+                  const note = optionFeedbackNotes(current)[oid];
+                  const isKey = oid === current.correct;
+                  return (
+                    <li
+                      key={`${current.id}-note-${oid}`}
+                      className={cn(
+                        "rounded-lg border px-3 py-2 text-sm leading-snug",
+                        isKey
+                          ? "border-emerald-200 bg-emerald-50 text-emerald-950"
+                          : "border-slate-200 bg-slate-50 text-slate-700"
+                      )}
+                      data-testid={isKey ? "exam-option-note-correct" : "exam-option-note"}
+                    >
+                      <span className="font-semibold">
+                        {oid}. {current.options[oid]}
+                      </span>
+                      <span className="mt-0.5 block font-normal">{note}</span>
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
           ) : null}
         </article>

@@ -1,0 +1,43 @@
+{
+  "repaired": 138,
+  "flagged": 1,
+  "explanations_added": 0,
+  "stems_uniquified": 131,
+  "byRank": {
+    "ad-ii.json": {
+      "repaired": 0,
+      "flagged": 1,
+      "explanations": 0,
+      "stems_uniquified": 93
+    },
+    "ad-i.json": {
+      "repaired": 0,
+      "flagged": 0,
+      "explanations": 0,
+      "stems_uniquified": 28
+    },
+    "deputy-director.json": {
+      "repaired": 0,
+      "flagged": 0,
+      "explanations": 0,
+      "stems_uniquified": 9
+    },
+    "director-ii.json": {
+      "repaired": 0,
+      "flagged": 0,
+      "explanations": 0,
+      "stems_uniquified": 0
+    },
+    "director-i.json": {
+      "repaired": 0,
+      "flagged": 0,
+      "explanations": 0,
+      "stems_uniquified": 1
+    }
+  },
+  "flaggedIds": [
+    "exam-ad-ii-q001"
+  ],
+  "repairedIds": [],
+  "clue_repaired_tagged": 138
+}

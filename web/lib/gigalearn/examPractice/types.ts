@@ -12,6 +12,8 @@ export type ExamPracticeQuestion = {
   options: Record<ExamPracticeOptionId, string>;
   correct: ExamPracticeOptionId;
   explanation: string;
+  /** Optional per-option why-correct / why-incorrect notes (A–D). */
+  optionExplanations?: Partial<Record<ExamPracticeOptionId, string>>;
 };
 
 export type ExamPracticeSetMeta = {

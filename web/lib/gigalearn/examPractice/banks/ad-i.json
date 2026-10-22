@@ -43,7 +43,14 @@
         "awaiting_verification",
         "stem_rewritten",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1"
+      ],
+      "optionExplanations": [
+        "Incorrect — Unverified claims without sources does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — A long report without a decision point does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — A report that hides the main finding does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — A concise report supported by evidence and recommendations best answers the question because it matches the intended professional practice."
       ]
     },
     {
@@ -84,7 +91,14 @@
         "awaiting_verification",
         "stem_rewritten",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1"
+      ],
+      "optionExplanations": [
+        "Incorrect — Sharing the complaint publicly does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Retaliation against the complainant does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — A factual, respectful and timely response to a complaint best answers the question because it matches the intended professional practice.",
+        "Incorrect — Ignoring the complaint without assessment does not satisfy the question; it describes a weaker or contrary approach."
       ]
     },
     {
@@ -125,7 +139,14 @@
         "awaiting_verification",
         "stem_rewritten",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1"
+      ],
+      "optionExplanations": [
+        "Incorrect — Publishing without review does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Ignoring age and context does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Checking digital content for accuracy, bias and suitability best answers the question because it matches the intended professional practice.",
+        "Incorrect — Assuming generated content is always correct does not satisfy the question; it describes a weaker or contrary approach."
       ]
     },
     {
@@ -166,7 +187,14 @@
         "awaiting_verification",
         "stem_rewritten",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1"
+      ],
+      "optionExplanations": [
+        "Incorrect — Allocating duties solely by friendship does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Assigning all difficult tasks to one person does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Workload allocation based on role, capacity and service needs best answers the question because it matches the intended professional practice.",
+        "Incorrect — Ignoring staff capacity does not satisfy the question; it describes a weaker or contrary approach."
       ]
     },
     {
@@ -207,7 +235,14 @@
         "awaiting_verification",
         "stem_rewritten",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1"
+      ],
+      "optionExplanations": [
+        "Incorrect — Assuming every method transfers unchanged does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Avoiding feedback from colleagues does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Keeping all successful methods private does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Sharing effective practice through structured peer learning best answers the question because it matches the intended professional practice."
       ]
     },
     {
@@ -248,7 +283,14 @@
         "awaiting_verification",
         "stem_rewritten",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1"
+      ],
+      "optionExplanations": [
+        "Incorrect — Favouritism in professional decisions does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Sharing inappropriate personal content with learners does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Using authority for personal advantage does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Maintaining professional boundaries and respectful conduct best answers the question because it matches the intended professional practice."
       ]
     },
     {
@@ -288,7 +330,14 @@
         "original_practice",
         "awaiting_verification",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1"
+      ],
+      "optionExplanations": [
+        "Correct — Adapting communication to audience and purpose best answers the question because it matches the intended professional practice.",
+        "Incorrect — Avoiding accessible language does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Using one format for every situation does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Omitting essential context does not satisfy the question; it describes a weaker or contrary approach."
       ]
     },
     {
@@ -296,7 +345,7 @@
       "courseSlug": "exam-ad-i",
       "topicId": "communication",
       "topicLabel": "Communication",
-      "questionText": "Which principle is most directly described by the following practice: a factual, respectful and timely response to a complaint?",
+      "questionText": "In professional communication, which practice is most appropriate (case ad-i-216)?",
       "options": [
         "Ignoring the complaint without assessment",
         "Retaliation against the complainant",
@@ -311,7 +360,7 @@
       ],
       "correctIndex": 2,
       "correctOptionId": "exam-ad-i-q009-opt-C",
-      "explanation": "\"A factual, respectful and timely response to a complaint\" is the most appropriate choice for this practice item on Communication. It aligns with defensible professional judgement in communication. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "explanation": "A factual, respectful and timely response to a complaint is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
@@ -325,10 +374,18 @@
       ],
       "promotionRank": "assistant-director-i",
       "tags": [
-        "original_practice",
         "awaiting_verification",
+        "clue_repaired",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1",
+        "original_practice"
+      ],
+      "optionExplanations": [
+        "Incorrect — Ignoring the complaint without assessment does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Retaliation against the complainant does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — A factual, respectful and timely response to a complaint best answers the question because it matches the intended professional practice.",
+        "Incorrect — Sharing the complaint publicly does not satisfy the question; it describes a weaker or contrary approach."
       ]
     },
     {
@@ -368,7 +425,14 @@
         "original_practice",
         "awaiting_verification",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1"
+      ],
+      "optionExplanations": [
+        "Incorrect — Trusting a post because it is popular does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Forwarding an unverified claim does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Verifying the source, date and context of online information best answers the question because it matches the intended professional practice.",
+        "Incorrect — Treating an image as proof without context does not satisfy the question; it describes a weaker or contrary approach."
       ]
     },
     {
@@ -376,7 +440,7 @@
       "courseSlug": "exam-ad-i",
       "topicId": "digital-and-information-literacy",
       "topicLabel": "Digital and information literacy",
-      "questionText": "Which principle is most directly described by the following practice: accessible, secure and purpose-appropriate use of digital tools?",
+      "questionText": "For digital safety and information literacy, which practice is most appropriate (case ad-i-297)?",
       "options": [
         "Choosing novelty over learning needs",
         "Uploading confidential data to unapproved tools",
@@ -391,7 +455,7 @@
       ],
       "correctIndex": 3,
       "correctOptionId": "exam-ad-i-q012-opt-D",
-      "explanation": "\"Accessible, secure and purpose-appropriate use of digital tools\" is the most appropriate choice for this practice item on Digital and information literacy. It aligns with defensible professional judgement in digital and information literacy. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "explanation": "Accessible, secure and purpose-appropriate use of digital tools is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
@@ -405,10 +469,18 @@
       ],
       "promotionRank": "assistant-director-i",
       "tags": [
-        "original_practice",
         "awaiting_verification",
+        "clue_repaired",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1",
+        "original_practice"
+      ],
+      "optionExplanations": [
+        "Incorrect — Choosing novelty over learning needs does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Uploading confidential data to unapproved tools does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Using technology regardless of learner access does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Accessible, secure and purpose-appropriate use of digital tools best answers the question because it matches the intended professional practice."
       ]
     },
     {
@@ -416,7 +488,7 @@
       "courseSlug": "exam-ad-i",
       "topicId": "educational-assessment",
       "topicLabel": "Educational assessment",
-      "questionText": "Which principle is most directly described by the following practice: norm-referenced assessment?",
+      "questionText": "In educational assessment, which practice is most appropriate (case ad-i-58)?",
       "options": [
         "Portfolio assessment",
         "Norm-referenced assessment",
@@ -431,7 +503,7 @@
       ],
       "correctIndex": 1,
       "correctOptionId": "exam-ad-i-q013-opt-B",
-      "explanation": "\"Norm-referenced assessment\" is the most appropriate choice for this practice item on Educational assessment. It aligns with defensible professional judgement in educational assessment. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "explanation": "Norm-referenced assessment is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
@@ -445,9 +517,17 @@
       ],
       "promotionRank": "assistant-director-i",
       "tags": [
-        "original_practice",
         "awaiting_verification",
-        "free_tier"
+        "clue_repaired",
+        "free_tier",
+        "option_explanations_v1",
+        "original_practice"
+      ],
+      "optionExplanations": [
+        "Incorrect — Portfolio assessment does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Norm-referenced assessment best answers the question because it matches the intended professional practice.",
+        "Incorrect — Criterion-referenced assessment does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Diagnostic assessment does not satisfy the question; it describes a weaker or contrary approach."
       ]
     },
     {
@@ -455,7 +535,7 @@
       "courseSlug": "exam-ad-i",
       "topicId": "examination-integrity",
       "topicLabel": "Examination integrity",
-      "questionText": "Which principle is most directly described by the following practice: protecting assessment materials and reporting suspected leakage?",
+      "questionText": "In professional education practice, which approach should be preferred (case ad-i-182)?",
       "options": [
         "Promising to conceal misconduct",
         "Protecting assessment materials and reporting suspected leakage",
@@ -470,7 +550,7 @@
       ],
       "correctIndex": 1,
       "correctOptionId": "exam-ad-i-q017-opt-B",
-      "explanation": "\"Protecting assessment materials and reporting suspected leakage\" is the most appropriate choice for this practice item on Examination integrity. It aligns with defensible professional judgement in examination integrity. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "explanation": "Protecting assessment materials and reporting suspected leakage is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
@@ -484,10 +564,18 @@
       ],
       "promotionRank": "assistant-director-i",
       "tags": [
-        "original_practice",
         "awaiting_verification",
+        "clue_repaired",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1",
+        "original_practice"
+      ],
+      "optionExplanations": [
+        "Incorrect — Promising to conceal misconduct does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Protecting assessment materials and reporting suspected leakage best answers the question because it matches the intended professional practice.",
+        "Incorrect — Sharing confidential papers informally does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Ignoring suspicious access does not satisfy the question; it describes a weaker or contrary approach."
       ]
     },
     {
@@ -527,7 +615,14 @@
         "original_practice",
         "awaiting_verification",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1"
+      ],
+      "optionExplanations": [
+        "Incorrect — Applying rules selectively does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Punishment without hearing the employee does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Fair, documented and timely disciplinary procedures best answers the question because it matches the intended professional practice.",
+        "Incorrect — Informal public shaming does not satisfy the question; it describes a weaker or contrary approach."
       ]
     },
     {
@@ -567,7 +662,14 @@
         "original_practice",
         "awaiting_verification",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1"
+      ],
+      "optionExplanations": [
+        "Incorrect — Inspection based only on rumours does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Punishment as the sole supervisory tool does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Supportive instructional supervision focused on improving teaching best answers the question because it matches the intended professional practice.",
+        "Incorrect — Fault-finding without follow-up does not satisfy the question; it describes a weaker or contrary approach."
       ]
     },
     {
@@ -575,7 +677,7 @@
       "courseSlug": "exam-ad-i",
       "topicId": "leadership-and-supervision",
       "topicLabel": "Leadership and supervision",
-      "questionText": "Which principle is most directly described by the following practice: change management with communication, participation and review?",
+      "questionText": "In professional education practice, which approach should be preferred (case ad-i-489)?",
       "options": [
         "Launching change without resources",
         "Imposing change without explanation",
@@ -590,7 +692,7 @@
       ],
       "correctIndex": 3,
       "correctOptionId": "exam-ad-i-q027-opt-D",
-      "explanation": "\"Change management with communication, participation and review\" is the most appropriate choice for this practice item on Leadership and supervision. It aligns with defensible professional judgement in leadership and supervision. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "explanation": "Change management with communication, participation and review is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
@@ -604,10 +706,18 @@
       ],
       "promotionRank": "assistant-director-i",
       "tags": [
-        "original_practice",
         "awaiting_verification",
+        "clue_repaired",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1",
+        "original_practice"
+      ],
+      "optionExplanations": [
+        "Incorrect — Launching change without resources does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Imposing change without explanation does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Assuming resistance proves misconduct does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Change management with communication, participation and review best answers the question because it matches the intended professional practice."
       ]
     },
     {
@@ -615,7 +725,7 @@
       "courseSlug": "exam-ad-i",
       "topicId": "leadership-and-supervision",
       "topicLabel": "Leadership and supervision",
-      "questionText": "Which principle is most directly described by the following practice: conflict resolution through listening, evidence and fair process?",
+      "questionText": "In professional education practice, which approach should be preferred (case ad-i-355)?",
       "options": [
         "Conflict resolution through listening, evidence and fair process",
         "Ignoring serious unresolved conflict",
@@ -630,7 +740,7 @@
       ],
       "correctIndex": 0,
       "correctOptionId": "exam-ad-i-q029-opt-A",
-      "explanation": "\"Conflict resolution through listening, evidence and fair process\" is the most appropriate choice for this practice item on Leadership and supervision. It aligns with defensible professional judgement in leadership and supervision. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "explanation": "Conflict resolution through listening, evidence and fair process is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
@@ -644,10 +754,18 @@
       ],
       "promotionRank": "assistant-director-i",
       "tags": [
-        "original_practice",
         "awaiting_verification",
+        "clue_repaired",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1",
+        "original_practice"
+      ],
+      "optionExplanations": [
+        "Correct — Conflict resolution through listening, evidence and fair process best answers the question because it matches the intended professional practice.",
+        "Incorrect — Ignoring serious unresolved conflict does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Spreading confidential details does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Taking sides before hearing facts does not satisfy the question; it describes a weaker or contrary approach."
       ]
     },
     {
@@ -687,7 +805,14 @@
         "original_practice",
         "awaiting_verification",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1"
+      ],
+      "optionExplanations": [
+        "Correct — Following safeguarding procedures and acting promptly on credible concerns best answers the question because it matches the intended professional practice.",
+        "Incorrect — Ignoring warning signs does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Investigating alone beyond one's role does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Sharing identifying details casually does not satisfy the question; it describes a weaker or contrary approach."
       ]
     },
     {
@@ -695,7 +820,7 @@
       "courseSlug": "exam-ad-i",
       "topicId": "numerical-reasoning",
       "topicLabel": "Numerical reasoning",
-      "questionText": "Which principle is most directly described by the following practice: checking units and assumptions before calculating?",
+      "questionText": "In professional education practice, which approach should be preferred (case ad-i-435)?",
       "options": [
         "Rounding every intermediate value aggressively",
         "Checking units and assumptions before calculating",
@@ -710,7 +835,7 @@
       ],
       "correctIndex": 1,
       "correctOptionId": "exam-ad-i-q035-opt-B",
-      "explanation": "\"Checking units and assumptions before calculating\" is the most appropriate choice for this practice item on Numerical reasoning. It aligns with defensible professional judgement in numerical reasoning. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "explanation": "Checking units and assumptions before calculating is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
@@ -724,10 +849,18 @@
       ],
       "promotionRank": "assistant-director-i",
       "tags": [
-        "original_practice",
         "awaiting_verification",
+        "clue_repaired",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1",
+        "original_practice"
+      ],
+      "optionExplanations": [
+        "Incorrect — Rounding every intermediate value aggressively does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Checking units and assumptions before calculating best answers the question because it matches the intended professional practice.",
+        "Incorrect — Ignoring units does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Choosing an answer before calculating does not satisfy the question; it describes a weaker or contrary approach."
       ]
     },
     {
@@ -767,7 +900,14 @@
         "original_practice",
         "awaiting_verification",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1"
+      ],
+      "optionExplanations": [
+        "Correct — Sharing effective practice through structured peer learning best answers the question because it matches the intended professional practice.",
+        "Incorrect — Assuming every method transfers unchanged does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Keeping all successful methods private does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Avoiding feedback from colleagues does not satisfy the question; it describes a weaker or contrary approach."
       ]
     },
     {
@@ -807,7 +947,14 @@
         "original_practice",
         "awaiting_verification",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1"
+      ],
+      "optionExplanations": [
+        "Incorrect — Assuming experience alone guarantees effectiveness does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Reflection as blame without improvement does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Avoiding professional learning does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Reflective practice linked to evidence and action best answers the question because it matches the intended professional practice."
       ]
     },
     {
@@ -815,7 +962,7 @@
       "courseSlug": "exam-ad-i",
       "topicId": "professional-practice",
       "topicLabel": "Professional practice",
-      "questionText": "Which principle is most directly described by the following practice: maintaining professional boundaries and respectful conduct?",
+      "questionText": "In professional education practice, which approach should be preferred (case ad-i-72)?",
       "options": [
         "Using authority for personal advantage",
         "Maintaining professional boundaries and respectful conduct",
@@ -830,7 +977,7 @@
       ],
       "correctIndex": 1,
       "correctOptionId": "exam-ad-i-q042-opt-B",
-      "explanation": "\"Maintaining professional boundaries and respectful conduct\" is the most appropriate choice for this practice item on Professional practice. It aligns with defensible professional judgement in professional practice. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "explanation": "Maintaining professional boundaries and respectful conduct is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
@@ -844,10 +991,18 @@
       ],
       "promotionRank": "assistant-director-i",
       "tags": [
-        "original_practice",
         "awaiting_verification",
+        "clue_repaired",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1",
+        "original_practice"
+      ],
+      "optionExplanations": [
+        "Incorrect — Using authority for personal advantage does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Maintaining professional boundaries and respectful conduct best answers the question because it matches the intended professional practice.",
+        "Incorrect — Favouritism in professional decisions does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Sharing inappropriate personal content with learners does not satisfy the question; it describes a weaker or contrary approach."
       ]
     },
     {
@@ -887,7 +1042,14 @@
         "original_practice",
         "awaiting_verification",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1"
+      ],
+      "optionExplanations": [
+        "Incorrect — Listing actions without responsibility does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Using only broad intentions does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Reviewing progress without records does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Assigning each action an owner, timeline and success indicator best answers the question because it matches the intended professional practice."
       ]
     },
     {
@@ -895,7 +1057,7 @@
       "courseSlug": "exam-ad-i",
       "topicId": "school-improvement",
       "topicLabel": "School improvement",
-      "questionText": "Which principle is most directly described by the following practice: prioritising actions based on evidence, impact and feasibility?",
+      "questionText": "In professional education practice, which approach should be preferred (case ad-i-380)?",
       "options": [
         "Prioritising actions based on evidence, impact and feasibility",
         "Launching every initiative at once",
@@ -910,7 +1072,7 @@
       ],
       "correctIndex": 0,
       "correctOptionId": "exam-ad-i-q048-opt-A",
-      "explanation": "\"Prioritising actions based on evidence, impact and feasibility\" is the most appropriate choice for this practice item on School improvement. It aligns with defensible professional judgement in school improvement. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "explanation": "Prioritising actions based on evidence, impact and feasibility is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
@@ -924,10 +1086,18 @@
       ],
       "promotionRank": "assistant-director-i",
       "tags": [
-        "original_practice",
         "awaiting_verification",
+        "clue_repaired",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1",
+        "original_practice"
+      ],
+      "optionExplanations": [
+        "Correct — Prioritising actions based on evidence, impact and feasibility best answers the question because it matches the intended professional practice.",
+        "Incorrect — Launching every initiative at once does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Ignoring implementation capacity does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Choosing actions only because they are fashionable does not satisfy the question; it describes a weaker or contrary approach."
       ]
     },
     {
@@ -967,7 +1137,14 @@
         "original_practice",
         "awaiting_verification",
         "free_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1"
+      ],
+      "optionExplanations": [
+        "Incorrect — Punishing absence without investigating causes does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Assuming every absence is deliberate does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Removing attendance monitoring does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Using attendance data to identify and address barriers best answers the question because it matches the intended professional practice."
       ]
     },
     {
@@ -1007,7 +1184,14 @@
         "original_practice",
         "awaiting_verification",
         "premium_tier",
-        "length_clue_risk"
+        "length_clue_risk",
+        "option_explanations_v1"
+      ],
+      "optionExplanations": [
+        "Correct — Prioritising urgent and important work while respecting deadlines best answers the question because it matches the intended professional practice.",
+        "Incorrect — Working without a schedule or review does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Ignoring statutory deadlines does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Treating every task as equally urgent does not satisfy the question; it describes a weaker or contrary approach."
       ]
     },
     {
@@ -1015,7 +1199,7 @@
       "courseSlug": "exam-ad-i",
       "topicId": "work-planning",
       "topicLabel": "Work planning",
-      "questionText": "Which principle is most directly described by the following practice: contingency planning for foreseeable disruption?",
+      "questionText": "In professional education practice, which approach should be preferred (case ad-i-374)?",
       "options": [
         "Contingency planning for foreseeable disruption",
         "No backup responsibilities",
@@ -1030,7 +1214,7 @@
       ],
       "correctIndex": 0,
       "correctOptionId": "exam-ad-i-q055-opt-A",
-      "explanation": "\"Contingency planning for foreseeable disruption\" is the most appropriate choice for this practice item on Work planning. It aligns with defensible professional judgement in work planning. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "explanation": "Contingency planning for foreseeable disruption is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
@@ -1044,10 +1228,18 @@
       ],
       "promotionRank": "assistant-director-i",
       "tags": [
-        "original_practice",
         "awaiting_verification",
-        "premium_tier",
-        "length_clue_risk"
+        "clue_repaired",
+        "length_clue_risk",
+        "option_explanations_v1",
+        "original_practice",
+        "premium_tier"
+      ],
+      "optionExplanations": [
+        "Correct — Contingency planning for foreseeable disruption best answers the question because it matches the intended professional practice.",
+        "Incorrect — No backup responsibilities does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Keeping plans inaccessible to the team does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Assuming every event will follow the plan does not satisfy the question; it describes a weaker or contrary approach."
       ]
     },
     {
@@ -1055,7 +1247,7 @@
       "courseSlug": "exam-ad-i",
       "topicId": "leadership-and-governance",
       "topicLabel": "Leadership and governance",
-      "questionText": "Which principle is most directly described by the following practice: a clear separation between policy direction and implementation responsibilities?",
+      "questionText": "In professional education practice, which approach should be preferred (case ad-i-97)?",
       "options": [
         "A clear separation between policy direction and implementation responsibilities",
         "Replacing formal mandates with custom",
@@ -1070,15 +1262,17 @@
       ],
       "correctIndex": 0,
       "correctOptionId": "exam-ad-i-q093-opt-A",
-      "explanation": "A clear separation between policy direction and implementation responsibilities is the best answer because it supports sound practice in leadership and governance. The other options describe less appropriate or contrary approaches.",
+      "explanation": "A clear separation between policy direction and implementation responsibilities is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
       "sourceQuestionNumber": 97,
       "reviewStatus": "pending_review",
       "tags": [
-        "source_500_import",
-        "awaiting_verification"
+        "awaiting_verification",
+        "clue_repaired",
+        "option_explanations_v1",
+        "source_500_import"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1087,14 +1281,20 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Correct — A clear separation between policy direction and implementation responsibilities best answers the question because it matches the intended professional practice.",
+        "Incorrect — Replacing formal mandates with custom does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Making authority decisions without checking the law does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Assuming every agency has identical legal functions does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q094",
       "courseSlug": "exam-ad-i",
       "topicId": "decision-making",
       "topicLabel": "Decision-making",
-      "questionText": "Which principle is most directly described by the following practice: defining the problem before comparing options?",
+      "questionText": "In professional education practice, which approach should be preferred (case ad-i-98)?",
       "options": [
         "Choosing a solution before understanding the problem",
         "Treating assumptions as established facts",
@@ -1109,15 +1309,17 @@
       ],
       "correctIndex": 2,
       "correctOptionId": "exam-ad-i-q094-opt-C",
-      "explanation": "Defining the problem before comparing options is the best answer because it supports sound practice in decision-making. The other options describe less appropriate or contrary approaches. GigaLearn • Independent practice resource Page 25",
+      "explanation": "Defining the problem before comparing options is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
       "sourceQuestionNumber": 98,
       "reviewStatus": "pending_review",
       "tags": [
-        "source_500_import",
-        "awaiting_verification"
+        "awaiting_verification",
+        "clue_repaired",
+        "option_explanations_v1",
+        "source_500_import"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1126,14 +1328,20 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect — Choosing a solution before understanding the problem does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Treating assumptions as established facts does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Defining the problem before comparing options best answers the question because it matches the intended professional practice.",
+        "Incorrect — Ignoring affected stakeholders does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q099",
       "courseSlug": "exam-ad-i",
       "topicId": "ethical-leadership",
       "topicLabel": "Ethical leadership",
-      "questionText": "Which principle is most directly described by the following practice: seeking advice or referral when an issue exceeds one's authority?",
+      "questionText": "In professional education practice, which approach should be preferred (case ad-i-113)?",
       "options": [
         "Acting beyond competence to appear decisive",
         "Ignoring a legal requirement",
@@ -1148,15 +1356,17 @@
       ],
       "correctIndex": 3,
       "correctOptionId": "exam-ad-i-q099-opt-D",
-      "explanation": "Seeking advice or referral when an issue exceeds one's authority is the best answer because it supports sound practice in ethical leadership. The other options describe less appropriate or contrary approaches.",
+      "explanation": "Seeking advice or referral when an issue exceeds one's authority is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
       "sourceQuestionNumber": 113,
       "reviewStatus": "pending_review",
       "tags": [
-        "source_500_import",
-        "awaiting_verification"
+        "awaiting_verification",
+        "clue_repaired",
+        "option_explanations_v1",
+        "source_500_import"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1165,14 +1375,20 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect — Acting beyond competence to appear decisive does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Ignoring a legal requirement does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Making promises outside delegated authority does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Seeking advice or referral when an issue exceeds one's authority best answers the question because it matches the intended professional practice."
+      ]
     },
     {
       "questionId": "exam-ad-i-q101",
       "courseSlug": "exam-ad-i",
       "topicId": "organisational-culture",
       "topicLabel": "Organisational culture",
-      "questionText": "Which principle is most directly described by the following practice: psychological safety with clear standards and accountability?",
+      "questionText": "In professional education practice, which approach should be preferred (case ad-i-116)?",
       "options": [
         "Confusing respect with absence of standards",
         "Fear as the only basis for compliance",
@@ -1187,15 +1403,17 @@
       ],
       "correctIndex": 3,
       "correctOptionId": "exam-ad-i-q101-opt-D",
-      "explanation": "Psychological safety with clear standards and accountability is the best answer because it supports sound practice in organisational culture. The other options describe less appropriate or contrary approaches.",
+      "explanation": "Psychological safety with clear standards and accountability is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
       "sourceQuestionNumber": 116,
       "reviewStatus": "pending_review",
       "tags": [
-        "source_500_import",
-        "awaiting_verification"
+        "awaiting_verification",
+        "clue_repaired",
+        "option_explanations_v1",
+        "source_500_import"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1204,14 +1422,20 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect — Confusing respect with absence of standards does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Fear as the only basis for compliance does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — No opportunity to raise concerns does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Psychological safety with clear standards and accountability best answers the question because it matches the intended professional practice."
+      ]
     },
     {
       "questionId": "exam-ad-i-q103",
       "courseSlug": "exam-ad-i",
       "topicId": "public-administration-and-ethics",
       "topicLabel": "Public administration and ethics",
-      "questionText": "Which principle is most directly described by the following practice: confidential handling of personal information?",
+      "questionText": "In professional education practice, which approach should be preferred (case ad-i-121)?",
       "options": [
         "Confidential handling of personal information",
         "Sharing records with unauthorised people",
@@ -1226,15 +1450,17 @@
       ],
       "correctIndex": 0,
       "correctOptionId": "exam-ad-i-q103-opt-A",
-      "explanation": "Confidential handling of personal information is the best answer because it supports sound practice in public administration and ethics. The other options describe less appropriate or contrary approaches.",
+      "explanation": "Confidential handling of personal information is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
       "sourceQuestionNumber": 121,
       "reviewStatus": "pending_review",
       "tags": [
-        "source_500_import",
-        "awaiting_verification"
+        "awaiting_verification",
+        "clue_repaired",
+        "option_explanations_v1",
+        "source_500_import"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1243,14 +1469,20 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Correct — Confidential handling of personal information best answers the question because it matches the intended professional practice.",
+        "Incorrect — Sharing records with unauthorised people does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Keeping no access controls does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Publishing sensitive details for convenience does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q105",
       "courseSlug": "exam-ad-i",
       "topicId": "school-community-relations",
       "topicLabel": "School-community relations",
-      "questionText": "Which principle is most directly described by the following practice: meaningful engagement with parents and community stakeholders?",
+      "questionText": "In professional education practice, which approach should be preferred (case ad-i-124)?",
       "options": [
         "Meaningful engagement with parents and community stakeholders",
         "Allowing one stakeholder to dictate all policy",
@@ -1265,15 +1497,17 @@
       ],
       "correctIndex": 0,
       "correctOptionId": "exam-ad-i-q105-opt-A",
-      "explanation": "Meaningful engagement with parents and community stakeholders is the best answer because it supports sound practice in school-community relations. The other options describe less appropriate or contrary approaches.",
+      "explanation": "Meaningful engagement with parents and community stakeholders is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
       "sourceQuestionNumber": 124,
       "reviewStatus": "pending_review",
       "tags": [
-        "source_500_import",
-        "awaiting_verification"
+        "awaiting_verification",
+        "clue_repaired",
+        "option_explanations_v1",
+        "source_500_import"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1282,14 +1516,20 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Correct — Meaningful engagement with parents and community stakeholders best answers the question because it matches the intended professional practice.",
+        "Incorrect — Allowing one stakeholder to dictate all policy does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Sharing confidential learner details publicly does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Consultation after every decision is final does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q106",
       "courseSlug": "exam-ad-i",
       "topicId": "stakeholder-engagement",
       "topicLabel": "Stakeholder engagement",
-      "questionText": "Which principle is most directly described by the following practice: closing the feedback loop by communicating decisions and next steps?",
+      "questionText": "In professional education practice, which approach should be preferred (case ad-i-127)?",
       "options": [
         "Closing the feedback loop by communicating decisions and next steps",
         "Promising outcomes beyond authority",
@@ -1304,15 +1544,17 @@
       ],
       "correctIndex": 0,
       "correctOptionId": "exam-ad-i-q106-opt-A",
-      "explanation": "Closing the feedback loop by communicating decisions and next steps is the best answer because it supports sound practice in stakeholder engagement. The other options describe less appropriate or contrary approaches.",
+      "explanation": "Closing the feedback loop by communicating decisions and next steps is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
       "sourceQuestionNumber": 127,
       "reviewStatus": "pending_review",
       "tags": [
-        "source_500_import",
-        "awaiting_verification"
+        "awaiting_verification",
+        "clue_repaired",
+        "option_explanations_v1",
+        "source_500_import"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1321,14 +1563,20 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Correct — Closing the feedback loop by communicating decisions and next steps best answers the question because it matches the intended professional practice.",
+        "Incorrect — Promising outcomes beyond authority does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Ignoring recurring concerns does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Collecting views without responding does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q122",
       "courseSlug": "exam-ad-i",
       "topicId": "leadership-and-governance",
       "topicLabel": "Leadership and governance",
-      "questionText": "Which principle is most directly described by the following practice: escalating issues through the appropriate reporting line when required?",
+      "questionText": "In professional education practice, which approach should be preferred (case ad-i-158)?",
       "options": [
         "Escalating issues through the appropriate reporting line when required",
         "Hiding serious risks",
@@ -1343,15 +1591,17 @@
       ],
       "correctIndex": 0,
       "correctOptionId": "exam-ad-i-q122-opt-A",
-      "explanation": "Escalating issues through the appropriate reporting line when required is the best answer because it supports sound practice in leadership and governance. The other options describe less appropriate or contrary approaches. GigaLearn • Independent practice resource Page 40",
+      "explanation": "Escalating issues through the appropriate reporting line when required is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
       "sourceQuestionNumber": 158,
       "reviewStatus": "pending_review",
       "tags": [
-        "source_500_import",
-        "awaiting_verification"
+        "awaiting_verification",
+        "clue_repaired",
+        "option_explanations_v1",
+        "source_500_import"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1360,7 +1610,13 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Correct — Escalating issues through the appropriate reporting line when required best answers the question because it matches the intended professional practice.",
+        "Incorrect — Hiding serious risks does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Escalating every minor matter without judgement does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Bypassing safeguards for convenience does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q126",
@@ -1390,7 +1646,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "source_500_import",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1399,14 +1656,20 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Correct — Monitoring whether different groups benefit fairly from a programme best answers the question because it matches the intended professional practice.",
+        "Incorrect — Hiding group-level disparities does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Reporting only an overall average does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Assuming identical participation means equal outcomes does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q127",
       "courseSlug": "exam-ad-i",
       "topicId": "programme-management",
       "topicLabel": "Programme management",
-      "questionText": "Which principle is most directly described by the following practice: a work plan linking activities, outputs, outcomes, owners and dates?",
+      "questionText": "In professional education practice, which approach should be preferred (case ad-i-176)?",
       "options": [
         "A work plan linking activities, outputs, outcomes, owners and dates",
         "A budget without a delivery plan",
@@ -1421,15 +1684,17 @@
       ],
       "correctIndex": 0,
       "correctOptionId": "exam-ad-i-q127-opt-A",
-      "explanation": "A work plan linking activities, outputs, outcomes, owners and dates is the best answer because it supports sound practice in programme management. The other options describe less appropriate or contrary approaches.",
+      "explanation": "A work plan linking activities, outputs, outcomes, owners and dates is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
       "sourceQuestionNumber": 176,
       "reviewStatus": "pending_review",
       "tags": [
-        "source_500_import",
-        "awaiting_verification"
+        "awaiting_verification",
+        "clue_repaired",
+        "option_explanations_v1",
+        "source_500_import"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1438,14 +1703,20 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Correct — A work plan linking activities, outputs, outcomes, owners and dates best answers the question because it matches the intended professional practice.",
+        "Incorrect — A budget without a delivery plan does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — A list of activities without expected results does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — A report with no responsibilities does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q134",
       "courseSlug": "exam-ad-i",
       "topicId": "resource-management",
       "topicLabel": "Resource management",
-      "questionText": "Which principle is most directly described by the following practice: needs-based allocation using reliable data?",
+      "questionText": "In professional education practice, which approach should be preferred (case ad-i-223)?",
       "options": [
         "Ignoring enrolment and learning needs",
         "Allocation based on influence alone",
@@ -1460,15 +1731,17 @@
       ],
       "correctIndex": 3,
       "correctOptionId": "exam-ad-i-q134-opt-D",
-      "explanation": "Needs-based allocation using reliable data is the best answer because it supports sound practice in resource management. The other options describe less appropriate or contrary approaches.",
+      "explanation": "Needs-based allocation using reliable data is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
       "sourceQuestionNumber": 223,
       "reviewStatus": "pending_review",
       "tags": [
-        "source_500_import",
-        "awaiting_verification"
+        "awaiting_verification",
+        "clue_repaired",
+        "option_explanations_v1",
+        "source_500_import"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1477,14 +1750,20 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect — Ignoring enrolment and learning needs does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Allocation based on influence alone does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Equal allocation regardless of need in every circumstance does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Needs-based allocation using reliable data best answers the question because it matches the intended professional practice."
+      ]
     },
     {
       "questionId": "exam-ad-i-q148",
       "courseSlug": "exam-ad-i",
       "topicId": "evidence-based-leadership",
       "topicLabel": "Evidence-based leadership",
-      "questionText": "Which principle is most directly described by the following practice: combining data with professional judgement and local context?",
+      "questionText": "In professional education practice, which approach should be preferred (case ad-i-272)?",
       "options": [
         "Replacing evidence with rank or seniority",
         "Using data without checking its meaning",
@@ -1499,15 +1778,17 @@
       ],
       "correctIndex": 2,
       "correctOptionId": "exam-ad-i-q148-opt-C",
-      "explanation": "Combining data with professional judgement and local context is the best answer because it supports sound practice in evidence-based leadership. The other options describe less appropriate or contrary approaches.",
+      "explanation": "Combining data with professional judgement and local context is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
       "sourceQuestionNumber": 272,
       "reviewStatus": "pending_review",
       "tags": [
-        "source_500_import",
-        "awaiting_verification"
+        "awaiting_verification",
+        "clue_repaired",
+        "option_explanations_v1",
+        "source_500_import"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1516,14 +1797,20 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect — Replacing evidence with rank or seniority does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Using data without checking its meaning does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Combining data with professional judgement and local context best answers the question because it matches the intended professional practice.",
+        "Incorrect — Ignoring contradictory evidence does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q151",
       "courseSlug": "exam-ad-i",
       "topicId": "risk-and-compliance",
       "topicLabel": "Risk and compliance",
-      "questionText": "Which principle is most directly described by the following practice: documenting controls, responsible persons and review dates?",
+      "questionText": "In professional education practice, which approach should be preferred (case ad-i-280)?",
       "options": [
         "A risk register with no owners",
         "Documenting controls, responsible persons and review dates",
@@ -1538,15 +1825,17 @@
       ],
       "correctIndex": 1,
       "correctOptionId": "exam-ad-i-q151-opt-B",
-      "explanation": "Documenting controls, responsible persons and review dates is the best answer because it supports sound practice in risk and compliance. The other options describe less appropriate or contrary approaches.",
+      "explanation": "Documenting controls, responsible persons and review dates is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
       "sourceQuestionNumber": 280,
       "reviewStatus": "pending_review",
       "tags": [
-        "source_500_import",
-        "awaiting_verification"
+        "awaiting_verification",
+        "clue_repaired",
+        "option_explanations_v1",
+        "source_500_import"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1555,14 +1844,20 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect — A risk register with no owners does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Documenting controls, responsible persons and review dates best answers the question because it matches the intended professional practice.",
+        "Incorrect — Informal memory as the only control does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Assuming policies enforce themselves does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q159",
       "courseSlug": "exam-ad-i",
       "topicId": "data-and-research",
       "topicLabel": "Data and research",
-      "questionText": "Which principle is most directly described by the following practice: correlation does not by itself establish causation?",
+      "questionText": "When using education data or research, which practice is most appropriate (case ad-i-309)?",
       "options": [
         "Correlation does not by itself establish causation",
         "Any correlation proves cause",
@@ -1577,15 +1872,17 @@
       ],
       "correctIndex": 0,
       "correctOptionId": "exam-ad-i-q159-opt-A",
-      "explanation": "Correlation does not by itself establish causation is the best answer because it supports sound practice in data and research. The other options describe less appropriate or contrary approaches.",
+      "explanation": "Correlation does not by itself establish causation is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
       "sourceQuestionNumber": 309,
       "reviewStatus": "pending_review",
       "tags": [
-        "source_500_import",
-        "awaiting_verification"
+        "awaiting_verification",
+        "clue_repaired",
+        "option_explanations_v1",
+        "source_500_import"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1594,14 +1891,20 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Correct — Correlation does not by itself establish causation best answers the question because it matches the intended professional practice.",
+        "Incorrect — Any correlation proves cause does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — A larger sample removes all bias does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — A graph proves causation automatically does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q160",
       "courseSlug": "exam-ad-i",
       "topicId": "data-and-research",
       "topicLabel": "Data and research",
-      "questionText": "Which principle is most directly described by the following practice: using representative and appropriate data?",
+      "questionText": "When using education data or research, which practice is most appropriate (case ad-i-315)?",
       "options": [
         "Ignoring missing data",
         "Treating one anecdote as conclusive",
@@ -1616,15 +1919,17 @@
       ],
       "correctIndex": 2,
       "correctOptionId": "exam-ad-i-q160-opt-C",
-      "explanation": "Using representative and appropriate data is the best answer because it supports sound practice in data and research. The other options describe less appropriate or contrary approaches. GigaLearn • Independent practice resource Page 78",
+      "explanation": "Using representative and appropriate data is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
       "sourceQuestionNumber": 315,
       "reviewStatus": "pending_review",
       "tags": [
-        "source_500_import",
-        "awaiting_verification"
+        "awaiting_verification",
+        "clue_repaired",
+        "option_explanations_v1",
+        "source_500_import"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1633,7 +1938,13 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect — Ignoring missing data does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Treating one anecdote as conclusive does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Using representative and appropriate data best answers the question because it matches the intended professional practice.",
+        "Incorrect — Selecting only evidence that supports a preference does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q167",
@@ -1663,7 +1974,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "source_500_import",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1672,7 +1984,13 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Correct — A work plan linking activities, outputs, outcomes, owners and dates best answers the question because it matches the intended professional practice.",
+        "Incorrect — A budget without a delivery plan does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — A report with no responsibilities does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — A list of activities without expected results does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q170",
@@ -1702,7 +2020,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "source_500_import",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1711,7 +2030,13 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Correct — Evaluating outcomes as well as activities best answers the question because it matches the intended professional practice.",
+        "Incorrect — Ignoring intended beneficiaries does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Measuring only money spent does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Counting workshops as proof of impact does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q181",
@@ -1741,7 +2066,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "source_500_import",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1750,14 +2076,20 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect — Assuming a draft is enacted law does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Applying a rule outside its scope does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Checking the current official text and scope of a legal instrument best answers the question because it matches the intended professional practice.",
+        "Incorrect — Relying on a paraphrase without verification does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q187",
       "courseSlug": "exam-ad-i",
       "topicId": "programme-management",
       "topicLabel": "Programme management",
-      "questionText": "Which principle is most directly described by the following practice: reviewing implementation fidelity and adapting when evidence warrants it?",
+      "questionText": "In professional education practice, which approach should be preferred (case ad-i-454)?",
       "options": [
         "Reviewing implementation fidelity and adapting when evidence warrants it",
         "Assuming a plan was delivered because it was approved",
@@ -1772,15 +2104,17 @@
       ],
       "correctIndex": 0,
       "correctOptionId": "exam-ad-i-q187-opt-A",
-      "explanation": "Reviewing implementation fidelity and adapting when evidence warrants it is the best answer because it supports sound practice in programme management. The other options describe less appropriate or contrary approaches.",
+      "explanation": "Reviewing implementation fidelity and adapting when evidence warrants it is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
       "sourceQuestionNumber": 454,
       "reviewStatus": "pending_review",
       "tags": [
-        "source_500_import",
-        "awaiting_verification"
+        "awaiting_verification",
+        "clue_repaired",
+        "option_explanations_v1",
+        "source_500_import"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1789,14 +2123,20 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Correct — Reviewing implementation fidelity and adapting when evidence warrants it best answers the question because it matches the intended professional practice.",
+        "Incorrect — Assuming a plan was delivered because it was approved does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Ignoring barriers to implementation does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Changing the goal without documenting why does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q189",
       "courseSlug": "exam-ad-i",
       "topicId": "public-administration-and-ethics",
       "topicLabel": "Public administration and ethics",
-      "questionText": "Which principle is most directly described by the following practice: fair, consistent and non-discriminatory treatment?",
+      "questionText": "In professional education practice, which approach should be preferred (case ad-i-469)?",
       "options": [
         "Different rules for preferred staff",
         "Favouritism based on personal ties",
@@ -1811,15 +2151,17 @@
       ],
       "correctIndex": 2,
       "correctOptionId": "exam-ad-i-q189-opt-C",
-      "explanation": "Fair, consistent and non-discriminatory treatment is the best answer because it supports sound practice in public administration and ethics. The other options describe less appropriate or contrary approaches. GigaLearn • Independent practice resource Page 116",
+      "explanation": "Fair, consistent and non-discriminatory treatment is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
       "sourceQuestionNumber": 469,
       "reviewStatus": "pending_review",
       "tags": [
-        "source_500_import",
-        "awaiting_verification"
+        "awaiting_verification",
+        "clue_repaired",
+        "option_explanations_v1",
+        "source_500_import"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1828,14 +2170,20 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect — Different rules for preferred staff does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Favouritism based on personal ties does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Fair, consistent and non-discriminatory treatment best answers the question because it matches the intended professional practice.",
+        "Incorrect — Excluding people without a lawful reason does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q191",
       "courseSlug": "exam-ad-i",
       "topicId": "quality-assurance",
       "topicLabel": "Quality assurance",
-      "questionText": "Which principle is most directly described by the following practice: a balanced set of indicators covering access, process and learning outcomes?",
+      "questionText": "In professional education practice, which approach should be preferred (case ad-i-477)?",
       "options": [
         "Counting inputs only",
         "Ignoring unintended consequences",
@@ -1850,15 +2198,17 @@
       ],
       "correctIndex": 2,
       "correctOptionId": "exam-ad-i-q191-opt-C",
-      "explanation": "A balanced set of indicators covering access, process and learning outcomes is the best answer because it supports sound practice in quality assurance. The other options describe less appropriate or contrary approaches.",
+      "explanation": "A balanced set of indicators covering access, process and learning outcomes is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
       "sourceQuestionNumber": 477,
       "reviewStatus": "pending_review",
       "tags": [
-        "source_500_import",
-        "awaiting_verification"
+        "awaiting_verification",
+        "clue_repaired",
+        "option_explanations_v1",
+        "source_500_import"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1867,14 +2217,20 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect — Counting inputs only does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Ignoring unintended consequences does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — A balanced set of indicators covering access, process and learning outcomes best answers the question because it matches the intended professional practice.",
+        "Incorrect — One metric used to represent all quality does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q198",
       "courseSlug": "exam-ad-i",
       "topicId": "resource-stewardship",
       "topicLabel": "Resource stewardship",
-      "questionText": "Which principle is most directly described by the following practice: comparing cost, quality, need and sustainability in resource decisions?",
+      "questionText": "In professional education practice, which approach should be preferred (case ad-i-496)?",
       "options": [
         "Ignoring lifecycle costs",
         "Choosing by personal preference",
@@ -1889,15 +2245,17 @@
       ],
       "correctIndex": 2,
       "correctOptionId": "exam-ad-i-q198-opt-C",
-      "explanation": "Comparing cost, quality, need and sustainability in resource decisions is the best answer because it supports sound practice in resource stewardship. The other options describe less appropriate or contrary approaches.",
+      "explanation": "Comparing cost, quality, need and sustainability in resource decisions is correct for this item. Review each option note to see why alternatives do not fit.",
       "difficulty": "intermediate",
       "questionType": "mcq",
       "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
       "sourceQuestionNumber": 496,
       "reviewStatus": "pending_review",
       "tags": [
-        "source_500_import",
-        "awaiting_verification"
+        "awaiting_verification",
+        "clue_repaired",
+        "option_explanations_v1",
+        "source_500_import"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1906,7 +2264,13 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect — Ignoring lifecycle costs does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Choosing by personal preference does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Comparing cost, quality, need and sustainability in resource decisions best answers the question because it matches the intended professional practice.",
+        "Incorrect — Choosing the cheapest option in every case does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q203",
@@ -1936,7 +2300,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1945,7 +2310,13 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Correct — Formative assessment informs teaching while learning is in progress.",
+        "Incorrect — Wait until the end of the year to assess does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Give marks without feedback does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Assess only volunteers does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q204",
@@ -1975,7 +2346,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -1984,7 +2356,13 @@
       "accessTier": [
         "free"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect — Blame learners for every difficulty does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Ignore feedback does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Reflection uses evidence to improve practice.",
+        "Incorrect — Repeat lessons without review does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q207",
@@ -2014,7 +2392,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -2023,7 +2402,13 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect — Choose an activity before identifying need does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Promise results without baseline data does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Avoid consultation does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — A clear problem definition makes the intervention focused."
+      ]
     },
     {
       "questionId": "exam-ad-i-q211",
@@ -2053,7 +2438,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -2062,7 +2448,13 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect — Ignore barriers does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Use inconsistent rules without reason does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Equity considers relevant differences in need.",
+        "Incorrect — Favour friends does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q213",
@@ -2092,7 +2484,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -2101,7 +2494,13 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect — Rank learners publicly does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Avoid future planning does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Replace all observation does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Analysis supports informed instructional decisions."
+      ]
     },
     {
       "questionId": "exam-ad-i-q215",
@@ -2131,7 +2530,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -2140,7 +2540,13 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect — Hide expectations does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Rubrics clarify expectations and assessment criteria.",
+        "Incorrect — Replace task instructions does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Guarantee identical scores does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q219",
@@ -2170,7 +2576,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -2179,7 +2586,13 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Correct — Data should be interpreted carefully and in context.",
+        "Incorrect — Treat one figure as the whole truth does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Ignore context does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Alter records to fit expectations does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q222",
@@ -2209,7 +2622,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -2218,7 +2632,13 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Correct — Assessment should align with the intended learning outcome.",
+        "Incorrect — An unrelated spelling test does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — An attendance register does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — A task asking only for a date does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q223",
@@ -2248,7 +2668,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -2257,7 +2678,13 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect — Ridicule the learner publicly does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Ignore all evidence does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Publish personal details does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Concerns should be handled consistently and confidentially."
+      ]
     },
     {
       "questionId": "exam-ad-i-q227",
@@ -2287,7 +2714,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -2296,7 +2724,13 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect — Discuss it casually in public does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Send it to all contacts does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Confidential information should be protected and shared appropriately.",
+        "Incorrect — Post it publicly does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q231",
@@ -2326,7 +2760,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -2335,7 +2770,13 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect — Accept every claim without examination does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Reasoning with evidence supports analysis and evaluation.",
+        "Incorrect — Require copying only does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Discourage questions does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-tf-010",
@@ -2361,7 +2802,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "true_false",
-        "source_answer_review_required"
+        "source_answer_review_required",
+        "option_explanations_v1"
       ],
       "sourceType": "awaiting_verification",
       "verificationStatus": "awaiting_verification",
@@ -2370,7 +2812,11 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect (True) — that judgement would treat an inaccurate or incomplete claim as correct.",
+        "Correct (False) — the statement is not accurate as written; Data must be interpreted in context and alongside other evidence."
+      ]
     },
     {
       "questionId": "exam-ad-i-q235",
@@ -2400,7 +2846,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -2409,7 +2856,13 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect — Accept every claim without examination does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Reasoning with evidence supports analysis and evaluation.",
+        "Incorrect — Require copying only does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Discourage questions does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-tf-021",
@@ -2435,7 +2888,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "true_false",
-        "source_answer_review_required"
+        "source_answer_review_required",
+        "option_explanations_v1"
       ],
       "sourceType": "awaiting_verification",
       "verificationStatus": "awaiting_verification",
@@ -2444,7 +2898,11 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Correct (True) — the statement matches accepted professional practice: Formative assessment can help a teacher adjust instruction during learning.\nTRUE\n\nGigaLearn  AD I Practice\nPage 21\nFALSE",
+        "Incorrect (False) — that judgement would reverse the accepted meaning of the statement."
+      ]
     },
     {
       "questionId": "exam-ad-i-q236",
@@ -2474,7 +2932,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -2483,7 +2942,13 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect — Blame one person without inquiry does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Monitoring should inform evidence-based adjustment.",
+        "Incorrect — Hide results does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Continue indefinitely does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q237",
@@ -2513,7 +2978,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -2522,7 +2988,13 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect — Make the school perfect does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Work harder without evidence does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — A measurable target specifies a change and how progress will be checked.",
+        "Incorrect — Improve everything someday does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q238",
@@ -2552,7 +3024,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -2561,7 +3034,13 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect — Colour alone does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Price alone does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Whether it avoids the objective does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Resources should be fit for purpose."
+      ]
     },
     {
       "questionId": "exam-ad-i-q239",
@@ -2591,7 +3070,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -2600,7 +3080,13 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Correct — Data should be interpreted carefully and in context.",
+        "Incorrect — Treat one figure as the whole truth does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Ignore context does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Alter records to fit expectations does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-tf-023",
@@ -2626,7 +3112,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "true_false",
-        "source_answer_review_required"
+        "source_answer_review_required",
+        "option_explanations_v1"
       ],
       "sourceType": "awaiting_verification",
       "verificationStatus": "awaiting_verification",
@@ -2635,7 +3122,11 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Correct (True) — the statement matches accepted professional practice: GigaLearn  AD I Practice\nPage 30\nCollaborative planning can help teachers share expertise.\nTRUE\nFALSE",
+        "Incorrect (False) — that judgement would reverse the accepted meaning of the statement."
+      ]
     },
     {
       "questionId": "exam-ad-i-q240",
@@ -2665,7 +3156,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -2674,7 +3166,13 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Correct — Assessment evidence should guide responsive instruction.",
+        "Incorrect — Continue without adjustment does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Blame the learners does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Remove the topic does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q241",
@@ -2704,7 +3202,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -2713,7 +3212,13 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect — Lower expectations for everyone does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Inclusive practice removes barriers while maintaining meaningful expectations.",
+        "Incorrect — Give identical support regardless of need does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Exclude learners who need accommodations does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q242",
@@ -2743,7 +3248,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -2752,7 +3258,13 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect — Avoid feedback until year end does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Expect instant knowledge of every local procedure does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Structured induction helps new staff develop.",
+        "Incorrect — Assign duties without explanation does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q243",
@@ -2782,7 +3294,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -2791,7 +3304,13 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect — Choose an activity before identifying need does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Promise results without baseline data does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Avoid consultation does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — A clear problem definition makes the intervention focused."
+      ]
     },
     {
       "questionId": "exam-ad-i-tf-024",
@@ -2817,7 +3336,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "true_false",
-        "source_answer_review_required"
+        "source_answer_review_required",
+        "option_explanations_v1"
       ],
       "sourceType": "awaiting_verification",
       "verificationStatus": "awaiting_verification",
@@ -2826,7 +3346,11 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Correct (True) — the statement matches accepted professional practice: GigaLearn  AD I Practice\nPage 49\nA rubric can describe criteria for different performance levels.\nTRUE\nFALSE",
+        "Incorrect (False) — that judgement would reverse the accepted meaning of the statement."
+      ]
     },
     {
       "questionId": "exam-ad-i-tf-025",
@@ -2852,7 +3376,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "true_false",
-        "source_answer_review_required"
+        "source_answer_review_required",
+        "option_explanations_v1"
       ],
       "sourceType": "awaiting_verification",
       "verificationStatus": "awaiting_verification",
@@ -2861,7 +3386,11 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Correct (True) — the statement matches accepted professional practice: Assessment should align with the learning objective it measures.\nTRUE\n\nGigaLearn  AD I Practice\nPage 59\nFALSE",
+        "Incorrect (False) — that judgement would reverse the accepted meaning of the statement."
+      ]
     },
     {
       "questionId": "exam-ad-i-q244",
@@ -2891,7 +3420,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -2900,7 +3430,13 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect — Judge personal style alone does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Embarrass the teacher does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Conclude without observing does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Evidence-based observation supports fair feedback."
+      ]
     },
     {
       "questionId": "exam-ad-i-q245",
@@ -2930,7 +3466,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -2939,7 +3476,13 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Correct — Plans need clear goals, ownership and monitoring.",
+        "Incorrect — Goals without owners does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — No evidence collection does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Daily changes without rationale does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q246",
@@ -2969,7 +3512,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -2978,7 +3522,13 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect — Use one method regardless of need does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Differentiation adjusts support to help learners meet learning goals.",
+        "Incorrect — Remove all challenge does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Ignore evidence does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q247",
@@ -3008,7 +3558,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -3017,7 +3568,13 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect — Discuss it casually in public does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Send it to all contacts does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Confidential information should be protected and shared appropriately.",
+        "Incorrect — Post it publicly does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-tf-026",
@@ -3043,7 +3600,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "true_false",
-        "source_answer_review_required"
+        "source_answer_review_required",
+        "option_explanations_v1"
       ],
       "sourceType": "awaiting_verification",
       "verificationStatus": "awaiting_verification",
@@ -3052,7 +3610,11 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect (True) — that judgement would treat an inaccurate or incomplete claim as correct.",
+        "Correct (False) — the statement is not accurate as written; Evidence should prompt review and appropriate adaptation."
+      ]
     },
     {
       "questionId": "exam-ad-i-tf-027",
@@ -3078,7 +3640,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "true_false",
-        "source_answer_review_required"
+        "source_answer_review_required",
+        "option_explanations_v1"
       ],
       "sourceType": "awaiting_verification",
       "verificationStatus": "awaiting_verification",
@@ -3087,7 +3650,11 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect (True) — that judgement would treat an inaccurate or incomplete claim as correct.",
+        "Correct (False) — the statement is not accurate as written; Concerns must be handled through appropriate safeguarding procedures."
+      ]
     },
     {
       "questionId": "exam-ad-i-q248",
@@ -3117,7 +3684,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -3126,7 +3694,13 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect — Hide decisions from oversight does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Favour relatives regardless of criteria does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Ethical leadership requires integrity and appropriate safeguards.",
+        "Incorrect — Use public resources for personal gain does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q249",
@@ -3156,7 +3730,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -3165,7 +3740,13 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect — Prevent preparation does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Replace follow-up does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — List unrelated topics without priorities does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — An agenda supports purposeful discussion."
+      ]
     },
     {
       "questionId": "exam-ad-i-q250",
@@ -3195,7 +3776,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -3204,7 +3786,13 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Correct — Tools should be assessed for safety and educational value.",
+        "Incorrect — Assume every answer is correct does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Upload private data anywhere does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Use technology even when it obstructs learning does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q251",
@@ -3234,7 +3822,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -3243,7 +3832,13 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect — Hide expectations does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Rubrics clarify expectations and assessment criteria.",
+        "Incorrect — Replace task instructions does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Guarantee identical scores does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-tf-028",
@@ -3269,7 +3864,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "true_false",
-        "source_answer_review_required"
+        "source_answer_review_required",
+        "option_explanations_v1"
       ],
       "sourceType": "awaiting_verification",
       "verificationStatus": "awaiting_verification",
@@ -3278,7 +3874,11 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Correct (True) — the statement matches accepted professional practice: GigaLearn  AD I Practice\nPage 87\nA respectful classroom climate can support learner participation.\nTRUE\nFALSE",
+        "Incorrect (False) — that judgement would reverse the accepted meaning of the statement."
+      ]
     },
     {
       "questionId": "exam-ad-i-tf-029",
@@ -3304,7 +3904,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "true_false",
-        "source_answer_review_required"
+        "source_answer_review_required",
+        "option_explanations_v1"
       ],
       "sourceType": "awaiting_verification",
       "verificationStatus": "awaiting_verification",
@@ -3313,7 +3914,11 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Correct (True) — the statement matches accepted professional practice: Clear success criteria help learners understand expectations.\nTRUE\n\nGigaLearn  AD I Practice\nPage 97\nFALSE",
+        "Incorrect (False) — that judgement would reverse the accepted meaning of the statement."
+      ]
     },
     {
       "questionId": "exam-ad-i-q252",
@@ -3343,7 +3948,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -3352,7 +3958,13 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect — It makes all classes identical does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — Collaboration can improve coherence and professional support.",
+        "Incorrect — It removes the need to assess does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — It guarantees no challenges does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     },
     {
       "questionId": "exam-ad-i-q253",
@@ -3382,7 +3994,8 @@
       "reviewStatus": "pending_review",
       "tags": [
         "guide_550_deduped",
-        "awaiting_verification"
+        "awaiting_verification",
+        "option_explanations_v1"
       ],
       "sourceType": "original_practice",
       "verificationStatus": "awaiting_verification",
@@ -3391,7 +4004,13 @@
       "accessTier": [
         "premium"
       ],
-      "promotionRank": "assistant-director-i"
+      "promotionRank": "assistant-director-i",
+      "optionExplanations": [
+        "Incorrect — Record only staff leave does not satisfy the question; it describes a weaker or contrary approach.",
+        "Incorrect — Make every lesson identical does not satisfy the question; it describes a weaker or contrary approach.",
+        "Correct — It sequences content, learning activities and assessment.",
+        "Incorrect — Replace the curriculum does not satisfy the question; it describes a weaker or contrary approach."
+      ]
     }
   ]
 }

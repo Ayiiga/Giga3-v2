@@ -513,10 +513,12 @@ export const saveTechPracticeAnswer = mutation({
       }
       const pendingReview = q.reviewStatus === "pending_review";
       const originalSelected = toOriginalOptionIndex(args.selectedIndex, perm);
-      const displayCorrect = displayCorrectIndex(
-        q.correctIndex,
-        perm ?? q.options.map((_, i) => i)
-      );
+      const displayOrder = perm ?? q.options.map((_, i) => i);
+      const displayCorrect = displayCorrectIndex(q.correctIndex, displayOrder);
+      const optionExplanations =
+        q.optionExplanations && q.optionExplanations.length === q.options.length
+          ? displayOrder.map((original) => q.optionExplanations?.[original] ?? "")
+          : undefined;
       return {
         saved: true,
         feedback: {
@@ -526,6 +528,7 @@ export const saveTechPracticeAnswer = mutation({
             ? `Provisional key (pending review). ${q.explanation}`
             : q.explanation,
           correctIndex: displayCorrect,
+          optionExplanations,
         },
       };
     }
