@@ -261,6 +261,7 @@ export const startTechPracticeSession = mutation({
           .take(50)
           .then((rows) => rows.some((row) => row.action === "credit_purchase"))
       : false;
+    // Basic (GHS 60), Pro, and Premium all qualify when unexpired.
     const subscriptionActive = isSubscriptionActive(
       user?.subscriptionPlan ?? "free",
       user?.subscriptionExpiresAt

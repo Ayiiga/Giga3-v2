@@ -11,12 +11,16 @@ import {
 import {
   EXAM_PRACTICE_FREE_QUESTION_COUNT,
   EXAM_PRACTICE_MAX_CONCURRENT_IN_PROGRESS,
+  EXAM_PRACTICE_MIN_PAID_PLAN_GHS,
+  EXAM_PRACTICE_PAID_UNLOCK_COPY,
   EXAM_PRACTICE_PREMIUM_QUESTION_COUNT,
   clampPracticeQuestionCount,
   hasExamPracticePremiumAccess,
   resolveExamPracticeSessionCount,
   shouldAbandonPriorExamInProgress,
 } from "../../web/lib/gigalearn/examPractice/practiceLimits";
+import { isSubscriptionActive } from "../../convex/creditsConfig";
+import { SUBSCRIPTION_PLANS } from "../../convex/subscriptionPlans";
 import {
   getTechBankQuestions,
   selectTechQuestionIds,
@@ -105,6 +109,35 @@ describe("hasExamPracticePremiumAccess entitlement matrix", () => {
         hasPurchasedCredits: false,
       })
     ).toBe(true);
+  });
+
+  it("treats Basic (GHS 60) the same as Pro/Premium when subscriptionActive", () => {
+    // Server sets subscriptionActive via isSubscriptionActive(plan, expiresAt)
+    // for plan ids basic | pro | premium — not only the Premium plan.
+    expect(
+      hasExamPracticePremiumAccess({
+        subscriptionActive: true,
+        isPremium: false,
+        hasPurchasedCredits: false,
+        credits: 0,
+      })
+    ).toBe(true);
+    expect(EXAM_PRACTICE_MIN_PAID_PLAN_GHS).toBe(60);
+    expect(SUBSCRIPTION_PLANS.basic.priceGhs).toBe(EXAM_PRACTICE_MIN_PAID_PLAN_GHS);
+    expect(EXAM_PRACTICE_PAID_UNLOCK_COPY).toMatch(/Basic \(GHS 60\)/i);
+
+    const future = Date.now() + 7 * 24 * 60 * 60 * 1000;
+    for (const plan of ["basic", "pro", "premium"] as const) {
+      expect(isSubscriptionActive(plan, future)).toBe(true);
+      expect(
+        hasExamPracticePremiumAccess({
+          subscriptionActive: isSubscriptionActive(plan, future),
+          hasPurchasedCredits: false,
+          credits: 0,
+        })
+      ).toBe(true);
+    }
+    expect(isSubscriptionActive("basic", Date.now() - 1)).toBe(false);
   });
 
   it("allows credit-pack purchase history (hasPurchasedCredits) with zero balance", () => {

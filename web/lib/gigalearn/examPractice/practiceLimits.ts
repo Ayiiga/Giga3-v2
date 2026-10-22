@@ -1,9 +1,14 @@
 /**
  * Exam Practice session sizes and entitlement rules.
  *
- * Free orientation / entry practice stays small. Larger packs require an
- * active subscription OR a credit-pack purchase (same unlock pattern as
- * AI premium tier via `hasPurchasedCredits` / `isPremium`).
+ * Free orientation / entry practice stays small. Larger packs ("premium
+ * version") unlock with:
+ * - any **active paid subscription** — Basic (GHS 60), Pro (GHS 150), or
+ *   Premium (GHS 350) — via `subscriptionActive`, OR
+ * - a credit-pack purchase (`hasPurchasedCredits` / AI `isPremium` tier).
+ *
+ * Basic is intentionally included: GHS 60 subscribers get full exam packs and
+ * premium-tier question stems, not only Pro/Premium plan holders.
  *
  * Important: a residual credit *balance* alone does NOT unlock premium packs.
  * There is no `CREDIT_COSTS` entry for exam practice sessions — do not invent
@@ -12,6 +17,13 @@
 
 export const EXAM_PRACTICE_FREE_QUESTION_COUNT = 50;
 export const EXAM_PRACTICE_PREMIUM_QUESTION_COUNT = 500;
+
+/** Lowest paid catalog plan that unlocks Exam Practice premium packs. */
+export const EXAM_PRACTICE_MIN_PAID_PLAN_GHS = 60;
+
+/** Short UI copy — keep in sync with subscriptionPlans.basic.priceGhs. */
+export const EXAM_PRACTICE_PAID_UNLOCK_COPY =
+  "Basic (GHS 60) and higher, or a credit-pack purchase";
 
 /** Soft cap for Technology Hub non-exam courses (unchanged UX). */
 export const TECH_HUB_DEFAULT_MAX_COUNT = 50;
@@ -41,9 +53,15 @@ export type ExamPracticeEntitlementInput = {
   credits?: number | null;
 };
 
+/**
+ * Server + client gate for Exam Practice premium packs / premium-only stems.
+ * `subscriptionActive` must be true for Basic, Pro, or Premium with a future
+ * `subscriptionExpiresAt` (see `isSubscriptionActive` in creditsConfig).
+ */
 export function hasExamPracticePremiumAccess(
   args: ExamPracticeEntitlementInput
 ): boolean {
+  // Any active paid plan (including Basic / GHS 60) unlocks premium packs.
   if (args.subscriptionActive) return true;
   if (args.isPremium) return true;
   if (args.hasPurchasedCredits) return true;
