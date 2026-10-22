@@ -553,12 +553,38 @@ export const submitTechPracticeSession = mutation({
         alreadyGraded: true,
         score: session.score,
         maxScore: session.maxScore,
+        percent:
+          session.maxScore && session.maxScore > 0
+            ? Math.round(((session.score ?? 0) / session.maxScore) * 100)
+            : 0,
         results: session.resultsJson ? JSON.parse(session.resultsJson) : [],
+        rewardXp: session.rewardXp ?? 0,
+        rewardLabel: session.rewardLabel ?? null,
+        totalXp: undefined as number | undefined,
+        sessionsCompleted: undefined as number | undefined,
       };
     }
     return await finalizeSession(ctx, session, Date.now(), "submit");
   },
 });
+
+/** Non-monetary practice XP — never wallet/credits. Idempotent per session. */
+function computePracticeReward(args: {
+  score: number;
+  maxScore: number;
+  percent: number;
+  questionCount: number;
+}): { xp: number; label: string } {
+  const base = Math.max(5, Math.min(40, args.questionCount));
+  const accuracyBonus = Math.round((args.percent / 100) * base);
+  const xp = base + accuracyBonus;
+  let label = "Practice complete — keep building your streak.";
+  if (args.percent >= 90) label = "Outstanding session — mastery XP earned.";
+  else if (args.percent >= 75) label = "Strong session — progress XP earned.";
+  else if (args.percent >= 50) label = "Solid effort — practice XP earned.";
+  else label = "Session logged — review misses to earn more next time.";
+  return { xp, label };
+}
 
 async function finalizeSession(
   ctx: { db: any },
@@ -571,6 +597,9 @@ async function finalizeSession(
     optionPermutationsJson?: string;
     mode: string;
     endsAt?: number;
+    rewardXp?: number;
+    rewardLabel?: string;
+    rewardGrantedAt?: number;
   },
   now: number,
   reason: "submit" | "timer"
@@ -585,6 +614,57 @@ async function finalizeSession(
     optionPermutations,
   });
 
+  // Grant XP once — retries / already-graded path must not farm rewards.
+  let rewardXp = session.rewardXp ?? 0;
+  let rewardLabel = session.rewardLabel ?? null;
+  let totalXp: number | undefined;
+  let sessionsCompleted: number | undefined;
+
+  if (session.rewardGrantedAt == null) {
+    const reward = computePracticeReward({
+      score: graded.score,
+      maxScore: graded.maxScore,
+      percent: graded.percent,
+      questionCount: questionIds.length,
+    });
+    rewardXp = reward.xp;
+    rewardLabel = reward.label;
+
+    const stats = await ctx.db
+      .query("gigaLearnPracticeStats")
+      .withIndex("by_user_course", (q: any) =>
+        q.eq("userId", session.userId).eq("courseSlug", session.courseSlug)
+      )
+      .first();
+    if (stats) {
+      totalXp = (stats.totalXp ?? 0) + rewardXp;
+      sessionsCompleted = (stats.sessionsCompleted ?? 0) + 1;
+      await ctx.db.patch(stats._id, {
+        totalXp,
+        sessionsCompleted,
+        questionsAttempted: (stats.questionsAttempted ?? 0) + questionIds.length,
+        correctAnswers: (stats.correctAnswers ?? 0) + graded.score,
+        bestPercent: Math.max(stats.bestPercent ?? 0, graded.percent),
+        lastRewardLabel: rewardLabel,
+        updatedAt: now,
+      });
+    } else {
+      totalXp = rewardXp;
+      sessionsCompleted = 1;
+      await ctx.db.insert("gigaLearnPracticeStats", {
+        userId: session.userId,
+        courseSlug: session.courseSlug,
+        totalXp,
+        sessionsCompleted,
+        questionsAttempted: questionIds.length,
+        correctAnswers: graded.score,
+        bestPercent: graded.percent,
+        lastRewardLabel: rewardLabel,
+        updatedAt: now,
+      });
+    }
+  }
+
   await ctx.db.patch(session._id, {
     status: "graded",
     score: graded.score,
@@ -593,6 +673,9 @@ async function finalizeSession(
     submittedAt: now,
     updatedAt: now,
     answersJson: JSON.stringify(answers),
+    rewardXp,
+    rewardLabel: rewardLabel ?? undefined,
+    rewardGrantedAt: session.rewardGrantedAt ?? now,
   });
 
   // Nudge Academy pathway progress from real activity (never invent %).
@@ -603,7 +686,9 @@ async function finalizeSession(
     )
     .first();
   if (enrolment && enrolment.status === "active") {
-    const bankSize = getTechBankQuestions(session.courseSlug, { approvedOnly: true }).length;
+    const bankSize = getTechBankQuestions(session.courseSlug, {
+      includePending: true,
+    }).length;
     const prior = await ctx.db
       .query("gigaLearnTechSessions")
       .withIndex("by_user_course", (q: any) =>
@@ -631,6 +716,10 @@ async function finalizeSession(
     maxScore: graded.maxScore,
     percent: graded.percent,
     results: graded.results,
+    rewardXp,
+    rewardLabel,
+    totalXp,
+    sessionsCompleted,
   };
 }
 

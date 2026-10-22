@@ -362,11 +362,18 @@ function TeacherPromotionCentreCard() {
           </div>
         </div>
         <Link
-          href={EXAM_PRACTICE_DESTINATIONS.promotionFreePractice}
+          href={EXAM_PRACTICE_DESTINATIONS.promotionRankSelect}
           className="exam-landing-cta mt-4"
+          data-testid="teacher-promotion-choose-rank"
         >
           <Play className="h-4 w-4 fill-current" aria-hidden />
-          Start Free {EXAM_PRACTICE_FREE_QUESTION_COUNT} Questions
+          Choose rank · Start Free Practice
+        </Link>
+        <Link
+          href={EXAM_PRACTICE_DESTINATIONS.promotionFreePractice}
+          className="exam-landing-cta exam-landing-cta--ghost mt-2"
+        >
+          Free orientation ({EXAM_PRACTICE_FREE_QUESTION_COUNT} mixed questions)
         </Link>
         <div className="mt-2">
           <ExamPracticeShareButton
@@ -949,7 +956,11 @@ export function ExamPracticeCentre() {
             labels, timed practice, and real performance only.
           </p>
           <div className="flex flex-col gap-2 pt-1 sm:flex-row sm:flex-wrap">
-            <Link href="#teacher-promotion-centre" className="exam-landing-cta sm:w-auto sm:px-5">
+            <Link
+              href={EXAM_PRACTICE_DESTINATIONS.promotionRankSelect}
+              className="exam-landing-cta sm:w-auto sm:px-5"
+              data-testid="teacher-promotion-primary-cta"
+            >
               Teacher Promotion
             </Link>
             <Link

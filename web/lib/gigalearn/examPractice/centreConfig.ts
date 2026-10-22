@@ -68,6 +68,11 @@ export const TEACHER_PROMOTION_SOURCE_INVENTORY = [
 /** Verified deep-links only — existing GigaLearn experiences. */
 export const EXAM_PRACTICE_DESTINATIONS = {
   examHome: "/gigalearn/exam/",
+  /**
+   * Primary Teacher Promotion entry — five-rank free-practice selector.
+   * Do not send learners to the general Courses tab or mixed bank first.
+   */
+  promotionRankSelect: "/gigalearn/exam/promotion/",
   /** Timed Teacher Promotion free orientation practice (not an official GES paper). */
   promotionFreePractice: "/gigalearn/exam/practice/",
   /** Imported BECE objective bank (interactive Academy practice). */
@@ -86,50 +91,54 @@ export const EXAM_PRACTICE_DESTINATIONS = {
   teacherPromotionPracticeFull:
     "/gigalearn/academy/tech/?course=exam-teacher-promotion&mode=practice_test&count=500",
   teacherPromotionCourse: "/gigalearn/academy/course/?slug=exam-teacher-promotion",
-  /** Rank-specific promotion practice banks (honest published counts; not 500 verified). */
-  adIiPractice: "/gigalearn/academy/tech/?course=exam-ad-ii&count=50",
+  /** Rank-specific free practice — learn mode so explanations appear after each answer. */
+  adIiPractice:
+    "/gigalearn/academy/tech/?course=exam-ad-ii&mode=learn&count=50",
   adIiPracticeMcq:
-    "/gigalearn/academy/tech/?course=exam-ad-ii&qtype=mcq&count=50",
+    "/gigalearn/academy/tech/?course=exam-ad-ii&mode=learn&qtype=mcq&count=50",
   adIiPracticeTf:
-    "/gigalearn/academy/tech/?course=exam-ad-ii&qtype=true_false&count=50",
+    "/gigalearn/academy/tech/?course=exam-ad-ii&mode=learn&qtype=true_false&count=50",
   adIiPracticeFull:
     "/gigalearn/academy/tech/?course=exam-ad-ii&mode=practice_test&count=500",
   adIiCourse: "/gigalearn/academy/course/?slug=exam-ad-ii",
-  adIPractice: "/gigalearn/academy/tech/?course=exam-ad-i&count=50",
-  adIPracticeMcq: "/gigalearn/academy/tech/?course=exam-ad-i&qtype=mcq&count=50",
+  adIPractice: "/gigalearn/academy/tech/?course=exam-ad-i&mode=learn&count=50",
+  adIPracticeMcq:
+    "/gigalearn/academy/tech/?course=exam-ad-i&mode=learn&qtype=mcq&count=50",
   adIPracticeTf:
-    "/gigalearn/academy/tech/?course=exam-ad-i&qtype=true_false&count=9",
+    "/gigalearn/academy/tech/?course=exam-ad-i&mode=learn&qtype=true_false&count=50",
   adIPracticeFull:
     "/gigalearn/academy/tech/?course=exam-ad-i&mode=practice_test&count=500",
   adICourse: "/gigalearn/academy/course/?slug=exam-ad-i",
   deputyDirectorPractice:
-    "/gigalearn/academy/tech/?course=exam-deputy-director&count=50",
+    "/gigalearn/academy/tech/?course=exam-deputy-director&mode=learn&count=50",
   deputyDirectorPracticeMcq:
-    "/gigalearn/academy/tech/?course=exam-deputy-director&qtype=mcq&count=50",
+    "/gigalearn/academy/tech/?course=exam-deputy-director&mode=learn&qtype=mcq&count=50",
   deputyDirectorPracticeTf:
-    "/gigalearn/academy/tech/?course=exam-deputy-director&qtype=true_false&count=9",
+    "/gigalearn/academy/tech/?course=exam-deputy-director&mode=learn&qtype=true_false&count=50",
   deputyDirectorPracticeFull:
     "/gigalearn/academy/tech/?course=exam-deputy-director&mode=practice_test&count=500",
   deputyDirectorCourse: "/gigalearn/academy/course/?slug=exam-deputy-director",
-  directorIiPractice: "/gigalearn/academy/tech/?course=exam-director-ii&count=50",
+  directorIiPractice:
+    "/gigalearn/academy/tech/?course=exam-director-ii&mode=learn&count=50",
   directorIiPracticeMcq:
-    "/gigalearn/academy/tech/?course=exam-director-ii&qtype=mcq&count=50",
+    "/gigalearn/academy/tech/?course=exam-director-ii&mode=learn&qtype=mcq&count=50",
   directorIiPracticeTf:
-    "/gigalearn/academy/tech/?course=exam-director-ii&qtype=true_false&count=9",
+    "/gigalearn/academy/tech/?course=exam-director-ii&mode=learn&qtype=true_false&count=50",
   directorIiPracticeFull:
     "/gigalearn/academy/tech/?course=exam-director-ii&mode=practice_test&count=500",
   directorIiCourse: "/gigalearn/academy/course/?slug=exam-director-ii",
-  directorIPractice: "/gigalearn/academy/tech/?course=exam-director-i&count=50",
+  directorIPractice:
+    "/gigalearn/academy/tech/?course=exam-director-i&mode=learn&count=50",
   directorIPracticeMcq:
-    "/gigalearn/academy/tech/?course=exam-director-i&qtype=mcq&count=50",
+    "/gigalearn/academy/tech/?course=exam-director-i&mode=learn&qtype=mcq&count=50",
   directorIPracticeTf:
-    "/gigalearn/academy/tech/?course=exam-director-i&qtype=true_false&count=9",
+    "/gigalearn/academy/tech/?course=exam-director-i&mode=learn&qtype=true_false&count=50",
   directorIPracticeFull:
     "/gigalearn/academy/tech/?course=exam-director-i&mode=practice_test&count=500",
   directorICourse: "/gigalearn/academy/course/?slug=exam-director-i",
   /** Mixed teacher-promotion bank True/False practice (rank unconfirmed for mock sources). */
   teacherPromotionTf:
-    "/gigalearn/academy/tech/?course=exam-teacher-promotion&qtype=true_false&count=50",
+    "/gigalearn/academy/tech/?course=exam-teacher-promotion&mode=learn&qtype=true_false&count=50",
   promotionGuidesZip:
     "/downloads/gigalearn/promotion-guides/GigaLearn_Teacher_Promotion_Practice_Guides.zip",
   academy: "/gigalearn/academy/",

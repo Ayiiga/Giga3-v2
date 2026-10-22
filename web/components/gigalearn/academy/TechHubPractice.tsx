@@ -53,7 +53,8 @@ function TechHubInner() {
   const params = useSearchParams();
   const courseSlug = (params.get("course") || "").trim().toLowerCase();
   const isExamCourse = isExamPracticeCourseSlug(courseSlug);
-  const initialMode = (params.get("mode") || (isExamCourse ? "timed" : "learn")).trim() as TechPracticeMode;
+  // Default to learn so explanations appear after each answer; timed via ?mode=timed.
+  const initialMode = (params.get("mode") || "learn").trim() as TechPracticeMode;
   const urlCount = Number(params.get("count") || "");
   const urlQType = (params.get("qtype") || "").trim().toLowerCase();
   const initialQuestionType: TechQuestionType | "" =
@@ -143,10 +144,15 @@ function TechHubInner() {
   } | null>(null);
   const [endsAt, setEndsAt] = useState<number | null>(null);
   const [serverSkew, setServerSkew] = useState(0);
+  const [showIncorrectOnly, setShowIncorrectOnly] = useState(false);
   const [results, setResults] = useState<null | {
     score: number;
     maxScore: number;
     percent?: number;
+    rewardXp?: number;
+    rewardLabel?: string | null;
+    totalXp?: number;
+    sessionsCompleted?: number;
     results: Array<{
       questionId: string;
       selectedIndex: number | null;
@@ -298,6 +304,10 @@ function TechHubInner() {
           score: res.autoSubmitted.score ?? 0,
           maxScore: res.autoSubmitted.maxScore ?? 0,
           percent: res.autoSubmitted.percent,
+          rewardXp: res.autoSubmitted.rewardXp,
+          rewardLabel: res.autoSubmitted.rewardLabel,
+          totalXp: res.autoSubmitted.totalXp,
+          sessionsCompleted: res.autoSubmitted.sessionsCompleted,
           results: res.autoSubmitted.results ?? [],
         });
         return;
@@ -335,6 +345,10 @@ function TechHubInner() {
         score: res.score ?? 0,
         maxScore: res.maxScore ?? 0,
         percent: res.percent,
+        rewardXp: res.rewardXp,
+        rewardLabel: res.rewardLabel,
+        totalXp: res.totalXp,
+        sessionsCompleted: res.sessionsCompleted,
         results: res.results ?? [],
       });
     } catch (e) {
@@ -346,27 +360,100 @@ function TechHubInner() {
 
   if (results) {
     const sessionPraise =
-      results.percent != null ? rewardForSessionScore(results.percent) : null;
+      results.rewardLabel ||
+      (results.percent != null ? rewardForSessionScore(results.percent) : null);
     const shareKind = courseSlug.includes("bece")
       ? ("bece" as const)
-      : courseSlug.includes("teacher-promotion")
+      : courseSlug.includes("teacher-promotion") || courseSlug.startsWith("exam-ad") || courseSlug.includes("director")
         ? ("teacher_promotion" as const)
         : null;
+    const incorrect = results.results.filter((r) => !r.correct);
+    const reviewRows = showIncorrectOnly ? incorrect : results.results;
     return (
       <AcademyChrome active="course" title={`${course.title} · Results`}>
-        <article className={cn(ACADEMY_SURFACE_CLASS.catalogue, "space-y-4 p-4 sm:p-6")}>
+        <article
+          className={cn(ACADEMY_SURFACE_CLASS.catalogue, "space-y-4 p-4 sm:p-6")}
+          data-testid="tech-practice-results"
+        >
           <h2 className="text-xl font-bold text-[#1E1B4B]">Session complete</h2>
           {sessionPraise ? (
-            <p className="exam-session-reward" role="status">
+            <p className="exam-session-reward" role="status" data-testid="session-reward-label">
               {sessionPraise}
             </p>
           ) : null}
-          <p className="text-sm text-slate-600">
-            Score {results.score}/{results.maxScore}
-            {results.percent != null ? ` · ${results.percent}%` : ""}
-          </p>
+          <div className="grid gap-2 rounded-xl border border-emerald-200 bg-emerald-50/80 p-3 text-sm text-emerald-950 sm:grid-cols-2">
+            <p>
+              Questions attempted: <strong>{results.maxScore}</strong>
+            </p>
+            <p>
+              Correct answers: <strong>{results.score}</strong>
+              {results.percent != null ? ` · ${results.percent}%` : ""}
+            </p>
+            <p data-testid="session-reward-xp">
+              Reward earned:{" "}
+              <strong>{results.rewardXp != null ? `${results.rewardXp} practice XP` : "—"}</strong>
+              <span className="block text-xs font-normal text-emerald-800">
+                Non-monetary learning XP (not wallet credits)
+              </span>
+            </p>
+            <p>
+              Rank practice progress:{" "}
+              <strong>
+                {results.sessionsCompleted != null
+                  ? `${results.sessionsCompleted} session${results.sessionsCompleted === 1 ? "" : "s"}`
+                  : "saved"}
+                {results.totalXp != null ? ` · ${results.totalXp} XP total` : ""}
+              </strong>
+            </p>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button
+              type="button"
+              variant="secondary"
+              className="min-h-11"
+              disabled={incorrect.length === 0}
+              onClick={() => setShowIncorrectOnly((v) => !v)}
+              data-testid="review-incorrect"
+            >
+              {showIncorrectOnly
+                ? "Show all answers"
+                : `Review incorrect (${incorrect.length})`}
+            </Button>
+            <Button
+              type="button"
+              className="min-h-11"
+              onClick={() => {
+                setResults(null);
+                setSessionId(null);
+                setLocalQuestions([]);
+                setReward(null);
+                setStreak(0);
+                setShowIncorrectOnly(false);
+              }}
+            >
+              Continue practising
+            </Button>
+            {courseSlug.startsWith("exam-ad") ||
+            courseSlug.includes("director") ||
+            courseSlug.includes("teacher-promotion") ? (
+              <ButtonLink
+                href="/gigalearn/exam/promotion/"
+                variant="secondary"
+                className="min-h-11"
+              >
+                All promotion ranks
+              </ButtonLink>
+            ) : null}
+            {shareKind ? (
+              <ExamPracticeShareButton
+                kind={shareKind}
+                label="Share this practice"
+                className="sm:min-w-[12rem]"
+              />
+            ) : null}
+          </div>
           <ul className="space-y-3">
-            {results.results.map((r, i) => (
+            {reviewRows.map((r, i) => (
               <li key={r.questionId} className="rounded-xl border border-slate-200 p-3 text-sm">
                 <p className="font-semibold text-slate-900">
                   {i + 1}. {r.questionText}
@@ -405,35 +492,6 @@ function TechHubInner() {
               </li>
             ))}
           </ul>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <Button
-              type="button"
-              className="min-h-11"
-              onClick={() => {
-                setResults(null);
-                setSessionId(null);
-                setLocalQuestions([]);
-                setReward(null);
-                setStreak(0);
-              }}
-            >
-              Practise again
-            </Button>
-            {shareKind ? (
-              <ExamPracticeShareButton
-                kind={shareKind}
-                label="Share this practice"
-                className="sm:min-w-[12rem]"
-              />
-            ) : null}
-            <ButtonLink
-              href={`/gigalearn/academy/course/?slug=${encodeURIComponent(courseSlug)}`}
-              variant="secondary"
-              className="min-h-11"
-            >
-              Back to course
-            </ButtonLink>
-          </div>
         </article>
       </AcademyChrome>
     );

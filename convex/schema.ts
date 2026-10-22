@@ -1799,6 +1799,10 @@ export default defineSchema({
     score: v.optional(v.number()),
     maxScore: v.optional(v.number()),
     resultsJson: v.optional(v.string()),
+    /** Non-monetary practice XP granted once per graded session (server-only). */
+    rewardXp: v.optional(v.number()),
+    rewardLabel: v.optional(v.string()),
+    rewardGrantedAt: v.optional(v.number()),
     startedAt: v.number(),
     submittedAt: v.optional(v.number()),
     updatedAt: v.number(),
@@ -1806,6 +1810,24 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_user_course", ["userId", "courseSlug"])
     .index("by_user_status", ["userId", "status"])
+    .index("by_user_updated", ["userId", "updatedAt"]),
+
+  /**
+   * Aggregated GigaLearn practice stats (XP / sessions). Non-monetary.
+   * Never trust client-reported scores — updated only from graded sessions.
+   */
+  gigaLearnPracticeStats: defineTable({
+    userId: v.string(),
+    courseSlug: v.string(),
+    totalXp: v.number(),
+    sessionsCompleted: v.number(),
+    questionsAttempted: v.number(),
+    correctAnswers: v.number(),
+    bestPercent: v.number(),
+    lastRewardLabel: v.optional(v.string()),
+    updatedAt: v.number(),
+  })
+    .index("by_user_course", ["userId", "courseSlug"])
     .index("by_user_updated", ["userId", "updatedAt"]),
 
   /** Per-user developer API keys (hashed at rest). */
