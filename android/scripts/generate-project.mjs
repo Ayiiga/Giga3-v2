@@ -37,9 +37,9 @@ Object.assign(twa, {
   maskableIconUrl: iconMaskableUrl,
   enableNotifications: true,
   signingKey: { path: "./android.keystore", alias: "android" },
-  appVersionName: "1.0.2",
-  appVersion: "1.0.2",
-  appVersionCode: 3,
+  appVersionName: "1.0.3",
+  appVersion: "1.0.3",
+  appVersionCode: 4,
   minSdkVersion: 24,
   fingerprints: [],
   features: {
