@@ -43,7 +43,16 @@ Evaluation path (free practice): select letter → `answers[id] === question.cor
 - `startTechPracticeSession` writes permutations; get/grade/submit map display↔original.
 - Production Convex deploy still required for live sessions to persist the field — use GitHub Actions **Deploy Convex backend** (`CONVEX_DEPLOY_KEY`). Do not claim deploy success without CI verification.
 
+## Final quality gate (22 Oct 2026)
+
+See `docs/gigalearn/promotion-exam-final-quality-gate.md`.
+
+- **238** practice-approved items; **1** held pending (`q008` 1987/6-3-3 association).
+- **24** legal/policy claims `human_verified` against public sources (Constitution, Acts 506/778/1049/1023, MoE Free SHS, GES Scheme of Service).
+- Stable `optionIds` / `correctOptionId` on all 239 bank items.
+- Items remain **not** official GES examination questions.
+
 ## Tests
 
 - `tests/gigalearn/examAnswerPositionBias.test.ts` — A–D placement, identity, scoring, session restore, tech permutations.
-- `tests/gigalearn/promotionDistractorRepair.test.ts` — repaired bank gates, free length clues, Convex wiring.
+- `tests/gigalearn/promotionDistractorRepair.test.ts` — repaired bank gates, free length clues, Convex wiring, verification counts.

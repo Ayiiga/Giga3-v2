@@ -86,12 +86,19 @@ describe("teacher-promotion distractor repair", () => {
     }
   });
 
-  it("flags legal/history items for authoritative verification", () => {
+  it("keeps uncertain historical items pending; verifies supported legal claims", () => {
     const needs = bank.filter((q) =>
       q.tags.includes("needs_authoritative_verification")
     );
-    expect(needs.length).toBeGreaterThanOrEqual(20);
-    expect(needs.every((q) => q.reviewStatus === "pending_review")).toBe(true);
+    expect(needs.length).toBe(1);
+    expect(needs[0]?.questionId).toBe("exam-teacher-promotion-q008");
+    expect(needs[0]?.reviewStatus).toBe("pending_review");
+    const verified = bank.filter((q) => q.verificationStatus === "human_verified");
+    expect(verified.length).toBe(24);
+    expect(bank.every((q) => (q.optionIds?.length ?? 0) === 4)).toBe(true);
+    expect(
+      bank.every((q) => q.correctOptionId === q.optionIds?.[q.correctIndex])
+    ).toBe(true);
   });
 });
 
