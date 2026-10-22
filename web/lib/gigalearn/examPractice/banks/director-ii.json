@@ -1,0 +1,1886 @@
+{
+  "bankId": "director-ii",
+  "courseSlug": "exam-director-ii",
+  "title": "GES Director II Promotion Practice",
+  "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+  "provenanceNote": "Original GigaLearn practice bank adapted from uploaded study PDFs. Not an official Ghana Education Service examination paper. Items are awaiting human verification against authoritative sources.",
+  "questions": [
+    {
+      "questionId": "exam-director-ii-q001",
+      "courseSlug": "exam-director-ii",
+      "topicId": "data-and-research",
+      "topicLabel": "Data and research",
+      "questionText": "When evidence is incomplete or inconsistent, which approach should be preferred?",
+      "options": [
+        "Selecting only evidence that supports a preference",
+        "Treating one anecdote as conclusive",
+        "Ignoring missing data",
+        "Using representative and appropriate data"
+      ],
+      "optionIds": [
+        "exam-director-ii-q001-opt-A",
+        "exam-director-ii-q001-opt-B",
+        "exam-director-ii-q001-opt-C",
+        "exam-director-ii-q001-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-director-ii-q001-opt-D",
+      "explanation": "\"Using representative and appropriate data\" is the most appropriate choice for this practice item on Data and research. It aligns with defensible professional judgement in data and research. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 45,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "stem_rewritten",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q002",
+      "courseSlug": "exam-director-ii",
+      "topicId": "data-and-research",
+      "topicLabel": "Data and research",
+      "questionText": "If a decision must be defensible and fair in the area of data and research, what should be prioritised?",
+      "options": [
+        "Publishing names unnecessarily",
+        "Protecting participants' privacy and obtaining appropriate consent",
+        "Collecting identifiable data without safeguards",
+        "Using data for an undisclosed purpose"
+      ],
+      "optionIds": [
+        "exam-director-ii-q002-opt-A",
+        "exam-director-ii-q002-opt-B",
+        "exam-director-ii-q002-opt-C",
+        "exam-director-ii-q002-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-director-ii-q002-opt-B",
+      "explanation": "\"Protecting participants' privacy and obtaining appropriate consent\" is the most appropriate choice for this practice item on Data and research. It aligns with defensible professional judgement in data and research. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 12,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q003",
+      "courseSlug": "exam-director-ii",
+      "topicId": "data-and-research",
+      "topicLabel": "Data and research",
+      "questionText": "To improve data and research in an education setting, which principle should guide the decision?",
+      "options": [
+        "Presenting estimates as certainties",
+        "Claiming more than the data support",
+        "Hiding contradictory findings",
+        "Reporting limitations and uncertainty honestly"
+      ],
+      "optionIds": [
+        "exam-director-ii-q003-opt-A",
+        "exam-director-ii-q003-opt-B",
+        "exam-director-ii-q003-opt-C",
+        "exam-director-ii-q003-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-director-ii-q003-opt-D",
+      "explanation": "\"Reporting limitations and uncertainty honestly\" is the most appropriate choice for this practice item on Data and research. It aligns with defensible professional judgement in data and research. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 83,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q004",
+      "courseSlug": "exam-director-ii",
+      "topicId": "data-and-research",
+      "topicLabel": "Data and research",
+      "questionText": "Which principle is most directly described by the following practice: a baseline and measurable indicators for evaluating a programme?",
+      "options": [
+        "Counting activities only",
+        "A baseline and measurable indicators for evaluating a programme",
+        "Changing indicators after seeing results",
+        "A final opinion with no starting point"
+      ],
+      "optionIds": [
+        "exam-director-ii-q004-opt-A",
+        "exam-director-ii-q004-opt-B",
+        "exam-director-ii-q004-opt-C",
+        "exam-director-ii-q004-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-director-ii-q004-opt-B",
+      "explanation": "\"A baseline and measurable indicators for evaluating a programme\" is the most appropriate choice for this practice item on Data and research. It aligns with defensible professional judgement in data and research. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 450,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q005",
+      "courseSlug": "exam-director-ii",
+      "topicId": "data-and-research",
+      "topicLabel": "Data and research",
+      "questionText": "Which principle is most directly described by the following practice: a research question that is clear, focused and answerable?",
+      "options": [
+        "A question unrelated to the issue",
+        "A conclusion written before evidence",
+        "A vague topic with no defined problem",
+        "A research question that is clear, focused and answerable"
+      ],
+      "optionIds": [
+        "exam-director-ii-q005-opt-A",
+        "exam-director-ii-q005-opt-B",
+        "exam-director-ii-q005-opt-C",
+        "exam-director-ii-q005-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-director-ii-q005-opt-D",
+      "explanation": "\"A research question that is clear, focused and answerable\" is the most appropriate choice for this practice item on Data and research. It aligns with defensible professional judgement in data and research. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 315,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q006",
+      "courseSlug": "exam-director-ii",
+      "topicId": "data-and-research",
+      "topicLabel": "Data and research",
+      "questionText": "Which principle is most directly described by the following practice: checking data quality before drawing conclusions?",
+      "options": [
+        "Reporting percentages without denominators",
+        "Deleting inconvenient observations without reason",
+        "Assuming every record is correct",
+        "Checking data quality before drawing conclusions"
+      ],
+      "optionIds": [
+        "exam-director-ii-q006-opt-A",
+        "exam-director-ii-q006-opt-B",
+        "exam-director-ii-q006-opt-C",
+        "exam-director-ii-q006-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-director-ii-q006-opt-D",
+      "explanation": "\"Checking data quality before drawing conclusions\" is the most appropriate choice for this practice item on Data and research. It aligns with defensible professional judgement in data and research. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 295,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q007",
+      "courseSlug": "exam-director-ii",
+      "topicId": "data-and-research",
+      "topicLabel": "Data and research",
+      "questionText": "Which principle is most directly described by the following practice: correlation does not by itself establish causation?",
+      "options": [
+        "Correlation does not by itself establish causation",
+        "Any correlation proves cause",
+        "A larger sample removes all bias",
+        "A graph proves causation automatically"
+      ],
+      "optionIds": [
+        "exam-director-ii-q007-opt-A",
+        "exam-director-ii-q007-opt-B",
+        "exam-director-ii-q007-opt-C",
+        "exam-director-ii-q007-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-director-ii-q007-opt-A",
+      "explanation": "\"Correlation does not by itself establish causation\" is the most appropriate choice for this practice item on Data and research. It aligns with defensible professional judgement in data and research. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 309,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q008",
+      "courseSlug": "exam-director-ii",
+      "topicId": "data-and-research",
+      "topicLabel": "Data and research",
+      "questionText": "Which principle is most directly described by the following practice: protecting participants' privacy and obtaining appropriate consent?",
+      "options": [
+        "Publishing names unnecessarily",
+        "Protecting participants' privacy and obtaining appropriate consent",
+        "Using data for an undisclosed purpose",
+        "Collecting identifiable data without safeguards"
+      ],
+      "optionIds": [
+        "exam-director-ii-q008-opt-A",
+        "exam-director-ii-q008-opt-B",
+        "exam-director-ii-q008-opt-C",
+        "exam-director-ii-q008-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-director-ii-q008-opt-B",
+      "explanation": "\"Protecting participants' privacy and obtaining appropriate consent\" is the most appropriate choice for this practice item on Data and research. It aligns with defensible professional judgement in data and research. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 93,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q009",
+      "courseSlug": "exam-director-ii",
+      "topicId": "data-and-research",
+      "topicLabel": "Data and research",
+      "questionText": "Which principle is most directly described by the following practice: reporting limitations and uncertainty honestly?",
+      "options": [
+        "Hiding contradictory findings",
+        "Reporting limitations and uncertainty honestly",
+        "Presenting estimates as certainties",
+        "Claiming more than the data support"
+      ],
+      "optionIds": [
+        "exam-director-ii-q009-opt-A",
+        "exam-director-ii-q009-opt-B",
+        "exam-director-ii-q009-opt-C",
+        "exam-director-ii-q009-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-director-ii-q009-opt-B",
+      "explanation": "\"Reporting limitations and uncertainty honestly\" is the most appropriate choice for this practice item on Data and research. It aligns with defensible professional judgement in data and research. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 10,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q010",
+      "courseSlug": "exam-director-ii",
+      "topicId": "data-and-research",
+      "topicLabel": "Data and research",
+      "questionText": "Which principle is most directly described by the following practice: using both quantitative and qualitative evidence when suitable?",
+      "options": [
+        "Replacing evidence with assumptions",
+        "Using both quantitative and qualitative evidence when suitable",
+        "Using only one source regardless of the question",
+        "Ignoring context"
+      ],
+      "optionIds": [
+        "exam-director-ii-q010-opt-A",
+        "exam-director-ii-q010-opt-B",
+        "exam-director-ii-q010-opt-C",
+        "exam-director-ii-q010-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-director-ii-q010-opt-B",
+      "explanation": "\"Using both quantitative and qualitative evidence when suitable\" is the most appropriate choice for this practice item on Data and research. It aligns with defensible professional judgement in data and research. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 428,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q011",
+      "courseSlug": "exam-director-ii",
+      "topicId": "data-and-research",
+      "topicLabel": "Data and research",
+      "questionText": "Which principle is most directly described by the following practice: using representative and appropriate data?",
+      "options": [
+        "Ignoring missing data",
+        "Treating one anecdote as conclusive",
+        "Using representative and appropriate data",
+        "Selecting only evidence that supports a preference"
+      ],
+      "optionIds": [
+        "exam-director-ii-q011-opt-A",
+        "exam-director-ii-q011-opt-B",
+        "exam-director-ii-q011-opt-C",
+        "exam-director-ii-q011-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-director-ii-q011-opt-C",
+      "explanation": "\"Using representative and appropriate data\" is the most appropriate choice for this practice item on Data and research. It aligns with defensible professional judgement in data and research. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 315,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q012",
+      "courseSlug": "exam-director-ii",
+      "topicId": "educational-law-and-policy",
+      "topicLabel": "Educational law and policy",
+      "questionText": "To improve educational law and policy in an education setting, which principle should guide the decision?",
+      "options": [
+        "Applying a rule outside its scope",
+        "Assuming a draft is enacted law",
+        "Relying on a paraphrase without verification",
+        "Checking the current official text and scope of a legal instrument"
+      ],
+      "optionIds": [
+        "exam-director-ii-q012-opt-A",
+        "exam-director-ii-q012-opt-B",
+        "exam-director-ii-q012-opt-C",
+        "exam-director-ii-q012-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-director-ii-q012-opt-D",
+      "explanation": "\"Checking the current official text and scope of a legal instrument\" is the most appropriate choice for this practice item on Educational law and policy. It aligns with defensible professional judgement in educational law and policy. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 231,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q013",
+      "courseSlug": "exam-director-ii",
+      "topicId": "equity-and-access",
+      "topicLabel": "Equity and access",
+      "questionText": "If a decision must be defensible and fair in the area of equity and access, what should be prioritised?",
+      "options": [
+        "Reporting only an overall average",
+        "Hiding group-level disparities",
+        "Assuming identical participation means equal outcomes",
+        "Monitoring whether different groups benefit fairly from a programme"
+      ],
+      "optionIds": [
+        "exam-director-ii-q013-opt-A",
+        "exam-director-ii-q013-opt-B",
+        "exam-director-ii-q013-opt-C",
+        "exam-director-ii-q013-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-director-ii-q013-opt-D",
+      "explanation": "\"Monitoring whether different groups benefit fairly from a programme\" is the most appropriate choice for this practice item on Equity and access. It aligns with defensible professional judgement in equity and access. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 7,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q014",
+      "courseSlug": "exam-director-ii",
+      "topicId": "equity-and-access",
+      "topicLabel": "Equity and access",
+      "questionText": "To improve equity and access in an education setting, which principle should guide the decision?",
+      "options": [
+        "Monitoring whether different groups benefit fairly from a programme",
+        "Hiding group-level disparities",
+        "Reporting only an overall average",
+        "Assuming identical participation means equal outcomes"
+      ],
+      "optionIds": [
+        "exam-director-ii-q014-opt-A",
+        "exam-director-ii-q014-opt-B",
+        "exam-director-ii-q014-opt-C",
+        "exam-director-ii-q014-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-director-ii-q014-opt-A",
+      "explanation": "\"Monitoring whether different groups benefit fairly from a programme\" is the most appropriate choice for this practice item on Equity and access. It aligns with defensible professional judgement in equity and access. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 173,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q015",
+      "courseSlug": "exam-director-ii",
+      "topicId": "equity-and-access",
+      "topicLabel": "Equity and access",
+      "questionText": "When the main objective is overall results may hide group differences, which approach should be preferred?",
+      "options": [
+        "Reporting only an overall average",
+        "Hiding group-level disparities",
+        "Monitoring whether different groups benefit fairly from a programme",
+        "Assuming identical participation means equal outcomes"
+      ],
+      "optionIds": [
+        "exam-director-ii-q015-opt-A",
+        "exam-director-ii-q015-opt-B",
+        "exam-director-ii-q015-opt-C",
+        "exam-director-ii-q015-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-director-ii-q015-opt-C",
+      "explanation": "\"Monitoring whether different groups benefit fairly from a programme\" is the most appropriate choice for this practice item on Equity and access. It aligns with defensible professional judgement in equity and access. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 98,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q016",
+      "courseSlug": "exam-director-ii",
+      "topicId": "equity-and-access",
+      "topicLabel": "Equity and access",
+      "questionText": "Which principle is most directly described by the following practice: directing support toward barriers and unmet needs using evidence?",
+      "options": [
+        "Allocating support by influence",
+        "Assuming equal inputs always produce equal access",
+        "Directing support toward barriers and unmet needs using evidence",
+        "Ignoring rural or disadvantaged learners"
+      ],
+      "optionIds": [
+        "exam-director-ii-q016-opt-A",
+        "exam-director-ii-q016-opt-B",
+        "exam-director-ii-q016-opt-C",
+        "exam-director-ii-q016-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-director-ii-q016-opt-C",
+      "explanation": "\"Directing support toward barriers and unmet needs using evidence\" is the most appropriate choice for this practice item on Equity and access. It aligns with defensible professional judgement in equity and access. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 170,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q017",
+      "courseSlug": "exam-director-ii",
+      "topicId": "equity-and-access",
+      "topicLabel": "Equity and access",
+      "questionText": "Which principle is most directly described by the following practice: monitoring whether different groups benefit fairly from a programme?",
+      "options": [
+        "Monitoring whether different groups benefit fairly from a programme",
+        "Hiding group-level disparities",
+        "Assuming identical participation means equal outcomes",
+        "Reporting only an overall average"
+      ],
+      "optionIds": [
+        "exam-director-ii-q017-opt-A",
+        "exam-director-ii-q017-opt-B",
+        "exam-director-ii-q017-opt-C",
+        "exam-director-ii-q017-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-director-ii-q017-opt-A",
+      "explanation": "\"Monitoring whether different groups benefit fairly from a programme\" is the most appropriate choice for this practice item on Equity and access. It aligns with defensible professional judgement in equity and access. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 120,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q018",
+      "courseSlug": "exam-director-ii",
+      "topicId": "finance-and-accountability",
+      "topicLabel": "Finance and accountability",
+      "questionText": "To improve finance and accountability in an education setting, which principle should guide the decision?",
+      "options": [
+        "Conducting an unauthorised public accusation",
+        "Promptly reporting suspected misuse through authorised channels",
+        "Ignoring the concern",
+        "Destroying evidence"
+      ],
+      "optionIds": [
+        "exam-director-ii-q018-opt-A",
+        "exam-director-ii-q018-opt-B",
+        "exam-director-ii-q018-opt-C",
+        "exam-director-ii-q018-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-director-ii-q018-opt-B",
+      "explanation": "\"Promptly reporting suspected misuse through authorised channels\" is the most appropriate choice for this practice item on Finance and accountability. It aligns with defensible professional judgement in finance and accountability. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 113,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q019",
+      "courseSlug": "exam-director-ii",
+      "topicId": "leadership-and-communication",
+      "topicLabel": "Leadership and communication",
+      "questionText": "If a decision must be defensible and fair in the area of leadership and communication, what should be prioritised?",
+      "options": [
+        "Using a structured meeting agenda, decisions and action log",
+        "Keeping actions ownerless",
+        "Meeting without purpose or follow-up",
+        "Recording opinions but no decisions"
+      ],
+      "optionIds": [
+        "exam-director-ii-q019-opt-A",
+        "exam-director-ii-q019-opt-B",
+        "exam-director-ii-q019-opt-C",
+        "exam-director-ii-q019-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-director-ii-q019-opt-A",
+      "explanation": "\"Using a structured meeting agenda, decisions and action log\" is the most appropriate choice for this practice item on Leadership and communication. It aligns with defensible professional judgement in leadership and communication. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 159,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q020",
+      "courseSlug": "exam-director-ii",
+      "topicId": "leadership-and-communication",
+      "topicLabel": "Leadership and communication",
+      "questionText": "To improve leadership and communication in an education setting, which principle should guide the decision?",
+      "options": [
+        "Using a structured meeting agenda, decisions and action log",
+        "Recording opinions but no decisions",
+        "Meeting without purpose or follow-up",
+        "Keeping actions ownerless"
+      ],
+      "optionIds": [
+        "exam-director-ii-q020-opt-A",
+        "exam-director-ii-q020-opt-B",
+        "exam-director-ii-q020-opt-C",
+        "exam-director-ii-q020-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-director-ii-q020-opt-A",
+      "explanation": "\"Using a structured meeting agenda, decisions and action log\" is the most appropriate choice for this practice item on Leadership and communication. It aligns with defensible professional judgement in leadership and communication. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 150,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q021",
+      "courseSlug": "exam-director-ii",
+      "topicId": "leadership-and-communication",
+      "topicLabel": "Leadership and communication",
+      "questionText": "When the main objective is staff need to understand a change, which approach should be preferred?",
+      "options": [
+        "Ignoring questions from affected staff",
+        "Announcing a change without purpose or support",
+        "Using rumours to gain compliance",
+        "Communicating the rationale, expected effects and support for a change"
+      ],
+      "optionIds": [
+        "exam-director-ii-q021-opt-A",
+        "exam-director-ii-q021-opt-B",
+        "exam-director-ii-q021-opt-C",
+        "exam-director-ii-q021-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-director-ii-q021-opt-D",
+      "explanation": "\"Communicating the rationale, expected effects and support for a change\" is the most appropriate choice for this practice item on Leadership and communication. It aligns with defensible professional judgement in leadership and communication. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 436,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q022",
+      "courseSlug": "exam-director-ii",
+      "topicId": "leadership-and-communication",
+      "topicLabel": "Leadership and communication",
+      "questionText": "Which principle is most directly described by the following practice: communicating the rationale, expected effects and support for a change?",
+      "options": [
+        "Using rumours to gain compliance",
+        "Communicating the rationale, expected effects and support for a change",
+        "Announcing a change without purpose or support",
+        "Ignoring questions from affected staff"
+      ],
+      "optionIds": [
+        "exam-director-ii-q022-opt-A",
+        "exam-director-ii-q022-opt-B",
+        "exam-director-ii-q022-opt-C",
+        "exam-director-ii-q022-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-director-ii-q022-opt-B",
+      "explanation": "\"Communicating the rationale, expected effects and support for a change\" is the most appropriate choice for this practice item on Leadership and communication. It aligns with defensible professional judgement in leadership and communication. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 262,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q023",
+      "courseSlug": "exam-director-ii",
+      "topicId": "leadership-and-communication",
+      "topicLabel": "Leadership and communication",
+      "questionText": "Which principle is most directly described by the following practice: using a structured meeting agenda, decisions and action log?",
+      "options": [
+        "Keeping actions ownerless",
+        "Using a structured meeting agenda, decisions and action log",
+        "Recording opinions but no decisions",
+        "Meeting without purpose or follow-up"
+      ],
+      "optionIds": [
+        "exam-director-ii-q023-opt-A",
+        "exam-director-ii-q023-opt-B",
+        "exam-director-ii-q023-opt-C",
+        "exam-director-ii-q023-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-director-ii-q023-opt-B",
+      "explanation": "\"Using a structured meeting agenda, decisions and action log\" is the most appropriate choice for this practice item on Leadership and communication. It aligns with defensible professional judgement in leadership and communication. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 148,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q024",
+      "courseSlug": "exam-director-ii",
+      "topicId": "leadership-and-governance",
+      "topicLabel": "Leadership and governance",
+      "questionText": "If a decision must be defensible and fair in the area of leadership and governance, what should be prioritised?",
+      "options": [
+        "Escalating issues through the appropriate reporting line when required",
+        "Hiding serious risks",
+        "Bypassing safeguards for convenience",
+        "Escalating every minor matter without judgement"
+      ],
+      "optionIds": [
+        "exam-director-ii-q024-opt-A",
+        "exam-director-ii-q024-opt-B",
+        "exam-director-ii-q024-opt-C",
+        "exam-director-ii-q024-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-director-ii-q024-opt-A",
+      "explanation": "\"Escalating issues through the appropriate reporting line when required\" is the most appropriate choice for this practice item on Leadership and governance. It aligns with defensible professional judgement in leadership and governance. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 33,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q025",
+      "courseSlug": "exam-director-ii",
+      "topicId": "leadership-and-governance",
+      "topicLabel": "Leadership and governance",
+      "questionText": "To improve leadership and governance in an education setting, which principle should guide the decision?",
+      "options": [
+        "Spending without monitoring outcomes",
+        "Service delivery that is equitable, efficient and accountable",
+        "Ignoring underserved groups",
+        "Prioritising appearance over results"
+      ],
+      "optionIds": [
+        "exam-director-ii-q025-opt-A",
+        "exam-director-ii-q025-opt-B",
+        "exam-director-ii-q025-opt-C",
+        "exam-director-ii-q025-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-director-ii-q025-opt-B",
+      "explanation": "\"Service delivery that is equitable, efficient and accountable\" is the most appropriate choice for this practice item on Leadership and governance. It aligns with defensible professional judgement in leadership and governance. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 79,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q026",
+      "courseSlug": "exam-director-ii",
+      "topicId": "leadership-and-governance",
+      "topicLabel": "Leadership and governance",
+      "questionText": "When the main objective is responsibilities between institutions need clarification, which approach should be preferred?",
+      "options": [
+        "Decisions grounded in current, authoritative policy and law",
+        "Ignoring the date and scope of a policy",
+        "Treating social media claims as legislation",
+        "Relying solely on an old unofficial note"
+      ],
+      "optionIds": [
+        "exam-director-ii-q026-opt-A",
+        "exam-director-ii-q026-opt-B",
+        "exam-director-ii-q026-opt-C",
+        "exam-director-ii-q026-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-director-ii-q026-opt-A",
+      "explanation": "\"Decisions grounded in current, authoritative policy and law\" is the most appropriate choice for this practice item on Leadership and governance. It aligns with defensible professional judgement in leadership and governance. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 126,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q027",
+      "courseSlug": "exam-director-ii",
+      "topicId": "leadership-and-governance",
+      "topicLabel": "Leadership and governance",
+      "questionText": "Which principle is most directly described by the following practice: a clear separation between policy direction and implementation responsibilities?",
+      "options": [
+        "Replacing formal mandates with custom",
+        "Assuming every agency has identical legal functions",
+        "A clear separation between policy direction and implementation responsibilities",
+        "Making authority decisions without checking the law"
+      ],
+      "optionIds": [
+        "exam-director-ii-q027-opt-A",
+        "exam-director-ii-q027-opt-B",
+        "exam-director-ii-q027-opt-C",
+        "exam-director-ii-q027-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-director-ii-q027-opt-C",
+      "explanation": "\"A clear separation between policy direction and implementation responsibilities\" is the most appropriate choice for this practice item on Leadership and governance. It aligns with defensible professional judgement in leadership and governance. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 196,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q028",
+      "courseSlug": "exam-director-ii",
+      "topicId": "leadership-and-governance",
+      "topicLabel": "Leadership and governance",
+      "questionText": "Which principle is most directly described by the following practice: decisions grounded in current, authoritative policy and law?",
+      "options": [
+        "Ignoring the date and scope of a policy",
+        "Decisions grounded in current, authoritative policy and law",
+        "Treating social media claims as legislation",
+        "Relying solely on an old unofficial note"
+      ],
+      "optionIds": [
+        "exam-director-ii-q028-opt-A",
+        "exam-director-ii-q028-opt-B",
+        "exam-director-ii-q028-opt-C",
+        "exam-director-ii-q028-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-director-ii-q028-opt-B",
+      "explanation": "\"Decisions grounded in current, authoritative policy and law\" is the most appropriate choice for this practice item on Leadership and governance. It aligns with defensible professional judgement in leadership and governance. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 390,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q029",
+      "courseSlug": "exam-director-ii",
+      "topicId": "leadership-and-governance",
+      "topicLabel": "Leadership and governance",
+      "questionText": "Which principle is most directly described by the following practice: escalating issues through the appropriate reporting line when required?",
+      "options": [
+        "Escalating issues through the appropriate reporting line when required",
+        "Hiding serious risks",
+        "Escalating every minor matter without judgement",
+        "Bypassing safeguards for convenience"
+      ],
+      "optionIds": [
+        "exam-director-ii-q029-opt-A",
+        "exam-director-ii-q029-opt-B",
+        "exam-director-ii-q029-opt-C",
+        "exam-director-ii-q029-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-director-ii-q029-opt-A",
+      "explanation": "\"Escalating issues through the appropriate reporting line when required\" is the most appropriate choice for this practice item on Leadership and governance. It aligns with defensible professional judgement in leadership and governance. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 158,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q030",
+      "courseSlug": "exam-director-ii",
+      "topicId": "leadership-and-governance",
+      "topicLabel": "Leadership and governance",
+      "questionText": "Which principle is most directly described by the following practice: service delivery that is equitable, efficient and accountable?",
+      "options": [
+        "Prioritising appearance over results",
+        "Service delivery that is equitable, efficient and accountable",
+        "Ignoring underserved groups",
+        "Spending without monitoring outcomes"
+      ],
+      "optionIds": [
+        "exam-director-ii-q030-opt-A",
+        "exam-director-ii-q030-opt-B",
+        "exam-director-ii-q030-opt-C",
+        "exam-director-ii-q030-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-director-ii-q030-opt-B",
+      "explanation": "\"Service delivery that is equitable, efficient and accountable\" is the most appropriate choice for this practice item on Leadership and governance. It aligns with defensible professional judgement in leadership and governance. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 236,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q031",
+      "courseSlug": "exam-director-ii",
+      "topicId": "organisational-culture",
+      "topicLabel": "Organisational culture",
+      "questionText": "When the main objective is staff norms influence performance, which approach should be preferred?",
+      "options": [
+        "No opportunity to raise concerns",
+        "Fear as the only basis for compliance",
+        "Psychological safety with clear standards and accountability",
+        "Confusing respect with absence of standards"
+      ],
+      "optionIds": [
+        "exam-director-ii-q031-opt-A",
+        "exam-director-ii-q031-opt-B",
+        "exam-director-ii-q031-opt-C",
+        "exam-director-ii-q031-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-director-ii-q031-opt-C",
+      "explanation": "\"Psychological safety with clear standards and accountability\" is the most appropriate choice for this practice item on Organisational culture. It aligns with defensible professional judgement in organisational culture. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 216,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q032",
+      "courseSlug": "exam-director-ii",
+      "topicId": "organisational-culture",
+      "topicLabel": "Organisational culture",
+      "questionText": "Which principle is most directly described by the following practice: psychological safety with clear standards and accountability?",
+      "options": [
+        "Confusing respect with absence of standards",
+        "Fear as the only basis for compliance",
+        "No opportunity to raise concerns",
+        "Psychological safety with clear standards and accountability"
+      ],
+      "optionIds": [
+        "exam-director-ii-q032-opt-A",
+        "exam-director-ii-q032-opt-B",
+        "exam-director-ii-q032-opt-C",
+        "exam-director-ii-q032-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-director-ii-q032-opt-D",
+      "explanation": "\"Psychological safety with clear standards and accountability\" is the most appropriate choice for this practice item on Organisational culture. It aligns with defensible professional judgement in organisational culture. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 116,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q033",
+      "courseSlug": "exam-director-ii",
+      "topicId": "planning-and-evaluation",
+      "topicLabel": "Planning and evaluation",
+      "questionText": "If a decision must be defensible and fair in the area of planning and evaluation, what should be prioritised?",
+      "options": [
+        "Ignoring intended beneficiaries",
+        "Counting workshops as proof of impact",
+        "Measuring only money spent",
+        "Evaluating outcomes as well as activities"
+      ],
+      "optionIds": [
+        "exam-director-ii-q033-opt-A",
+        "exam-director-ii-q033-opt-B",
+        "exam-director-ii-q033-opt-C",
+        "exam-director-ii-q033-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-director-ii-q033-opt-D",
+      "explanation": "\"Evaluating outcomes as well as activities\" is the most appropriate choice for this practice item on Planning and evaluation. It aligns with defensible professional judgement in planning and evaluation. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 88,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q034",
+      "courseSlug": "exam-director-ii",
+      "topicId": "planning-and-evaluation",
+      "topicLabel": "Planning and evaluation",
+      "questionText": "To improve planning and evaluation in an education setting, which principle should guide the decision?",
+      "options": [
+        "Evaluating outcomes as well as activities",
+        "Ignoring intended beneficiaries",
+        "Measuring only money spent",
+        "Counting workshops as proof of impact"
+      ],
+      "optionIds": [
+        "exam-director-ii-q034-opt-A",
+        "exam-director-ii-q034-opt-B",
+        "exam-director-ii-q034-opt-C",
+        "exam-director-ii-q034-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-director-ii-q034-opt-A",
+      "explanation": "\"Evaluating outcomes as well as activities\" is the most appropriate choice for this practice item on Planning and evaluation. It aligns with defensible professional judgement in planning and evaluation. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 352,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q035",
+      "courseSlug": "exam-director-ii",
+      "topicId": "planning-and-evaluation",
+      "topicLabel": "Planning and evaluation",
+      "questionText": "When the main objective is a programme's progress must be checked, which approach should be preferred?",
+      "options": [
+        "Ignoring intended beneficiaries",
+        "Measuring only money spent",
+        "Evaluating outcomes as well as activities",
+        "Counting workshops as proof of impact"
+      ],
+      "optionIds": [
+        "exam-director-ii-q035-opt-A",
+        "exam-director-ii-q035-opt-B",
+        "exam-director-ii-q035-opt-C",
+        "exam-director-ii-q035-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-director-ii-q035-opt-C",
+      "explanation": "\"Evaluating outcomes as well as activities\" is the most appropriate choice for this practice item on Planning and evaluation. It aligns with defensible professional judgement in planning and evaluation. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 311,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q036",
+      "courseSlug": "exam-director-ii",
+      "topicId": "planning-and-evaluation",
+      "topicLabel": "Planning and evaluation",
+      "questionText": "Which principle is most directly described by the following practice: continuous improvement informed by evidence and reflection?",
+      "options": [
+        "Avoiding feedback",
+        "Repeating the same approach despite evidence of failure",
+        "Making changes without checking results",
+        "Continuous improvement informed by evidence and reflection"
+      ],
+      "optionIds": [
+        "exam-director-ii-q036-opt-A",
+        "exam-director-ii-q036-opt-B",
+        "exam-director-ii-q036-opt-C",
+        "exam-director-ii-q036-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-director-ii-q036-opt-D",
+      "explanation": "\"Continuous improvement informed by evidence and reflection\" is the most appropriate choice for this practice item on Planning and evaluation. It aligns with defensible professional judgement in planning and evaluation. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 257,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q037",
+      "courseSlug": "exam-director-ii",
+      "topicId": "planning-and-evaluation",
+      "topicLabel": "Planning and evaluation",
+      "questionText": "Which principle is most directly described by the following practice: evaluating outcomes as well as activities?",
+      "options": [
+        "Ignoring intended beneficiaries",
+        "Evaluating outcomes as well as activities",
+        "Measuring only money spent",
+        "Counting workshops as proof of impact"
+      ],
+      "optionIds": [
+        "exam-director-ii-q037-opt-A",
+        "exam-director-ii-q037-opt-B",
+        "exam-director-ii-q037-opt-C",
+        "exam-director-ii-q037-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-director-ii-q037-opt-B",
+      "explanation": "\"Evaluating outcomes as well as activities\" is the most appropriate choice for this practice item on Planning and evaluation. It aligns with defensible professional judgement in planning and evaluation. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 351,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q038",
+      "courseSlug": "exam-director-ii",
+      "topicId": "planning-and-evaluation",
+      "topicLabel": "Planning and evaluation",
+      "questionText": "Which principle is most directly described by the following practice: risk assessment with mitigation, ownership and review?",
+      "options": [
+        "Assuming a plan eliminates all uncertainty",
+        "Listing risks without actions",
+        "Risk assessment with mitigation, ownership and review",
+        "Ignoring foreseeable risks"
+      ],
+      "optionIds": [
+        "exam-director-ii-q038-opt-A",
+        "exam-director-ii-q038-opt-B",
+        "exam-director-ii-q038-opt-C",
+        "exam-director-ii-q038-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-director-ii-q038-opt-C",
+      "explanation": "\"Risk assessment with mitigation, ownership and review\" is the most appropriate choice for this practice item on Planning and evaluation. It aligns with defensible professional judgement in planning and evaluation. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 233,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q039",
+      "courseSlug": "exam-director-ii",
+      "topicId": "planning-and-evaluation",
+      "topicLabel": "Planning and evaluation",
+      "questionText": "Which principle is most directly described by the following practice: smart objectives that are specific, measurable, achievable, relevant and time-bound?",
+      "options": [
+        "Targets with no time frame",
+        "Broad aspirations without measures",
+        "SMART objectives that are specific, measurable, achievable, relevant and time-bound",
+        "Objectives unrelated to the mission"
+      ],
+      "optionIds": [
+        "exam-director-ii-q039-opt-A",
+        "exam-director-ii-q039-opt-B",
+        "exam-director-ii-q039-opt-C",
+        "exam-director-ii-q039-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-director-ii-q039-opt-C",
+      "explanation": "\"SMART objectives that are specific, measurable, achievable, relevant and time-bound\" is the most appropriate choice for this practice item on Planning and evaluation. It aligns with defensible professional judgement in planning and evaluation. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 188,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q040",
+      "courseSlug": "exam-director-ii",
+      "topicId": "public-administration-and-ethics",
+      "topicLabel": "Public administration and ethics",
+      "questionText": "Which principle is most directly described by the following practice: confidential handling of personal information?",
+      "options": [
+        "Confidential handling of personal information",
+        "Sharing records with unauthorised people",
+        "Keeping no access controls",
+        "Publishing sensitive details for convenience"
+      ],
+      "optionIds": [
+        "exam-director-ii-q040-opt-A",
+        "exam-director-ii-q040-opt-B",
+        "exam-director-ii-q040-opt-C",
+        "exam-director-ii-q040-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-director-ii-q040-opt-A",
+      "explanation": "\"Confidential handling of personal information\" is the most appropriate choice for this practice item on Public administration and ethics. It aligns with defensible professional judgement in public administration and ethics. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 121,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q041",
+      "courseSlug": "exam-director-ii",
+      "topicId": "resource-management",
+      "topicLabel": "Resource management",
+      "questionText": "When the main objective is grant spending must be accounted for, which approach should be preferred?",
+      "options": [
+        "Budgeting aligned with approved priorities and available funds",
+        "Ignoring expenditure limits",
+        "Spending first and planning later",
+        "Allocating funds without objectives"
+      ],
+      "optionIds": [
+        "exam-director-ii-q041-opt-A",
+        "exam-director-ii-q041-opt-B",
+        "exam-director-ii-q041-opt-C",
+        "exam-director-ii-q041-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-director-ii-q041-opt-A",
+      "explanation": "\"Budgeting aligned with approved priorities and available funds\" is the most appropriate choice for this practice item on Resource management. It aligns with defensible professional judgement in resource management. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 145,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q042",
+      "courseSlug": "exam-director-ii",
+      "topicId": "resource-stewardship",
+      "topicLabel": "Resource stewardship",
+      "questionText": "To improve resource stewardship in an education setting, which principle should guide the decision?",
+      "options": [
+        "Comparing cost, quality, need and sustainability in resource decisions",
+        "Ignoring lifecycle costs",
+        "Choosing by personal preference",
+        "Choosing the cheapest option in every case"
+      ],
+      "optionIds": [
+        "exam-director-ii-q042-opt-A",
+        "exam-director-ii-q042-opt-B",
+        "exam-director-ii-q042-opt-C",
+        "exam-director-ii-q042-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-director-ii-q042-opt-A",
+      "explanation": "\"Comparing cost, quality, need and sustainability in resource decisions\" is the most appropriate choice for this practice item on Resource stewardship. It aligns with defensible professional judgement in resource stewardship. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 346,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q043",
+      "courseSlug": "exam-director-ii",
+      "topicId": "resource-stewardship",
+      "topicLabel": "Resource stewardship",
+      "questionText": "Which principle is most directly described by the following practice: comparing cost, quality, need and sustainability in resource decisions?",
+      "options": [
+        "Ignoring lifecycle costs",
+        "Choosing by personal preference",
+        "Comparing cost, quality, need and sustainability in resource decisions",
+        "Choosing the cheapest option in every case"
+      ],
+      "optionIds": [
+        "exam-director-ii-q043-opt-A",
+        "exam-director-ii-q043-opt-B",
+        "exam-director-ii-q043-opt-C",
+        "exam-director-ii-q043-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-director-ii-q043-opt-C",
+      "explanation": "\"Comparing cost, quality, need and sustainability in resource decisions\" is the most appropriate choice for this practice item on Resource stewardship. It aligns with defensible professional judgement in resource stewardship. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 496,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q044",
+      "courseSlug": "exam-director-ii",
+      "topicId": "risk-and-compliance",
+      "topicLabel": "Risk and compliance",
+      "questionText": "If a decision must be defensible and fair in the area of risk and compliance, what should be prioritised?",
+      "options": [
+        "Proportionate action based on severity, likelihood and applicable rules",
+        "Treating every risk as identical",
+        "Ignoring high-impact low-frequency risks",
+        "Using severity alone without context"
+      ],
+      "optionIds": [
+        "exam-director-ii-q044-opt-A",
+        "exam-director-ii-q044-opt-B",
+        "exam-director-ii-q044-opt-C",
+        "exam-director-ii-q044-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-director-ii-q044-opt-A",
+      "explanation": "\"Proportionate action based on severity, likelihood and applicable rules\" is the most appropriate choice for this practice item on Risk and compliance. It aligns with defensible professional judgement in risk and compliance. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 385,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q045",
+      "courseSlug": "exam-director-ii",
+      "topicId": "stakeholder-engagement",
+      "topicLabel": "Stakeholder engagement",
+      "questionText": "If a decision must be defensible and fair in the area of stakeholder engagement, what should be prioritised?",
+      "options": [
+        "Excluding directly affected groups",
+        "Inviting everyone to every decision regardless of purpose",
+        "Mapping stakeholders by role, interest and appropriate involvement",
+        "Assuming one representative speaks for all"
+      ],
+      "optionIds": [
+        "exam-director-ii-q045-opt-A",
+        "exam-director-ii-q045-opt-B",
+        "exam-director-ii-q045-opt-C",
+        "exam-director-ii-q045-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-director-ii-q045-opt-C",
+      "explanation": "\"Mapping stakeholders by role, interest and appropriate involvement\" is the most appropriate choice for this practice item on Stakeholder engagement. It aligns with defensible professional judgement in stakeholder engagement. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 369,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q046",
+      "courseSlug": "exam-director-ii",
+      "topicId": "stakeholder-engagement",
+      "topicLabel": "Stakeholder engagement",
+      "questionText": "When the main objective is stakeholders have different interests, which approach should be preferred?",
+      "options": [
+        "Collecting views without responding",
+        "Closing the feedback loop by communicating decisions and next steps",
+        "Promising outcomes beyond authority",
+        "Ignoring recurring concerns"
+      ],
+      "optionIds": [
+        "exam-director-ii-q046-opt-A",
+        "exam-director-ii-q046-opt-B",
+        "exam-director-ii-q046-opt-C",
+        "exam-director-ii-q046-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-director-ii-q046-opt-B",
+      "explanation": "\"Closing the feedback loop by communicating decisions and next steps\" is the most appropriate choice for this practice item on Stakeholder engagement. It aligns with defensible professional judgement in stakeholder engagement. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 493,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-ii-q047",
+      "courseSlug": "exam-director-ii",
+      "topicId": "statistics-and-reporting",
+      "topicLabel": "Statistics and reporting",
+      "questionText": "If a decision must be defensible and fair in the area of statistics and reporting, what should be prioritised?",
+      "options": [
+        "Reporting a percentage without explaining its base",
+        "Reporting the denominator alongside a percentage where useful",
+        "Changing the denominator to improve appearance",
+        "Comparing unlike groups without context"
+      ],
+      "optionIds": [
+        "exam-director-ii-q047-opt-A",
+        "exam-director-ii-q047-opt-B",
+        "exam-director-ii-q047-opt-C",
+        "exam-director-ii-q047-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-director-ii-q047-opt-B",
+      "explanation": "\"Reporting the denominator alongside a percentage where useful\" is the most appropriate choice for this practice item on Statistics and reporting. It aligns with defensible professional judgement in statistics and reporting. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
+      "sourceQuestionNumber": 148,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    }
+  ]
+}

@@ -16,6 +16,8 @@ import {
   EXAM_PRACTICE_CENTRE_TAGLINE,
   EXAM_PRACTICE_CENTRE_TITLE,
   EXAM_PRACTICE_DESTINATIONS,
+  PROMOTION_RANK_BANKS_TOTAL,
+  PROMOTION_RANK_BANK_SUMMARIES,
   TEACHER_PROMOTION_BANK_SUMMARY,
   TEACHER_PROMOTION_LEVEL_LABELS,
   TEACHER_PROMOTION_SOURCE_INVENTORY,
@@ -486,20 +488,65 @@ function TeacherPromotionCentreCard() {
         </p>
       </article>
 
-      <div className="exam-landing-card">
+      <div className="exam-landing-card" data-testid="promotion-rank-banks">
         <div className="flex items-center gap-2">
           <BookOpen className="h-4 w-4 text-[#14532D]" aria-hidden />
           <p className="text-xs font-bold uppercase tracking-wide text-[#14532D]">
-            Promotion levels
+            Rank practice banks
           </p>
         </div>
-        <ul className="mt-2 flex flex-wrap gap-2">
+        <p className="mt-2 text-sm text-slate-600">
+          Five separate banks for AD II through Director I. Published practice items:{" "}
+          {PROMOTION_RANK_BANKS_TOTAL.published} of {PROMOTION_RANK_BANKS_TOTAL.target} target —
+          gaps are backlog, not filled with duplicates. All items await human verification.
+        </p>
+        <ul className="mt-3 space-y-3">
+          {PROMOTION_RANK_BANK_SUMMARIES.map((bank) => (
+            <li
+              key={bank.id}
+              className="rounded-xl border border-[#BBF7D0] bg-[#F0FDF4] px-3 py-3"
+              data-testid={`promotion-rank-${bank.id}`}
+            >
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <h4 className="text-sm font-bold text-[#14532D]">{bank.shortLabel}</h4>
+                <span className="text-xs font-semibold text-[#166534]">
+                  {bank.publishedCount} published · gap {bank.gapToTarget}
+                </span>
+              </div>
+              <p className="mt-1 text-xs text-slate-600">{bank.focus}</p>
+              {bank.available ? (
+                <div className="mt-2 flex flex-col gap-1.5 sm:flex-row sm:flex-wrap">
+                  <Link href={bank.practiceHref} className="exam-landing-cta !py-2 !text-xs">
+                    <Play className="h-3.5 w-3.5 fill-current" aria-hidden />
+                    Free practice
+                  </Link>
+                  <Link
+                    href={bank.fullHref}
+                    className="exam-landing-cta exam-landing-cta--ghost !py-2 !text-xs"
+                  >
+                    Full pack (entitlement)
+                  </Link>
+                  <Link
+                    href={bank.courseHref}
+                    className="exam-landing-cta exam-landing-cta--ghost !py-2 !text-xs"
+                  >
+                    Enrol
+                  </Link>
+                </div>
+              ) : (
+                <p className="mt-2 text-xs text-slate-500">Bank not published yet.</p>
+              )}
+            </li>
+          ))}
+        </ul>
+        <ul className="mt-3 flex flex-wrap gap-2 border-t border-slate-100 pt-3">
           {TEACHER_PROMOTION_LEVEL_LABELS.map((level) => (
             <li
               key={level.id}
               className="rounded-full border border-[#BBF7D0] bg-[#ECFDF5] px-3 py-1.5 text-xs font-semibold text-[#14532D]"
             >
               {level.label}
+              {!level.courseSlug ? " (coming later)" : ""}
             </li>
           ))}
         </ul>

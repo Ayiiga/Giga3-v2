@@ -1,0 +1,2396 @@
+{
+  "bankId": "ad-ii",
+  "courseSlug": "exam-ad-ii",
+  "title": "GES Assistant Director II Promotion Practice",
+  "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+  "provenanceNote": "Original GigaLearn practice bank adapted from uploaded study PDFs. Not an official Ghana Education Service examination paper. Items are awaiting human verification against authoritative sources.",
+  "questions": [
+    {
+      "questionId": "exam-ad-ii-q001",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "educational-assessment",
+      "topicLabel": "Educational assessment",
+      "questionText": "When interpreting a test score, which approach should be preferred?",
+      "options": [
+        "Reliability",
+        "Validity",
+        "Speed of marking",
+        "Fairness alone"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q001-opt-A",
+        "exam-ad-ii-q001-opt-B",
+        "exam-ad-ii-q001-opt-C",
+        "exam-ad-ii-q001-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-ii-q001-opt-A",
+      "explanation": "\"Reliability\" is the most appropriate choice for this practice item on Educational assessment. It aligns with defensible professional judgement in educational assessment. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 1,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "stem_rewritten",
+        "free_tier"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q002",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "learner-wellbeing",
+      "topicLabel": "Learner wellbeing",
+      "questionText": "When a safeguarding concern is raised, which approach should be preferred?",
+      "options": [
+        "Sharing identifying details casually",
+        "Ignoring warning signs",
+        "Investigating alone beyond one's role",
+        "Following safeguarding procedures and acting promptly on credible concerns"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q002-opt-A",
+        "exam-ad-ii-q002-opt-B",
+        "exam-ad-ii-q002-opt-C",
+        "exam-ad-ii-q002-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-ad-ii-q002-opt-D",
+      "explanation": "\"Following safeguarding procedures and acting promptly on credible concerns\" is the most appropriate choice for this practice item on Learner wellbeing. It aligns with defensible professional judgement in learner wellbeing. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 25,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "stem_rewritten",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q003",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "numerical-reasoning",
+      "topicLabel": "Numerical reasoning",
+      "questionText": "When a percentage or summary statistic is reported, which approach should be preferred?",
+      "options": [
+        "The maximum value",
+        "The median is the middle ordered value",
+        "The most frequent value only",
+        "The sum divided by the count"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q003-opt-A",
+        "exam-ad-ii-q003-opt-B",
+        "exam-ad-ii-q003-opt-C",
+        "exam-ad-ii-q003-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-ad-ii-q003-opt-B",
+      "explanation": "\"The median is the middle ordered value\" is the most appropriate choice for this practice item on Numerical reasoning. It aligns with defensible professional judgement in numerical reasoning. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 26,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "stem_rewritten",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q004",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "teaching-and-learning",
+      "topicLabel": "Teaching and learning",
+      "questionText": "When learners show different levels of understanding, which approach should be preferred?",
+      "options": [
+        "Passive copying throughout the lesson",
+        "Teacher talk without learner response",
+        "Assessment without instruction",
+        "Active learning"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q004-opt-A",
+        "exam-ad-ii-q004-opt-B",
+        "exam-ad-ii-q004-opt-C",
+        "exam-ad-ii-q004-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-ad-ii-q004-opt-D",
+      "explanation": "\"Active learning\" is the most appropriate choice for this practice item on Teaching and learning. It aligns with defensible professional judgement in teaching and learning. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 86,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "stem_rewritten",
+        "free_tier"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q005",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "curriculum",
+      "topicLabel": "Curriculum",
+      "questionText": "If a decision must be defensible and fair in the area of curriculum, what should be prioritised?",
+      "options": [
+        "Following a plan despite clear failure",
+        "Ignoring learning evidence",
+        "Curriculum implementation informed by learner evidence",
+        "Replacing the curriculum with personal preference"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q005-opt-A",
+        "exam-ad-ii-q005-opt-B",
+        "exam-ad-ii-q005-opt-C",
+        "exam-ad-ii-q005-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-ad-ii-q005-opt-C",
+      "explanation": "\"Curriculum implementation informed by learner evidence\" is the most appropriate choice for this practice item on Curriculum. It aligns with defensible professional judgement in curriculum. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 246,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q006",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "curriculum",
+      "topicLabel": "Curriculum",
+      "questionText": "To improve curriculum in an education setting, which principle should guide the decision?",
+      "options": [
+        "Teaching only the easiest content",
+        "Changing objectives after marking",
+        "Alignment among objectives, instruction and assessment",
+        "Assessment unrelated to objectives"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q006-opt-A",
+        "exam-ad-ii-q006-opt-B",
+        "exam-ad-ii-q006-opt-C",
+        "exam-ad-ii-q006-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-ad-ii-q006-opt-C",
+      "explanation": "\"Alignment among objectives, instruction and assessment\" is the most appropriate choice for this practice item on Curriculum. It aligns with defensible professional judgement in curriculum. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 110,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q007",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "curriculum",
+      "topicLabel": "Curriculum",
+      "questionText": "When the main objective is lesson activities do not match the objectives, which approach should be preferred?",
+      "options": [
+        "Following a plan despite clear failure",
+        "Replacing the curriculum with personal preference",
+        "Curriculum implementation informed by learner evidence",
+        "Ignoring learning evidence"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q007-opt-A",
+        "exam-ad-ii-q007-opt-B",
+        "exam-ad-ii-q007-opt-C",
+        "exam-ad-ii-q007-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-ad-ii-q007-opt-C",
+      "explanation": "\"Curriculum implementation informed by learner evidence\" is the most appropriate choice for this practice item on Curriculum. It aligns with defensible professional judgement in curriculum. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 75,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q008",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "curriculum",
+      "topicLabel": "Curriculum",
+      "questionText": "Which principle is most directly described by the following practice: a scheme of learning that sequences content over time?",
+      "options": [
+        "A record of staff attendance",
+        "A list of punishments",
+        "A school inventory",
+        "A scheme of learning that sequences content over time"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q008-opt-A",
+        "exam-ad-ii-q008-opt-B",
+        "exam-ad-ii-q008-opt-C",
+        "exam-ad-ii-q008-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-ad-ii-q008-opt-D",
+      "explanation": "\"A scheme of learning that sequences content over time\" is the most appropriate choice for this practice item on Curriculum. It aligns with defensible professional judgement in curriculum. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 381,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q009",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "curriculum",
+      "topicLabel": "Curriculum",
+      "questionText": "Which principle is most directly described by the following practice: alignment among objectives, instruction and assessment?",
+      "options": [
+        "Assessment unrelated to objectives",
+        "Teaching only the easiest content",
+        "Changing objectives after marking",
+        "Alignment among objectives, instruction and assessment"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q009-opt-A",
+        "exam-ad-ii-q009-opt-B",
+        "exam-ad-ii-q009-opt-C",
+        "exam-ad-ii-q009-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-ad-ii-q009-opt-D",
+      "explanation": "\"Alignment among objectives, instruction and assessment\" is the most appropriate choice for this practice item on Curriculum. It aligns with defensible professional judgement in curriculum. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 403,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q010",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "curriculum",
+      "topicLabel": "Curriculum",
+      "questionText": "Which principle is most directly described by the following practice: curriculum implementation informed by learner evidence?",
+      "options": [
+        "Replacing the curriculum with personal preference",
+        "Curriculum implementation informed by learner evidence",
+        "Following a plan despite clear failure",
+        "Ignoring learning evidence"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q010-opt-A",
+        "exam-ad-ii-q010-opt-B",
+        "exam-ad-ii-q010-opt-C",
+        "exam-ad-ii-q010-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-ad-ii-q010-opt-B",
+      "explanation": "\"Curriculum implementation informed by learner evidence\" is the most appropriate choice for this practice item on Curriculum. It aligns with defensible professional judgement in curriculum. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 223,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q011",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "curriculum",
+      "topicLabel": "Curriculum",
+      "questionText": "Which principle is most directly described by the following practice: lesson planning based on intended outcomes and learner needs?",
+      "options": [
+        "Activities selected without objectives",
+        "A lesson plan copied without adaptation",
+        "Lesson planning based on intended outcomes and learner needs",
+        "A plan that ignores time and resources"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q011-opt-A",
+        "exam-ad-ii-q011-opt-B",
+        "exam-ad-ii-q011-opt-C",
+        "exam-ad-ii-q011-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-ad-ii-q011-opt-C",
+      "explanation": "\"Lesson planning based on intended outcomes and learner needs\" is the most appropriate choice for this practice item on Curriculum. It aligns with defensible professional judgement in curriculum. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 235,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q012",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "curriculum",
+      "topicLabel": "Curriculum",
+      "questionText": "Which principle is most directly described by the following practice: reviewing curriculum impact using evidence?",
+      "options": [
+        "Changing content because of one rumour",
+        "Avoiding evaluation",
+        "Measuring success only by textbook quantity",
+        "Reviewing curriculum impact using evidence"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q012-opt-A",
+        "exam-ad-ii-q012-opt-B",
+        "exam-ad-ii-q012-opt-C",
+        "exam-ad-ii-q012-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-ad-ii-q012-opt-D",
+      "explanation": "\"Reviewing curriculum impact using evidence\" is the most appropriate choice for this practice item on Curriculum. It aligns with defensible professional judgement in curriculum. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 378,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q013",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "digital-and-information-literacy",
+      "topicLabel": "Digital and information literacy",
+      "questionText": "To improve digital and information literacy in an education setting, which principle should guide the decision?",
+      "options": [
+        "Sharing every file publicly",
+        "Deleting records without a retention policy",
+        "Keeping backups and controlling access to important records",
+        "One unprotected copy on one device"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q013-opt-A",
+        "exam-ad-ii-q013-opt-B",
+        "exam-ad-ii-q013-opt-C",
+        "exam-ad-ii-q013-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-ad-ii-q013-opt-C",
+      "explanation": "\"Keeping backups and controlling access to important records\" is the most appropriate choice for this practice item on Digital and information literacy. It aligns with defensible professional judgement in digital and information literacy. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 155,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q014",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "digital-and-information-literacy",
+      "topicLabel": "Digital and information literacy",
+      "questionText": "When the main objective is online information may be unreliable, which approach should be preferred?",
+      "options": [
+        "One unprotected copy on one device",
+        "Sharing every file publicly",
+        "Keeping backups and controlling access to important records",
+        "Deleting records without a retention policy"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q014-opt-A",
+        "exam-ad-ii-q014-opt-B",
+        "exam-ad-ii-q014-opt-C",
+        "exam-ad-ii-q014-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-ad-ii-q014-opt-C",
+      "explanation": "\"Keeping backups and controlling access to important records\" is the most appropriate choice for this practice item on Digital and information literacy. It aligns with defensible professional judgement in digital and information literacy. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 123,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q015",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "digital-and-information-literacy",
+      "topicLabel": "Digital and information literacy",
+      "questionText": "Which principle is most directly described by the following practice: keeping backups and controlling access to important records?",
+      "options": [
+        "Keeping backups and controlling access to important records",
+        "One unprotected copy on one device",
+        "Sharing every file publicly",
+        "Deleting records without a retention policy"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q015-opt-A",
+        "exam-ad-ii-q015-opt-B",
+        "exam-ad-ii-q015-opt-C",
+        "exam-ad-ii-q015-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-ii-q015-opt-A",
+      "explanation": "\"Keeping backups and controlling access to important records\" is the most appropriate choice for this practice item on Digital and information literacy. It aligns with defensible professional judgement in digital and information literacy. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 32,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q016",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "digital-and-information-literacy",
+      "topicLabel": "Digital and information literacy",
+      "questionText": "Which principle is most directly described by the following practice: strong unique passwords and multi-factor authentication where available?",
+      "options": [
+        "Reusing one simple password everywhere",
+        "Strong unique passwords and multi-factor authentication where available",
+        "Storing passwords in public documents",
+        "Sharing credentials with colleagues"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q016-opt-A",
+        "exam-ad-ii-q016-opt-B",
+        "exam-ad-ii-q016-opt-C",
+        "exam-ad-ii-q016-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-ad-ii-q016-opt-B",
+      "explanation": "\"Strong unique passwords and multi-factor authentication where available\" is the most appropriate choice for this practice item on Digital and information literacy. It aligns with defensible professional judgement in digital and information literacy. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 261,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q017",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "digital-and-information-literacy",
+      "topicLabel": "Digital and information literacy",
+      "questionText": "Which principle is most directly described by the following practice: verifying the source, date and context of online information?",
+      "options": [
+        "Treating an image as proof without context",
+        "Verifying the source, date and context of online information",
+        "Trusting a post because it is popular",
+        "Forwarding an unverified claim"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q017-opt-A",
+        "exam-ad-ii-q017-opt-B",
+        "exam-ad-ii-q017-opt-C",
+        "exam-ad-ii-q017-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-ad-ii-q017-opt-B",
+      "explanation": "\"Verifying the source, date and context of online information\" is the most appropriate choice for this practice item on Digital and information literacy. It aligns with defensible professional judgement in digital and information literacy. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 52,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q018",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "educational-assessment",
+      "topicLabel": "Educational assessment",
+      "questionText": "If a decision must be defensible and fair in the area of educational assessment, what should be prioritised?",
+      "options": [
+        "An unwritten expectation",
+        "A rule changed after marking",
+        "A clear assessment rubric",
+        "A single overall impression"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q018-opt-A",
+        "exam-ad-ii-q018-opt-B",
+        "exam-ad-ii-q018-opt-C",
+        "exam-ad-ii-q018-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-ad-ii-q018-opt-C",
+      "explanation": "\"A clear assessment rubric\" is the most appropriate choice for this practice item on Educational assessment. It aligns with defensible professional judgement in educational assessment. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 10,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q019",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "educational-assessment",
+      "topicLabel": "Educational assessment",
+      "questionText": "To improve educational assessment in an education setting, which principle should guide the decision?",
+      "options": [
+        "Informal observation only",
+        "Diagnostic screening only",
+        "Summative assessment",
+        "Formative feedback"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q019-opt-A",
+        "exam-ad-ii-q019-opt-B",
+        "exam-ad-ii-q019-opt-C",
+        "exam-ad-ii-q019-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-ad-ii-q019-opt-C",
+      "explanation": "\"Summative assessment\" is the most appropriate choice for this practice item on Educational assessment. It aligns with defensible professional judgement in educational assessment. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 130,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q020",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "educational-assessment",
+      "topicLabel": "Educational assessment",
+      "questionText": "Which principle is most directly described by the following practice: a clear assessment rubric?",
+      "options": [
+        "A single overall impression",
+        "A clear assessment rubric",
+        "An unwritten expectation",
+        "A rule changed after marking"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q020-opt-A",
+        "exam-ad-ii-q020-opt-B",
+        "exam-ad-ii-q020-opt-C",
+        "exam-ad-ii-q020-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-ad-ii-q020-opt-B",
+      "explanation": "\"A clear assessment rubric\" is the most appropriate choice for this practice item on Educational assessment. It aligns with defensible professional judgement in educational assessment. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 34,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q021",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "educational-assessment",
+      "topicLabel": "Educational assessment",
+      "questionText": "Which principle is most directly described by the following practice: constructive feedback linked to learning goals?",
+      "options": [
+        "Feedback only at year-end",
+        "Public comparison of weak learners",
+        "Praise without evidence",
+        "Constructive feedback linked to learning goals"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q021-opt-A",
+        "exam-ad-ii-q021-opt-B",
+        "exam-ad-ii-q021-opt-C",
+        "exam-ad-ii-q021-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-ad-ii-q021-opt-D",
+      "explanation": "\"Constructive feedback linked to learning goals\" is the most appropriate choice for this practice item on Educational assessment. It aligns with defensible professional judgement in educational assessment. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 238,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q022",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "educational-assessment",
+      "topicLabel": "Educational assessment",
+      "questionText": "Which principle is most directly described by the following practice: criterion-referenced assessment?",
+      "options": [
+        "Self-reflection",
+        "Peer assessment",
+        "Norm-referenced assessment",
+        "Criterion-referenced assessment"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q022-opt-A",
+        "exam-ad-ii-q022-opt-B",
+        "exam-ad-ii-q022-opt-C",
+        "exam-ad-ii-q022-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-ad-ii-q022-opt-D",
+      "explanation": "\"Criterion-referenced assessment\" is the most appropriate choice for this practice item on Educational assessment. It aligns with defensible professional judgement in educational assessment. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 303,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q023",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "educational-assessment",
+      "topicLabel": "Educational assessment",
+      "questionText": "Which principle is most directly described by the following practice: diagnostic assessment?",
+      "options": [
+        "School inspection",
+        "Summative assessment",
+        "Diagnostic assessment",
+        "Certification assessment"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q023-opt-A",
+        "exam-ad-ii-q023-opt-B",
+        "exam-ad-ii-q023-opt-C",
+        "exam-ad-ii-q023-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-ad-ii-q023-opt-C",
+      "explanation": "\"Diagnostic assessment\" is the most appropriate choice for this practice item on Educational assessment. It aligns with defensible professional judgement in educational assessment. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 417,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q024",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "educational-assessment",
+      "topicLabel": "Educational assessment",
+      "questionText": "Which principle is most directly described by the following practice: formative assessment?",
+      "options": [
+        "Formative assessment",
+        "Summative assessment",
+        "Administrative inspection",
+        "Norm-referenced ranking"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q024-opt-A",
+        "exam-ad-ii-q024-opt-B",
+        "exam-ad-ii-q024-opt-C",
+        "exam-ad-ii-q024-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-ii-q024-opt-A",
+      "explanation": "\"Formative assessment\" is the most appropriate choice for this practice item on Educational assessment. It aligns with defensible professional judgement in educational assessment. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 448,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q025",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "educational-assessment",
+      "topicLabel": "Educational assessment",
+      "questionText": "Which principle is most directly described by the following practice: summative assessment?",
+      "options": [
+        "Diagnostic screening only",
+        "Informal observation only",
+        "Summative assessment",
+        "Formative feedback"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q025-opt-A",
+        "exam-ad-ii-q025-opt-B",
+        "exam-ad-ii-q025-opt-C",
+        "exam-ad-ii-q025-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-ad-ii-q025-opt-C",
+      "explanation": "\"Summative assessment\" is the most appropriate choice for this practice item on Educational assessment. It aligns with defensible professional judgement in educational assessment. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 273,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q026",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "educational-assessment",
+      "topicLabel": "Educational assessment",
+      "questionText": "Which principle is most directly described by the following practice: triangulating evidence from different methods?",
+      "options": [
+        "Ignoring classroom evidence",
+        "Relying on one test score only",
+        "Triangulating evidence from different methods",
+        "Using attendance as the only measure"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q026-opt-A",
+        "exam-ad-ii-q026-opt-B",
+        "exam-ad-ii-q026-opt-C",
+        "exam-ad-ii-q026-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-ad-ii-q026-opt-C",
+      "explanation": "\"Triangulating evidence from different methods\" is the most appropriate choice for this practice item on Educational assessment. It aligns with defensible professional judgement in educational assessment. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 115,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q027",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "educational-assessment",
+      "topicLabel": "Educational assessment",
+      "questionText": "Which principle is most directly described by the following practice: validity?",
+      "options": [
+        "Convenience",
+        "Validity",
+        "Reliability",
+        "Popularity"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q027-opt-A",
+        "exam-ad-ii-q027-opt-B",
+        "exam-ad-ii-q027-opt-C",
+        "exam-ad-ii-q027-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-ad-ii-q027-opt-B",
+      "explanation": "\"Validity\" is the most appropriate choice for this practice item on Educational assessment. It aligns with defensible professional judgement in educational assessment. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 358,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q028",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "educational-technology",
+      "topicLabel": "Educational technology",
+      "questionText": "If a decision must be defensible and fair in the area of educational technology, what should be prioritised?",
+      "options": [
+        "Publishing without review",
+        "Assuming generated content is always correct",
+        "Ignoring age and context",
+        "Checking digital content for accuracy, bias and suitability"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q028-opt-A",
+        "exam-ad-ii-q028-opt-B",
+        "exam-ad-ii-q028-opt-C",
+        "exam-ad-ii-q028-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-ad-ii-q028-opt-D",
+      "explanation": "\"Checking digital content for accuracy, bias and suitability\" is the most appropriate choice for this practice item on Educational technology. It aligns with defensible professional judgement in educational technology. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 287,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q029",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "educational-technology",
+      "topicLabel": "Educational technology",
+      "questionText": "To improve educational technology in an education setting, which principle should guide the decision?",
+      "options": [
+        "Assuming every learner has identical connectivity",
+        "Selecting tools based on learning objectives, accessibility, privacy and cost",
+        "Sharing learner data without safeguards",
+        "Choosing the newest tool regardless of need"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q029-opt-A",
+        "exam-ad-ii-q029-opt-B",
+        "exam-ad-ii-q029-opt-C",
+        "exam-ad-ii-q029-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-ad-ii-q029-opt-B",
+      "explanation": "\"Selecting tools based on learning objectives, accessibility, privacy and cost\" is the most appropriate choice for this practice item on Educational technology. It aligns with defensible professional judgement in educational technology. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 24,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q030",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "educational-technology",
+      "topicLabel": "Educational technology",
+      "questionText": "Which principle is most directly described by the following practice: checking digital content for accuracy, bias and suitability?",
+      "options": [
+        "Checking digital content for accuracy, bias and suitability",
+        "Assuming generated content is always correct",
+        "Ignoring age and context",
+        "Publishing without review"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q030-opt-A",
+        "exam-ad-ii-q030-opt-B",
+        "exam-ad-ii-q030-opt-C",
+        "exam-ad-ii-q030-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-ii-q030-opt-A",
+      "explanation": "\"Checking digital content for accuracy, bias and suitability\" is the most appropriate choice for this practice item on Educational technology. It aligns with defensible professional judgement in educational technology. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 32,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q031",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "educational-technology",
+      "topicLabel": "Educational technology",
+      "questionText": "Which principle is most directly described by the following practice: selecting tools based on learning objectives, accessibility, privacy and cost?",
+      "options": [
+        "Selecting tools based on learning objectives, accessibility, privacy and cost",
+        "Sharing learner data without safeguards",
+        "Assuming every learner has identical connectivity",
+        "Choosing the newest tool regardless of need"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q031-opt-A",
+        "exam-ad-ii-q031-opt-B",
+        "exam-ad-ii-q031-opt-C",
+        "exam-ad-ii-q031-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-ii-q031-opt-A",
+      "explanation": "\"Selecting tools based on learning objectives, accessibility, privacy and cost\" is the most appropriate choice for this practice item on Educational technology. It aligns with defensible professional judgement in educational technology. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 370,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q032",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "inclusive-education",
+      "topicLabel": "Inclusive education",
+      "questionText": "If a decision must be defensible and fair in the area of inclusive education, what should be prioritised?",
+      "options": [
+        "Separating learners automatically",
+        "Assuming support lowers expectations",
+        "Ignoring learner voice",
+        "Removing barriers to participation while maintaining meaningful learning goals"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q032-opt-A",
+        "exam-ad-ii-q032-opt-B",
+        "exam-ad-ii-q032-opt-C",
+        "exam-ad-ii-q032-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-ad-ii-q032-opt-D",
+      "explanation": "\"Removing barriers to participation while maintaining meaningful learning goals\" is the most appropriate choice for this practice item on Inclusive education. It aligns with defensible professional judgement in inclusive education. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 382,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q033",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "inclusive-education",
+      "topicLabel": "Inclusive education",
+      "questionText": "To improve inclusive education in an education setting, which principle should guide the decision?",
+      "options": [
+        "Removing all learning objectives",
+        "Assessing only speed",
+        "Using accessible materials and flexible ways to demonstrate learning",
+        "Requiring one response format for every learner"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q033-opt-A",
+        "exam-ad-ii-q033-opt-B",
+        "exam-ad-ii-q033-opt-C",
+        "exam-ad-ii-q033-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-ad-ii-q033-opt-C",
+      "explanation": "\"Using accessible materials and flexible ways to demonstrate learning\" is the most appropriate choice for this practice item on Inclusive education. It aligns with defensible professional judgement in inclusive education. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 49,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q034",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "inclusive-education",
+      "topicLabel": "Inclusive education",
+      "questionText": "When the main objective is a learner faces a participation barrier, which approach should be preferred?",
+      "options": [
+        "Using accessible materials and flexible ways to demonstrate learning",
+        "Removing all learning objectives",
+        "Requiring one response format for every learner",
+        "Assessing only speed"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q034-opt-A",
+        "exam-ad-ii-q034-opt-B",
+        "exam-ad-ii-q034-opt-C",
+        "exam-ad-ii-q034-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-ii-q034-opt-A",
+      "explanation": "\"Using accessible materials and flexible ways to demonstrate learning\" is the most appropriate choice for this practice item on Inclusive education. It aligns with defensible professional judgement in inclusive education. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 283,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q035",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "inclusive-education",
+      "topicLabel": "Inclusive education",
+      "questionText": "Which principle is most directly described by the following practice: using accessible materials and flexible ways to demonstrate learning?",
+      "options": [
+        "Assessing only speed",
+        "Using accessible materials and flexible ways to demonstrate learning",
+        "Requiring one response format for every learner",
+        "Removing all learning objectives"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q035-opt-A",
+        "exam-ad-ii-q035-opt-B",
+        "exam-ad-ii-q035-opt-C",
+        "exam-ad-ii-q035-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-ad-ii-q035-opt-B",
+      "explanation": "\"Using accessible materials and flexible ways to demonstrate learning\" is the most appropriate choice for this practice item on Inclusive education. It aligns with defensible professional judgement in inclusive education. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 119,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q036",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "learner-wellbeing",
+      "topicLabel": "Learner wellbeing",
+      "questionText": "To improve learner wellbeing in an education setting, which principle should guide the decision?",
+      "options": [
+        "Investigating alone beyond one's role",
+        "Ignoring warning signs",
+        "Following safeguarding procedures and acting promptly on credible concerns",
+        "Sharing identifying details casually"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q036-opt-A",
+        "exam-ad-ii-q036-opt-B",
+        "exam-ad-ii-q036-opt-C",
+        "exam-ad-ii-q036-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-ad-ii-q036-opt-C",
+      "explanation": "\"Following safeguarding procedures and acting promptly on credible concerns\" is the most appropriate choice for this practice item on Learner wellbeing. It aligns with defensible professional judgement in learner wellbeing. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 239,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q037",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "learner-wellbeing",
+      "topicLabel": "Learner wellbeing",
+      "questionText": "Which principle is most directly described by the following practice: following safeguarding procedures and acting promptly on credible concerns?",
+      "options": [
+        "Following safeguarding procedures and acting promptly on credible concerns",
+        "Ignoring warning signs",
+        "Sharing identifying details casually",
+        "Investigating alone beyond one's role"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q037-opt-A",
+        "exam-ad-ii-q037-opt-B",
+        "exam-ad-ii-q037-opt-C",
+        "exam-ad-ii-q037-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-ii-q037-opt-A",
+      "explanation": "\"Following safeguarding procedures and acting promptly on credible concerns\" is the most appropriate choice for this practice item on Learner wellbeing. It aligns with defensible professional judgement in learner wellbeing. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 207,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q038",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "learner-wellbeing",
+      "topicLabel": "Learner wellbeing",
+      "questionText": "Which principle is most directly described by the following practice: using attendance, engagement and learning evidence together to identify support needs?",
+      "options": [
+        "Using attendance, engagement and learning evidence together to identify support needs",
+        "Withholding support until failure is final",
+        "Assuming low performance means low ability",
+        "Using one isolated measure as a complete diagnosis"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q038-opt-A",
+        "exam-ad-ii-q038-opt-B",
+        "exam-ad-ii-q038-opt-C",
+        "exam-ad-ii-q038-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-ii-q038-opt-A",
+      "explanation": "\"Using attendance, engagement and learning evidence together to identify support needs\" is the most appropriate choice for this practice item on Learner wellbeing. It aligns with defensible professional judgement in learner wellbeing. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 5,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q039",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "learning-and-motivation",
+      "topicLabel": "Learning and motivation",
+      "questionText": "If a decision must be defensible and fair in the area of learning and motivation, what should be prioritised?",
+      "options": [
+        "Public comparison as the main motivator",
+        "Feedback unrelated to the task",
+        "Specific feedback describing what the learner did well and what to improve",
+        "Labels about a learner's fixed ability"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q039-opt-A",
+        "exam-ad-ii-q039-opt-B",
+        "exam-ad-ii-q039-opt-C",
+        "exam-ad-ii-q039-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-ad-ii-q039-opt-C",
+      "explanation": "\"Specific feedback describing what the learner did well and what to improve\" is the most appropriate choice for this practice item on Learning and motivation. It aligns with defensible professional judgement in learning and motivation. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 165,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q040",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "learning-and-motivation",
+      "topicLabel": "Learning and motivation",
+      "questionText": "To improve learning and motivation in an education setting, which principle should guide the decision?",
+      "options": [
+        "Ignoring learner wellbeing",
+        "A safe classroom climate that supports participation",
+        "Humiliation as a teaching strategy",
+        "Threats as the only management method"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q040-opt-A",
+        "exam-ad-ii-q040-opt-B",
+        "exam-ad-ii-q040-opt-C",
+        "exam-ad-ii-q040-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-ad-ii-q040-opt-B",
+      "explanation": "\"A safe classroom climate that supports participation\" is the most appropriate choice for this practice item on Learning and motivation. It aligns with defensible professional judgement in learning and motivation. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 73,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q041",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "learning-and-motivation",
+      "topicLabel": "Learning and motivation",
+      "questionText": "When the main objective is learners need constructive guidance, which approach should be preferred?",
+      "options": [
+        "Threats as the only management method",
+        "Ignoring learner wellbeing",
+        "A safe classroom climate that supports participation",
+        "Humiliation as a teaching strategy"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q041-opt-A",
+        "exam-ad-ii-q041-opt-B",
+        "exam-ad-ii-q041-opt-C",
+        "exam-ad-ii-q041-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-ad-ii-q041-opt-C",
+      "explanation": "\"A safe classroom climate that supports participation\" is the most appropriate choice for this practice item on Learning and motivation. It aligns with defensible professional judgement in learning and motivation. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 70,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q042",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "learning-and-motivation",
+      "topicLabel": "Learning and motivation",
+      "questionText": "Which principle is most directly described by the following practice: a safe classroom climate that supports participation?",
+      "options": [
+        "Threats as the only management method",
+        "Ignoring learner wellbeing",
+        "Humiliation as a teaching strategy",
+        "A safe classroom climate that supports participation"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q042-opt-A",
+        "exam-ad-ii-q042-opt-B",
+        "exam-ad-ii-q042-opt-C",
+        "exam-ad-ii-q042-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-ad-ii-q042-opt-D",
+      "explanation": "\"A safe classroom climate that supports participation\" is the most appropriate choice for this practice item on Learning and motivation. It aligns with defensible professional judgement in learning and motivation. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 131,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q043",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "learning-and-motivation",
+      "topicLabel": "Learning and motivation",
+      "questionText": "Which principle is most directly described by the following practice: specific feedback describing what the learner did well and what to improve?",
+      "options": [
+        "Labels about a learner's fixed ability",
+        "Public comparison as the main motivator",
+        "Specific feedback describing what the learner did well and what to improve",
+        "Feedback unrelated to the task"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q043-opt-A",
+        "exam-ad-ii-q043-opt-B",
+        "exam-ad-ii-q043-opt-C",
+        "exam-ad-ii-q043-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-ad-ii-q043-opt-C",
+      "explanation": "\"Specific feedback describing what the learner did well and what to improve\" is the most appropriate choice for this practice item on Learning and motivation. It aligns with defensible professional judgement in learning and motivation. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 448,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q044",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "numerical-reasoning",
+      "topicLabel": "Numerical reasoning",
+      "questionText": "If a decision must be defensible and fair in the area of numerical reasoning, what should be prioritised?",
+      "options": [
+        "The maximum value",
+        "The median is the middle ordered value",
+        "The sum divided by the count",
+        "The most frequent value only"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q044-opt-A",
+        "exam-ad-ii-q044-opt-B",
+        "exam-ad-ii-q044-opt-C",
+        "exam-ad-ii-q044-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-ad-ii-q044-opt-B",
+      "explanation": "\"The median is the middle ordered value\" is the most appropriate choice for this practice item on Numerical reasoning. It aligns with defensible professional judgement in numerical reasoning. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 23,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q045",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "numerical-reasoning",
+      "topicLabel": "Numerical reasoning",
+      "questionText": "To improve numerical reasoning in an education setting, which principle should guide the decision?",
+      "options": [
+        "The middle value after sorting",
+        "The mean is the sum of values divided by their count",
+        "The difference between maximum and minimum",
+        "The most frequent value"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q045-opt-A",
+        "exam-ad-ii-q045-opt-B",
+        "exam-ad-ii-q045-opt-C",
+        "exam-ad-ii-q045-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-ad-ii-q045-opt-B",
+      "explanation": "\"The mean is the sum of values divided by their count\" is the most appropriate choice for this practice item on Numerical reasoning. It aligns with defensible professional judgement in numerical reasoning. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 97,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q046",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "numerical-reasoning",
+      "topicLabel": "Numerical reasoning",
+      "questionText": "Which principle is most directly described by the following practice: a rate compares quantities with their relevant units?",
+      "options": [
+        "A ranking without a measure",
+        "A total without units",
+        "A percentage with no denominator",
+        "A rate compares quantities with their relevant units"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q046-opt-A",
+        "exam-ad-ii-q046-opt-B",
+        "exam-ad-ii-q046-opt-C",
+        "exam-ad-ii-q046-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-ad-ii-q046-opt-D",
+      "explanation": "\"A rate compares quantities with their relevant units\" is the most appropriate choice for this practice item on Numerical reasoning. It aligns with defensible professional judgement in numerical reasoning. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 124,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q047",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "numerical-reasoning",
+      "topicLabel": "Numerical reasoning",
+      "questionText": "Which principle is most directly described by the following practice: the mean is the sum of values divided by their count?",
+      "options": [
+        "The mean is the sum of values divided by their count",
+        "The middle value after sorting",
+        "The most frequent value",
+        "The difference between maximum and minimum"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q047-opt-A",
+        "exam-ad-ii-q047-opt-B",
+        "exam-ad-ii-q047-opt-C",
+        "exam-ad-ii-q047-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-ii-q047-opt-A",
+      "explanation": "\"The mean is the sum of values divided by their count\" is the most appropriate choice for this practice item on Numerical reasoning. It aligns with defensible professional judgement in numerical reasoning. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 366,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q048",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "numerical-reasoning",
+      "topicLabel": "Numerical reasoning",
+      "questionText": "Which principle is most directly described by the following practice: the median is the middle ordered value?",
+      "options": [
+        "The most frequent value only",
+        "The median is the middle ordered value",
+        "The maximum value",
+        "The sum divided by the count"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q048-opt-A",
+        "exam-ad-ii-q048-opt-B",
+        "exam-ad-ii-q048-opt-C",
+        "exam-ad-ii-q048-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-ad-ii-q048-opt-B",
+      "explanation": "\"The median is the middle ordered value\" is the most appropriate choice for this practice item on Numerical reasoning. It aligns with defensible professional judgement in numerical reasoning. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 6,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q049",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "numerical-reasoning",
+      "topicLabel": "Numerical reasoning",
+      "questionText": "Which principle is most directly described by the following practice: the mode is the most frequently occurring value?",
+      "options": [
+        "The middle ordered value",
+        "The total range",
+        "The arithmetic average",
+        "The mode is the most frequently occurring value"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q049-opt-A",
+        "exam-ad-ii-q049-opt-B",
+        "exam-ad-ii-q049-opt-C",
+        "exam-ad-ii-q049-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-ad-ii-q049-opt-D",
+      "explanation": "\"The mode is the most frequently occurring value\" is the most appropriate choice for this practice item on Numerical reasoning. It aligns with defensible professional judgement in numerical reasoning. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 66,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q050",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "teaching-and-learning",
+      "topicLabel": "Teaching and learning",
+      "questionText": "If a decision must be defensible and fair in the area of teaching and learning, what should be prioritised?",
+      "options": [
+        "Learner-centred teaching",
+        "Punishment-led instruction",
+        "Memorisation without understanding",
+        "Teacher monologue for every lesson"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q050-opt-A",
+        "exam-ad-ii-q050-opt-B",
+        "exam-ad-ii-q050-opt-C",
+        "exam-ad-ii-q050-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-ii-q050-opt-A",
+      "explanation": "\"Learner-centred teaching\" is the most appropriate choice for this practice item on Teaching and learning. It aligns with defensible professional judgement in teaching and learning. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 11,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q051",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "teaching-and-learning",
+      "topicLabel": "Teaching and learning",
+      "questionText": "To improve teaching and learning in an education setting, which principle should guide the decision?",
+      "options": [
+        "Giving the complete solution every time",
+        "Removing all learner choice",
+        "Avoiding challenging tasks",
+        "Scaffolding that is gradually withdrawn"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q051-opt-A",
+        "exam-ad-ii-q051-opt-B",
+        "exam-ad-ii-q051-opt-C",
+        "exam-ad-ii-q051-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-ad-ii-q051-opt-D",
+      "explanation": "\"Scaffolding that is gradually withdrawn\" is the most appropriate choice for this practice item on Teaching and learning. It aligns with defensible professional judgement in teaching and learning. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 68,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "premium"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "premium_tier"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q052",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "teaching-and-learning",
+      "topicLabel": "Teaching and learning",
+      "questionText": "Which principle is most directly described by the following practice: active learning?",
+      "options": [
+        "Assessment without instruction",
+        "Teacher talk without learner response",
+        "Active learning",
+        "Passive copying throughout the lesson"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q052-opt-A",
+        "exam-ad-ii-q052-opt-B",
+        "exam-ad-ii-q052-opt-C",
+        "exam-ad-ii-q052-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-ad-ii-q052-opt-C",
+      "explanation": "\"Active learning\" is the most appropriate choice for this practice item on Teaching and learning. It aligns with defensible professional judgement in teaching and learning. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 162,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "premium"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "premium_tier"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q053",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "teaching-and-learning",
+      "topicLabel": "Teaching and learning",
+      "questionText": "Which principle is most directly described by the following practice: checking understanding during the lesson?",
+      "options": [
+        "Assuming silence means mastery",
+        "Using attendance as proof of learning",
+        "Checking understanding during the lesson",
+        "Waiting until the end of term"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q053-opt-A",
+        "exam-ad-ii-q053-opt-B",
+        "exam-ad-ii-q053-opt-C",
+        "exam-ad-ii-q053-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-ad-ii-q053-opt-C",
+      "explanation": "\"Checking understanding during the lesson\" is the most appropriate choice for this practice item on Teaching and learning. It aligns with defensible professional judgement in teaching and learning. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 349,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "premium"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "premium_tier"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q054",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "teaching-and-learning",
+      "topicLabel": "Teaching and learning",
+      "questionText": "Which principle is most directly described by the following practice: clear, measurable learning objectives?",
+      "options": [
+        "Clear, measurable learning objectives",
+        "A list of classroom decorations",
+        "Objectives written after assessment",
+        "Vague intentions without success criteria"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q054-opt-A",
+        "exam-ad-ii-q054-opt-B",
+        "exam-ad-ii-q054-opt-C",
+        "exam-ad-ii-q054-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-ii-q054-opt-A",
+      "explanation": "\"Clear, measurable learning objectives\" is the most appropriate choice for this practice item on Teaching and learning. It aligns with defensible professional judgement in teaching and learning. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 467,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "premium"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "premium_tier"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q055",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "teaching-and-learning",
+      "topicLabel": "Teaching and learning",
+      "questionText": "Which principle is most directly described by the following practice: collaborative learning with individual accountability?",
+      "options": [
+        "Group work with no feedback",
+        "Groups formed without a learning purpose",
+        "Collaborative learning with individual accountability",
+        "One learner doing all group work"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q055-opt-A",
+        "exam-ad-ii-q055-opt-B",
+        "exam-ad-ii-q055-opt-C",
+        "exam-ad-ii-q055-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-ad-ii-q055-opt-C",
+      "explanation": "\"Collaborative learning with individual accountability\" is the most appropriate choice for this practice item on Teaching and learning. It aligns with defensible professional judgement in teaching and learning. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 258,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "premium"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "premium_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q056",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "teaching-and-learning",
+      "topicLabel": "Teaching and learning",
+      "questionText": "Which principle is most directly described by the following practice: differentiated instruction?",
+      "options": [
+        "Differentiated instruction",
+        "One identical task regardless of need",
+        "Teaching only the fastest learners",
+        "Excluding learners who struggle"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q056-opt-A",
+        "exam-ad-ii-q056-opt-B",
+        "exam-ad-ii-q056-opt-C",
+        "exam-ad-ii-q056-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-ii-q056-opt-A",
+      "explanation": "\"Differentiated instruction\" is the most appropriate choice for this practice item on Teaching and learning. It aligns with defensible professional judgement in teaching and learning. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 238,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "premium"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "premium_tier"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q057",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "teaching-and-learning",
+      "topicLabel": "Teaching and learning",
+      "questionText": "Which principle is most directly described by the following practice: inclusive participation and reasonable support?",
+      "options": [
+        "Excluding learners with disabilities",
+        "Identical support regardless of need",
+        "Inclusive participation and reasonable support",
+        "Lowering every learner's expectations"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q057-opt-A",
+        "exam-ad-ii-q057-opt-B",
+        "exam-ad-ii-q057-opt-C",
+        "exam-ad-ii-q057-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-ad-ii-q057-opt-C",
+      "explanation": "\"Inclusive participation and reasonable support\" is the most appropriate choice for this practice item on Teaching and learning. It aligns with defensible professional judgement in teaching and learning. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 475,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "premium"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "premium_tier"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q058",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "teaching-and-learning",
+      "topicLabel": "Teaching and learning",
+      "questionText": "Which principle is most directly described by the following practice: learner-centred teaching?",
+      "options": [
+        "Learner-centred teaching",
+        "Teacher monologue for every lesson",
+        "Punishment-led instruction",
+        "Memorisation without understanding"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q058-opt-A",
+        "exam-ad-ii-q058-opt-B",
+        "exam-ad-ii-q058-opt-C",
+        "exam-ad-ii-q058-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-ii-q058-opt-A",
+      "explanation": "\"Learner-centred teaching\" is the most appropriate choice for this practice item on Teaching and learning. It aligns with defensible professional judgement in teaching and learning. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 53,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "premium"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "premium_tier"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q059",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "teaching-and-learning",
+      "topicLabel": "Teaching and learning",
+      "questionText": "Which principle is most directly described by the following practice: prior knowledge connected to new learning?",
+      "options": [
+        "Replacing learning objectives with activities",
+        "Prior knowledge connected to new learning",
+        "New content disconnected from experience",
+        "Avoiding questions"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q059-opt-A",
+        "exam-ad-ii-q059-opt-B",
+        "exam-ad-ii-q059-opt-C",
+        "exam-ad-ii-q059-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-ad-ii-q059-opt-B",
+      "explanation": "\"Prior knowledge connected to new learning\" is the most appropriate choice for this practice item on Teaching and learning. It aligns with defensible professional judgement in teaching and learning. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 291,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "premium"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "premium_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-ii-q060",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "teaching-and-learning",
+      "topicLabel": "Teaching and learning",
+      "questionText": "Which principle is most directly described by the following practice: universal design for learning with multiple means of engagement, representation and action?",
+      "options": [
+        "One delivery method for every learner",
+        "Universal Design for Learning with multiple means of engagement, representation and action",
+        "Teaching only through printed text",
+        "Removing all assessment choices"
+      ],
+      "optionIds": [
+        "exam-ad-ii-q060-opt-A",
+        "exam-ad-ii-q060-opt-B",
+        "exam-ad-ii-q060-opt-C",
+        "exam-ad-ii-q060-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-ad-ii-q060-opt-B",
+      "explanation": "\"Universal Design for Learning with multiple means of engagement, representation and action\" is the most appropriate choice for this practice item on Teaching and learning. It aligns with defensible professional judgement in teaching and learning. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
+      "sourceQuestionNumber": 222,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "premium"
+      ],
+      "promotionRank": "ad-ii",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "premium_tier",
+        "length_clue_risk"
+      ]
+    }
+  ]
+}

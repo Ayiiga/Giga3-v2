@@ -27,15 +27,17 @@ export function getExamBankMeta(courseSlug: string): ExamBankMeta | undefined {
 
 /** Adapt exam bank meta to the Technology Hub practice summary shape. */
 export function examBankAsTechCourseMeta(bank: ExamBankMeta): TechCourseMeta {
+  const published = bank.approvedQuestionCount + bank.pendingQuestionCount;
   return {
     bankId: bank.bankId,
     courseSlug: bank.courseSlug,
     title: bank.title,
     difficulty: "intermediate",
-    awaitingMaterials: bank.approvedQuestionCount + bank.pendingQuestionCount === 0,
+    awaitingMaterials: published === 0,
     sourceDocument: bank.sourceDocument,
-    extractedFromSource: 500,
-    approvedQuestionCount: bank.approvedQuestionCount + bank.pendingQuestionCount,
+    // Honest published count — do not claim PDF filenames imply 500 verified items.
+    extractedFromSource: published,
+    approvedQuestionCount: published,
     topics: bank.topics,
   };
 }
