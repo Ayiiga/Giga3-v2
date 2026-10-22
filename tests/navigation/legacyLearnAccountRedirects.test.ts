@@ -57,7 +57,7 @@ describe("legacy /learn and /account destinations", () => {
     expect(canonicalizeInternalGiga3Href("/practice/")).toBe("/gigalearn/exam/");
     expect(canonicalizeInternalGiga3Href("/gigalearn/exam-practice")).toBe("/gigalearn/exam/");
     expect(canonicalizeInternalGiga3Href("https://www.giga3ai.com/teacher-promotion")).toBe(
-      "https://www.giga3ai.com/gigalearn/exam/"
+      "https://www.giga3ai.com/gigalearn/exam/promotion/"
     );
   });
 });
