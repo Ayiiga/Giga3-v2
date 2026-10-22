@@ -19,6 +19,7 @@ import deputyDirector from "@/lib/gigalearn/examPractice/banks/deputy-director.j
 import directorIi from "@/lib/gigalearn/examPractice/banks/director-ii.json";
 import directorI from "@/lib/gigalearn/examPractice/banks/director-i.json";
 import {
+  EXAM_PRACTICE_FREE_QUESTION_COUNT,
   EXAM_PRACTICE_PREMIUM_QUESTION_COUNT,
   TECH_HUB_DEFAULT_MAX_COUNT,
   isExamPracticeCourseSlug,
@@ -213,9 +214,14 @@ export function selectTechQuestionIds(args: {
   questionType?: "mcq" | "true_false";
 }): string[] {
   // Exam Practice packs allow up to 500; Technology Hub courses stay within 50.
-  // Entitlement clamp (free 50 vs premium 500) is enforced in startTechPracticeSession.
-  const hardMax = isExamPracticeCourseSlug(args.courseSlug)
-    ? EXAM_PRACTICE_PREMIUM_QUESTION_COUNT
+  // Also clamp here when premiumAccess is false so free callers never receive
+  // more than EXAM_PRACTICE_FREE_QUESTION_COUNT even if count is overstated
+  // (defense in depth alongside startTechPracticeSession).
+  const isExam = isExamPracticeCourseSlug(args.courseSlug);
+  const hardMax = isExam
+    ? args.premiumAccess === false
+      ? EXAM_PRACTICE_FREE_QUESTION_COUNT
+      : EXAM_PRACTICE_PREMIUM_QUESTION_COUNT
     : TECH_HUB_DEFAULT_MAX_COUNT;
   const count = Math.max(1, Math.min(hardMax, Math.floor(args.count)));
   const rand = mulberry32(args.seed);
