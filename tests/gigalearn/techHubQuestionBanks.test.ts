@@ -45,6 +45,8 @@ describe("Technology Learning Hub question banks", () => {
         techExtracted: number;
         techUniqueApproved: number;
         claimedAs2500Tech: boolean;
+        claimedAs2500PromotionVerified?: boolean;
+        promotionRankUniquePublished?: number;
         aiExtracted: number;
         aiNearDuplicatesRemoved: number;
         aiUniqueApproved: number;
@@ -65,10 +67,13 @@ describe("Technology Learning Hub question banks", () => {
       }>;
       examBanks: Array<{
         sourceFile: string;
+        courseSlug?: string;
         approvedImported: number;
         pendingImported: number;
+        uniqueImportable?: number;
         claimedAsOfficialWaec?: boolean;
         claimedAsOfficialGes?: boolean;
+        claimedAs500Unique?: boolean;
         sourceKind?: string;
       }>;
     };
