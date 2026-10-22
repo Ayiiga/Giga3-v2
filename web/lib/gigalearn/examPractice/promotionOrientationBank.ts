@@ -208,9 +208,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "Circuit supervision in GES typically supports schools by:",
     options: {
       A: "Monitoring teaching, learning, and school improvement",
-      B: "Collecting customs duties",
-      C: "Issuing passports",
-      D: "Running political rallies",
+      B: "Collecting customs duties for the Ghana Revenue Authority",
+      C: "Issuing passports at the school administrative office",
+      D: "Running political rallies during instructional time",
     },
     correct: "A",
     explanation:
@@ -223,9 +223,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "A good lesson plan should most clearly show:",
     options: {
       A: "Learning objectives, activities, and assessment",
-      B: "Only the teacher’s personal diary",
-      C: "A shopping list",
-      D: "The school football score",
+      B: "Only the teacher’s personal diary with no learning outcomes",
+      C: "A shopping list of classroom supplies without objectives",
+      D: "The school football score and extracurricular results only",
     },
     correct: "A",
     explanation:
@@ -268,9 +268,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "An admission register in a school is primarily used to:",
     options: {
       A: "Record learners enrolled in the school",
-      B: "List teacher salaries only",
-      C: "Store kitchen recipes",
-      D: "Track political parties",
+      B: "List teacher salaries without learner enrolment data",
+      C: "Store kitchen recipes for the school feeding programme only",
+      D: "Track political parties instead of learner enrolment",
     },
     correct: "A",
     explanation:
@@ -283,9 +283,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "A school timetable mainly helps to:",
     options: {
       A: "Organise subjects, periods, and teacher deployment across the week",
-      B: "Replace the curriculum",
-      C: "Set national tax rates",
-      D: "Elect the District Chief Executive",
+      B: "Replace the national curriculum with local preferences only",
+      C: "Set national tax rates for the Ministry of Finance",
+      D: "Elect the District Chief Executive without parental input",
     },
     correct: "A",
     explanation:
@@ -298,9 +298,9 @@ export const PROMOTION_FREE_QUESTIONS: readonly ExamPracticeQuestion[] = [
     stem: "A School Management Committee (SMC) / PTA typically supports schools by:",
     options: {
       A: "Engaging parents and community in school improvement",
-      B: "Setting the Bank of Ghana policy rate",
-      C: "Issuing passports",
-      D: "Writing the national constitution",
+      B: "Setting the Bank of Ghana policy rate for school fees",
+      C: "Issuing passports for learners and staff",
+      D: "Writing the national constitution for the school board",
     },
     correct: "A",
     explanation:

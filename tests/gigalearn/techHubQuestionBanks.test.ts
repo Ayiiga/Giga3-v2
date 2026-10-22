@@ -240,21 +240,24 @@ describe("Technology Learning Hub question banks", () => {
     expect(convex).toContain("requireSession(args.sessionToken, ctx)");
     expect(convex).toContain("requireActiveEnrolment");
     expect(convex).toContain("endsAt");
-    expect(convex).toContain("toPublicTechQuestion");
+    expect(convex).toContain("presentTechQuestion");
+    expect(convex).toContain("buildSessionOptionPermutations");
+    expect(convex).toContain("optionPermutationsJson");
     expect(convex).toContain("saveTechPracticeAnswer");
     expect(convex).toContain("submitTechPracticeSession");
     const startBlock = convex.slice(
       convex.indexOf("export const startTechPracticeSession"),
       convex.indexOf("export const getTechPracticeSession")
     );
-    expect(startBlock).toContain("toPublicTechQuestion");
+    expect(startBlock).toContain("presentTechQuestion");
+    expect(startBlock).toContain("optionPermutationsJson");
     expect(startBlock).not.toContain("correctIndex:");
     // In-progress session query must not leak keys; learn-mode feedback is gated.
     const getBlock = convex.slice(
       convex.indexOf("export const getTechPracticeSession"),
       convex.indexOf("export const saveTechPracticeAnswer")
     );
-    expect(getBlock).toContain("toPublicTechQuestion");
+    expect(getBlock).toContain("presentTechQuestion");
     expect(getBlock).not.toContain("correctIndex:");
     expect(getBlock).toContain('session.status === "graded"');
     const saveBlock = convex.slice(

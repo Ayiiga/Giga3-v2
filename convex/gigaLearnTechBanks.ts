@@ -8,13 +8,19 @@ import { requireSession, tryRequireSession } from "./auth";
 import { isSubscriptionActive } from "./creditsConfig";
 import { sessionArgs } from "./validators";
 import {
+  buildSessionOptionPermutations,
   getTechBankQuestionById,
   getTechBankQuestions,
   gradeTechAnswers,
   listLoadedTechBankSlugs,
+  presentTechQuestion,
   selectTechQuestionIds,
-  toPublicTechQuestion,
+  type OptionPermutationMap,
 } from "../web/lib/gigalearn/academy/techBanks/techBankServer";
+import {
+  displayCorrectIndex,
+  toOriginalOptionIndex,
+} from "../web/lib/gigalearn/examPractice/optionShuffle";
 import { getTechCourseMeta, listTechCourseMeta } from "../web/lib/gigalearn/academy/techBanks/techBankMeta";
 import { getBuiltinAcademyCourse } from "../web/lib/gigalearn/academy/courseCatalog";
 import type { TechPracticeMode } from "../web/lib/gigalearn/academy/techBanks/techBankTypes";
@@ -62,6 +68,27 @@ function parseIds(raw: string): string[] {
     return parsed.map((x) => String(x).slice(0, 120)).filter(Boolean).slice(0, 500);
   } catch {
     return [];
+  }
+}
+
+function parseOptionPermutations(raw: string | undefined): OptionPermutationMap {
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+    const out: OptionPermutationMap = {};
+    for (const [qid, value] of Object.entries(parsed as Record<string, unknown>)) {
+      if (!Array.isArray(value)) continue;
+      const perm = value
+        .map((n) => (typeof n === "number" && Number.isInteger(n) ? n : -1))
+        .filter((n) => n >= 0 && n <= 3);
+      if (perm.length >= 2 && perm.length <= 4) {
+        out[qid.slice(0, 120)] = perm;
+      }
+    }
+    return out;
+  } catch {
+    return {};
   }
 }
 
@@ -288,6 +315,12 @@ export const startTechPracticeSession = mutation({
       }
     }
 
+    const bankQuestions = questionIds.map((id) => getTechBankQuestionById(slug, id)!);
+    const optionPermutations = buildSessionOptionPermutations(
+      bankQuestions.map((q) => ({ questionId: q.questionId, options: q.options })),
+      seed
+    );
+
     const sessionId = await ctx.db.insert("gigaLearnTechSessions", {
       userId: email,
       courseSlug: slug,
@@ -295,6 +328,7 @@ export const startTechPracticeSession = mutation({
       topicId: args.topicId?.trim() || undefined,
       questionIdsJson: JSON.stringify(questionIds),
       answersJson: "{}",
+      optionPermutationsJson: JSON.stringify(optionPermutations),
       status: "in_progress",
       endsAt,
       startedAt: now,
@@ -310,10 +344,9 @@ export const startTechPracticeSession = mutation({
       questionCount: questionIds.length,
       premiumAccess: resolved.premiumAccess,
       approvedBankSize: meta.approvedQuestionCount,
-      questions: questionIds.map((id) => {
-        const q = getTechBankQuestionById(slug, id)!;
-        return toPublicTechQuestion(q);
-      }),
+      questions: bankQuestions.map((q) =>
+        presentTechQuestion(q, optionPermutations[q.questionId])
+      ),
     };
   },
 });
@@ -337,6 +370,7 @@ export const getTechPracticeSession = query({
 
     const questionIds = parseIds(session.questionIdsJson);
     const answers = parseAnswers(session.answersJson);
+    const optionPermutations = parseOptionPermutations(session.optionPermutationsJson);
     const revealKeys =
       session.status === "graded" ||
       session.status === "submitted" ||
@@ -356,7 +390,7 @@ export const getTechPracticeSession = query({
           reviewStatus: "rejected" as const,
         };
       }
-      return toPublicTechQuestion(q);
+      return presentTechQuestion(q, optionPermutations[id]);
     });
 
     return {
@@ -428,6 +462,7 @@ export const saveTechPracticeAnswer = mutation({
 
     if (session.mode === "learn") {
       const q = getTechBankQuestionById(session.courseSlug, args.questionId);
+      const perm = parseOptionPermutations(session.optionPermutationsJson)[args.questionId];
       if (
         !q ||
         (q.reviewStatus !== "approved" && q.reviewStatus !== "pending_review")
@@ -444,15 +479,20 @@ export const saveTechPracticeAnswer = mutation({
         };
       }
       const pendingReview = q.reviewStatus === "pending_review";
+      const originalSelected = toOriginalOptionIndex(args.selectedIndex, perm);
+      const displayCorrect = displayCorrectIndex(
+        q.correctIndex,
+        perm ?? q.options.map((_, i) => i)
+      );
       return {
         saved: true,
         feedback: {
-          correct: args.selectedIndex === q.correctIndex,
+          correct: originalSelected === q.correctIndex,
           pendingReview,
           explanation: pendingReview
             ? `Provisional key (pending review). ${q.explanation}`
             : q.explanation,
-          correctIndex: q.correctIndex,
+          correctIndex: displayCorrect,
         },
       };
     }
@@ -492,6 +532,7 @@ async function finalizeSession(
     courseSlug: string;
     questionIdsJson: string;
     answersJson: string;
+    optionPermutationsJson?: string;
     mode: string;
     endsAt?: number;
   },
@@ -500,10 +541,12 @@ async function finalizeSession(
 ) {
   const questionIds = parseIds(session.questionIdsJson);
   const answers = parseAnswers(session.answersJson);
+  const optionPermutations = parseOptionPermutations(session.optionPermutationsJson);
   const graded = gradeTechAnswers({
     courseSlug: session.courseSlug,
     questionIds,
     answers,
+    optionPermutations,
   });
 
   await ctx.db.patch(session._id, {

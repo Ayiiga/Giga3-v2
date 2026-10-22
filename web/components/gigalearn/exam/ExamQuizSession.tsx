@@ -14,27 +14,81 @@ import { Check, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+type DraftPatch = {
+  answers?: QuizAnswerMap;
+  index?: number;
+  secondsLeft?: number;
+  finished?: boolean;
+  streak?: number;
+};
+
 type Props = {
   meta: ExamPracticeSetMeta;
   questions: ExamPracticeQuestion[];
   exitHref: string;
   /** Visual theme: teacher green or bece violet shell */
   theme?: "teacher" | "bece";
+  initialAnswers?: QuizAnswerMap;
+  initialIndex?: number;
+  initialSecondsLeft?: number;
+  initialFinished?: boolean;
+  initialStreak?: number;
+  onDraftChange?: (patch: DraftPatch) => void;
+  onRestart?: () => void;
 };
 
-export function ExamQuizSession({ meta, questions, exitHref, theme = "teacher" }: Props) {
-  const [index, setIndex] = useState(0);
-  const [answers, setAnswers] = useState<QuizAnswerMap>({});
-  const [secondsLeft, setSecondsLeft] = useState(meta.durationMinutes * 60);
-  const [finished, setFinished] = useState(false);
+export function ExamQuizSession({
+  meta,
+  questions,
+  exitHref,
+  theme = "teacher",
+  initialAnswers = {},
+  initialIndex = 0,
+  initialSecondsLeft,
+  initialFinished = false,
+  initialStreak = 0,
+  onDraftChange,
+  onRestart,
+}: Props) {
+  const [index, setIndex] = useState(initialIndex);
+  const [answers, setAnswers] = useState<QuizAnswerMap>(initialAnswers);
+  const [secondsLeft, setSecondsLeft] = useState(
+    initialSecondsLeft ?? meta.durationMinutes * 60
+  );
+  const [finished, setFinished] = useState(initialFinished);
   const [reward, setReward] = useState<string | null>(null);
-  const [streak, setStreak] = useState(0);
+  const [streak, setStreak] = useState(initialStreak);
   const recordedRef = useRef(false);
+  const onDraftChangeRef = useRef(onDraftChange);
+  onDraftChangeRef.current = onDraftChange;
+
+  // When parent rebuilds a shuffled set (Practise again), resync local state.
+  const questionFingerprint = questions.map((q) => `${q.id}:${q.correct}:${q.options.A}`).join("|");
+  useEffect(() => {
+    setIndex(initialIndex);
+    setAnswers(initialAnswers);
+    setSecondsLeft(initialSecondsLeft ?? meta.durationMinutes * 60);
+    setFinished(initialFinished);
+    setStreak(initialStreak);
+    setReward(null);
+    recordedRef.current = false;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fingerprint captures shuffle identity
+  }, [questionFingerprint]);
 
   const current = questions[index];
   const selected = current ? answers[current.id] : undefined;
   const revealed = Boolean(selected);
   const score = useMemo(() => scoreQuiz(questions, answers), [questions, answers]);
+
+  useEffect(() => {
+    onDraftChangeRef.current?.({
+      answers,
+      index,
+      secondsLeft,
+      finished,
+      streak,
+    });
+  }, [answers, index, secondsLeft, finished, streak]);
 
   useEffect(() => {
     if (finished) return;
@@ -49,7 +103,7 @@ export function ExamQuizSession({ meta, questions, exitHref, theme = "teacher" }
       });
     }, 1000);
     return () => window.clearInterval(id);
-  }, [finished]);
+  }, [finished, questionFingerprint]);
 
   useEffect(() => {
     if (!finished || recordedRef.current) return;
@@ -111,6 +165,10 @@ export function ExamQuizSession({ meta, questions, exitHref, theme = "teacher" }
                 type="button"
                 className="exam-session-btn-primary min-h-11 w-full"
                 onClick={() => {
+                  if (onRestart) {
+                    onRestart();
+                    return;
+                  }
                   setAnswers({});
                   setIndex(0);
                   setSecondsLeft(meta.durationMinutes * 60);
@@ -185,7 +243,7 @@ export function ExamQuizSession({ meta, questions, exitHref, theme = "teacher" }
               const showCorrect = revealed && isCorrect;
               const showWrong = revealed && isSelected && !isCorrect;
               return (
-                <li key={oid}>
+                <li key={`${current.id}-${oid}-${current.options[oid]}`}>
                   <button
                     type="button"
                     disabled={revealed}
@@ -238,6 +296,10 @@ export function ExamQuizSession({ meta, questions, exitHref, theme = "teacher" }
               <p>
                 <span className="exam-session-explain-label">Explanation: </span>
                 {current.explanation}
+              </p>
+              <p className="exam-session-explain-key">
+                Correct answer: <strong>{current.correct}</strong>.{" "}
+                {current.options[current.correct]}
               </p>
             </div>
           ) : null}
