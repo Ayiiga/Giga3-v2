@@ -5,21 +5,24 @@ export const SUBSCRIPTION_PLANS = {
     label: "Basic",
     priceGhs: 60,
     credits: 100,
-    description: "100 credits/month (60 GHS) — chat, writing, research & media.",
+    description:
+      "100 credits/month (60 GHS) — chat, writing, research, media, and Exam Practice full packs.",
   },
   pro: {
     productId: "sub_pro_monthly",
     label: "Pro",
     priceGhs: 150,
     credits: 250,
-    description: "250 credits/month (150 GHS) for daily creators.",
+    description:
+      "250 credits/month (150 GHS) for daily creators, plus Exam Practice full packs.",
   },
   premium: {
     productId: "sub_premium_monthly",
     label: "Premium",
     priceGhs: 350,
     credits: 500,
-    description: "500 credits/month (350 GHS) for teams and power users.",
+    description:
+      "500 credits/month (350 GHS) for teams and power users, plus Exam Practice full packs.",
   },
 } as const;
 

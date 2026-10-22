@@ -21,7 +21,8 @@ export const SUBSCRIPTION_PLANS: Record<
     label: "Basic",
     priceGhs: 60,
     credits: 100,
-    description: "100 credits/month (60 GHS) — chat, writing, research & media.",
+    description:
+      "100 credits/month (60 GHS) — chat, writing, research, media, and Exam Practice full packs.",
   },
   pro: {
     id: "pro",
@@ -29,7 +30,8 @@ export const SUBSCRIPTION_PLANS: Record<
     label: "Pro",
     priceGhs: 150,
     credits: 250,
-    description: "250 credits/month (150 GHS) — best for daily creators.",
+    description:
+      "250 credits/month (150 GHS) — daily creators, plus Exam Practice full packs.",
   },
   premium: {
     id: "premium",
@@ -37,7 +39,8 @@ export const SUBSCRIPTION_PLANS: Record<
     label: "Premium",
     priceGhs: 350,
     credits: 500,
-    description: "500 credits/month (350 GHS) — teams and power users.",
+    description:
+      "500 credits/month (350 GHS) — teams and power users, plus Exam Practice full packs.",
   },
 };
 

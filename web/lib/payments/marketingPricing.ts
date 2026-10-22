@@ -98,6 +98,7 @@ export function buildHomepagePricingTeasers(): readonly MarketingPlanTeaser[] {
       description: basic.description,
       features: [
         `${basic.credits} credits / month`,
+        "Exam Practice full packs",
         "Paystack billing",
         "Media studio",
         "PWA install",
@@ -113,6 +114,7 @@ export function buildHomepagePricingTeasers(): readonly MarketingPlanTeaser[] {
       description: pro.description,
       features: [
         `${pro.credits} credits / month`,
+        "Exam Practice full packs",
         "Paystack billing",
         "Media studio",
         "PWA install",
@@ -128,6 +130,7 @@ export function buildHomepagePricingTeasers(): readonly MarketingPlanTeaser[] {
       description: premium.description,
       features: [
         `${premium.credits} credits / month`,
+        "Exam Practice full packs",
         "Paystack billing",
         "Media studio",
         "Team-friendly limits",

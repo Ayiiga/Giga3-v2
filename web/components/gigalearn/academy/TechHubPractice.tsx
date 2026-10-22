@@ -17,6 +17,7 @@ import type { TechPracticeMode } from "@/lib/gigalearn/academy/techBanks/techBan
 import { ACADEMY_SURFACE_CLASS } from "@/lib/gigalearn/academy/visualTheme";
 import {
   EXAM_PRACTICE_FREE_QUESTION_COUNT,
+  EXAM_PRACTICE_PAID_UNLOCK_COPY,
   EXAM_PRACTICE_PREMIUM_QUESTION_COUNT,
   hasExamPracticePremiumAccess,
   isExamPracticeCourseSlug,
@@ -73,12 +74,13 @@ function TechHubInner() {
   const saveAnswer = useMutation(api.gigaLearnTechBanks.saveTechPracticeAnswer);
   const submitSession = useMutation(api.gigaLearnTechBanks.submitTechPracticeSession);
 
-  // Premium packs require active subscription or credit-pack purchase.
-  // `isPremium` already reflects credit-pack purchase via AI tier; residual
-  // balance alone must not unlock larger packs (server enforces the same).
+  // Premium packs: any active paid plan (Basic GHS 60+) or credit-pack purchase.
+  // `subscriptionActive` covers basic/pro/premium; `isPremium` / purchase history
+  // cover pack buyers. Residual balance alone must not unlock (server same).
   const premiumAccess = hasExamPracticePremiumAccess({
     subscriptionActive: chatCredits?.subscriptionActive,
     isPremium: chatCredits?.isPremium,
+    hasPurchasedCredits: chatCredits?.hasPurchasedCredits,
   });
 
   const countChoices = useMemo(() => {
@@ -664,7 +666,7 @@ function TechHubInner() {
                   <option key={n} value={n}>
                     {n}
                     {isExamCourse && n > EXAM_PRACTICE_FREE_QUESTION_COUNT
-                      ? " (subscription / pack purchase)"
+                      ? " (Basic GHS 60+ / pack)"
                       : ""}
                   </option>
                 ))}
@@ -672,8 +674,8 @@ function TechHubInner() {
             </label>
             {isExamCourse ? (
               <p className="text-xs text-slate-500">
-                Free learners get up to {EXAM_PRACTICE_FREE_QUESTION_COUNT} questions. An active
-                subscription or a credit-pack purchase unlocks up to{" "}
+                Free learners get up to {EXAM_PRACTICE_FREE_QUESTION_COUNT} questions.{" "}
+                {EXAM_PRACTICE_PAID_UNLOCK_COPY} unlocks up to{" "}
                 {EXAM_PRACTICE_PREMIUM_QUESTION_COUNT} (capped by bank size). A leftover credit
                 balance alone does not unlock larger packs. Correct answers earn praise like
                 Excellent and Superb.
