@@ -129,7 +129,8 @@ describe("Free orientation bank + UI wiring for 50 / share / rewards", () => {
     expect(centre).toContain('kind="bece"');
     expect(centre).toContain('kind="teacher_promotion"');
     expect(centre).toContain("becePracticeFull");
-    expect(centre).toContain("teacherPromotionPracticeFull");
+    expect(centre).toContain("promotionRankSelect");
+    expect(centre).toContain("teacher-promotion-bank-choose-rank");
 
     const session = readFileSync(
       resolve(ROOT, "web/components/gigalearn/exam/ExamQuizSession.tsx"),
