@@ -133,7 +133,7 @@ describe("Exam Practice Centre Phase B", () => {
     expect(chrome).toContain("/gigalearn/academy/author/");
 
     const site = readFileSync(resolve(ROOT, "web/lib/site.ts"), "utf8");
-    expect(site).toContain('gigalearnExam: "/gigalearn/exam"');
+    expect(site).toContain('gigalearnExam: "/gigalearn/exam/"');
 
     const sitemap = readFileSync(resolve(ROOT, "web/public/sitemap-gigalearn.xml"), "utf8");
     expect(sitemap).toContain("/gigalearn/exam/");

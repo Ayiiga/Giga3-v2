@@ -24,6 +24,36 @@
 /learn              /gigalearn/                  301
 /learn/             /gigalearn/                  301
 
+# Exam Practice aliases — short / mistyped paths that otherwise soft-404 on mobile
+/exam                               /gigalearn/exam/              301
+/exam/                              /gigalearn/exam/              301
+/exam-practice                      /gigalearn/exam/              301
+/exam-practice/                     /gigalearn/exam/              301
+/practice                           /gigalearn/exam/              301
+/practice/                          /gigalearn/exam/              301
+/gigalearn/exam-practice            /gigalearn/exam/              301
+/gigalearn/exam-practice/           /gigalearn/exam/              301
+/gigalearn/practice                 /gigalearn/exam/              301
+/gigalearn/practice/                /gigalearn/exam/              301
+/gigalearn/exam/free                /gigalearn/exam/practice/     301
+/gigalearn/exam/free/               /gigalearn/exam/practice/     301
+/teacher-promotion                  /gigalearn/exam/              301
+/teacher-promotion/                 /gigalearn/exam/              301
+/gigalearn/teacher-promotion        /gigalearn/exam/              301
+/gigalearn/teacher-promotion/       /gigalearn/exam/              301
+/gigalearn/promotion                /gigalearn/exam/              301
+/gigalearn/promotion/               /gigalearn/exam/              301
+/bece                               /gigalearn/exam/              301
+/bece/                              /gigalearn/exam/              301
+/gigalearn/bece                     /gigalearn/exam/              301
+/gigalearn/bece/                    /gigalearn/exam/              301
+
+# Stale promotion-guide filenames (pre–cross-rank-dedupe counts) → current honest PDFs
+/downloads/gigalearn/promotion-guides/GigaLearn_AD_I_282_Practice_Questions_Answers.pdf   /downloads/gigalearn/promotion-guides/GigaLearn_AD_I_87_Practice_Questions_Answers.pdf   301
+/downloads/gigalearn/promotion-guides/GigaLearn_DD_276_Practice_Questions_Answers.pdf     /downloads/gigalearn/promotion-guides/GigaLearn_DD_52_Practice_Questions_Answers.pdf    301
+/downloads/gigalearn/promotion-guides/GigaLearn_D_II_281_Practice_Questions_Answers.pdf   /downloads/gigalearn/promotion-guides/GigaLearn_D_II_40_Practice_Questions_Answers.pdf   301
+/downloads/gigalearn/promotion-guides/GigaLearn_D_I_285_Practice_Questions_Answers.pdf    /downloads/gigalearn/promotion-guides/GigaLearn_D_I_46_Practice_Questions_Answers.pdf    301
+
 # Legacy static site paths → App Router
 /login.html         /chat/login/                 301
 /signup.html        /chat/login/                 301
