@@ -1,0 +1,2248 @@
+{
+  "bankId": "ad-i",
+  "courseSlug": "exam-ad-i",
+  "title": "GES Assistant Director I Promotion Practice",
+  "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+  "provenanceNote": "Original GigaLearn practice bank adapted from uploaded study PDFs. Not an official Ghana Education Service examination paper. Items are awaiting human verification against authoritative sources.",
+  "questions": [
+    {
+      "questionId": "exam-ad-i-q001",
+      "courseSlug": "exam-ad-i",
+      "topicId": "communication",
+      "topicLabel": "Communication",
+      "questionText": "When a complaint or report needs a response, which approach should be preferred?",
+      "options": [
+        "Unverified claims without sources",
+        "A long report without a decision point",
+        "A report that hides the main finding",
+        "A concise report supported by evidence and recommendations"
+      ],
+      "optionIds": [
+        "exam-ad-i-q001-opt-A",
+        "exam-ad-i-q001-opt-B",
+        "exam-ad-i-q001-opt-C",
+        "exam-ad-i-q001-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-ad-i-q001-opt-D",
+      "explanation": "\"A concise report supported by evidence and recommendations\" is the most appropriate choice for this practice item on Communication. It aligns with defensible professional judgement in communication. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 240,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "stem_rewritten",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q002",
+      "courseSlug": "exam-ad-i",
+      "topicId": "communication",
+      "topicLabel": "Communication",
+      "questionText": "Which option provides the strongest basis when an improvement is being planned?",
+      "options": [
+        "Sharing the complaint publicly",
+        "Retaliation against the complainant",
+        "A factual, respectful and timely response to a complaint",
+        "Ignoring the complaint without assessment"
+      ],
+      "optionIds": [
+        "exam-ad-i-q002-opt-A",
+        "exam-ad-i-q002-opt-B",
+        "exam-ad-i-q002-opt-C",
+        "exam-ad-i-q002-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-ad-i-q002-opt-C",
+      "explanation": "\"A factual, respectful and timely response to a complaint\" is the most appropriate choice for this practice item on Communication. It aligns with defensible professional judgement in communication. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 9,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "stem_rewritten",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q003",
+      "courseSlug": "exam-ad-i",
+      "topicId": "educational-technology",
+      "topicLabel": "Educational technology",
+      "questionText": "When digital access and privacy are concerns, which approach should be preferred?",
+      "options": [
+        "Publishing without review",
+        "Ignoring age and context",
+        "Checking digital content for accuracy, bias and suitability",
+        "Assuming generated content is always correct"
+      ],
+      "optionIds": [
+        "exam-ad-i-q003-opt-A",
+        "exam-ad-i-q003-opt-B",
+        "exam-ad-i-q003-opt-C",
+        "exam-ad-i-q003-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-ad-i-q003-opt-C",
+      "explanation": "\"Checking digital content for accuracy, bias and suitability\" is the most appropriate choice for this practice item on Educational technology. It aligns with defensible professional judgement in educational technology. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 137,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "stem_rewritten",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q004",
+      "courseSlug": "exam-ad-i",
+      "topicId": "human-resource-management",
+      "topicLabel": "Human resource management",
+      "questionText": "When staff performance or conduct needs attention, which approach should be preferred?",
+      "options": [
+        "Allocating duties solely by friendship",
+        "Assigning all difficult tasks to one person",
+        "Workload allocation based on role, capacity and service needs",
+        "Ignoring staff capacity"
+      ],
+      "optionIds": [
+        "exam-ad-i-q004-opt-A",
+        "exam-ad-i-q004-opt-B",
+        "exam-ad-i-q004-opt-C",
+        "exam-ad-i-q004-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-ad-i-q004-opt-C",
+      "explanation": "\"Workload allocation based on role, capacity and service needs\" is the most appropriate choice for this practice item on Human resource management. It aligns with defensible professional judgement in human resource management. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 2,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "stem_rewritten",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q005",
+      "courseSlug": "exam-ad-i",
+      "topicId": "professional-learning",
+      "topicLabel": "Professional learning",
+      "questionText": "When training effectiveness is being reviewed, which approach should be preferred?",
+      "options": [
+        "Assuming every method transfers unchanged",
+        "Avoiding feedback from colleagues",
+        "Keeping all successful methods private",
+        "Sharing effective practice through structured peer learning"
+      ],
+      "optionIds": [
+        "exam-ad-i-q005-opt-A",
+        "exam-ad-i-q005-opt-B",
+        "exam-ad-i-q005-opt-C",
+        "exam-ad-i-q005-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-ad-i-q005-opt-D",
+      "explanation": "\"Sharing effective practice through structured peer learning\" is the most appropriate choice for this practice item on Professional learning. It aligns with defensible professional judgement in professional learning. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 59,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "stem_rewritten",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q006",
+      "courseSlug": "exam-ad-i",
+      "topicId": "professional-practice",
+      "topicLabel": "Professional practice",
+      "questionText": "When professional conduct or learning needs attention, which approach should be preferred?",
+      "options": [
+        "Favouritism in professional decisions",
+        "Sharing inappropriate personal content with learners",
+        "Using authority for personal advantage",
+        "Maintaining professional boundaries and respectful conduct"
+      ],
+      "optionIds": [
+        "exam-ad-i-q006-opt-A",
+        "exam-ad-i-q006-opt-B",
+        "exam-ad-i-q006-opt-C",
+        "exam-ad-i-q006-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-ad-i-q006-opt-D",
+      "explanation": "\"Maintaining professional boundaries and respectful conduct\" is the most appropriate choice for this practice item on Professional practice. It aligns with defensible professional judgement in professional practice. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 80,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "stem_rewritten",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q007",
+      "courseSlug": "exam-ad-i",
+      "topicId": "communication",
+      "topicLabel": "Communication",
+      "questionText": "If a decision must be defensible and fair in the area of communication, what should be prioritised?",
+      "options": [
+        "Adapting communication to audience and purpose",
+        "Avoiding accessible language",
+        "Using one format for every situation",
+        "Omitting essential context"
+      ],
+      "optionIds": [
+        "exam-ad-i-q007-opt-A",
+        "exam-ad-i-q007-opt-B",
+        "exam-ad-i-q007-opt-C",
+        "exam-ad-i-q007-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-i-q007-opt-A",
+      "explanation": "\"Adapting communication to audience and purpose\" is the most appropriate choice for this practice item on Communication. It aligns with defensible professional judgement in communication. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 13,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q008",
+      "courseSlug": "exam-ad-i",
+      "topicId": "communication",
+      "topicLabel": "Communication",
+      "questionText": "To improve communication in an education setting, which principle should guide the decision?",
+      "options": [
+        "Using jargon with every audience",
+        "Responding before understanding",
+        "Interrupting to assume meaning",
+        "Active listening and clarification"
+      ],
+      "optionIds": [
+        "exam-ad-i-q008-opt-A",
+        "exam-ad-i-q008-opt-B",
+        "exam-ad-i-q008-opt-C",
+        "exam-ad-i-q008-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-ad-i-q008-opt-D",
+      "explanation": "\"Active listening and clarification\" is the most appropriate choice for this practice item on Communication. It aligns with defensible professional judgement in communication. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 259,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q009",
+      "courseSlug": "exam-ad-i",
+      "topicId": "communication",
+      "topicLabel": "Communication",
+      "questionText": "Which principle is most directly described by the following practice: a factual, respectful and timely response to a complaint?",
+      "options": [
+        "Ignoring the complaint without assessment",
+        "Retaliation against the complainant",
+        "A factual, respectful and timely response to a complaint",
+        "Sharing the complaint publicly"
+      ],
+      "optionIds": [
+        "exam-ad-i-q009-opt-A",
+        "exam-ad-i-q009-opt-B",
+        "exam-ad-i-q009-opt-C",
+        "exam-ad-i-q009-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-ad-i-q009-opt-C",
+      "explanation": "\"A factual, respectful and timely response to a complaint\" is the most appropriate choice for this practice item on Communication. It aligns with defensible professional judgement in communication. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 216,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q010",
+      "courseSlug": "exam-ad-i",
+      "topicId": "communication",
+      "topicLabel": "Communication",
+      "questionText": "Which principle is most directly described by the following practice: adapting communication to audience and purpose?",
+      "options": [
+        "Adapting communication to audience and purpose",
+        "Omitting essential context",
+        "Using one format for every situation",
+        "Avoiding accessible language"
+      ],
+      "optionIds": [
+        "exam-ad-i-q010-opt-A",
+        "exam-ad-i-q010-opt-B",
+        "exam-ad-i-q010-opt-C",
+        "exam-ad-i-q010-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-i-q010-opt-A",
+      "explanation": "\"Adapting communication to audience and purpose\" is the most appropriate choice for this practice item on Communication. It aligns with defensible professional judgement in communication. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 320,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q011",
+      "courseSlug": "exam-ad-i",
+      "topicId": "digital-and-information-literacy",
+      "topicLabel": "Digital and information literacy",
+      "questionText": "If a decision must be defensible and fair in the area of digital and information literacy, what should be prioritised?",
+      "options": [
+        "Trusting a post because it is popular",
+        "Forwarding an unverified claim",
+        "Verifying the source, date and context of online information",
+        "Treating an image as proof without context"
+      ],
+      "optionIds": [
+        "exam-ad-i-q011-opt-A",
+        "exam-ad-i-q011-opt-B",
+        "exam-ad-i-q011-opt-C",
+        "exam-ad-i-q011-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-ad-i-q011-opt-C",
+      "explanation": "\"Verifying the source, date and context of online information\" is the most appropriate choice for this practice item on Digital and information literacy. It aligns with defensible professional judgement in digital and information literacy. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 281,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q012",
+      "courseSlug": "exam-ad-i",
+      "topicId": "digital-and-information-literacy",
+      "topicLabel": "Digital and information literacy",
+      "questionText": "Which principle is most directly described by the following practice: accessible, secure and purpose-appropriate use of digital tools?",
+      "options": [
+        "Choosing novelty over learning needs",
+        "Uploading confidential data to unapproved tools",
+        "Using technology regardless of learner access",
+        "Accessible, secure and purpose-appropriate use of digital tools"
+      ],
+      "optionIds": [
+        "exam-ad-i-q012-opt-A",
+        "exam-ad-i-q012-opt-B",
+        "exam-ad-i-q012-opt-C",
+        "exam-ad-i-q012-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-ad-i-q012-opt-D",
+      "explanation": "\"Accessible, secure and purpose-appropriate use of digital tools\" is the most appropriate choice for this practice item on Digital and information literacy. It aligns with defensible professional judgement in digital and information literacy. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 297,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q013",
+      "courseSlug": "exam-ad-i",
+      "topicId": "educational-assessment",
+      "topicLabel": "Educational assessment",
+      "questionText": "Which principle is most directly described by the following practice: norm-referenced assessment?",
+      "options": [
+        "Portfolio assessment",
+        "Norm-referenced assessment",
+        "Criterion-referenced assessment",
+        "Diagnostic assessment"
+      ],
+      "optionIds": [
+        "exam-ad-i-q013-opt-A",
+        "exam-ad-i-q013-opt-B",
+        "exam-ad-i-q013-opt-C",
+        "exam-ad-i-q013-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-ad-i-q013-opt-B",
+      "explanation": "\"Norm-referenced assessment\" is the most appropriate choice for this practice item on Educational assessment. It aligns with defensible professional judgement in educational assessment. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 58,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q014",
+      "courseSlug": "exam-ad-i",
+      "topicId": "educational-assessment",
+      "topicLabel": "Educational assessment",
+      "questionText": "Which principle is most directly described by the following practice: reliability?",
+      "options": [
+        "Fairness alone",
+        "Validity",
+        "Reliability",
+        "Speed of marking"
+      ],
+      "optionIds": [
+        "exam-ad-i-q014-opt-A",
+        "exam-ad-i-q014-opt-B",
+        "exam-ad-i-q014-opt-C",
+        "exam-ad-i-q014-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-ad-i-q014-opt-C",
+      "explanation": "\"Reliability\" is the most appropriate choice for this practice item on Educational assessment. It aligns with defensible professional judgement in educational assessment. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 401,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q015",
+      "courseSlug": "exam-ad-i",
+      "topicId": "examination-integrity",
+      "topicLabel": "Examination integrity",
+      "questionText": "To improve examination integrity in an education setting, which principle should guide the decision?",
+      "options": [
+        "Using secure procedures, fair conditions and documented incident handling",
+        "Failing to document irregularities",
+        "Allowing unauthorised access",
+        "Changing rules secretly for selected candidates"
+      ],
+      "optionIds": [
+        "exam-ad-i-q015-opt-A",
+        "exam-ad-i-q015-opt-B",
+        "exam-ad-i-q015-opt-C",
+        "exam-ad-i-q015-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-i-q015-opt-A",
+      "explanation": "\"Using secure procedures, fair conditions and documented incident handling\" is the most appropriate choice for this practice item on Examination integrity. It aligns with defensible professional judgement in examination integrity. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 161,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q016",
+      "courseSlug": "exam-ad-i",
+      "topicId": "examination-integrity",
+      "topicLabel": "Examination integrity",
+      "questionText": "When the main objective is a suspected examination irregularity occurs, which approach should be preferred?",
+      "options": [
+        "Using secure procedures, fair conditions and documented incident handling",
+        "Allowing unauthorised access",
+        "Changing rules secretly for selected candidates",
+        "Failing to document irregularities"
+      ],
+      "optionIds": [
+        "exam-ad-i-q016-opt-A",
+        "exam-ad-i-q016-opt-B",
+        "exam-ad-i-q016-opt-C",
+        "exam-ad-i-q016-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-i-q016-opt-A",
+      "explanation": "\"Using secure procedures, fair conditions and documented incident handling\" is the most appropriate choice for this practice item on Examination integrity. It aligns with defensible professional judgement in examination integrity. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 338,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q017",
+      "courseSlug": "exam-ad-i",
+      "topicId": "examination-integrity",
+      "topicLabel": "Examination integrity",
+      "questionText": "Which principle is most directly described by the following practice: protecting assessment materials and reporting suspected leakage?",
+      "options": [
+        "Promising to conceal misconduct",
+        "Protecting assessment materials and reporting suspected leakage",
+        "Sharing confidential papers informally",
+        "Ignoring suspicious access"
+      ],
+      "optionIds": [
+        "exam-ad-i-q017-opt-A",
+        "exam-ad-i-q017-opt-B",
+        "exam-ad-i-q017-opt-C",
+        "exam-ad-i-q017-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-ad-i-q017-opt-B",
+      "explanation": "\"Protecting assessment materials and reporting suspected leakage\" is the most appropriate choice for this practice item on Examination integrity. It aligns with defensible professional judgement in examination integrity. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 182,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q018",
+      "courseSlug": "exam-ad-i",
+      "topicId": "human-resource-management",
+      "topicLabel": "Human resource management",
+      "questionText": "If a decision must be defensible and fair in the area of human resource management, what should be prioritised?",
+      "options": [
+        "Applying rules selectively",
+        "Punishment without hearing the employee",
+        "Fair, documented and timely disciplinary procedures",
+        "Informal public shaming"
+      ],
+      "optionIds": [
+        "exam-ad-i-q018-opt-A",
+        "exam-ad-i-q018-opt-B",
+        "exam-ad-i-q018-opt-C",
+        "exam-ad-i-q018-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-ad-i-q018-opt-C",
+      "explanation": "\"Fair, documented and timely disciplinary procedures\" is the most appropriate choice for this practice item on Human resource management. It aligns with defensible professional judgement in human resource management. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 44,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q019",
+      "courseSlug": "exam-ad-i",
+      "topicId": "human-resource-management",
+      "topicLabel": "Human resource management",
+      "questionText": "To improve human resource management in an education setting, which principle should guide the decision?",
+      "options": [
+        "Workload allocation based on role, capacity and service needs",
+        "Ignoring staff capacity",
+        "Assigning all difficult tasks to one person",
+        "Allocating duties solely by friendship"
+      ],
+      "optionIds": [
+        "exam-ad-i-q019-opt-A",
+        "exam-ad-i-q019-opt-B",
+        "exam-ad-i-q019-opt-C",
+        "exam-ad-i-q019-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-i-q019-opt-A",
+      "explanation": "\"Workload allocation based on role, capacity and service needs\" is the most appropriate choice for this practice item on Human resource management. It aligns with defensible professional judgement in human resource management. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 22,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q020",
+      "courseSlug": "exam-ad-i",
+      "topicId": "human-resource-management",
+      "topicLabel": "Human resource management",
+      "questionText": "Which principle is most directly described by the following practice: objective performance appraisal against known criteria?",
+      "options": [
+        "Rating staff by personal loyalty",
+        "Appraisal based on rumours",
+        "Changing criteria after the review",
+        "Objective performance appraisal against known criteria"
+      ],
+      "optionIds": [
+        "exam-ad-i-q020-opt-A",
+        "exam-ad-i-q020-opt-B",
+        "exam-ad-i-q020-opt-C",
+        "exam-ad-i-q020-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-ad-i-q020-opt-D",
+      "explanation": "\"Objective performance appraisal against known criteria\" is the most appropriate choice for this practice item on Human resource management. It aligns with defensible professional judgement in human resource management. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 135,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q021",
+      "courseSlug": "exam-ad-i",
+      "topicId": "human-resource-management",
+      "topicLabel": "Human resource management",
+      "questionText": "Which principle is most directly described by the following practice: professional development linked to identified needs?",
+      "options": [
+        "Training attendance as the only success measure",
+        "Professional development linked to identified needs",
+        "Withholding development from weaker staff",
+        "Training chosen without needs analysis"
+      ],
+      "optionIds": [
+        "exam-ad-i-q021-opt-A",
+        "exam-ad-i-q021-opt-B",
+        "exam-ad-i-q021-opt-C",
+        "exam-ad-i-q021-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-ad-i-q021-opt-B",
+      "explanation": "\"Professional development linked to identified needs\" is the most appropriate choice for this practice item on Human resource management. It aligns with defensible professional judgement in human resource management. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 365,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q022",
+      "courseSlug": "exam-ad-i",
+      "topicId": "human-resource-management",
+      "topicLabel": "Human resource management",
+      "questionText": "Which principle is most directly described by the following practice: staff consultation and clear communication during change?",
+      "options": [
+        "Withholding essential information",
+        "Surprise changes without explanation",
+        "Using rumours as the communication plan",
+        "Staff consultation and clear communication during change"
+      ],
+      "optionIds": [
+        "exam-ad-i-q022-opt-A",
+        "exam-ad-i-q022-opt-B",
+        "exam-ad-i-q022-opt-C",
+        "exam-ad-i-q022-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-ad-i-q022-opt-D",
+      "explanation": "\"Staff consultation and clear communication during change\" is the most appropriate choice for this practice item on Human resource management. It aligns with defensible professional judgement in human resource management. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 77,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q023",
+      "courseSlug": "exam-ad-i",
+      "topicId": "inclusive-education",
+      "topicLabel": "Inclusive education",
+      "questionText": "Which principle is most directly described by the following practice: removing barriers to participation while maintaining meaningful learning goals?",
+      "options": [
+        "Ignoring learner voice",
+        "Removing barriers to participation while maintaining meaningful learning goals",
+        "Separating learners automatically",
+        "Assuming support lowers expectations"
+      ],
+      "optionIds": [
+        "exam-ad-i-q023-opt-A",
+        "exam-ad-i-q023-opt-B",
+        "exam-ad-i-q023-opt-C",
+        "exam-ad-i-q023-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-ad-i-q023-opt-B",
+      "explanation": "\"Removing barriers to participation while maintaining meaningful learning goals\" is the most appropriate choice for this practice item on Inclusive education. It aligns with defensible professional judgement in inclusive education. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 405,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q024",
+      "courseSlug": "exam-ad-i",
+      "topicId": "leadership-and-supervision",
+      "topicLabel": "Leadership and supervision",
+      "questionText": "If a decision must be defensible and fair in the area of leadership and supervision, what should be prioritised?",
+      "options": [
+        "Inspection based only on rumours",
+        "Punishment as the sole supervisory tool",
+        "Supportive instructional supervision focused on improving teaching",
+        "Fault-finding without follow-up"
+      ],
+      "optionIds": [
+        "exam-ad-i-q024-opt-A",
+        "exam-ad-i-q024-opt-B",
+        "exam-ad-i-q024-opt-C",
+        "exam-ad-i-q024-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-ad-i-q024-opt-C",
+      "explanation": "\"Supportive instructional supervision focused on improving teaching\" is the most appropriate choice for this practice item on Leadership and supervision. It aligns with defensible professional judgement in leadership and supervision. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 16,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q025",
+      "courseSlug": "exam-ad-i",
+      "topicId": "leadership-and-supervision",
+      "topicLabel": "Leadership and supervision",
+      "questionText": "To improve leadership and supervision in an education setting, which principle should guide the decision?",
+      "options": [
+        "Imposing change without explanation",
+        "Launching change without resources",
+        "Change management with communication, participation and review",
+        "Assuming resistance proves misconduct"
+      ],
+      "optionIds": [
+        "exam-ad-i-q025-opt-A",
+        "exam-ad-i-q025-opt-B",
+        "exam-ad-i-q025-opt-C",
+        "exam-ad-i-q025-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-ad-i-q025-opt-C",
+      "explanation": "\"Change management with communication, participation and review\" is the most appropriate choice for this practice item on Leadership and supervision. It aligns with defensible professional judgement in leadership and supervision. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 40,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q026",
+      "courseSlug": "exam-ad-i",
+      "topicId": "leadership-and-supervision",
+      "topicLabel": "Leadership and supervision",
+      "questionText": "Which principle is most directly described by the following practice: a school improvement plan with measurable targets?",
+      "options": [
+        "A school improvement plan with measurable targets",
+        "A plan without baseline data or indicators",
+        "A report written only after failure",
+        "A list of wishes with no owners"
+      ],
+      "optionIds": [
+        "exam-ad-i-q026-opt-A",
+        "exam-ad-i-q026-opt-B",
+        "exam-ad-i-q026-opt-C",
+        "exam-ad-i-q026-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-i-q026-opt-A",
+      "explanation": "\"A school improvement plan with measurable targets\" is the most appropriate choice for this practice item on Leadership and supervision. It aligns with defensible professional judgement in leadership and supervision. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 177,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q027",
+      "courseSlug": "exam-ad-i",
+      "topicId": "leadership-and-supervision",
+      "topicLabel": "Leadership and supervision",
+      "questionText": "Which principle is most directly described by the following practice: change management with communication, participation and review?",
+      "options": [
+        "Launching change without resources",
+        "Imposing change without explanation",
+        "Assuming resistance proves misconduct",
+        "Change management with communication, participation and review"
+      ],
+      "optionIds": [
+        "exam-ad-i-q027-opt-A",
+        "exam-ad-i-q027-opt-B",
+        "exam-ad-i-q027-opt-C",
+        "exam-ad-i-q027-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-ad-i-q027-opt-D",
+      "explanation": "\"Change management with communication, participation and review\" is the most appropriate choice for this practice item on Leadership and supervision. It aligns with defensible professional judgement in leadership and supervision. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 489,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q028",
+      "courseSlug": "exam-ad-i",
+      "topicId": "leadership-and-supervision",
+      "topicLabel": "Leadership and supervision",
+      "questionText": "Which principle is most directly described by the following practice: coaching that builds professional capacity?",
+      "options": [
+        "Coaching that builds professional capacity",
+        "Withholding useful feedback",
+        "Threatening staff instead of supporting them",
+        "Doing all work for the teacher"
+      ],
+      "optionIds": [
+        "exam-ad-i-q028-opt-A",
+        "exam-ad-i-q028-opt-B",
+        "exam-ad-i-q028-opt-C",
+        "exam-ad-i-q028-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-i-q028-opt-A",
+      "explanation": "\"Coaching that builds professional capacity\" is the most appropriate choice for this practice item on Leadership and supervision. It aligns with defensible professional judgement in leadership and supervision. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 214,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q029",
+      "courseSlug": "exam-ad-i",
+      "topicId": "leadership-and-supervision",
+      "topicLabel": "Leadership and supervision",
+      "questionText": "Which principle is most directly described by the following practice: conflict resolution through listening, evidence and fair process?",
+      "options": [
+        "Conflict resolution through listening, evidence and fair process",
+        "Ignoring serious unresolved conflict",
+        "Spreading confidential details",
+        "Taking sides before hearing facts"
+      ],
+      "optionIds": [
+        "exam-ad-i-q029-opt-A",
+        "exam-ad-i-q029-opt-B",
+        "exam-ad-i-q029-opt-C",
+        "exam-ad-i-q029-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-i-q029-opt-A",
+      "explanation": "\"Conflict resolution through listening, evidence and fair process\" is the most appropriate choice for this practice item on Leadership and supervision. It aligns with defensible professional judgement in leadership and supervision. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 355,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q030",
+      "courseSlug": "exam-ad-i",
+      "topicId": "leadership-and-supervision",
+      "topicLabel": "Leadership and supervision",
+      "questionText": "Which principle is most directly described by the following practice: delegation with clear authority and accountability?",
+      "options": [
+        "Keeping every decision with one person",
+        "Delegation with clear authority and accountability",
+        "Transferring responsibility without support",
+        "Assigning work without authority"
+      ],
+      "optionIds": [
+        "exam-ad-i-q030-opt-A",
+        "exam-ad-i-q030-opt-B",
+        "exam-ad-i-q030-opt-C",
+        "exam-ad-i-q030-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-ad-i-q030-opt-B",
+      "explanation": "\"Delegation with clear authority and accountability\" is the most appropriate choice for this practice item on Leadership and supervision. It aligns with defensible professional judgement in leadership and supervision. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 60,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q031",
+      "courseSlug": "exam-ad-i",
+      "topicId": "leadership-and-supervision",
+      "topicLabel": "Leadership and supervision",
+      "questionText": "Which principle is most directly described by the following practice: monitoring progress against agreed indicators?",
+      "options": [
+        "Ignoring deviations from targets",
+        "Monitoring progress against agreed indicators",
+        "Waiting until the plan ends",
+        "Counting meetings as the only measure"
+      ],
+      "optionIds": [
+        "exam-ad-i-q031-opt-A",
+        "exam-ad-i-q031-opt-B",
+        "exam-ad-i-q031-opt-C",
+        "exam-ad-i-q031-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-ad-i-q031-opt-B",
+      "explanation": "\"Monitoring progress against agreed indicators\" is the most appropriate choice for this practice item on Leadership and supervision. It aligns with defensible professional judgement in leadership and supervision. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 408,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q032",
+      "courseSlug": "exam-ad-i",
+      "topicId": "leadership-and-supervision",
+      "topicLabel": "Leadership and supervision",
+      "questionText": "Which principle is most directly described by the following practice: participatory decision-making where appropriate?",
+      "options": [
+        "Excluding all relevant stakeholders",
+        "Participatory decision-making where appropriate",
+        "Making decisions from unverified claims",
+        "Avoiding responsibility for decisions"
+      ],
+      "optionIds": [
+        "exam-ad-i-q032-opt-A",
+        "exam-ad-i-q032-opt-B",
+        "exam-ad-i-q032-opt-C",
+        "exam-ad-i-q032-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-ad-i-q032-opt-B",
+      "explanation": "\"Participatory decision-making where appropriate\" is the most appropriate choice for this practice item on Leadership and supervision. It aligns with defensible professional judgement in leadership and supervision. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 268,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q033",
+      "courseSlug": "exam-ad-i",
+      "topicId": "leadership-and-supervision",
+      "topicLabel": "Leadership and supervision",
+      "questionText": "Which principle is most directly described by the following practice: supportive instructional supervision focused on improving teaching?",
+      "options": [
+        "Fault-finding without follow-up",
+        "Punishment as the sole supervisory tool",
+        "Inspection based only on rumours",
+        "Supportive instructional supervision focused on improving teaching"
+      ],
+      "optionIds": [
+        "exam-ad-i-q033-opt-A",
+        "exam-ad-i-q033-opt-B",
+        "exam-ad-i-q033-opt-C",
+        "exam-ad-i-q033-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-ad-i-q033-opt-D",
+      "explanation": "\"Supportive instructional supervision focused on improving teaching\" is the most appropriate choice for this practice item on Leadership and supervision. It aligns with defensible professional judgement in leadership and supervision. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 175,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q034",
+      "courseSlug": "exam-ad-i",
+      "topicId": "learner-wellbeing",
+      "topicLabel": "Learner wellbeing",
+      "questionText": "If a decision must be defensible and fair in the area of learner wellbeing, what should be prioritised?",
+      "options": [
+        "Following safeguarding procedures and acting promptly on credible concerns",
+        "Ignoring warning signs",
+        "Investigating alone beyond one's role",
+        "Sharing identifying details casually"
+      ],
+      "optionIds": [
+        "exam-ad-i-q034-opt-A",
+        "exam-ad-i-q034-opt-B",
+        "exam-ad-i-q034-opt-C",
+        "exam-ad-i-q034-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-i-q034-opt-A",
+      "explanation": "\"Following safeguarding procedures and acting promptly on credible concerns\" is the most appropriate choice for this practice item on Learner wellbeing. It aligns with defensible professional judgement in learner wellbeing. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 288,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q035",
+      "courseSlug": "exam-ad-i",
+      "topicId": "numerical-reasoning",
+      "topicLabel": "Numerical reasoning",
+      "questionText": "Which principle is most directly described by the following practice: checking units and assumptions before calculating?",
+      "options": [
+        "Rounding every intermediate value aggressively",
+        "Checking units and assumptions before calculating",
+        "Ignoring units",
+        "Choosing an answer before calculating"
+      ],
+      "optionIds": [
+        "exam-ad-i-q035-opt-A",
+        "exam-ad-i-q035-opt-B",
+        "exam-ad-i-q035-opt-C",
+        "exam-ad-i-q035-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-ad-i-q035-opt-B",
+      "explanation": "\"Checking units and assumptions before calculating\" is the most appropriate choice for this practice item on Numerical reasoning. It aligns with defensible professional judgement in numerical reasoning. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 435,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q036",
+      "courseSlug": "exam-ad-i",
+      "topicId": "professional-learning",
+      "topicLabel": "Professional learning",
+      "questionText": "If a decision must be defensible and fair in the area of professional learning, what should be prioritised?",
+      "options": [
+        "Sharing effective practice through structured peer learning",
+        "Assuming every method transfers unchanged",
+        "Keeping all successful methods private",
+        "Avoiding feedback from colleagues"
+      ],
+      "optionIds": [
+        "exam-ad-i-q036-opt-A",
+        "exam-ad-i-q036-opt-B",
+        "exam-ad-i-q036-opt-C",
+        "exam-ad-i-q036-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-i-q036-opt-A",
+      "explanation": "\"Sharing effective practice through structured peer learning\" is the most appropriate choice for this practice item on Professional learning. It aligns with defensible professional judgement in professional learning. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 3,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q037",
+      "courseSlug": "exam-ad-i",
+      "topicId": "professional-learning",
+      "topicLabel": "Professional learning",
+      "questionText": "To improve professional learning in an education setting, which principle should guide the decision?",
+      "options": [
+        "Sharing effective practice through structured peer learning",
+        "Avoiding feedback from colleagues",
+        "Assuming every method transfers unchanged",
+        "Keeping all successful methods private"
+      ],
+      "optionIds": [
+        "exam-ad-i-q037-opt-A",
+        "exam-ad-i-q037-opt-B",
+        "exam-ad-i-q037-opt-C",
+        "exam-ad-i-q037-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-i-q037-opt-A",
+      "explanation": "\"Sharing effective practice through structured peer learning\" is the most appropriate choice for this practice item on Professional learning. It aligns with defensible professional judgement in professional learning. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 172,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q038",
+      "courseSlug": "exam-ad-i",
+      "topicId": "professional-learning",
+      "topicLabel": "Professional learning",
+      "questionText": "Which principle is most directly described by the following practice: evaluating whether training changed practice and learner outcomes?",
+      "options": [
+        "Using attendance alone as proof of impact",
+        "Ignoring follow-up support",
+        "Evaluating whether training changed practice and learner outcomes",
+        "Choosing training only by certificate value"
+      ],
+      "optionIds": [
+        "exam-ad-i-q038-opt-A",
+        "exam-ad-i-q038-opt-B",
+        "exam-ad-i-q038-opt-C",
+        "exam-ad-i-q038-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-ad-i-q038-opt-C",
+      "explanation": "\"Evaluating whether training changed practice and learner outcomes\" is the most appropriate choice for this practice item on Professional learning. It aligns with defensible professional judgement in professional learning. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 425,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q039",
+      "courseSlug": "exam-ad-i",
+      "topicId": "professional-learning",
+      "topicLabel": "Professional learning",
+      "questionText": "Which principle is most directly described by the following practice: sharing effective practice through structured peer learning?",
+      "options": [
+        "Keeping all successful methods private",
+        "Assuming every method transfers unchanged",
+        "Sharing effective practice through structured peer learning",
+        "Avoiding feedback from colleagues"
+      ],
+      "optionIds": [
+        "exam-ad-i-q039-opt-A",
+        "exam-ad-i-q039-opt-B",
+        "exam-ad-i-q039-opt-C",
+        "exam-ad-i-q039-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-ad-i-q039-opt-C",
+      "explanation": "\"Sharing effective practice through structured peer learning\" is the most appropriate choice for this practice item on Professional learning. It aligns with defensible professional judgement in professional learning. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 35,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q040",
+      "courseSlug": "exam-ad-i",
+      "topicId": "professional-practice",
+      "topicLabel": "Professional practice",
+      "questionText": "If a decision must be defensible and fair in the area of professional practice, what should be prioritised?",
+      "options": [
+        "Assuming experience alone guarantees effectiveness",
+        "Reflection as blame without improvement",
+        "Avoiding professional learning",
+        "Reflective practice linked to evidence and action"
+      ],
+      "optionIds": [
+        "exam-ad-i-q040-opt-A",
+        "exam-ad-i-q040-opt-B",
+        "exam-ad-i-q040-opt-C",
+        "exam-ad-i-q040-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-ad-i-q040-opt-D",
+      "explanation": "\"Reflective practice linked to evidence and action\" is the most appropriate choice for this practice item on Professional practice. It aligns with defensible professional judgement in professional practice. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 191,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q041",
+      "courseSlug": "exam-ad-i",
+      "topicId": "professional-practice",
+      "topicLabel": "Professional practice",
+      "questionText": "To improve professional practice in an education setting, which principle should guide the decision?",
+      "options": [
+        "Excluding a learner because support is needed",
+        "Assuming all disabilities require the same adjustment",
+        "Reasonable accommodation that supports access and participation",
+        "Ignoring barriers in the learning environment"
+      ],
+      "optionIds": [
+        "exam-ad-i-q041-opt-A",
+        "exam-ad-i-q041-opt-B",
+        "exam-ad-i-q041-opt-C",
+        "exam-ad-i-q041-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-ad-i-q041-opt-C",
+      "explanation": "\"Reasonable accommodation that supports access and participation\" is the most appropriate choice for this practice item on Professional practice. It aligns with defensible professional judgement in professional practice. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 71,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q042",
+      "courseSlug": "exam-ad-i",
+      "topicId": "professional-practice",
+      "topicLabel": "Professional practice",
+      "questionText": "Which principle is most directly described by the following practice: maintaining professional boundaries and respectful conduct?",
+      "options": [
+        "Using authority for personal advantage",
+        "Maintaining professional boundaries and respectful conduct",
+        "Favouritism in professional decisions",
+        "Sharing inappropriate personal content with learners"
+      ],
+      "optionIds": [
+        "exam-ad-i-q042-opt-A",
+        "exam-ad-i-q042-opt-B",
+        "exam-ad-i-q042-opt-C",
+        "exam-ad-i-q042-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-ad-i-q042-opt-B",
+      "explanation": "\"Maintaining professional boundaries and respectful conduct\" is the most appropriate choice for this practice item on Professional practice. It aligns with defensible professional judgement in professional practice. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 72,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q043",
+      "courseSlug": "exam-ad-i",
+      "topicId": "professional-practice",
+      "topicLabel": "Professional practice",
+      "questionText": "Which principle is most directly described by the following practice: professional collaboration with shared goals and clear responsibilities?",
+      "options": [
+        "Professional collaboration with shared goals and clear responsibilities",
+        "Collaboration without accountability",
+        "Competing at the expense of learners",
+        "Withholding useful resources"
+      ],
+      "optionIds": [
+        "exam-ad-i-q043-opt-A",
+        "exam-ad-i-q043-opt-B",
+        "exam-ad-i-q043-opt-C",
+        "exam-ad-i-q043-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-i-q043-opt-A",
+      "explanation": "\"Professional collaboration with shared goals and clear responsibilities\" is the most appropriate choice for this practice item on Professional practice. It aligns with defensible professional judgement in professional practice. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 160,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q044",
+      "courseSlug": "exam-ad-i",
+      "topicId": "professional-practice",
+      "topicLabel": "Professional practice",
+      "questionText": "Which principle is most directly described by the following practice: reasonable accommodation that supports access and participation?",
+      "options": [
+        "Reasonable accommodation that supports access and participation",
+        "Assuming all disabilities require the same adjustment",
+        "Excluding a learner because support is needed",
+        "Ignoring barriers in the learning environment"
+      ],
+      "optionIds": [
+        "exam-ad-i-q044-opt-A",
+        "exam-ad-i-q044-opt-B",
+        "exam-ad-i-q044-opt-C",
+        "exam-ad-i-q044-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-i-q044-opt-A",
+      "explanation": "\"Reasonable accommodation that supports access and participation\" is the most appropriate choice for this practice item on Professional practice. It aligns with defensible professional judgement in professional practice. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 305,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q045",
+      "courseSlug": "exam-ad-i",
+      "topicId": "professional-practice",
+      "topicLabel": "Professional practice",
+      "questionText": "Which principle is most directly described by the following practice: reflective practice linked to evidence and action?",
+      "options": [
+        "Avoiding professional learning",
+        "Assuming experience alone guarantees effectiveness",
+        "Reflection as blame without improvement",
+        "Reflective practice linked to evidence and action"
+      ],
+      "optionIds": [
+        "exam-ad-i-q045-opt-A",
+        "exam-ad-i-q045-opt-B",
+        "exam-ad-i-q045-opt-C",
+        "exam-ad-i-q045-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-ad-i-q045-opt-D",
+      "explanation": "\"Reflective practice linked to evidence and action\" is the most appropriate choice for this practice item on Professional practice. It aligns with defensible professional judgement in professional practice. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 437,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q046",
+      "courseSlug": "exam-ad-i",
+      "topicId": "school-improvement",
+      "topicLabel": "School improvement",
+      "questionText": "To improve school improvement in an education setting, which principle should guide the decision?",
+      "options": [
+        "Listing actions without responsibility",
+        "Using only broad intentions",
+        "Reviewing progress without records",
+        "Assigning each action an owner, timeline and success indicator"
+      ],
+      "optionIds": [
+        "exam-ad-i-q046-opt-A",
+        "exam-ad-i-q046-opt-B",
+        "exam-ad-i-q046-opt-C",
+        "exam-ad-i-q046-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-ad-i-q046-opt-D",
+      "explanation": "\"Assigning each action an owner, timeline and success indicator\" is the most appropriate choice for this practice item on School improvement. It aligns with defensible professional judgement in school improvement. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 209,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q047",
+      "courseSlug": "exam-ad-i",
+      "topicId": "school-improvement",
+      "topicLabel": "School improvement",
+      "questionText": "Which principle is most directly described by the following practice: assigning each action an owner, timeline and success indicator?",
+      "options": [
+        "Listing actions without responsibility",
+        "Reviewing progress without records",
+        "Using only broad intentions",
+        "Assigning each action an owner, timeline and success indicator"
+      ],
+      "optionIds": [
+        "exam-ad-i-q047-opt-A",
+        "exam-ad-i-q047-opt-B",
+        "exam-ad-i-q047-opt-C",
+        "exam-ad-i-q047-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-ad-i-q047-opt-D",
+      "explanation": "\"Assigning each action an owner, timeline and success indicator\" is the most appropriate choice for this practice item on School improvement. It aligns with defensible professional judgement in school improvement. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 328,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q048",
+      "courseSlug": "exam-ad-i",
+      "topicId": "school-improvement",
+      "topicLabel": "School improvement",
+      "questionText": "Which principle is most directly described by the following practice: prioritising actions based on evidence, impact and feasibility?",
+      "options": [
+        "Prioritising actions based on evidence, impact and feasibility",
+        "Launching every initiative at once",
+        "Ignoring implementation capacity",
+        "Choosing actions only because they are fashionable"
+      ],
+      "optionIds": [
+        "exam-ad-i-q048-opt-A",
+        "exam-ad-i-q048-opt-B",
+        "exam-ad-i-q048-opt-C",
+        "exam-ad-i-q048-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-i-q048-opt-A",
+      "explanation": "\"Prioritising actions based on evidence, impact and feasibility\" is the most appropriate choice for this practice item on School improvement. It aligns with defensible professional judgement in school improvement. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 380,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q049",
+      "courseSlug": "exam-ad-i",
+      "topicId": "school-community-relations",
+      "topicLabel": "School-community relations",
+      "questionText": "If a decision must be defensible and fair in the area of school-community relations, what should be prioritised?",
+      "options": [
+        "Punishing absence without investigating causes",
+        "Assuming every absence is deliberate",
+        "Removing attendance monitoring",
+        "Using attendance data to identify and address barriers"
+      ],
+      "optionIds": [
+        "exam-ad-i-q049-opt-A",
+        "exam-ad-i-q049-opt-B",
+        "exam-ad-i-q049-opt-C",
+        "exam-ad-i-q049-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-ad-i-q049-opt-D",
+      "explanation": "\"Using attendance data to identify and address barriers\" is the most appropriate choice for this practice item on School-community relations. It aligns with defensible professional judgement in school-community relations. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 62,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q050",
+      "courseSlug": "exam-ad-i",
+      "topicId": "school-community-relations",
+      "topicLabel": "School-community relations",
+      "questionText": "When the main objective is a learner or stakeholder raises a concern, which approach should be preferred?",
+      "options": [
+        "Ignoring a disclosure",
+        "Promising secrecy regardless of safety",
+        "Investigating serious abuse alone and informally",
+        "Learner safeguarding and prompt referral through proper channels"
+      ],
+      "optionIds": [
+        "exam-ad-i-q050-opt-A",
+        "exam-ad-i-q050-opt-B",
+        "exam-ad-i-q050-opt-C",
+        "exam-ad-i-q050-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-ad-i-q050-opt-D",
+      "explanation": "\"Learner safeguarding and prompt referral through proper channels\" is the most appropriate choice for this practice item on School-community relations. It aligns with defensible professional judgement in school-community relations. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 91,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q051",
+      "courseSlug": "exam-ad-i",
+      "topicId": "school-community-relations",
+      "topicLabel": "School-community relations",
+      "questionText": "Which principle is most directly described by the following practice: learner safeguarding and prompt referral through proper channels?",
+      "options": [
+        "Promising secrecy regardless of safety",
+        "Investigating serious abuse alone and informally",
+        "Ignoring a disclosure",
+        "Learner safeguarding and prompt referral through proper channels"
+      ],
+      "optionIds": [
+        "exam-ad-i-q051-opt-A",
+        "exam-ad-i-q051-opt-B",
+        "exam-ad-i-q051-opt-C",
+        "exam-ad-i-q051-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-ad-i-q051-opt-D",
+      "explanation": "\"Learner safeguarding and prompt referral through proper channels\" is the most appropriate choice for this practice item on School-community relations. It aligns with defensible professional judgement in school-community relations. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 423,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "premium"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "premium_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q052",
+      "courseSlug": "exam-ad-i",
+      "topicId": "teaching-and-learning",
+      "topicLabel": "Teaching and learning",
+      "questionText": "Which principle is most directly described by the following practice: scaffolding that is gradually withdrawn?",
+      "options": [
+        "Scaffolding that is gradually withdrawn",
+        "Giving the complete solution every time",
+        "Avoiding challenging tasks",
+        "Removing all learner choice"
+      ],
+      "optionIds": [
+        "exam-ad-i-q052-opt-A",
+        "exam-ad-i-q052-opt-B",
+        "exam-ad-i-q052-opt-C",
+        "exam-ad-i-q052-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-i-q052-opt-A",
+      "explanation": "\"Scaffolding that is gradually withdrawn\" is the most appropriate choice for this practice item on Teaching and learning. It aligns with defensible professional judgement in teaching and learning. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 251,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "premium"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "premium_tier"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q053",
+      "courseSlug": "exam-ad-i",
+      "topicId": "work-planning",
+      "topicLabel": "Work planning",
+      "questionText": "If a decision must be defensible and fair in the area of work planning, what should be prioritised?",
+      "options": [
+        "Prioritising urgent and important work while respecting deadlines",
+        "Working without a schedule or review",
+        "Ignoring statutory deadlines",
+        "Treating every task as equally urgent"
+      ],
+      "optionIds": [
+        "exam-ad-i-q053-opt-A",
+        "exam-ad-i-q053-opt-B",
+        "exam-ad-i-q053-opt-C",
+        "exam-ad-i-q053-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-i-q053-opt-A",
+      "explanation": "\"Prioritising urgent and important work while respecting deadlines\" is the most appropriate choice for this practice item on Work planning. It aligns with defensible professional judgement in work planning. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 106,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "premium"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "premium_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q054",
+      "courseSlug": "exam-ad-i",
+      "topicId": "work-planning",
+      "topicLabel": "Work planning",
+      "questionText": "To improve work planning in an education setting, which principle should guide the decision?",
+      "options": [
+        "No backup responsibilities",
+        "Contingency planning for foreseeable disruption",
+        "Assuming every event will follow the plan",
+        "Keeping plans inaccessible to the team"
+      ],
+      "optionIds": [
+        "exam-ad-i-q054-opt-A",
+        "exam-ad-i-q054-opt-B",
+        "exam-ad-i-q054-opt-C",
+        "exam-ad-i-q054-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-ad-i-q054-opt-B",
+      "explanation": "\"Contingency planning for foreseeable disruption\" is the most appropriate choice for this practice item on Work planning. It aligns with defensible professional judgement in work planning. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 76,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "premium"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "premium_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q055",
+      "courseSlug": "exam-ad-i",
+      "topicId": "work-planning",
+      "topicLabel": "Work planning",
+      "questionText": "Which principle is most directly described by the following practice: contingency planning for foreseeable disruption?",
+      "options": [
+        "Contingency planning for foreseeable disruption",
+        "No backup responsibilities",
+        "Keeping plans inaccessible to the team",
+        "Assuming every event will follow the plan"
+      ],
+      "optionIds": [
+        "exam-ad-i-q055-opt-A",
+        "exam-ad-i-q055-opt-B",
+        "exam-ad-i-q055-opt-C",
+        "exam-ad-i-q055-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-i-q055-opt-A",
+      "explanation": "\"Contingency planning for foreseeable disruption\" is the most appropriate choice for this practice item on Work planning. It aligns with defensible professional judgement in work planning. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 374,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "premium"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "premium_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-ad-i-q056",
+      "courseSlug": "exam-ad-i",
+      "topicId": "work-planning",
+      "topicLabel": "Work planning",
+      "questionText": "Which principle is most directly described by the following practice: prioritising urgent and important work while respecting deadlines?",
+      "options": [
+        "Prioritising urgent and important work while respecting deadlines",
+        "Treating every task as equally urgent",
+        "Working without a schedule or review",
+        "Ignoring statutory deadlines"
+      ],
+      "optionIds": [
+        "exam-ad-i-q056-opt-A",
+        "exam-ad-i-q056-opt-B",
+        "exam-ad-i-q056-opt-C",
+        "exam-ad-i-q056-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-i-q056-opt-A",
+      "explanation": "\"Prioritising urgent and important work while respecting deadlines\" is the most appropriate choice for this practice item on Work planning. It aligns with defensible professional judgement in work planning. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
+      "sourceQuestionNumber": 472,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "premium"
+      ],
+      "promotionRank": "ad-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "premium_tier",
+        "length_clue_risk"
+      ]
+    }
+  ]
+}

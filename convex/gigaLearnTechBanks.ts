@@ -25,6 +25,7 @@ import { getTechCourseMeta, listTechCourseMeta } from "../web/lib/gigalearn/acad
 import { getBuiltinAcademyCourse } from "../web/lib/gigalearn/academy/courseCatalog";
 import type { TechPracticeMode } from "../web/lib/gigalearn/academy/techBanks/techBankTypes";
 import {
+  hasExamPracticePremiumAccess,
   isExamPracticeCourseSlug,
   resolveExamPracticeSessionCount,
   shouldAbandonPriorExamInProgress,
@@ -264,7 +265,16 @@ export const startTechPracticeSession = mutation({
       user?.subscriptionPlan ?? "free",
       user?.subscriptionExpiresAt
     );
-    const bankSize = getTechBankQuestions(slug).length;
+    // Resolve entitlement before sizing the pool so free callers never see
+    // premium-only stems (accessTier gate) and bankSize reflects their pool.
+    const premiumAccess = hasExamPracticePremiumAccess({
+      subscriptionActive,
+      hasPurchasedCredits,
+      credits: user?.credits ?? 0,
+    });
+    const bankSize = getTechBankQuestions(slug, {
+      freeTierOnly: !premiumAccess,
+    }).length;
     const resolved = resolveExamPracticeSessionCount({
       requested: args.count ?? defaultCount,
       courseSlug: slug,
@@ -283,6 +293,7 @@ export const startTechPracticeSession = mutation({
       count,
       seed,
       revisionQuestionIds: revisionIds,
+      premiumAccess: resolved.premiumAccess,
     });
     if (questionIds.length === 0) {
       throw new Error("No approved questions available for this selection.");

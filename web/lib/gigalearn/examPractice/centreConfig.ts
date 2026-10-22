@@ -16,14 +16,16 @@ export const BECE_AWAITING_MATERIALS_MESSAGE =
   "BECE practice materials are being prepared.";
 
 /**
- * Promotion ranks from the 2026 GES PS→DD advert (metadata only).
- * Labels for future banks — not claims that questions are published per rank.
+ * Promotion ranks shown on the Exam Practice Centre.
+ * Interactive banks exist for AD II → Director I; PS remains label-only.
  */
 export const TEACHER_PROMOTION_LEVEL_LABELS = [
-  { id: "deputy-director", label: "Deputy Director" },
-  { id: "assistant-director-i", label: "Assistant Director I" },
-  { id: "assistant-director-ii", label: "Assistant Director II" },
-  { id: "principal-superintendent", label: "Principal Superintendent" },
+  { id: "assistant-director-ii", label: "Assistant Director II", courseSlug: "exam-ad-ii" },
+  { id: "assistant-director-i", label: "Assistant Director I", courseSlug: "exam-ad-i" },
+  { id: "deputy-director", label: "Deputy Director", courseSlug: "exam-deputy-director" },
+  { id: "director-ii", label: "Director II", courseSlug: "exam-director-ii" },
+  { id: "director-i", label: "Director I", courseSlug: "exam-director-i" },
+  { id: "principal-superintendent", label: "Principal Superintendent", courseSlug: null },
 ] as const;
 
 /**
@@ -84,6 +86,28 @@ export const EXAM_PRACTICE_DESTINATIONS = {
   teacherPromotionPracticeFull:
     "/gigalearn/academy/tech/?course=exam-teacher-promotion&mode=practice_test&count=500",
   teacherPromotionCourse: "/gigalearn/academy/course/?slug=exam-teacher-promotion",
+  /** Rank-specific promotion practice banks (honest published counts; not 500 verified). */
+  adIiPractice: "/gigalearn/academy/tech/?course=exam-ad-ii&count=50",
+  adIiPracticeFull:
+    "/gigalearn/academy/tech/?course=exam-ad-ii&mode=practice_test&count=500",
+  adIiCourse: "/gigalearn/academy/course/?slug=exam-ad-ii",
+  adIPractice: "/gigalearn/academy/tech/?course=exam-ad-i&count=50",
+  adIPracticeFull:
+    "/gigalearn/academy/tech/?course=exam-ad-i&mode=practice_test&count=500",
+  adICourse: "/gigalearn/academy/course/?slug=exam-ad-i",
+  deputyDirectorPractice:
+    "/gigalearn/academy/tech/?course=exam-deputy-director&count=50",
+  deputyDirectorPracticeFull:
+    "/gigalearn/academy/tech/?course=exam-deputy-director&mode=practice_test&count=500",
+  deputyDirectorCourse: "/gigalearn/academy/course/?slug=exam-deputy-director",
+  directorIiPractice: "/gigalearn/academy/tech/?course=exam-director-ii&count=50",
+  directorIiPracticeFull:
+    "/gigalearn/academy/tech/?course=exam-director-ii&mode=practice_test&count=500",
+  directorIiCourse: "/gigalearn/academy/course/?slug=exam-director-ii",
+  directorIPractice: "/gigalearn/academy/tech/?course=exam-director-i&count=50",
+  directorIPracticeFull:
+    "/gigalearn/academy/tech/?course=exam-director-i&mode=practice_test&count=500",
+  directorICourse: "/gigalearn/academy/course/?slug=exam-director-i",
   academy: "/gigalearn/academy/",
   academyAssess: "/gigalearn/academy/assess/",
   academyMy: "/gigalearn/academy/my/",
@@ -100,6 +124,28 @@ export const EXAM_PRACTICE_DESTINATIONS = {
 const beceMeta = getExamBankMeta("exam-bece-prep");
 const teacherMeta = getExamBankMeta("exam-teacher-promotion");
 const ad2Meta = getExamBankMeta("exam-ad2-study-guide");
+const adIiMeta = getExamBankMeta("exam-ad-ii");
+const adIMeta = getExamBankMeta("exam-ad-i");
+const deputyDirectorMeta = getExamBankMeta("exam-deputy-director");
+const directorIiMeta = getExamBankMeta("exam-director-ii");
+const directorIMeta = getExamBankMeta("exam-director-i");
+
+function rankBankSummary(meta: ReturnType<typeof getExamBankMeta>) {
+  const approved = meta?.approvedQuestionCount ?? 0;
+  const pending = meta?.pendingQuestionCount ?? 0;
+  const published = approved + pending;
+  return {
+    available: published > 0,
+    approvedCount: approved,
+    pendingCount: pending,
+    publishedCount: published,
+    targetCount: 500,
+    gapToTarget: Math.max(0, 500 - published),
+    sourceDocument: meta?.sourceDocument ?? null,
+    title: meta?.title ?? null,
+    courseSlug: meta?.courseSlug ?? null,
+  } as const;
+}
 
 /**
  * BECE subjects from the imported preparation bank (not official WAEC papers).
@@ -137,6 +183,70 @@ export const AD2_STUDY_GUIDE_SUMMARY = {
   pendingCount: ad2Meta?.pendingQuestionCount ?? 0,
   note: "Study guide only — no extractable A–D MCQs imported (not invented).",
   sourceDocument: ad2Meta?.sourceDocument ?? null,
+} as const;
+
+/**
+ * Five rank-specific practice banks. Counts are published practice items
+ * (mostly pending_review / awaiting verification) — not verified official papers
+ * and not a claim that each PDF delivered 500 unique questions.
+ */
+export const PROMOTION_RANK_BANK_SUMMARIES = [
+  {
+    id: "ad-ii",
+    shortLabel: "AD II",
+    focus:
+      "Classroom practice, educational assessment, curriculum, professional ethics, teaching and learning.",
+    practiceHref: EXAM_PRACTICE_DESTINATIONS.adIiPractice,
+    fullHref: EXAM_PRACTICE_DESTINATIONS.adIiPracticeFull,
+    courseHref: EXAM_PRACTICE_DESTINATIONS.adIiCourse,
+    ...rankBankSummary(adIiMeta),
+  },
+  {
+    id: "ad-i",
+    shortLabel: "AD I",
+    focus:
+      "Instructional supervision, staff development, school improvement, operational leadership.",
+    practiceHref: EXAM_PRACTICE_DESTINATIONS.adIPractice,
+    fullHref: EXAM_PRACTICE_DESTINATIONS.adIPracticeFull,
+    courseHref: EXAM_PRACTICE_DESTINATIONS.adICourse,
+    ...rankBankSummary(adIMeta),
+  },
+  {
+    id: "deputy-director",
+    shortLabel: "Deputy Director",
+    focus:
+      "Institutional and district management, monitoring and evaluation, resource accountability.",
+    practiceHref: EXAM_PRACTICE_DESTINATIONS.deputyDirectorPractice,
+    fullHref: EXAM_PRACTICE_DESTINATIONS.deputyDirectorPracticeFull,
+    courseHref: EXAM_PRACTICE_DESTINATIONS.deputyDirectorCourse,
+    ...rankBankSummary(deputyDirectorMeta),
+  },
+  {
+    id: "director-ii",
+    shortLabel: "Director II",
+    focus:
+      "Strategic planning, governance, policy implementation, institutional performance.",
+    practiceHref: EXAM_PRACTICE_DESTINATIONS.directorIiPractice,
+    fullHref: EXAM_PRACTICE_DESTINATIONS.directorIiPracticeFull,
+    courseHref: EXAM_PRACTICE_DESTINATIONS.directorIiCourse,
+    ...rankBankSummary(directorIiMeta),
+  },
+  {
+    id: "director-i",
+    shortLabel: "Director I",
+    focus:
+      "Advanced strategic leadership, organisational governance, public-sector accountability.",
+    practiceHref: EXAM_PRACTICE_DESTINATIONS.directorIPractice,
+    fullHref: EXAM_PRACTICE_DESTINATIONS.directorIPracticeFull,
+    courseHref: EXAM_PRACTICE_DESTINATIONS.directorICourse,
+    ...rankBankSummary(directorIMeta),
+  },
+] as const;
+
+export const PROMOTION_RANK_BANKS_TOTAL = {
+  published: PROMOTION_RANK_BANK_SUMMARIES.reduce((n, b) => n + b.publishedCount, 0),
+  target: 2500,
+  gap: PROMOTION_RANK_BANK_SUMMARIES.reduce((n, b) => n + b.gapToTarget, 0),
 } as const;
 
 export function answerStatusLabel(

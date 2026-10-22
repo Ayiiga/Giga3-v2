@@ -13,6 +13,11 @@ import robotics from "@/lib/gigalearn/academy/techBanks/robotics.json";
 import websitePwa from "@/lib/gigalearn/academy/techBanks/website-pwa.json";
 import becePrep from "@/lib/gigalearn/examPractice/banks/bece-prep.json";
 import teacherPromotion from "@/lib/gigalearn/examPractice/banks/teacher-promotion.json";
+import adIi from "@/lib/gigalearn/examPractice/banks/ad-ii.json";
+import adI from "@/lib/gigalearn/examPractice/banks/ad-i.json";
+import deputyDirector from "@/lib/gigalearn/examPractice/banks/deputy-director.json";
+import directorIi from "@/lib/gigalearn/examPractice/banks/director-ii.json";
+import directorI from "@/lib/gigalearn/examPractice/banks/director-i.json";
 import {
   EXAM_PRACTICE_PREMIUM_QUESTION_COUNT,
   TECH_HUB_DEFAULT_MAX_COUNT,
@@ -41,13 +46,38 @@ const BANKS: Record<string, BankFile> = {
   [aiMl.courseSlug]: aiMl as BankFile,
   [becePrep.courseSlug]: becePrep as BankFile,
   [teacherPromotion.courseSlug]: teacherPromotion as BankFile,
+  [adIi.courseSlug]: adIi as BankFile,
+  [adI.courseSlug]: adI as BankFile,
+  [deputyDirector.courseSlug]: deputyDirector as BankFile,
+  [directorIi.courseSlug]: directorIi as BankFile,
+  [directorI.courseSlug]: directorI as BankFile,
 };
 
 /** Exam Practice banks allow pending_review items with provisional feedback. */
 const INCLUDE_PENDING_SLUGS = new Set([
   "exam-bece-prep",
   "exam-teacher-promotion",
+  "exam-ad-ii",
+  "exam-ad-i",
+  "exam-deputy-director",
+  "exam-director-ii",
+  "exam-director-i",
 ]);
+
+/**
+ * Free callers only receive items tagged free (or legacy items with no accessTier).
+ * Premium entitlement unlocks free + premium items. Never expose premium stems
+ * to free sessions via selection.
+ */
+export function isTechQuestionAccessible(
+  q: TechBankQuestion,
+  premiumAccess: boolean
+): boolean {
+  if (premiumAccess) return true;
+  const tiers = q.accessTier;
+  if (!tiers || tiers.length === 0) return true;
+  return tiers.includes("free");
+}
 
 export function listLoadedTechBankSlugs(): string[] {
   return Object.keys(BANKS);
@@ -55,7 +85,13 @@ export function listLoadedTechBankSlugs(): string[] {
 
 export function getTechBankQuestions(
   courseSlug: string,
-  opts?: { approvedOnly?: boolean; topicId?: string; includePending?: boolean }
+  opts?: {
+    approvedOnly?: boolean;
+    topicId?: string;
+    includePending?: boolean;
+    /** When true, drop premium-only items (backend entitlement gate). */
+    freeTierOnly?: boolean;
+  }
 ): TechBankQuestion[] {
   const slug = courseSlug.trim().toLowerCase();
   const bank = BANKS[slug];
@@ -74,6 +110,9 @@ export function getTechBankQuestions(
   }
   if (opts?.topicId) {
     rows = rows.filter((q) => q.topicId === opts.topicId);
+  }
+  if (opts?.freeTierOnly) {
+    rows = rows.filter((q) => isTechQuestionAccessible(q, false));
   }
   return rows;
 }
@@ -142,6 +181,8 @@ export function selectTechQuestionIds(args: {
   count: number;
   seed: number;
   revisionQuestionIds?: string[];
+  /** When false, exclude premium-only items from the selection pool. */
+  premiumAccess?: boolean;
 }): string[] {
   // Exam Practice packs allow up to 500; Technology Hub courses stay within 50.
   // Entitlement clamp (free 50 vs premium 500) is enforced in startTechPracticeSession.
@@ -150,9 +191,16 @@ export function selectTechQuestionIds(args: {
     : TECH_HUB_DEFAULT_MAX_COUNT;
   const count = Math.max(1, Math.min(hardMax, Math.floor(args.count)));
   const rand = mulberry32(args.seed);
+  const freeTierOnly = args.premiumAccess === false;
 
   if (args.mode === "revision" && args.revisionQuestionIds?.length) {
-    const ids = [...args.revisionQuestionIds];
+    const allowed = new Set(
+      getTechBankQuestions(args.courseSlug, {
+        approvedOnly: false,
+        freeTierOnly,
+      }).map((q) => q.questionId)
+    );
+    const ids = args.revisionQuestionIds.filter((id) => allowed.has(id));
     shuffleInPlace(ids, rand);
     return ids.slice(0, count);
   }
@@ -160,6 +208,7 @@ export function selectTechQuestionIds(args: {
   let pool = getTechBankQuestions(args.courseSlug, {
     approvedOnly: true,
     topicId: args.mode === "topic" || args.mode === "challenge" ? args.topicId : undefined,
+    freeTierOnly,
   });
 
   if (args.mode === "challenge") {
@@ -172,6 +221,7 @@ export function selectTechQuestionIds(args: {
       pool = getTechBankQuestions(args.courseSlug, {
         approvedOnly: true,
         topicId: args.topicId,
+        freeTierOnly,
       });
     }
   }

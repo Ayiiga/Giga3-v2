@@ -1,0 +1,2011 @@
+{
+  "bankId": "deputy-director",
+  "courseSlug": "exam-deputy-director",
+  "title": "GES Deputy Director Promotion Practice",
+  "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+  "provenanceNote": "Original GigaLearn practice bank adapted from uploaded study PDFs. Not an official Ghana Education Service examination paper. Items are awaiting human verification against authoritative sources.",
+  "questions": [
+    {
+      "questionId": "exam-deputy-director-q001",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "finance-and-accountability",
+      "topicLabel": "Finance and accountability",
+      "questionText": "When a financial irregularity is suspected, which approach should be preferred?",
+      "options": [
+        "Promptly reporting suspected misuse through authorised channels",
+        "Destroying evidence",
+        "Conducting an unauthorised public accusation",
+        "Ignoring the concern"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q001-opt-A",
+        "exam-deputy-director-q001-opt-B",
+        "exam-deputy-director-q001-opt-C",
+        "exam-deputy-director-q001-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-deputy-director-q001-opt-A",
+      "explanation": "\"Promptly reporting suspected misuse through authorised channels\" is the most appropriate choice for this practice item on Finance and accountability. It aligns with defensible professional judgement in finance and accountability. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 69,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "stem_rewritten",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q002",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "programme-management",
+      "topicLabel": "Programme management",
+      "questionText": "When a programme needs monitoring, which approach should be preferred?",
+      "options": [
+        "A work plan linking activities, outputs, outcomes, owners and dates",
+        "A budget without a delivery plan",
+        "A report with no responsibilities",
+        "A list of activities without expected results"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q002-opt-A",
+        "exam-deputy-director-q002-opt-B",
+        "exam-deputy-director-q002-opt-C",
+        "exam-deputy-director-q002-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-deputy-director-q002-opt-A",
+      "explanation": "\"A work plan linking activities, outputs, outcomes, owners and dates\" is the most appropriate choice for this practice item on Programme management. It aligns with defensible professional judgement in programme management. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 347,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "stem_rewritten",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q003",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "quality-assurance",
+      "topicLabel": "Quality assurance",
+      "questionText": "When performance indicators are reviewed, which approach should be preferred?",
+      "options": [
+        "Ignoring unintended consequences",
+        "Counting inputs only",
+        "A balanced set of indicators covering access, process and learning outcomes",
+        "One metric used to represent all quality"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q003-opt-A",
+        "exam-deputy-director-q003-opt-B",
+        "exam-deputy-director-q003-opt-C",
+        "exam-deputy-director-q003-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-deputy-director-q003-opt-C",
+      "explanation": "\"A balanced set of indicators covering access, process and learning outcomes\" is the most appropriate choice for this practice item on Quality assurance. It aligns with defensible professional judgement in quality assurance. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 304,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "stem_rewritten",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q004",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "risk-and-compliance",
+      "topicLabel": "Risk and compliance",
+      "questionText": "When a risk requires controls and ownership, which approach should be preferred?",
+      "options": [
+        "Assuming policies enforce themselves",
+        "Informal memory as the only control",
+        "Documenting controls, responsible persons and review dates",
+        "A risk register with no owners"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q004-opt-A",
+        "exam-deputy-director-q004-opt-B",
+        "exam-deputy-director-q004-opt-C",
+        "exam-deputy-director-q004-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-deputy-director-q004-opt-C",
+      "explanation": "\"Documenting controls, responsible persons and review dates\" is the most appropriate choice for this practice item on Risk and compliance. It aligns with defensible professional judgement in risk and compliance. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 187,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "stem_rewritten",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q005",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "school-improvement",
+      "topicLabel": "School improvement",
+      "questionText": "When progress toward targets is uneven, which approach should be preferred?",
+      "options": [
+        "Prioritising actions based on evidence, impact and feasibility",
+        "Ignoring implementation capacity",
+        "Launching every initiative at once",
+        "Choosing actions only because they are fashionable"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q005-opt-A",
+        "exam-deputy-director-q005-opt-B",
+        "exam-deputy-director-q005-opt-C",
+        "exam-deputy-director-q005-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-deputy-director-q005-opt-A",
+      "explanation": "\"Prioritising actions based on evidence, impact and feasibility\" is the most appropriate choice for this practice item on School improvement. It aligns with defensible professional judgement in school improvement. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 499,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "stem_rewritten",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q006",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "communication",
+      "topicLabel": "Communication",
+      "questionText": "Which principle is most directly described by the following practice: a concise report supported by evidence and recommendations?",
+      "options": [
+        "A report that hides the main finding",
+        "Unverified claims without sources",
+        "A concise report supported by evidence and recommendations",
+        "A long report without a decision point"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q006-opt-A",
+        "exam-deputy-director-q006-opt-B",
+        "exam-deputy-director-q006-opt-C",
+        "exam-deputy-director-q006-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-deputy-director-q006-opt-C",
+      "explanation": "\"A concise report supported by evidence and recommendations\" is the most appropriate choice for this practice item on Communication. It aligns with defensible professional judgement in communication. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 424,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q007",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "communication",
+      "topicLabel": "Communication",
+      "questionText": "Which principle is most directly described by the following practice: active listening and clarification?",
+      "options": [
+        "Interrupting to assume meaning",
+        "Using jargon with every audience",
+        "Active listening and clarification",
+        "Responding before understanding"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q007-opt-A",
+        "exam-deputy-director-q007-opt-B",
+        "exam-deputy-director-q007-opt-C",
+        "exam-deputy-director-q007-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-deputy-director-q007-opt-C",
+      "explanation": "\"Active listening and clarification\" is the most appropriate choice for this practice item on Communication. It aligns with defensible professional judgement in communication. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 340,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q008",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "examination-integrity",
+      "topicLabel": "Examination integrity",
+      "questionText": "If a decision must be defensible and fair in the area of examination integrity, what should be prioritised?",
+      "options": [
+        "Allowing unauthorised access",
+        "Changing rules secretly for selected candidates",
+        "Failing to document irregularities",
+        "Using secure procedures, fair conditions and documented incident handling"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q008-opt-A",
+        "exam-deputy-director-q008-opt-B",
+        "exam-deputy-director-q008-opt-C",
+        "exam-deputy-director-q008-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-deputy-director-q008-opt-D",
+      "explanation": "\"Using secure procedures, fair conditions and documented incident handling\" is the most appropriate choice for this practice item on Examination integrity. It aligns with defensible professional judgement in examination integrity. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 331,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q009",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "examination-integrity",
+      "topicLabel": "Examination integrity",
+      "questionText": "Which principle is most directly described by the following practice: using secure procedures, fair conditions and documented incident handling?",
+      "options": [
+        "Using secure procedures, fair conditions and documented incident handling",
+        "Changing rules secretly for selected candidates",
+        "Failing to document irregularities",
+        "Allowing unauthorised access"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q009-opt-A",
+        "exam-deputy-director-q009-opt-B",
+        "exam-deputy-director-q009-opt-C",
+        "exam-deputy-director-q009-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-deputy-director-q009-opt-A",
+      "explanation": "\"Using secure procedures, fair conditions and documented incident handling\" is the most appropriate choice for this practice item on Examination integrity. It aligns with defensible professional judgement in examination integrity. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 360,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q010",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "finance-and-accountability",
+      "topicLabel": "Finance and accountability",
+      "questionText": "If a decision must be defensible and fair in the area of finance and accountability, what should be prioritised?",
+      "options": [
+        "Separating authorisation, payment and reconciliation where practicable",
+        "One person controlling every step without review",
+        "No supporting documents",
+        "Reconciling only when problems arise"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q010-opt-A",
+        "exam-deputy-director-q010-opt-B",
+        "exam-deputy-director-q010-opt-C",
+        "exam-deputy-director-q010-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-deputy-director-q010-opt-A",
+      "explanation": "\"Separating authorisation, payment and reconciliation where practicable\" is the most appropriate choice for this practice item on Finance and accountability. It aligns with defensible professional judgement in finance and accountability. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 313,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q011",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "finance-and-accountability",
+      "topicLabel": "Finance and accountability",
+      "questionText": "Which principle is most directly described by the following practice: promptly reporting suspected misuse through authorised channels?",
+      "options": [
+        "Ignoring the concern",
+        "Conducting an unauthorised public accusation",
+        "Destroying evidence",
+        "Promptly reporting suspected misuse through authorised channels"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q011-opt-A",
+        "exam-deputy-director-q011-opt-B",
+        "exam-deputy-director-q011-opt-C",
+        "exam-deputy-director-q011-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-deputy-director-q011-opt-D",
+      "explanation": "\"Promptly reporting suspected misuse through authorised channels\" is the most appropriate choice for this practice item on Finance and accountability. It aligns with defensible professional judgement in finance and accountability. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 355,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q012",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "finance-and-accountability",
+      "topicLabel": "Finance and accountability",
+      "questionText": "Which principle is most directly described by the following practice: separating authorisation, payment and reconciliation where practicable?",
+      "options": [
+        "No supporting documents",
+        "Reconciling only when problems arise",
+        "One person controlling every step without review",
+        "Separating authorisation, payment and reconciliation where practicable"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q012-opt-A",
+        "exam-deputy-director-q012-opt-B",
+        "exam-deputy-director-q012-opt-C",
+        "exam-deputy-director-q012-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-deputy-director-q012-opt-D",
+      "explanation": "\"Separating authorisation, payment and reconciliation where practicable\" is the most appropriate choice for this practice item on Finance and accountability. It aligns with defensible professional judgement in finance and accountability. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 72,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q013",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "human-resource-management",
+      "topicLabel": "Human resource management",
+      "questionText": "Which principle is most directly described by the following practice: fair, documented and timely disciplinary procedures?",
+      "options": [
+        "Informal public shaming",
+        "Fair, documented and timely disciplinary procedures",
+        "Applying rules selectively",
+        "Punishment without hearing the employee"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q013-opt-A",
+        "exam-deputy-director-q013-opt-B",
+        "exam-deputy-director-q013-opt-C",
+        "exam-deputy-director-q013-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-deputy-director-q013-opt-B",
+      "explanation": "\"Fair, documented and timely disciplinary procedures\" is the most appropriate choice for this practice item on Human resource management. It aligns with defensible professional judgement in human resource management. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 61,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q014",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "human-resource-management",
+      "topicLabel": "Human resource management",
+      "questionText": "Which principle is most directly described by the following practice: workload allocation based on role, capacity and service needs?",
+      "options": [
+        "Assigning all difficult tasks to one person",
+        "Workload allocation based on role, capacity and service needs",
+        "Allocating duties solely by friendship",
+        "Ignoring staff capacity"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q014-opt-A",
+        "exam-deputy-director-q014-opt-B",
+        "exam-deputy-director-q014-opt-C",
+        "exam-deputy-director-q014-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-deputy-director-q014-opt-B",
+      "explanation": "\"Workload allocation based on role, capacity and service needs\" is the most appropriate choice for this practice item on Human resource management. It aligns with defensible professional judgement in human resource management. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 430,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q015",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "leadership-and-supervision",
+      "topicLabel": "Leadership and supervision",
+      "questionText": "When the main objective is staff need clear guidance and follow-up, which approach should be preferred?",
+      "options": [
+        "Imposing change without explanation",
+        "Launching change without resources",
+        "Change management with communication, participation and review",
+        "Assuming resistance proves misconduct"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q015-opt-A",
+        "exam-deputy-director-q015-opt-B",
+        "exam-deputy-director-q015-opt-C",
+        "exam-deputy-director-q015-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-deputy-director-q015-opt-C",
+      "explanation": "\"Change management with communication, participation and review\" is the most appropriate choice for this practice item on Leadership and supervision. It aligns with defensible professional judgement in leadership and supervision. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 43,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q016",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "leadership-and-supervision",
+      "topicLabel": "Leadership and supervision",
+      "questionText": "Which principle is most directly described by the following practice: specific evidence-based feedback with agreed next steps?",
+      "options": [
+        "Public humiliation",
+        "Personal criticism without evidence",
+        "Feedback unrelated to teaching",
+        "Specific evidence-based feedback with agreed next steps"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q016-opt-A",
+        "exam-deputy-director-q016-opt-B",
+        "exam-deputy-director-q016-opt-C",
+        "exam-deputy-director-q016-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-deputy-director-q016-opt-D",
+      "explanation": "\"Specific evidence-based feedback with agreed next steps\" is the most appropriate choice for this practice item on Leadership and supervision. It aligns with defensible professional judgement in leadership and supervision. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 278,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q017",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "numerical-reasoning",
+      "topicLabel": "Numerical reasoning",
+      "questionText": "Which principle is most directly described by the following practice: percentage change is calculated relative to the original value?",
+      "options": [
+        "Treating every percentage as a fixed amount",
+        "Percentage change is calculated relative to the original value",
+        "Dividing the new value by zero",
+        "Adding percentage points without a base"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q017-opt-A",
+        "exam-deputy-director-q017-opt-B",
+        "exam-deputy-director-q017-opt-C",
+        "exam-deputy-director-q017-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-deputy-director-q017-opt-B",
+      "explanation": "\"Percentage change is calculated relative to the original value\" is the most appropriate choice for this practice item on Numerical reasoning. It aligns with defensible professional judgement in numerical reasoning. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 150,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q018",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "programme-management",
+      "topicLabel": "Programme management",
+      "questionText": "If a decision must be defensible and fair in the area of programme management, what should be prioritised?",
+      "options": [
+        "A budget without a delivery plan",
+        "A work plan linking activities, outputs, outcomes, owners and dates",
+        "A list of activities without expected results",
+        "A report with no responsibilities"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q018-opt-A",
+        "exam-deputy-director-q018-opt-B",
+        "exam-deputy-director-q018-opt-C",
+        "exam-deputy-director-q018-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-deputy-director-q018-opt-B",
+      "explanation": "\"A work plan linking activities, outputs, outcomes, owners and dates\" is the most appropriate choice for this practice item on Programme management. It aligns with defensible professional judgement in programme management. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 47,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q019",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "programme-management",
+      "topicLabel": "Programme management",
+      "questionText": "To improve programme management in an education setting, which principle should guide the decision?",
+      "options": [
+        "Ignoring barriers to implementation",
+        "Changing the goal without documenting why",
+        "Reviewing implementation fidelity and adapting when evidence warrants it",
+        "Assuming a plan was delivered because it was approved"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q019-opt-A",
+        "exam-deputy-director-q019-opt-B",
+        "exam-deputy-director-q019-opt-C",
+        "exam-deputy-director-q019-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-deputy-director-q019-opt-C",
+      "explanation": "\"Reviewing implementation fidelity and adapting when evidence warrants it\" is the most appropriate choice for this practice item on Programme management. It aligns with defensible professional judgement in programme management. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 64,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q020",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "programme-management",
+      "topicLabel": "Programme management",
+      "questionText": "Which principle is most directly described by the following practice: a work plan linking activities, outputs, outcomes, owners and dates?",
+      "options": [
+        "A work plan linking activities, outputs, outcomes, owners and dates",
+        "A budget without a delivery plan",
+        "A list of activities without expected results",
+        "A report with no responsibilities"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q020-opt-A",
+        "exam-deputy-director-q020-opt-B",
+        "exam-deputy-director-q020-opt-C",
+        "exam-deputy-director-q020-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-deputy-director-q020-opt-A",
+      "explanation": "\"A work plan linking activities, outputs, outcomes, owners and dates\" is the most appropriate choice for this practice item on Programme management. It aligns with defensible professional judgement in programme management. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 176,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q021",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "programme-management",
+      "topicLabel": "Programme management",
+      "questionText": "Which principle is most directly described by the following practice: reviewing implementation fidelity and adapting when evidence warrants it?",
+      "options": [
+        "Reviewing implementation fidelity and adapting when evidence warrants it",
+        "Assuming a plan was delivered because it was approved",
+        "Ignoring barriers to implementation",
+        "Changing the goal without documenting why"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q021-opt-A",
+        "exam-deputy-director-q021-opt-B",
+        "exam-deputy-director-q021-opt-C",
+        "exam-deputy-director-q021-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-deputy-director-q021-opt-A",
+      "explanation": "\"Reviewing implementation fidelity and adapting when evidence warrants it\" is the most appropriate choice for this practice item on Programme management. It aligns with defensible professional judgement in programme management. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 454,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q022",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "quality-assurance",
+      "topicLabel": "Quality assurance",
+      "questionText": "If a decision must be defensible and fair in the area of quality assurance, what should be prioritised?",
+      "options": [
+        "Counting inputs only",
+        "Ignoring unintended consequences",
+        "One metric used to represent all quality",
+        "A balanced set of indicators covering access, process and learning outcomes"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q022-opt-A",
+        "exam-deputy-director-q022-opt-B",
+        "exam-deputy-director-q022-opt-C",
+        "exam-deputy-director-q022-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-deputy-director-q022-opt-D",
+      "explanation": "\"A balanced set of indicators covering access, process and learning outcomes\" is the most appropriate choice for this practice item on Quality assurance. It aligns with defensible professional judgement in quality assurance. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 84,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q023",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "quality-assurance",
+      "topicLabel": "Quality assurance",
+      "questionText": "To improve quality assurance in an education setting, which principle should guide the decision?",
+      "options": [
+        "One metric used to represent all quality",
+        "A balanced set of indicators covering access, process and learning outcomes",
+        "Ignoring unintended consequences",
+        "Counting inputs only"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q023-opt-A",
+        "exam-deputy-director-q023-opt-B",
+        "exam-deputy-director-q023-opt-C",
+        "exam-deputy-director-q023-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-deputy-director-q023-opt-B",
+      "explanation": "\"A balanced set of indicators covering access, process and learning outcomes\" is the most appropriate choice for this practice item on Quality assurance. It aligns with defensible professional judgement in quality assurance. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 141,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q024",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "quality-assurance",
+      "topicLabel": "Quality assurance",
+      "questionText": "Which principle is most directly described by the following practice: a balanced set of indicators covering access, process and learning outcomes?",
+      "options": [
+        "Counting inputs only",
+        "Ignoring unintended consequences",
+        "A balanced set of indicators covering access, process and learning outcomes",
+        "One metric used to represent all quality"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q024-opt-A",
+        "exam-deputy-director-q024-opt-B",
+        "exam-deputy-director-q024-opt-C",
+        "exam-deputy-director-q024-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-deputy-director-q024-opt-C",
+      "explanation": "\"A balanced set of indicators covering access, process and learning outcomes\" is the most appropriate choice for this practice item on Quality assurance. It aligns with defensible professional judgement in quality assurance. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 477,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q025",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "quality-assurance",
+      "topicLabel": "Quality assurance",
+      "questionText": "Which principle is most directly described by the following practice: independent review or verification where appropriate?",
+      "options": [
+        "Independent review or verification where appropriate",
+        "Changing criteria after results",
+        "No evidence trail",
+        "Self-approval without safeguards in every case"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q025-opt-A",
+        "exam-deputy-director-q025-opt-B",
+        "exam-deputy-director-q025-opt-C",
+        "exam-deputy-director-q025-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-deputy-director-q025-opt-A",
+      "explanation": "\"Independent review or verification where appropriate\" is the most appropriate choice for this practice item on Quality assurance. It aligns with defensible professional judgement in quality assurance. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 242,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q026",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "resource-management",
+      "topicLabel": "Resource management",
+      "questionText": "If a decision must be defensible and fair in the area of resource management, what should be prioritised?",
+      "options": [
+        "Ignoring expenditure limits",
+        "Spending first and planning later",
+        "Budgeting aligned with approved priorities and available funds",
+        "Allocating funds without objectives"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q026-opt-A",
+        "exam-deputy-director-q026-opt-B",
+        "exam-deputy-director-q026-opt-C",
+        "exam-deputy-director-q026-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-deputy-director-q026-opt-C",
+      "explanation": "\"Budgeting aligned with approved priorities and available funds\" is the most appropriate choice for this practice item on Resource management. It aligns with defensible professional judgement in resource management. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 453,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q027",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "resource-management",
+      "topicLabel": "Resource management",
+      "questionText": "To improve resource management in an education setting, which principle should guide the decision?",
+      "options": [
+        "Budgeting aligned with approved priorities and available funds",
+        "Ignoring expenditure limits",
+        "Allocating funds without objectives",
+        "Spending first and planning later"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q027-opt-A",
+        "exam-deputy-director-q027-opt-B",
+        "exam-deputy-director-q027-opt-C",
+        "exam-deputy-director-q027-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-deputy-director-q027-opt-A",
+      "explanation": "\"Budgeting aligned with approved priorities and available funds\" is the most appropriate choice for this practice item on Resource management. It aligns with defensible professional judgement in resource management. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 51,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q028",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "resource-management",
+      "topicLabel": "Resource management",
+      "questionText": "Which principle is most directly described by the following practice: budgeting aligned with approved priorities and available funds?",
+      "options": [
+        "Spending first and planning later",
+        "Budgeting aligned with approved priorities and available funds",
+        "Ignoring expenditure limits",
+        "Allocating funds without objectives"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q028-opt-A",
+        "exam-deputy-director-q028-opt-B",
+        "exam-deputy-director-q028-opt-C",
+        "exam-deputy-director-q028-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-deputy-director-q028-opt-B",
+      "explanation": "\"Budgeting aligned with approved priorities and available funds\" is the most appropriate choice for this practice item on Resource management. It aligns with defensible professional judgement in resource management. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 265,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q029",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "resource-management",
+      "topicLabel": "Resource management",
+      "questionText": "Which principle is most directly described by the following practice: needs-based allocation using reliable data?",
+      "options": [
+        "Ignoring enrolment and learning needs",
+        "Allocation based on influence alone",
+        "Equal allocation regardless of need in every circumstance",
+        "Needs-based allocation using reliable data"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q029-opt-A",
+        "exam-deputy-director-q029-opt-B",
+        "exam-deputy-director-q029-opt-C",
+        "exam-deputy-director-q029-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-deputy-director-q029-opt-D",
+      "explanation": "\"Needs-based allocation using reliable data\" is the most appropriate choice for this practice item on Resource management. It aligns with defensible professional judgement in resource management. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 223,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q030",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "resource-management",
+      "topicLabel": "Resource management",
+      "questionText": "Which principle is most directly described by the following practice: preventive maintenance and an asset register?",
+      "options": [
+        "Disposing of assets without records",
+        "Waiting for every asset to fail",
+        "No inventory or responsibility",
+        "Preventive maintenance and an asset register"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q030-opt-A",
+        "exam-deputy-director-q030-opt-B",
+        "exam-deputy-director-q030-opt-C",
+        "exam-deputy-director-q030-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-deputy-director-q030-opt-D",
+      "explanation": "\"Preventive maintenance and an asset register\" is the most appropriate choice for this practice item on Resource management. It aligns with defensible professional judgement in resource management. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 92,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q031",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "resource-management",
+      "topicLabel": "Resource management",
+      "questionText": "Which principle is most directly described by the following practice: transparent recording and reconciliation of school grants?",
+      "options": [
+        "Using grant funds for unrelated private purposes",
+        "Transparent recording and reconciliation of school grants",
+        "Concealing expenditure",
+        "Keeping incomplete informal records"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q031-opt-A",
+        "exam-deputy-director-q031-opt-B",
+        "exam-deputy-director-q031-opt-C",
+        "exam-deputy-director-q031-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-deputy-director-q031-opt-B",
+      "explanation": "\"Transparent recording and reconciliation of school grants\" is the most appropriate choice for this practice item on Resource management. It aligns with defensible professional judgement in resource management. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 292,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q032",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "resource-stewardship",
+      "topicLabel": "Resource stewardship",
+      "questionText": "If a decision must be defensible and fair in the area of resource stewardship, what should be prioritised?",
+      "options": [
+        "Personal use without approval",
+        "Ignoring waste and maintenance",
+        "Using public resources for authorised educational purposes",
+        "No records of allocation"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q032-opt-A",
+        "exam-deputy-director-q032-opt-B",
+        "exam-deputy-director-q032-opt-C",
+        "exam-deputy-director-q032-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-deputy-director-q032-opt-C",
+      "explanation": "\"Using public resources for authorised educational purposes\" is the most appropriate choice for this practice item on Resource stewardship. It aligns with defensible professional judgement in resource stewardship. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 167,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q033",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "resource-stewardship",
+      "topicLabel": "Resource stewardship",
+      "questionText": "When the main objective is cost and long-term value must be considered, which approach should be preferred?",
+      "options": [
+        "Using public resources for authorised educational purposes",
+        "Personal use without approval",
+        "Ignoring waste and maintenance",
+        "No records of allocation"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q033-opt-A",
+        "exam-deputy-director-q033-opt-B",
+        "exam-deputy-director-q033-opt-C",
+        "exam-deputy-director-q033-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-deputy-director-q033-opt-A",
+      "explanation": "\"Using public resources for authorised educational purposes\" is the most appropriate choice for this practice item on Resource stewardship. It aligns with defensible professional judgement in resource stewardship. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 93,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q034",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "resource-stewardship",
+      "topicLabel": "Resource stewardship",
+      "questionText": "Which principle is most directly described by the following practice: using public resources for authorised educational purposes?",
+      "options": [
+        "Using public resources for authorised educational purposes",
+        "Personal use without approval",
+        "No records of allocation",
+        "Ignoring waste and maintenance"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q034-opt-A",
+        "exam-deputy-director-q034-opt-B",
+        "exam-deputy-director-q034-opt-C",
+        "exam-deputy-director-q034-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-deputy-director-q034-opt-A",
+      "explanation": "\"Using public resources for authorised educational purposes\" is the most appropriate choice for this practice item on Resource stewardship. It aligns with defensible professional judgement in resource stewardship. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 102,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q035",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "risk-and-compliance",
+      "topicLabel": "Risk and compliance",
+      "questionText": "To improve risk and compliance in an education setting, which principle should guide the decision?",
+      "options": [
+        "A risk register with no owners",
+        "Assuming policies enforce themselves",
+        "Documenting controls, responsible persons and review dates",
+        "Informal memory as the only control"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q035-opt-A",
+        "exam-deputy-director-q035-opt-B",
+        "exam-deputy-director-q035-opt-C",
+        "exam-deputy-director-q035-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-deputy-director-q035-opt-C",
+      "explanation": "\"Documenting controls, responsible persons and review dates\" is the most appropriate choice for this practice item on Risk and compliance. It aligns with defensible professional judgement in risk and compliance. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 186,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q036",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "risk-and-compliance",
+      "topicLabel": "Risk and compliance",
+      "questionText": "Which principle is most directly described by the following practice: documenting controls, responsible persons and review dates?",
+      "options": [
+        "A risk register with no owners",
+        "Documenting controls, responsible persons and review dates",
+        "Informal memory as the only control",
+        "Assuming policies enforce themselves"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q036-opt-A",
+        "exam-deputy-director-q036-opt-B",
+        "exam-deputy-director-q036-opt-C",
+        "exam-deputy-director-q036-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-deputy-director-q036-opt-B",
+      "explanation": "\"Documenting controls, responsible persons and review dates\" is the most appropriate choice for this practice item on Risk and compliance. It aligns with defensible professional judgement in risk and compliance. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 280,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q037",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "risk-and-compliance",
+      "topicLabel": "Risk and compliance",
+      "questionText": "Which principle is most directly described by the following practice: proportionate action based on severity, likelihood and applicable rules?",
+      "options": [
+        "Treating every risk as identical",
+        "Using severity alone without context",
+        "Proportionate action based on severity, likelihood and applicable rules",
+        "Ignoring high-impact low-frequency risks"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q037-opt-A",
+        "exam-deputy-director-q037-opt-B",
+        "exam-deputy-director-q037-opt-C",
+        "exam-deputy-director-q037-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-deputy-director-q037-opt-C",
+      "explanation": "\"Proportionate action based on severity, likelihood and applicable rules\" is the most appropriate choice for this practice item on Risk and compliance. It aligns with defensible professional judgement in risk and compliance. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 413,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q038",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "school-improvement",
+      "topicLabel": "School improvement",
+      "questionText": "If a decision must be defensible and fair in the area of school improvement, what should be prioritised?",
+      "options": [
+        "Choosing actions only because they are fashionable",
+        "Ignoring implementation capacity",
+        "Prioritising actions based on evidence, impact and feasibility",
+        "Launching every initiative at once"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q038-opt-A",
+        "exam-deputy-director-q038-opt-B",
+        "exam-deputy-director-q038-opt-C",
+        "exam-deputy-director-q038-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-deputy-director-q038-opt-C",
+      "explanation": "\"Prioritising actions based on evidence, impact and feasibility\" is the most appropriate choice for this practice item on School improvement. It aligns with defensible professional judgement in school improvement. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 39,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q039",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "school-community-relations",
+      "topicLabel": "School-community relations",
+      "questionText": "To improve school-community relations in an education setting, which principle should guide the decision?",
+      "options": [
+        "Retaliating against a complainant",
+        "Deleting complaints after a verbal reply",
+        "Sharing private complaint details widely",
+        "A fair complaint process with documentation and follow-up"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q039-opt-A",
+        "exam-deputy-director-q039-opt-B",
+        "exam-deputy-director-q039-opt-C",
+        "exam-deputy-director-q039-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-deputy-director-q039-opt-D",
+      "explanation": "\"A fair complaint process with documentation and follow-up\" is the most appropriate choice for this practice item on School-community relations. It aligns with defensible professional judgement in school-community relations. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 78,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q040",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "school-community-relations",
+      "topicLabel": "School-community relations",
+      "questionText": "Which principle is most directly described by the following practice: a fair complaint process with documentation and follow-up?",
+      "options": [
+        "A fair complaint process with documentation and follow-up",
+        "Sharing private complaint details widely",
+        "Deleting complaints after a verbal reply",
+        "Retaliating against a complainant"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q040-opt-A",
+        "exam-deputy-director-q040-opt-B",
+        "exam-deputy-director-q040-opt-C",
+        "exam-deputy-director-q040-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-deputy-director-q040-opt-A",
+      "explanation": "\"A fair complaint process with documentation and follow-up\" is the most appropriate choice for this practice item on School-community relations. It aligns with defensible professional judgement in school-community relations. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 31,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q041",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "school-community-relations",
+      "topicLabel": "School-community relations",
+      "questionText": "Which principle is most directly described by the following practice: meaningful engagement with parents and community stakeholders?",
+      "options": [
+        "Meaningful engagement with parents and community stakeholders",
+        "Allowing one stakeholder to dictate all policy",
+        "Sharing confidential learner details publicly",
+        "Consultation after every decision is final"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q041-opt-A",
+        "exam-deputy-director-q041-opt-B",
+        "exam-deputy-director-q041-opt-C",
+        "exam-deputy-director-q041-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-deputy-director-q041-opt-A",
+      "explanation": "\"Meaningful engagement with parents and community stakeholders\" is the most appropriate choice for this practice item on School-community relations. It aligns with defensible professional judgement in school-community relations. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 124,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q042",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "school-community-relations",
+      "topicLabel": "School-community relations",
+      "questionText": "Which principle is most directly described by the following practice: using attendance data to identify and address barriers?",
+      "options": [
+        "Punishing absence without investigating causes",
+        "Removing attendance monitoring",
+        "Using attendance data to identify and address barriers",
+        "Assuming every absence is deliberate"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q042-opt-A",
+        "exam-deputy-director-q042-opt-B",
+        "exam-deputy-director-q042-opt-C",
+        "exam-deputy-director-q042-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-deputy-director-q042-opt-C",
+      "explanation": "\"Using attendance data to identify and address barriers\" is the most appropriate choice for this practice item on School-community relations. It aligns with defensible professional judgement in school-community relations. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 254,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q043",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "stakeholder-engagement",
+      "topicLabel": "Stakeholder engagement",
+      "questionText": "To improve stakeholder engagement in an education setting, which principle should guide the decision?",
+      "options": [
+        "Collecting views without responding",
+        "Promising outcomes beyond authority",
+        "Closing the feedback loop by communicating decisions and next steps",
+        "Ignoring recurring concerns"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q043-opt-A",
+        "exam-deputy-director-q043-opt-B",
+        "exam-deputy-director-q043-opt-C",
+        "exam-deputy-director-q043-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-deputy-director-q043-opt-C",
+      "explanation": "\"Closing the feedback loop by communicating decisions and next steps\" is the most appropriate choice for this practice item on Stakeholder engagement. It aligns with defensible professional judgement in stakeholder engagement. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 153,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q044",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "stakeholder-engagement",
+      "topicLabel": "Stakeholder engagement",
+      "questionText": "Which principle is most directly described by the following practice: closing the feedback loop by communicating decisions and next steps?",
+      "options": [
+        "Closing the feedback loop by communicating decisions and next steps",
+        "Promising outcomes beyond authority",
+        "Ignoring recurring concerns",
+        "Collecting views without responding"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q044-opt-A",
+        "exam-deputy-director-q044-opt-B",
+        "exam-deputy-director-q044-opt-C",
+        "exam-deputy-director-q044-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-deputy-director-q044-opt-A",
+      "explanation": "\"Closing the feedback loop by communicating decisions and next steps\" is the most appropriate choice for this practice item on Stakeholder engagement. It aligns with defensible professional judgement in stakeholder engagement. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 127,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q045",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "stakeholder-engagement",
+      "topicLabel": "Stakeholder engagement",
+      "questionText": "Which principle is most directly described by the following practice: mapping stakeholders by role, interest and appropriate involvement?",
+      "options": [
+        "Mapping stakeholders by role, interest and appropriate involvement",
+        "Excluding directly affected groups",
+        "Inviting everyone to every decision regardless of purpose",
+        "Assuming one representative speaks for all"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q045-opt-A",
+        "exam-deputy-director-q045-opt-B",
+        "exam-deputy-director-q045-opt-C",
+        "exam-deputy-director-q045-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-deputy-director-q045-opt-A",
+      "explanation": "\"Mapping stakeholders by role, interest and appropriate involvement\" is the most appropriate choice for this practice item on Stakeholder engagement. It aligns with defensible professional judgement in stakeholder engagement. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 379,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q046",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "statistics-and-reporting",
+      "topicLabel": "Statistics and reporting",
+      "questionText": "To improve statistics and reporting in an education setting, which principle should guide the decision?",
+      "options": [
+        "Comparing unlike groups without context",
+        "Reporting the denominator alongside a percentage where useful",
+        "Reporting a percentage without explaining its base",
+        "Changing the denominator to improve appearance"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q046-opt-A",
+        "exam-deputy-director-q046-opt-B",
+        "exam-deputy-director-q046-opt-C",
+        "exam-deputy-director-q046-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-deputy-director-q046-opt-B",
+      "explanation": "\"Reporting the denominator alongside a percentage where useful\" is the most appropriate choice for this practice item on Statistics and reporting. It aligns with defensible professional judgement in statistics and reporting. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 138,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q047",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "statistics-and-reporting",
+      "topicLabel": "Statistics and reporting",
+      "questionText": "When the main objective is a report contains a percentage or indicator, which approach should be preferred?",
+      "options": [
+        "Reporting a percentage without explaining its base",
+        "Changing the denominator to improve appearance",
+        "Reporting the denominator alongside a percentage where useful",
+        "Comparing unlike groups without context"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q047-opt-A",
+        "exam-deputy-director-q047-opt-B",
+        "exam-deputy-director-q047-opt-C",
+        "exam-deputy-director-q047-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-deputy-director-q047-opt-C",
+      "explanation": "\"Reporting the denominator alongside a percentage where useful\" is the most appropriate choice for this practice item on Statistics and reporting. It aligns with defensible professional judgement in statistics and reporting. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 350,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q048",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "statistics-and-reporting",
+      "topicLabel": "Statistics and reporting",
+      "questionText": "Which principle is most directly described by the following practice: distinguishing an indicator from the outcome it is intended to represent?",
+      "options": [
+        "Ignoring data quality",
+        "Distinguishing an indicator from the outcome it is intended to represent",
+        "Assuming one indicator captures every dimension",
+        "Changing definitions between reporting periods"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q048-opt-A",
+        "exam-deputy-director-q048-opt-B",
+        "exam-deputy-director-q048-opt-C",
+        "exam-deputy-director-q048-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-deputy-director-q048-opt-B",
+      "explanation": "\"Distinguishing an indicator from the outcome it is intended to represent\" is the most appropriate choice for this practice item on Statistics and reporting. It aligns with defensible professional judgement in statistics and reporting. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 195,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q049",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "statistics-and-reporting",
+      "topicLabel": "Statistics and reporting",
+      "questionText": "Which principle is most directly described by the following practice: reporting the denominator alongside a percentage where useful?",
+      "options": [
+        "Comparing unlike groups without context",
+        "Reporting the denominator alongside a percentage where useful",
+        "Changing the denominator to improve appearance",
+        "Reporting a percentage without explaining its base"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q049-opt-A",
+        "exam-deputy-director-q049-opt-B",
+        "exam-deputy-director-q049-opt-C",
+        "exam-deputy-director-q049-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-deputy-director-q049-opt-B",
+      "explanation": "\"Reporting the denominator alongside a percentage where useful\" is the most appropriate choice for this practice item on Statistics and reporting. It aligns with defensible professional judgement in statistics and reporting. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 128,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-deputy-director-q050",
+      "courseSlug": "exam-deputy-director",
+      "topicId": "work-planning",
+      "topicLabel": "Work planning",
+      "questionText": "When the main objective is deadlines and competing tasks arise, which approach should be preferred?",
+      "options": [
+        "Prioritising urgent and important work while respecting deadlines",
+        "Ignoring statutory deadlines",
+        "Working without a schedule or review",
+        "Treating every task as equally urgent"
+      ],
+      "optionIds": [
+        "exam-deputy-director-q050-opt-A",
+        "exam-deputy-director-q050-opt-B",
+        "exam-deputy-director-q050-opt-C",
+        "exam-deputy-director-q050-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-deputy-director-q050-opt-A",
+      "explanation": "\"Prioritising urgent and important work while respecting deadlines\" is the most appropriate choice for this practice item on Work planning. It aligns with defensible professional judgement in work planning. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
+      "sourceQuestionNumber": 325,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "deputy-director",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    }
+  ]
+}

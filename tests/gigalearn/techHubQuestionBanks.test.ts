@@ -103,7 +103,12 @@ describe("Technology Learning Hub question banks", () => {
     expect(teacher?.pendingImported).toBe(179);
     expect(teacher?.claimedAsOfficialGes).toBe(false);
     expect(report.totals.examApproved).toBe(528);
-    expect(report.totals.examPendingReview).toBe(179);
+    expect(report.totals.examPendingReview).toBe(438);
+    expect(report.totals.promotionRankUniquePublished).toBe(259);
+    expect(report.totals.claimedAs2500PromotionVerified).toBe(false);
+    const adIi = report.examBanks.find((b) => b.courseSlug === "exam-ad-ii");
+    expect(adIi?.uniqueImportable).toBe(60);
+    expect(adIi?.claimedAs500Unique).toBe(false);
   });
 
   it("each loaded tech bank has approved MCQs with four options and a valid key", () => {

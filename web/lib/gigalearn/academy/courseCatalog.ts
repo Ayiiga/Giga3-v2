@@ -725,6 +725,105 @@ const BUILTIN_COURSES: AcademyCourse[] = [
       },
     ],
   },
+  ...([
+    {
+      slug: "exam-ad-ii",
+      title: "GES Assistant Director II Promotion Practice",
+      focus:
+        "Classroom practice, educational assessment, curriculum, professional ethics, teaching and learning.",
+      bankLabel: "AD II rank bank (publishable unique items; awaiting verification)",
+    },
+    {
+      slug: "exam-ad-i",
+      title: "GES Assistant Director I Promotion Practice",
+      focus:
+        "Instructional supervision, staff development, school improvement, operational leadership.",
+      bankLabel: "AD I rank bank (publishable unique items; awaiting verification)",
+    },
+    {
+      slug: "exam-deputy-director",
+      title: "GES Deputy Director Promotion Practice",
+      focus:
+        "Institutional and district management, monitoring and evaluation, resource accountability.",
+      bankLabel: "Deputy Director rank bank (publishable unique items; awaiting verification)",
+    },
+    {
+      slug: "exam-director-ii",
+      title: "GES Director II Promotion Practice",
+      focus:
+        "Strategic planning, governance, policy implementation, institutional performance.",
+      bankLabel: "Director II rank bank (publishable unique items; awaiting verification)",
+    },
+    {
+      slug: "exam-director-i",
+      title: "GES Director I Promotion Practice",
+      focus:
+        "Advanced strategic leadership, organisational governance, public-sector accountability.",
+      bankLabel: "Director I rank bank (publishable unique items; awaiting verification)",
+    },
+  ] as const).map(
+    (rank): AcademyCourse => ({
+      slug: rank.slug,
+      title: rank.title,
+      description: `Independent ${rank.title.replace(/^GES /, "").toLowerCase()} for GigaLearn Exam Practice. Focus: ${rank.focus} Not an official GES examination paper. Items are original practice or adapted study material awaiting human verification.`,
+      subject: "Teaching",
+      category: "Exam prep",
+      difficulty: "intermediate",
+      durationMinutes: 480,
+      learningObjectives: [
+        "Practise rank-relevant objective items with explanations",
+        "Use free orientation sets; unlock larger packs with existing entitlements",
+        "Treat pending-review items as provisional until verified",
+        "Confirm current promotion notices and GES directives for your cohort",
+      ],
+      prerequisites: ["Educators preparing for GES promotion", "Signed-in Giga3 account"],
+      curriculumPreview: `Exam Practice · ${rank.bankLabel}.`,
+      assessmentDescription:
+        "Server-graded practice modes with option shuffle. Provisional keys are labelled — not claimed as official GES keys.",
+      instructorName: "GigaLearn Exam Faculty",
+      access: "free",
+      certificateEligible: false,
+      completionRequirements:
+        "Enrol and complete practice sessions; verify official promotion requirements separately.",
+      source: "catalog",
+      status: "published",
+      modules: [
+        {
+          id: `m-${rank.slug}-core`,
+          title: "Rank promotion practice",
+          summary: rank.focus,
+          lessons: [
+            {
+              id: `l-${rank.slug}-hub`,
+              title: "Open rank practice",
+              summary: "Interactive practice for this promotion rank.",
+              required: true,
+              estimatedMinutes: 20,
+              activityKind: "practice",
+              resource: {
+                kind: "external",
+                href: `/gigalearn/academy/tech/?course=${rank.slug}`,
+                label: "Open practice",
+              },
+            },
+            {
+              id: `l-${rank.slug}-learn`,
+              title: "Learn mode",
+              summary: "Submit before seeing explanations; provisional items are labelled.",
+              required: true,
+              estimatedMinutes: 40,
+              activityKind: "practice",
+              resource: {
+                kind: "external",
+                href: `/gigalearn/academy/tech/?course=${rank.slug}&mode=learn`,
+                label: "Start learn mode",
+              },
+            },
+          ],
+        },
+      ],
+    })
+  ),
   {
     slug: "other-digital-technologies",
     title: "Other Digital Technologies",

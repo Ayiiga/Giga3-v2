@@ -1,0 +1,1850 @@
+{
+  "bankId": "director-i",
+  "courseSlug": "exam-director-i",
+  "title": "GES Director I Promotion Practice",
+  "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+  "provenanceNote": "Original GigaLearn practice bank adapted from uploaded study PDFs. Not an official Ghana Education Service examination paper. Items are awaiting human verification against authoritative sources.",
+  "questions": [
+    {
+      "questionId": "exam-director-i-q001",
+      "courseSlug": "exam-director-i",
+      "topicId": "educational-law-and-policy",
+      "topicLabel": "Educational law and policy",
+      "questionText": "When the status of a policy or law is uncertain, which approach should be preferred?",
+      "options": [
+        "Assuming a draft is enacted law",
+        "Applying a rule outside its scope",
+        "Checking the current official text and scope of a legal instrument",
+        "Relying on a paraphrase without verification"
+      ],
+      "optionIds": [
+        "exam-director-i-q001-opt-A",
+        "exam-director-i-q001-opt-B",
+        "exam-director-i-q001-opt-C",
+        "exam-director-i-q001-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-director-i-q001-opt-C",
+      "explanation": "\"Checking the current official text and scope of a legal instrument\" is the most appropriate choice for this practice item on Educational law and policy. It aligns with defensible professional judgement in educational law and policy. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 432,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "stem_rewritten",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q002",
+      "courseSlug": "exam-director-i",
+      "topicId": "ethical-leadership",
+      "topicLabel": "Ethical leadership",
+      "questionText": "When an issue exceeds delegated authority, which approach should be preferred?",
+      "options": [
+        "Making promises outside delegated authority",
+        "Ignoring a legal requirement",
+        "Acting beyond competence to appear decisive",
+        "Seeking advice or referral when an issue exceeds one's authority"
+      ],
+      "optionIds": [
+        "exam-director-i-q002-opt-A",
+        "exam-director-i-q002-opt-B",
+        "exam-director-i-q002-opt-C",
+        "exam-director-i-q002-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-director-i-q002-opt-D",
+      "explanation": "\"Seeking advice or referral when an issue exceeds one's authority\" is the most appropriate choice for this practice item on Ethical leadership. It aligns with defensible professional judgement in ethical leadership. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 4,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "stem_rewritten",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q003",
+      "courseSlug": "exam-director-i",
+      "topicId": "ethics-and-fairness",
+      "topicLabel": "Ethics and fairness",
+      "questionText": "When different people are affected by a decision, which approach should be preferred?",
+      "options": [
+        "Recording decisions and reasons so they can be reviewed",
+        "Keeping no evidence of approval",
+        "Relying on undocumented verbal decisions for everything",
+        "Deleting records to avoid scrutiny"
+      ],
+      "optionIds": [
+        "exam-director-i-q003-opt-A",
+        "exam-director-i-q003-opt-B",
+        "exam-director-i-q003-opt-C",
+        "exam-director-i-q003-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-director-i-q003-opt-A",
+      "explanation": "\"Recording decisions and reasons so they can be reviewed\" is the most appropriate choice for this practice item on Ethics and fairness. It aligns with defensible professional judgement in ethics and fairness. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 181,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "stem_rewritten",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q004",
+      "courseSlug": "exam-director-i",
+      "topicId": "professional-accountability",
+      "topicLabel": "Professional accountability",
+      "questionText": "When an error or poor result is identified, which approach should be preferred?",
+      "options": [
+        "Omitting inconvenient results",
+        "Reporting accurate information even when results are disappointing",
+        "Changing definitions to claim success",
+        "Inflating performance figures"
+      ],
+      "optionIds": [
+        "exam-director-i-q004-opt-A",
+        "exam-director-i-q004-opt-B",
+        "exam-director-i-q004-opt-C",
+        "exam-director-i-q004-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-director-i-q004-opt-B",
+      "explanation": "\"Reporting accurate information even when results are disappointing\" is the most appropriate choice for this practice item on Professional accountability. It aligns with defensible professional judgement in professional accountability. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 183,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "stem_rewritten",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q005",
+      "courseSlug": "exam-director-i",
+      "topicId": "public-administration-and-ethics",
+      "topicLabel": "Public administration and ethics",
+      "questionText": "When records or decisions require scrutiny, which approach should be preferred?",
+      "options": [
+        "Ignoring applicable rules",
+        "Following lawful procedures and documented authority",
+        "Acting on personal preference alone",
+        "Using an informal order to bypass controls"
+      ],
+      "optionIds": [
+        "exam-director-i-q005-opt-A",
+        "exam-director-i-q005-opt-B",
+        "exam-director-i-q005-opt-C",
+        "exam-director-i-q005-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-director-i-q005-opt-B",
+      "explanation": "\"Following lawful procedures and documented authority\" is the most appropriate choice for this practice item on Public administration and ethics. It aligns with defensible professional judgement in public administration and ethics. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 15,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "stem_rewritten",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q006",
+      "courseSlug": "exam-director-i",
+      "topicId": "decision-making",
+      "topicLabel": "Decision-making",
+      "questionText": "If a decision must be defensible and fair in the area of decision-making, what should be prioritised?",
+      "options": [
+        "Using criteria that change for each option",
+        "Ignoring costs and risks",
+        "Comparing options against transparent criteria and likely consequences",
+        "Choosing the first option automatically"
+      ],
+      "optionIds": [
+        "exam-director-i-q006-opt-A",
+        "exam-director-i-q006-opt-B",
+        "exam-director-i-q006-opt-C",
+        "exam-director-i-q006-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-director-i-q006-opt-C",
+      "explanation": "\"Comparing options against transparent criteria and likely consequences\" is the most appropriate choice for this practice item on Decision-making. It aligns with defensible professional judgement in decision-making. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 381,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q007",
+      "courseSlug": "exam-director-i",
+      "topicId": "decision-making",
+      "topicLabel": "Decision-making",
+      "questionText": "To improve decision-making in an education setting, which principle should guide the decision?",
+      "options": [
+        "Choosing the first option automatically",
+        "Comparing options against transparent criteria and likely consequences",
+        "Using criteria that change for each option",
+        "Ignoring costs and risks"
+      ],
+      "optionIds": [
+        "exam-director-i-q007-opt-A",
+        "exam-director-i-q007-opt-B",
+        "exam-director-i-q007-opt-C",
+        "exam-director-i-q007-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-director-i-q007-opt-B",
+      "explanation": "\"Comparing options against transparent criteria and likely consequences\" is the most appropriate choice for this practice item on Decision-making. It aligns with defensible professional judgement in decision-making. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 184,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q008",
+      "courseSlug": "exam-director-i",
+      "topicId": "decision-making",
+      "topicLabel": "Decision-making",
+      "questionText": "When the main objective is several options have different risks, which approach should be preferred?",
+      "options": [
+        "Using criteria that change for each option",
+        "Ignoring costs and risks",
+        "Choosing the first option automatically",
+        "Comparing options against transparent criteria and likely consequences"
+      ],
+      "optionIds": [
+        "exam-director-i-q008-opt-A",
+        "exam-director-i-q008-opt-B",
+        "exam-director-i-q008-opt-C",
+        "exam-director-i-q008-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-director-i-q008-opt-D",
+      "explanation": "\"Comparing options against transparent criteria and likely consequences\" is the most appropriate choice for this practice item on Decision-making. It aligns with defensible professional judgement in decision-making. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 108,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q009",
+      "courseSlug": "exam-director-i",
+      "topicId": "decision-making",
+      "topicLabel": "Decision-making",
+      "questionText": "Which principle is most directly described by the following practice: comparing options against transparent criteria and likely consequences?",
+      "options": [
+        "Using criteria that change for each option",
+        "Ignoring costs and risks",
+        "Comparing options against transparent criteria and likely consequences",
+        "Choosing the first option automatically"
+      ],
+      "optionIds": [
+        "exam-director-i-q009-opt-A",
+        "exam-director-i-q009-opt-B",
+        "exam-director-i-q009-opt-C",
+        "exam-director-i-q009-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-director-i-q009-opt-C",
+      "explanation": "\"Comparing options against transparent criteria and likely consequences\" is the most appropriate choice for this practice item on Decision-making. It aligns with defensible professional judgement in decision-making. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 157,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q010",
+      "courseSlug": "exam-director-i",
+      "topicId": "decision-making",
+      "topicLabel": "Decision-making",
+      "questionText": "Which principle is most directly described by the following practice: defining the problem before comparing options?",
+      "options": [
+        "Choosing a solution before understanding the problem",
+        "Treating assumptions as established facts",
+        "Defining the problem before comparing options",
+        "Ignoring affected stakeholders"
+      ],
+      "optionIds": [
+        "exam-director-i-q010-opt-A",
+        "exam-director-i-q010-opt-B",
+        "exam-director-i-q010-opt-C",
+        "exam-director-i-q010-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-director-i-q010-opt-C",
+      "explanation": "\"Defining the problem before comparing options\" is the most appropriate choice for this practice item on Decision-making. It aligns with defensible professional judgement in decision-making. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 98,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q011",
+      "courseSlug": "exam-director-i",
+      "topicId": "educational-law-and-policy",
+      "topicLabel": "Educational law and policy",
+      "questionText": "If a decision must be defensible and fair in the area of educational law and policy, what should be prioritised?",
+      "options": [
+        "Assuming a policy overrides every law",
+        "Treating all documents as legally identical",
+        "Distinguishing a policy, a regulation and an Act of Parliament",
+        "Ignoring the issuing authority"
+      ],
+      "optionIds": [
+        "exam-director-i-q011-opt-A",
+        "exam-director-i-q011-opt-B",
+        "exam-director-i-q011-opt-C",
+        "exam-director-i-q011-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-director-i-q011-opt-C",
+      "explanation": "\"Distinguishing a policy, a regulation and an Act of Parliament\" is the most appropriate choice for this practice item on Educational law and policy. It aligns with defensible professional judgement in educational law and policy. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 266,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q012",
+      "courseSlug": "exam-director-i",
+      "topicId": "educational-law-and-policy",
+      "topicLabel": "Educational law and policy",
+      "questionText": "Which principle is most directly described by the following practice: checking the current official text and scope of a legal instrument?",
+      "options": [
+        "Relying on a paraphrase without verification",
+        "Applying a rule outside its scope",
+        "Checking the current official text and scope of a legal instrument",
+        "Assuming a draft is enacted law"
+      ],
+      "optionIds": [
+        "exam-director-i-q012-opt-A",
+        "exam-director-i-q012-opt-B",
+        "exam-director-i-q012-opt-C",
+        "exam-director-i-q012-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-director-i-q012-opt-C",
+      "explanation": "\"Checking the current official text and scope of a legal instrument\" is the most appropriate choice for this practice item on Educational law and policy. It aligns with defensible professional judgement in educational law and policy. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 94,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q013",
+      "courseSlug": "exam-director-i",
+      "topicId": "educational-law-and-policy",
+      "topicLabel": "Educational law and policy",
+      "questionText": "Which principle is most directly described by the following practice: distinguishing a policy, a regulation and an act of parliament?",
+      "options": [
+        "Assuming a policy overrides every law",
+        "Treating all documents as legally identical",
+        "Distinguishing a policy, a regulation and an Act of Parliament",
+        "Ignoring the issuing authority"
+      ],
+      "optionIds": [
+        "exam-director-i-q013-opt-A",
+        "exam-director-i-q013-opt-B",
+        "exam-director-i-q013-opt-C",
+        "exam-director-i-q013-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-director-i-q013-opt-C",
+      "explanation": "\"Distinguishing a policy, a regulation and an Act of Parliament\" is the most appropriate choice for this practice item on Educational law and policy. It aligns with defensible professional judgement in educational law and policy. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 213,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q014",
+      "courseSlug": "exam-director-i",
+      "topicId": "ethical-leadership",
+      "topicLabel": "Ethical leadership",
+      "questionText": "If a decision must be defensible and fair in the area of ethical leadership, what should be prioritised?",
+      "options": [
+        "Personal loyalty above public duty",
+        "Consistent integrity, impartiality and service orientation",
+        "Avoiding oversight",
+        "Secrecy as the default for all decisions"
+      ],
+      "optionIds": [
+        "exam-director-i-q014-opt-A",
+        "exam-director-i-q014-opt-B",
+        "exam-director-i-q014-opt-C",
+        "exam-director-i-q014-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-director-i-q014-opt-B",
+      "explanation": "\"Consistent integrity, impartiality and service orientation\" is the most appropriate choice for this practice item on Ethical leadership. It aligns with defensible professional judgement in ethical leadership. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 20,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q015",
+      "courseSlug": "exam-director-i",
+      "topicId": "ethical-leadership",
+      "topicLabel": "Ethical leadership",
+      "questionText": "To improve ethical leadership in an education setting, which principle should guide the decision?",
+      "options": [
+        "Ignoring a legal requirement",
+        "Making promises outside delegated authority",
+        "Acting beyond competence to appear decisive",
+        "Seeking advice or referral when an issue exceeds one's authority"
+      ],
+      "optionIds": [
+        "exam-director-i-q015-opt-A",
+        "exam-director-i-q015-opt-B",
+        "exam-director-i-q015-opt-C",
+        "exam-director-i-q015-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-director-i-q015-opt-D",
+      "explanation": "\"Seeking advice or referral when an issue exceeds one's authority\" is the most appropriate choice for this practice item on Ethical leadership. It aligns with defensible professional judgement in ethical leadership. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 206,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q016",
+      "courseSlug": "exam-director-i",
+      "topicId": "ethical-leadership",
+      "topicLabel": "Ethical leadership",
+      "questionText": "Which principle is most directly described by the following practice: consistent integrity, impartiality and service orientation?",
+      "options": [
+        "Consistent integrity, impartiality and service orientation",
+        "Secrecy as the default for all decisions",
+        "Avoiding oversight",
+        "Personal loyalty above public duty"
+      ],
+      "optionIds": [
+        "exam-director-i-q016-opt-A",
+        "exam-director-i-q016-opt-B",
+        "exam-director-i-q016-opt-C",
+        "exam-director-i-q016-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-director-i-q016-opt-A",
+      "explanation": "\"Consistent integrity, impartiality and service orientation\" is the most appropriate choice for this practice item on Ethical leadership. It aligns with defensible professional judgement in ethical leadership. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 193,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q017",
+      "courseSlug": "exam-director-i",
+      "topicId": "ethical-leadership",
+      "topicLabel": "Ethical leadership",
+      "questionText": "Which principle is most directly described by the following practice: seeking advice or referral when an issue exceeds one's authority?",
+      "options": [
+        "Acting beyond competence to appear decisive",
+        "Ignoring a legal requirement",
+        "Making promises outside delegated authority",
+        "Seeking advice or referral when an issue exceeds one's authority"
+      ],
+      "optionIds": [
+        "exam-director-i-q017-opt-A",
+        "exam-director-i-q017-opt-B",
+        "exam-director-i-q017-opt-C",
+        "exam-director-i-q017-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-director-i-q017-opt-D",
+      "explanation": "\"Seeking advice or referral when an issue exceeds one's authority\" is the most appropriate choice for this practice item on Ethical leadership. It aligns with defensible professional judgement in ethical leadership. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 113,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q018",
+      "courseSlug": "exam-director-i",
+      "topicId": "ethics-and-fairness",
+      "topicLabel": "Ethics and fairness",
+      "questionText": "If a decision must be defensible and fair in the area of ethics and fairness, what should be prioritised?",
+      "options": [
+        "Deleting records to avoid scrutiny",
+        "Keeping no evidence of approval",
+        "Recording decisions and reasons so they can be reviewed",
+        "Relying on undocumented verbal decisions for everything"
+      ],
+      "optionIds": [
+        "exam-director-i-q018-opt-A",
+        "exam-director-i-q018-opt-B",
+        "exam-director-i-q018-opt-C",
+        "exam-director-i-q018-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-director-i-q018-opt-C",
+      "explanation": "\"Recording decisions and reasons so they can be reviewed\" is the most appropriate choice for this practice item on Ethics and fairness. It aligns with defensible professional judgement in ethics and fairness. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 36,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q019",
+      "courseSlug": "exam-director-i",
+      "topicId": "ethics-and-fairness",
+      "topicLabel": "Ethics and fairness",
+      "questionText": "To improve ethics and fairness in an education setting, which principle should guide the decision?",
+      "options": [
+        "Deleting records to avoid scrutiny",
+        "Keeping no evidence of approval",
+        "Recording decisions and reasons so they can be reviewed",
+        "Relying on undocumented verbal decisions for everything"
+      ],
+      "optionIds": [
+        "exam-director-i-q019-opt-A",
+        "exam-director-i-q019-opt-B",
+        "exam-director-i-q019-opt-C",
+        "exam-director-i-q019-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-director-i-q019-opt-C",
+      "explanation": "\"Recording decisions and reasons so they can be reviewed\" is the most appropriate choice for this practice item on Ethics and fairness. It aligns with defensible professional judgement in ethics and fairness. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 432,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q020",
+      "courseSlug": "exam-director-i",
+      "topicId": "ethics-and-fairness",
+      "topicLabel": "Ethics and fairness",
+      "questionText": "Which principle is most directly described by the following practice: applying the same transparent criteria while considering lawful accommodations?",
+      "options": [
+        "Ignoring relevant evidence",
+        "Secretly changing standards for favoured people",
+        "Applying the same transparent criteria while considering lawful accommodations",
+        "Using personal dislike as a criterion"
+      ],
+      "optionIds": [
+        "exam-director-i-q020-opt-A",
+        "exam-director-i-q020-opt-B",
+        "exam-director-i-q020-opt-C",
+        "exam-director-i-q020-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-director-i-q020-opt-C",
+      "explanation": "\"Applying the same transparent criteria while considering lawful accommodations\" is the most appropriate choice for this practice item on Ethics and fairness. It aligns with defensible professional judgement in ethics and fairness. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 285,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q021",
+      "courseSlug": "exam-director-i",
+      "topicId": "ethics-and-fairness",
+      "topicLabel": "Ethics and fairness",
+      "questionText": "Which principle is most directly described by the following practice: recording decisions and reasons so they can be reviewed?",
+      "options": [
+        "Recording decisions and reasons so they can be reviewed",
+        "Keeping no evidence of approval",
+        "Deleting records to avoid scrutiny",
+        "Relying on undocumented verbal decisions for everything"
+      ],
+      "optionIds": [
+        "exam-director-i-q021-opt-A",
+        "exam-director-i-q021-opt-B",
+        "exam-director-i-q021-opt-C",
+        "exam-director-i-q021-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-director-i-q021-opt-A",
+      "explanation": "\"Recording decisions and reasons so they can be reviewed\" is the most appropriate choice for this practice item on Ethics and fairness. It aligns with defensible professional judgement in ethics and fairness. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 290,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q022",
+      "courseSlug": "exam-director-i",
+      "topicId": "evidence-based-leadership",
+      "topicLabel": "Evidence-based leadership",
+      "questionText": "If a decision must be defensible and fair in the area of evidence-based leadership, what should be prioritised?",
+      "options": [
+        "Replacing evidence with rank or seniority",
+        "Ignoring contradictory evidence",
+        "Using data without checking its meaning",
+        "Combining data with professional judgement and local context"
+      ],
+      "optionIds": [
+        "exam-director-i-q022-opt-A",
+        "exam-director-i-q022-opt-B",
+        "exam-director-i-q022-opt-C",
+        "exam-director-i-q022-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-director-i-q022-opt-D",
+      "explanation": "\"Combining data with professional judgement and local context\" is the most appropriate choice for this practice item on Evidence-based leadership. It aligns with defensible professional judgement in evidence-based leadership. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 229,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q023",
+      "courseSlug": "exam-director-i",
+      "topicId": "evidence-based-leadership",
+      "topicLabel": "Evidence-based leadership",
+      "questionText": "To improve evidence-based leadership in an education setting, which principle should guide the decision?",
+      "options": [
+        "Testing whether an intervention works before scaling it broadly",
+        "Scaling immediately without evaluation",
+        "Ignoring unintended effects",
+        "Assuming good intentions guarantee impact"
+      ],
+      "optionIds": [
+        "exam-director-i-q023-opt-A",
+        "exam-director-i-q023-opt-B",
+        "exam-director-i-q023-opt-C",
+        "exam-director-i-q023-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-director-i-q023-opt-A",
+      "explanation": "\"Testing whether an intervention works before scaling it broadly\" is the most appropriate choice for this practice item on Evidence-based leadership. It aligns with defensible professional judgement in evidence-based leadership. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 339,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q024",
+      "courseSlug": "exam-director-i",
+      "topicId": "evidence-based-leadership",
+      "topicLabel": "Evidence-based leadership",
+      "questionText": "When the main objective is evidence does not support an initial assumption, which approach should be preferred?",
+      "options": [
+        "Using data without checking its meaning",
+        "Replacing evidence with rank or seniority",
+        "Ignoring contradictory evidence",
+        "Combining data with professional judgement and local context"
+      ],
+      "optionIds": [
+        "exam-director-i-q024-opt-A",
+        "exam-director-i-q024-opt-B",
+        "exam-director-i-q024-opt-C",
+        "exam-director-i-q024-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-director-i-q024-opt-D",
+      "explanation": "\"Combining data with professional judgement and local context\" is the most appropriate choice for this practice item on Evidence-based leadership. It aligns with defensible professional judgement in evidence-based leadership. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 363,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q025",
+      "courseSlug": "exam-director-i",
+      "topicId": "evidence-based-leadership",
+      "topicLabel": "Evidence-based leadership",
+      "questionText": "Which principle is most directly described by the following practice: combining data with professional judgement and local context?",
+      "options": [
+        "Replacing evidence with rank or seniority",
+        "Using data without checking its meaning",
+        "Combining data with professional judgement and local context",
+        "Ignoring contradictory evidence"
+      ],
+      "optionIds": [
+        "exam-director-i-q025-opt-A",
+        "exam-director-i-q025-opt-B",
+        "exam-director-i-q025-opt-C",
+        "exam-director-i-q025-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-director-i-q025-opt-C",
+      "explanation": "\"Combining data with professional judgement and local context\" is the most appropriate choice for this practice item on Evidence-based leadership. It aligns with defensible professional judgement in evidence-based leadership. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 272,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q026",
+      "courseSlug": "exam-director-i",
+      "topicId": "evidence-based-leadership",
+      "topicLabel": "Evidence-based leadership",
+      "questionText": "Which principle is most directly described by the following practice: testing whether an intervention works before scaling it broadly?",
+      "options": [
+        "Assuming good intentions guarantee impact",
+        "Testing whether an intervention works before scaling it broadly",
+        "Scaling immediately without evaluation",
+        "Ignoring unintended effects"
+      ],
+      "optionIds": [
+        "exam-director-i-q026-opt-A",
+        "exam-director-i-q026-opt-B",
+        "exam-director-i-q026-opt-C",
+        "exam-director-i-q026-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-director-i-q026-opt-B",
+      "explanation": "\"Testing whether an intervention works before scaling it broadly\" is the most appropriate choice for this practice item on Evidence-based leadership. It aligns with defensible professional judgement in evidence-based leadership. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 17,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q027",
+      "courseSlug": "exam-director-i",
+      "topicId": "organisational-culture",
+      "topicLabel": "Organisational culture",
+      "questionText": "If a decision must be defensible and fair in the area of organisational culture, what should be prioritised?",
+      "options": [
+        "No opportunity to raise concerns",
+        "Psychological safety with clear standards and accountability",
+        "Confusing respect with absence of standards",
+        "Fear as the only basis for compliance"
+      ],
+      "optionIds": [
+        "exam-director-i-q027-opt-A",
+        "exam-director-i-q027-opt-B",
+        "exam-director-i-q027-opt-C",
+        "exam-director-i-q027-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-director-i-q027-opt-B",
+      "explanation": "\"Psychological safety with clear standards and accountability\" is the most appropriate choice for this practice item on Organisational culture. It aligns with defensible professional judgement in organisational culture. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 280,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q028",
+      "courseSlug": "exam-director-i",
+      "topicId": "organisational-culture",
+      "topicLabel": "Organisational culture",
+      "questionText": "To improve organisational culture in an education setting, which principle should guide the decision?",
+      "options": [
+        "Psychological safety with clear standards and accountability",
+        "Confusing respect with absence of standards",
+        "Fear as the only basis for compliance",
+        "No opportunity to raise concerns"
+      ],
+      "optionIds": [
+        "exam-director-i-q028-opt-A",
+        "exam-director-i-q028-opt-B",
+        "exam-director-i-q028-opt-C",
+        "exam-director-i-q028-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-director-i-q028-opt-A",
+      "explanation": "\"Psychological safety with clear standards and accountability\" is the most appropriate choice for this practice item on Organisational culture. It aligns with defensible professional judgement in organisational culture. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 199,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q029",
+      "courseSlug": "exam-director-i",
+      "topicId": "organisational-culture",
+      "topicLabel": "Organisational culture",
+      "questionText": "Which principle is most directly described by the following practice: modelling the professional conduct expected from staff?",
+      "options": [
+        "Modelling the professional conduct expected from staff",
+        "Expecting rules to apply only to others",
+        "Avoiding responsibility as a leader",
+        "Rewarding misconduct when results are good"
+      ],
+      "optionIds": [
+        "exam-director-i-q029-opt-A",
+        "exam-director-i-q029-opt-B",
+        "exam-director-i-q029-opt-C",
+        "exam-director-i-q029-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-director-i-q029-opt-A",
+      "explanation": "\"Modelling the professional conduct expected from staff\" is the most appropriate choice for this practice item on Organisational culture. It aligns with defensible professional judgement in organisational culture. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 14,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q030",
+      "courseSlug": "exam-director-i",
+      "topicId": "professional-accountability",
+      "topicLabel": "Professional accountability",
+      "questionText": "If a decision must be defensible and fair in the area of professional accountability, what should be prioritised?",
+      "options": [
+        "Concealing a known error",
+        "Blaming others without investigation",
+        "Owning decisions, correcting errors and documenting improvements",
+        "Changing the record without explanation"
+      ],
+      "optionIds": [
+        "exam-director-i-q030-opt-A",
+        "exam-director-i-q030-opt-B",
+        "exam-director-i-q030-opt-C",
+        "exam-director-i-q030-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-director-i-q030-opt-C",
+      "explanation": "\"Owning decisions, correcting errors and documenting improvements\" is the most appropriate choice for this practice item on Professional accountability. It aligns with defensible professional judgement in professional accountability. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 112,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q031",
+      "courseSlug": "exam-director-i",
+      "topicId": "professional-accountability",
+      "topicLabel": "Professional accountability",
+      "questionText": "To improve professional accountability in an education setting, which principle should guide the decision?",
+      "options": [
+        "Inflating performance figures",
+        "Omitting inconvenient results",
+        "Reporting accurate information even when results are disappointing",
+        "Changing definitions to claim success"
+      ],
+      "optionIds": [
+        "exam-director-i-q031-opt-A",
+        "exam-director-i-q031-opt-B",
+        "exam-director-i-q031-opt-C",
+        "exam-director-i-q031-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-director-i-q031-opt-C",
+      "explanation": "\"Reporting accurate information even when results are disappointing\" is the most appropriate choice for this practice item on Professional accountability. It aligns with defensible professional judgement in professional accountability. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 446,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q032",
+      "courseSlug": "exam-director-i",
+      "topicId": "professional-accountability",
+      "topicLabel": "Professional accountability",
+      "questionText": "Which principle is most directly described by the following practice: owning decisions, correcting errors and documenting improvements?",
+      "options": [
+        "Changing the record without explanation",
+        "Owning decisions, correcting errors and documenting improvements",
+        "Concealing a known error",
+        "Blaming others without investigation"
+      ],
+      "optionIds": [
+        "exam-director-i-q032-opt-A",
+        "exam-director-i-q032-opt-B",
+        "exam-director-i-q032-opt-C",
+        "exam-director-i-q032-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-director-i-q032-opt-B",
+      "explanation": "\"Owning decisions, correcting errors and documenting improvements\" is the most appropriate choice for this practice item on Professional accountability. It aligns with defensible professional judgement in professional accountability. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 296,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q033",
+      "courseSlug": "exam-director-i",
+      "topicId": "professional-accountability",
+      "topicLabel": "Professional accountability",
+      "questionText": "Which principle is most directly described by the following practice: reporting accurate information even when results are disappointing?",
+      "options": [
+        "Inflating performance figures",
+        "Omitting inconvenient results",
+        "Changing definitions to claim success",
+        "Reporting accurate information even when results are disappointing"
+      ],
+      "optionIds": [
+        "exam-director-i-q033-opt-A",
+        "exam-director-i-q033-opt-B",
+        "exam-director-i-q033-opt-C",
+        "exam-director-i-q033-opt-D"
+      ],
+      "correctIndex": 3,
+      "correctOptionId": "exam-director-i-q033-opt-D",
+      "explanation": "\"Reporting accurate information even when results are disappointing\" is the most appropriate choice for this practice item on Professional accountability. It aligns with defensible professional judgement in professional accountability. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 460,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q034",
+      "courseSlug": "exam-director-i",
+      "topicId": "public-administration-and-ethics",
+      "topicLabel": "Public administration and ethics",
+      "questionText": "If a decision must be defensible and fair in the area of public administration and ethics, what should be prioritised?",
+      "options": [
+        "Confidential handling of personal information",
+        "Publishing sensitive details for convenience",
+        "Keeping no access controls",
+        "Sharing records with unauthorised people"
+      ],
+      "optionIds": [
+        "exam-director-i-q034-opt-A",
+        "exam-director-i-q034-opt-B",
+        "exam-director-i-q034-opt-C",
+        "exam-director-i-q034-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-director-i-q034-opt-A",
+      "explanation": "\"Confidential handling of personal information\" is the most appropriate choice for this practice item on Public administration and ethics. It aligns with defensible professional judgement in public administration and ethics. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 95,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q035",
+      "courseSlug": "exam-director-i",
+      "topicId": "public-administration-and-ethics",
+      "topicLabel": "Public administration and ethics",
+      "questionText": "To improve public administration and ethics in an education setting, which principle should guide the decision?",
+      "options": [
+        "Publishing sensitive details for convenience",
+        "Confidential handling of personal information",
+        "Keeping no access controls",
+        "Sharing records with unauthorised people"
+      ],
+      "optionIds": [
+        "exam-director-i-q035-opt-A",
+        "exam-director-i-q035-opt-B",
+        "exam-director-i-q035-opt-C",
+        "exam-director-i-q035-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-director-i-q035-opt-B",
+      "explanation": "\"Confidential handling of personal information\" is the most appropriate choice for this practice item on Public administration and ethics. It aligns with defensible professional judgement in public administration and ethics. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 8,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q036",
+      "courseSlug": "exam-director-i",
+      "topicId": "public-administration-and-ethics",
+      "topicLabel": "Public administration and ethics",
+      "questionText": "Which principle is most directly described by the following practice: a clear audit trail for public expenditure?",
+      "options": [
+        "A clear audit trail for public expenditure",
+        "Deleting supporting documents",
+        "Verbal explanations without receipts",
+        "Unrecorded cash handling"
+      ],
+      "optionIds": [
+        "exam-director-i-q036-opt-A",
+        "exam-director-i-q036-opt-B",
+        "exam-director-i-q036-opt-C",
+        "exam-director-i-q036-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-director-i-q036-opt-A",
+      "explanation": "\"A clear audit trail for public expenditure\" is the most appropriate choice for this practice item on Public administration and ethics. It aligns with defensible professional judgement in public administration and ethics. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 199,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q037",
+      "courseSlug": "exam-director-i",
+      "topicId": "public-administration-and-ethics",
+      "topicLabel": "Public administration and ethics",
+      "questionText": "Which principle is most directly described by the following practice: a documented procurement process with value-for-money checks?",
+      "options": [
+        "Choosing only by personal connection",
+        "A documented procurement process with value-for-money checks",
+        "Splitting purchases to avoid controls",
+        "Selecting a supplier without records"
+      ],
+      "optionIds": [
+        "exam-director-i-q037-opt-A",
+        "exam-director-i-q037-opt-B",
+        "exam-director-i-q037-opt-C",
+        "exam-director-i-q037-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-director-i-q037-opt-B",
+      "explanation": "\"A documented procurement process with value-for-money checks\" is the most appropriate choice for this practice item on Public administration and ethics. It aligns with defensible professional judgement in public administration and ethics. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 263,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q038",
+      "courseSlug": "exam-director-i",
+      "topicId": "public-administration-and-ethics",
+      "topicLabel": "Public administration and ethics",
+      "questionText": "Which principle is most directly described by the following practice: declaring and managing conflicts of interest?",
+      "options": [
+        "Hiding relevant relationships",
+        "Declaring and managing conflicts of interest",
+        "Making decisions that benefit relatives secretly",
+        "Treating public resources as private property"
+      ],
+      "optionIds": [
+        "exam-director-i-q038-opt-A",
+        "exam-director-i-q038-opt-B",
+        "exam-director-i-q038-opt-C",
+        "exam-director-i-q038-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-director-i-q038-opt-B",
+      "explanation": "\"Declaring and managing conflicts of interest\" is the most appropriate choice for this practice item on Public administration and ethics. It aligns with defensible professional judgement in public administration and ethics. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 202,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q039",
+      "courseSlug": "exam-director-i",
+      "topicId": "public-administration-and-ethics",
+      "topicLabel": "Public administration and ethics",
+      "questionText": "Which principle is most directly described by the following practice: fair, consistent and non-discriminatory treatment?",
+      "options": [
+        "Different rules for preferred staff",
+        "Favouritism based on personal ties",
+        "Fair, consistent and non-discriminatory treatment",
+        "Excluding people without a lawful reason"
+      ],
+      "optionIds": [
+        "exam-director-i-q039-opt-A",
+        "exam-director-i-q039-opt-B",
+        "exam-director-i-q039-opt-C",
+        "exam-director-i-q039-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-director-i-q039-opt-C",
+      "explanation": "\"Fair, consistent and non-discriminatory treatment\" is the most appropriate choice for this practice item on Public administration and ethics. It aligns with defensible professional judgement in public administration and ethics. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 469,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q040",
+      "courseSlug": "exam-director-i",
+      "topicId": "public-administration-and-ethics",
+      "topicLabel": "Public administration and ethics",
+      "questionText": "Which principle is most directly described by the following practice: following lawful procedures and documented authority?",
+      "options": [
+        "Ignoring applicable rules",
+        "Acting on personal preference alone",
+        "Following lawful procedures and documented authority",
+        "Using an informal order to bypass controls"
+      ],
+      "optionIds": [
+        "exam-director-i-q040-opt-A",
+        "exam-director-i-q040-opt-B",
+        "exam-director-i-q040-opt-C",
+        "exam-director-i-q040-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-director-i-q040-opt-C",
+      "explanation": "\"Following lawful procedures and documented authority\" is the most appropriate choice for this practice item on Public administration and ethics. It aligns with defensible professional judgement in public administration and ethics. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 103,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q041",
+      "courseSlug": "exam-director-i",
+      "topicId": "public-administration-and-ethics",
+      "topicLabel": "Public administration and ethics",
+      "questionText": "Which principle is most directly described by the following practice: transparency and accountability?",
+      "options": [
+        "Personal benefit from public resources",
+        "Transparency and accountability",
+        "Avoiding audit trails",
+        "Concealing records"
+      ],
+      "optionIds": [
+        "exam-director-i-q041-opt-A",
+        "exam-director-i-q041-opt-B",
+        "exam-director-i-q041-opt-C",
+        "exam-director-i-q041-opt-D"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-director-i-q041-opt-B",
+      "explanation": "\"Transparency and accountability\" is the most appropriate choice for this practice item on Public administration and ethics. It aligns with defensible professional judgement in public administration and ethics. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 130,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q042",
+      "courseSlug": "exam-director-i",
+      "topicId": "public-service-leadership",
+      "topicLabel": "Public service leadership",
+      "questionText": "If a decision must be defensible and fair in the area of public service leadership, what should be prioritised?",
+      "options": [
+        "Proportionate decisions supported by evidence and documented reasons",
+        "Changing records to justify a decision",
+        "Decisions based only on emotion",
+        "Disproportionate action without explanation"
+      ],
+      "optionIds": [
+        "exam-director-i-q042-opt-A",
+        "exam-director-i-q042-opt-B",
+        "exam-director-i-q042-opt-C",
+        "exam-director-i-q042-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-director-i-q042-opt-A",
+      "explanation": "\"Proportionate decisions supported by evidence and documented reasons\" is the most appropriate choice for this practice item on Public service leadership. It aligns with defensible professional judgement in public service leadership. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 142,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q043",
+      "courseSlug": "exam-director-i",
+      "topicId": "public-service-leadership",
+      "topicLabel": "Public service leadership",
+      "questionText": "To improve public service leadership in an education setting, which principle should guide the decision?",
+      "options": [
+        "Changing records to justify a decision",
+        "Decisions based only on emotion",
+        "Proportionate decisions supported by evidence and documented reasons",
+        "Disproportionate action without explanation"
+      ],
+      "optionIds": [
+        "exam-director-i-q043-opt-A",
+        "exam-director-i-q043-opt-B",
+        "exam-director-i-q043-opt-C",
+        "exam-director-i-q043-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-director-i-q043-opt-C",
+      "explanation": "\"Proportionate decisions supported by evidence and documented reasons\" is the most appropriate choice for this practice item on Public service leadership. It aligns with defensible professional judgement in public service leadership. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 42,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q044",
+      "courseSlug": "exam-director-i",
+      "topicId": "public-service-leadership",
+      "topicLabel": "Public service leadership",
+      "questionText": "When the main objective is a decision affects service delivery, which approach should be preferred?",
+      "options": [
+        "Personal gain as the primary purpose",
+        "Avoiding accountability",
+        "Serving the public interest within lawful authority",
+        "Favouritism as a management principle"
+      ],
+      "optionIds": [
+        "exam-director-i-q044-opt-A",
+        "exam-director-i-q044-opt-B",
+        "exam-director-i-q044-opt-C",
+        "exam-director-i-q044-opt-D"
+      ],
+      "correctIndex": 2,
+      "correctOptionId": "exam-director-i-q044-opt-C",
+      "explanation": "\"Serving the public interest within lawful authority\" is the most appropriate choice for this practice item on Public service leadership. It aligns with defensible professional judgement in public service leadership. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 114,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q045",
+      "courseSlug": "exam-director-i",
+      "topicId": "public-service-leadership",
+      "topicLabel": "Public service leadership",
+      "questionText": "Which principle is most directly described by the following practice: proportionate decisions supported by evidence and documented reasons?",
+      "options": [
+        "Proportionate decisions supported by evidence and documented reasons",
+        "Decisions based only on emotion",
+        "Disproportionate action without explanation",
+        "Changing records to justify a decision"
+      ],
+      "optionIds": [
+        "exam-director-i-q045-opt-A",
+        "exam-director-i-q045-opt-B",
+        "exam-director-i-q045-opt-C",
+        "exam-director-i-q045-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-director-i-q045-opt-A",
+      "explanation": "\"Proportionate decisions supported by evidence and documented reasons\" is the most appropriate choice for this practice item on Public service leadership. It aligns with defensible professional judgement in public service leadership. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 357,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    },
+    {
+      "questionId": "exam-director-i-q046",
+      "courseSlug": "exam-director-i",
+      "topicId": "public-service-leadership",
+      "topicLabel": "Public service leadership",
+      "questionText": "Which principle is most directly described by the following practice: serving the public interest within lawful authority?",
+      "options": [
+        "Serving the public interest within lawful authority",
+        "Avoiding accountability",
+        "Favouritism as a management principle",
+        "Personal gain as the primary purpose"
+      ],
+      "optionIds": [
+        "exam-director-i-q046-opt-A",
+        "exam-director-i-q046-opt-B",
+        "exam-director-i-q046-opt-C",
+        "exam-director-i-q046-opt-D"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-director-i-q046-opt-A",
+      "explanation": "\"Serving the public interest within lawful authority\" is the most appropriate choice for this practice item on Public service leadership. It aligns with defensible professional judgement in public service leadership. The other options describe weaker, incomplete, or contrary approaches. This is an original GigaLearn practice question — verify any policy or legal detail against current GES and Ministry of Education sources.",
+      "difficulty": "advanced",
+      "questionType": "mcq",
+      "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
+      "sourceQuestionNumber": 122,
+      "sourceType": "original_practice",
+      "reviewStatus": "pending_review",
+      "verificationStatus": "awaiting_verification",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "director-i",
+      "tags": [
+        "original_practice",
+        "awaiting_verification",
+        "free_tier",
+        "length_clue_risk"
+      ]
+    }
+  ]
+}
