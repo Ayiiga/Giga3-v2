@@ -13,23 +13,20 @@
 | #574 | MERGED | `dcf62b2ee490b1209b07e086614e17455d98a0b4` |
 | #575 | MERGED | `34adfb46302f6857b9b79caa5bc4a928612fcc25` |
 | #576 | MERGED | `945f9fbe0df26541ef38c2c85fd3feb2a490172d` |
+| #577 | MERGED | `e240fa4aeb33fede6f1fccbd2e5accbd07768c4a` |
 
-`origin/main` HEAD at start of this verification pass: `945f9fbe0df26541ef38c2c85fd3feb2a490172d`.
-
-Product code for shuffle / rank banks / entitlements shipped in `#574` + `#575`. `#576` was docs-only.
+Current `origin/main` HEAD: `e240fa4aeb33fede6f1fccbd2e5accbd07768c4a`.
 
 ---
 
-## Defects found this pass
+## Defects addressed in #577
 
 | ID | Class | Finding | Action |
 |----|-------|---------|--------|
-| D1 | Deploy process | Convex deploy path filter watched only `convex/**`, but `gigaLearnTechBanks` bundles `web/lib/gigalearn/**` (banks, shuffle, limits). Bank-only changes could skip Convex redeploy. | **Fixed** — add `web/lib/gigalearn/**` to `.github/workflows/convex-deploy.yml` |
-| D2 | Verification gap | No Playwright coverage for Exam Centre / free practice / rank tech routes | **Fixed** — `tests/e2e/production-exam-practice.spec.ts` (+ exam routes in `productionRoutes`) |
-| D3 | Verification gap | Authenticated production shuffle/premium checks | **Blocked** — no `GIGA3_E2E_*` in agent env; `gh workflow run production-e2e.yml` returns HTTP 403 |
-| — | Software defect in scoring/entitlement | None confirmed against latest `main` code + tests | — |
-
-`convex/gigaLearnTechBanks.ts` (~`parseOptionPermutations` / session start / grade) reviewed: permutations persisted, display↔original grading, public present omits keys until reveal; unauthenticated start rejected in production.
+| D1 | Deploy process | Convex path filter omitted `web/lib/gigalearn/**` (bundled into `gigaLearnTechBanks`) | **Fixed & deployed** |
+| D2 | Verification gap | No Playwright Exam Practice coverage | **Fixed** — `tests/e2e/production-exam-practice.spec.ts` |
+| D3 | Verification gap | Authenticated production shuffle/premium | **Still blocked** — no `GIGA3_E2E_*`; workflow_dispatch 403 |
+| — | Scoring / entitlement software defect | None confirmed | — |
 
 ---
 
@@ -37,28 +34,24 @@ Product code for shuffle / rank banks / entitlements shipped in `#574` + `#575`.
 
 | Workflow | Commit | Conclusion | Run |
 |----------|--------|------------|-----|
-| Deploy to Cloudflare Pages | `945f9fbe` (#576) | **success** | [39794640618](https://github.com/Ayiiga/Giga3-v2/actions/runs/39794640618) |
-| CI — Unit & Security Tests | `945f9fbe` (#576) | **success** | [39794640346](https://github.com/Ayiiga/Giga3-v2/actions/runs/39794640346) |
+| Deploy Convex backend | `e240fa4a` (#577) | **success** | [39799498290](https://github.com/Ayiiga/Giga3-v2/actions/runs/39799498290) |
+| Deploy to Cloudflare Pages | `e240fa4a` (#577) | **success** | [39799498270](https://github.com/Ayiiga/Giga3-v2/actions/runs/39799498270) |
+| CI — Unit & Security Tests | `e240fa4a` (#577) | **success** | [39799498301](https://github.com/Ayiiga/Giga3-v2/actions/runs/39799498301) |
 | Deploy Convex backend | `34adfb46` (#575) | **success** | [39791120071](https://github.com/Ayiiga/Giga3-v2/actions/runs/39791120071) |
-| Deploy to Cloudflare Pages | `34adfb46` (#575) | **success** | [39791120061](https://github.com/Ayiiga/Giga3-v2/actions/runs/39791120061) |
-| Deploy Convex backend | `dcf62b2e` (#574) | **success** | [39789683433](https://github.com/Ayiiga/Giga3-v2/actions/runs/39789683433) |
-
-No Convex deploy for `945f9fbe` (docs-only; path filter correctly skipped). Live Convex product code remains from `#575` deploy until a corrective Convex path change merges.
+| Deploy to Cloudflare Pages | `945f9fbe` (#576) | **success** | [39794640618](https://github.com/Ayiiga/Giga3-v2/actions/runs/39794640618) |
 
 ---
 
 ## Verified in production
 
-Re-checked live `www.giga3ai.com` 2026-10-22 ~14:41 UTC (Africa/Accra). Artifact: `/opt/cursor/artifacts/prod-smoke-final-2026-10-22.log`.
+Post-#577 smoke 2026-10-22 ~15:00 UTC (Africa/Accra). Artifact: `/opt/cursor/artifacts/prod-smoke-post-577-2026-10-22.log`.
 
 | Check | Result |
 |-------|--------|
-| Exam Practice Centre `/gigalearn/exam/` | **PASS** HTTP 200 |
-| Free Teacher Promotion practice `/gigalearn/exam/practice/` | **PASS** HTTP 200 |
-| Academy `/gigalearn/academy/` | **PASS** HTTP 200 |
-| Rank tech routes `exam-ad-ii` … `exam-director-i` | **PASS** HTTP 200 each |
-| Teacher Promotion tech route | **PASS** HTTP 200 |
-| Public HTML answer-key leakage (`correctIndex` / `correctOptionId`) | **PASS** — 0 hits |
+| Exam Centre, free practice, Academy, assess | **PASS** HTTP 200 |
+| Five rank tech routes + teacher-promotion tech | **PASS** HTTP 200 |
+| Rank course pages (ad-ii, director-i) | **PASS** HTTP 200 |
+| Public HTML `correctIndex` / `correctOptionId` | **PASS** — 0 hits (12 routes) |
 | Unauthenticated `startTechPracticeSession` | **PASS** — `UnauthorizedError` |
 
 Browser smoke **does not** prove shuffle scoring or free/premium entitlement correctness.
@@ -69,22 +62,12 @@ Browser smoke **does not** prove shuffle scoring or free/premium entitlement cor
 
 | Suite | Result |
 |-------|--------|
-| `./node_modules/.bin/vitest run tests/gigalearn/` | **463 passed**, 9 skipped (58 files) |
+| `vitest run tests/gigalearn/` (pre-merge #577) | **463 passed**, 9 skipped |
 | Focused shuffle / entitlements / ranks / deploy-path | **58 passed** |
-| `cd web && npm run lint` | **exit 0** (pre-existing warnings) |
-| `cd web && npm run build` | **exit 0** |
+| PR #577 CI vitest | **success** ([39798062339](https://github.com/Ayiiga/Giga3-v2/actions/runs/39798062339)) |
+| web lint / production build | **exit 0** |
 
-### Shuffle / scoring (automated)
-
-- Free practice: Fisher–Yates + `sessionStorage` restore; score follows shuffled key.
-- Tech Hub: `optionPermutationsJson` on session; grade via `toOriginalOptionIndex` / `displayCorrectIndex`.
-- Public present omits `correctIndex` until learn/grade reveal.
-
-### Free / premium entitlements (automated + unauthorized prod probe)
-
-- Server clamps free packs to 50; residual credits do not unlock premium.
-- Free selection excludes premium-only AD II/AD I stems.
-- Production unauthenticated start fails; signed-in free/premium still **not** exercised in production.
+Shuffle, option-permutation persistence, display↔original grading, free-tier premium-stem exclusion, and residual-credit non-unlock are covered by unit/integration tests + server code review.
 
 ---
 
@@ -92,12 +75,11 @@ Browser smoke **does not** prove shuffle scoring or free/premium entitlement cor
 
 | Check | Status | Why |
 |-------|--------|-----|
-| Authenticated shuffle scoring in production | **BLOCKED** | No `GIGA3_E2E_EMAIL` / `GIGA3_E2E_PASSWORD` locally; cannot dispatch `production-e2e.yml` (HTTP 403) |
-| Signed-in free vs premium stem access in production | **BLOCKED** | Same credential / dispatch blocker |
-| GUI console / hydration walkthrough | **UNVERIFIED** | No computer-use this pass |
-| Standalone `tsc --noEmit` | **NOT GATE** | Pre-existing non-exam errors; CI gate is vitest + lint + Pages build |
+| Authenticated start → answer → submit → restore → retry | **BLOCKED** | No authorized `GIGA3_E2E_*` credentials in agent env |
+| Signed-in free vs premium stem access | **BLOCKED** | Same; cannot dispatch Production E2E (HTTP 403) |
+| GUI hydration / console walkthrough | **UNVERIFIED** | No computer-use this pass |
 
-**External action needed for RELEASE VERIFIED:** provide authorized free + premium E2E accounts (or grant workflow_dispatch for Production E2E Verification) without changing real customer entitlements.
+**To reach RELEASE VERIFIED:** run Production E2E Verification with secrets, or provide authorized free + premium test accounts (do not alter real customer entitlements).
 
 ---
 
@@ -105,25 +87,10 @@ Browser smoke **does not** prove shuffle scoring or free/premium entitlement cor
 
 | Item | Status |
 |------|--------|
-| Published rank-bank questions | **259** (not 2,500) |
-| Rank free / premium-only | 243 / 16 |
-| Teacher Promotion | 239 total; 238 approved; **q008** provisional; 24 human_verified |
+| Published rank questions | **259** (not 2,500) — AD II 60 / AD I 56 / Deputy 50 / Director II 47 / Director I 46 |
+| Free / premium-only | 243 / 16 |
+| Teacher Promotion | 239; 238 approved; **q008** provisional; 24 human_verified |
 | Official GES papers | **Not claimed** |
-
----
-
-## Question-bank counts (fresh recount)
-
-| Rank | Published | Free | Premium-only |
-|------|----------:|-----:|-------------:|
-| AD II | 60 | 50 | 10 |
-| AD I | 56 | 50 | 6 |
-| Deputy Director | 50 | 50 | 0 |
-| Director II | 47 | 47 | 0 |
-| Director I | 46 | 46 | 0 |
-| **Total** | **259** | **243** | **16** |
-
-Teacher Promotion: 239 (238 approved, 1 pending `q008`). Free orientation: 50.
 
 ---
 
@@ -131,4 +98,4 @@ Teacher Promotion: 239 (238 approved, 1 pending `q008`). Free orientation: 50.
 
 **DEPLOYED, PRODUCTION VERIFICATION INCOMPLETE**
 
-`#574` / `#575` / `#576` are on `main`. Cloudflare Pages for `945f9fbe` and Convex for `34adfb46` succeeded. Public routes and unauthorized API checks pass. Corrective work adds Convex deploy path coverage for bundled GigaLearn banks and repeatable exam Playwright specs. Authenticated production scoring and entitlement checks remain blocked without authorized credentials.
+`#574`–`#577` are on `main` at `e240fa4a`. Convex and Cloudflare Pages deploys for that commit succeeded. Public routes and unauthorized API checks pass. Authenticated production scoring and entitlement verification remain blocked without authorized E2E credentials.
