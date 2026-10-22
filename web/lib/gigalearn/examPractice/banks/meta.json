@@ -7,6 +7,8 @@
       "sourceDocument": "Ghana_BECE_Preparation_500_Objective_Questions_Explained_c887.pdf",
       "approvedQuestionCount": 468,
       "pendingQuestionCount": 0,
+      "mcqCount": 468,
+      "trueFalseCount": 0,
       "topics": [
         {
           "id": "integrated-science",
@@ -66,12 +68,19 @@
       "title": "GES Teachers Promotion Aptitude",
       "sourceDocument": "GES_Teachers_Promotion_500_Objective_Questions_Explained_fb4d.pdf",
       "approvedQuestionCount": 238,
-      "pendingQuestionCount": 1,
+      "pendingQuestionCount": 58,
+      "mcqCount": 239,
+      "trueFalseCount": 57,
       "topics": [
         {
           "id": "applied-education-administration-professional-judgement",
           "label": "Applied Education Administration & Professional Judgement",
           "questionCount": 58
+        },
+        {
+          "id": "true-false-promotion",
+          "label": "True / False — Promotion Aptitude",
+          "questionCount": 57
         },
         {
           "id": "professional-ethics-conduct",
@@ -127,6 +136,8 @@
       "sourceDocument": "Attractive_GES_Assistant_Director_II_Study_Guide_2026_d118.pdf",
       "approvedQuestionCount": 0,
       "pendingQuestionCount": 0,
+      "mcqCount": 0,
+      "trueFalseCount": 0,
       "topics": []
     },
     {
@@ -135,8 +146,15 @@
       "title": "GES Assistant Director II Promotion Practice",
       "sourceDocument": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
       "approvedQuestionCount": 0,
-      "pendingQuestionCount": 60,
+      "pendingQuestionCount": 85,
+      "mcqCount": 60,
+      "trueFalseCount": 25,
       "topics": [
+        {
+          "id": "true-false-promotion",
+          "label": "True / False — Promotion Aptitude",
+          "questionCount": 25
+        },
         {
           "id": "teaching-and-learning",
           "label": "Teaching and learning",
@@ -191,6 +209,8 @@
       "sourceDocument": "assistant_director_i_500_promotion_questions_answers_84eb.pdf",
       "approvedQuestionCount": 0,
       "pendingQuestionCount": 56,
+      "mcqCount": 56,
+      "trueFalseCount": 0,
       "topics": [
         {
           "id": "leadership-and-supervision",
@@ -281,6 +301,8 @@
       "sourceDocument": "deputy_director_500_promotion_questions_answers_0e4e.pdf",
       "approvedQuestionCount": 0,
       "pendingQuestionCount": 50,
+      "mcqCount": 50,
+      "trueFalseCount": 0,
       "topics": [
         {
           "id": "resource-management",
@@ -371,6 +393,8 @@
       "sourceDocument": "director_ii_500_promotion_questions_answers_4de0.pdf",
       "approvedQuestionCount": 0,
       "pendingQuestionCount": 47,
+      "mcqCount": 47,
+      "trueFalseCount": 0,
       "topics": [
         {
           "id": "data-and-research",
@@ -451,6 +475,8 @@
       "sourceDocument": "director_i_500_promotion_questions_answers_81aa.pdf",
       "approvedQuestionCount": 0,
       "pendingQuestionCount": 46,
+      "mcqCount": 46,
+      "trueFalseCount": 0,
       "topics": [
         {
           "id": "public-administration-and-ethics",

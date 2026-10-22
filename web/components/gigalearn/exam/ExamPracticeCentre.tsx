@@ -515,12 +515,37 @@ function TeacherPromotionCentreCard() {
                 </span>
               </div>
               <p className="mt-1 text-xs text-slate-600">{bank.focus}</p>
+              <p className="mt-1 text-xs text-slate-500" data-testid={`promotion-rank-types-${bank.id}`}>
+                Formats:{" "}
+                {bank.questionTypes.includes("mcq")
+                  ? `MCQ (${bank.mcqCount})`
+                  : "MCQ not yet available"}
+                {" · "}
+                {bank.questionTypes.includes("true_false")
+                  ? `True/False (${bank.trueFalseCount})`
+                  : "True/False not yet available for this rank"}
+              </p>
               {bank.available ? (
                 <div className="mt-2 flex flex-col gap-1.5 sm:flex-row sm:flex-wrap">
-                  <Link href={bank.practiceHref} className="exam-landing-cta !py-2 !text-xs">
-                    <Play className="h-3.5 w-3.5 fill-current" aria-hidden />
-                    Free practice
-                  </Link>
+                  {bank.questionTypes.includes("mcq") && bank.mcqHref ? (
+                    <Link href={bank.mcqHref} className="exam-landing-cta !py-2 !text-xs">
+                      <Play className="h-3.5 w-3.5 fill-current" aria-hidden />
+                      MCQ practice
+                    </Link>
+                  ) : null}
+                  {bank.questionTypes.includes("true_false") && bank.trueFalseHref ? (
+                    <Link
+                      href={bank.trueFalseHref}
+                      className="exam-landing-cta !py-2 !text-xs"
+                    >
+                      <Play className="h-3.5 w-3.5 fill-current" aria-hidden />
+                      True/False practice
+                    </Link>
+                  ) : (
+                    <span className="self-center text-xs text-slate-500">
+                      True/False: not imported for this rank yet
+                    </span>
+                  )}
                   <Link
                     href={bank.fullHref}
                     className="exam-landing-cta exam-landing-cta--ghost !py-2 !text-xs"

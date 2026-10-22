@@ -105,14 +105,14 @@ describe("Technology Learning Hub question banks", () => {
     expect(bece?.claimedAsOfficialWaec).toBe(false);
     expect(bece?.sourceKind).toBe("authored_practice");
     expect(teacher?.approvedImported).toBe(238);
-    expect(teacher?.pendingImported).toBe(1);
+    expect(teacher?.pendingImported).toBe(58);
     expect(teacher?.claimedAsOfficialGes).toBe(false);
     expect(report.totals.examApproved).toBe(706);
-    expect(report.totals.examPendingReview).toBe(260);
-    expect(report.totals.promotionRankUniquePublished).toBe(259);
+    expect(report.totals.examPendingReview).toBe(342);
+    expect(report.totals.promotionRankUniquePublished).toBe(284);
     expect(report.totals.claimedAs2500PromotionVerified).toBe(false);
     const adIi = report.examBanks.find((b) => b.courseSlug === "exam-ad-ii");
-    expect(adIi?.uniqueImportable).toBe(60);
+    expect(adIi?.uniqueImportable).toBe(85);
     expect(adIi?.claimedAs500Unique).toBe(false);
   });
 
@@ -155,7 +155,7 @@ describe("Technology Learning Hub question banks", () => {
     const ad2Meta = getExamBankMeta("exam-ad2-study-guide");
     expect(beceMeta?.approvedQuestionCount).toBe(468);
     expect(teacherMeta?.approvedQuestionCount).toBe(238);
-    expect(teacherMeta?.pendingQuestionCount).toBe(1);
+    expect(teacherMeta?.pendingQuestionCount).toBe(58);
     expect(ad2Meta?.approvedQuestionCount).toBe(0);
 
     const bece = getTechBankQuestions("exam-bece-prep");
@@ -164,8 +164,9 @@ describe("Technology Learning Hub question banks", () => {
     expect(new Set(bece.map((q) => q.topicId)).size).toBe(10);
 
     const teacher = getTechBankQuestions("exam-teacher-promotion");
-    expect(teacher.length).toBe(239);
-    expect(teacher.filter((q) => q.reviewStatus === "pending_review").length).toBe(1);
+    expect(teacher.length).toBe(296);
+    expect(teacher.filter((q) => q.reviewStatus === "pending_review").length).toBe(58);
+    expect(teacher.filter((q) => q.questionType === "true_false").length).toBe(57);
 
     const provisional = teacher.find((q) => q.reviewStatus === "pending_review")!;
     const graded = gradeTechAnswers({

@@ -172,13 +172,19 @@ describe("Tech Hub / teacher-promotion bank option permutations", () => {
       mode: "random",
       count: 20,
       seed: 88,
+      questionType: "mcq",
     });
     expect(ids.length).toBeGreaterThan(0);
     const questions = ids.map(
       (id) => getTechBankQuestions("exam-teacher-promotion").find((q) => q.questionId === id)!
     );
+    expect(questions.every((q) => (q.questionType || "mcq") === "mcq")).toBe(true);
     const perms = buildSessionOptionPermutations(
-      questions.map((q) => ({ questionId: q.questionId, options: q.options })),
+      questions.map((q) => ({
+        questionId: q.questionId,
+        options: q.options,
+        questionType: q.questionType,
+      })),
       88
     );
 

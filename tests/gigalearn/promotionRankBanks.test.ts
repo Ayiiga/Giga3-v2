@@ -28,7 +28,7 @@ const RANK_SLUGS = [
 ] as const;
 
 const EXPECTED_COUNTS: Record<(typeof RANK_SLUGS)[number], number> = {
-  "exam-ad-ii": 60,
+  "exam-ad-ii": 85, // 60 MCQ + 25 True/False (source-imported, pending review)
   "exam-ad-i": 56,
   "exam-deputy-director": 50,
   "exam-director-ii": 47,
@@ -46,10 +46,10 @@ describe("promotion rank banks inventory", () => {
       expect(getBuiltinAcademyCourse(slug)?.category).toBe("Exam prep");
     }
     const total = RANK_SLUGS.reduce((n, s) => n + EXPECTED_COUNTS[s], 0);
-    expect(total).toBe(259);
-    expect(PROMOTION_RANK_BANKS_TOTAL.published).toBe(259);
+    expect(total).toBe(284);
+    expect(PROMOTION_RANK_BANKS_TOTAL.published).toBe(284);
     expect(PROMOTION_RANK_BANKS_TOTAL.target).toBe(2500);
-    expect(PROMOTION_RANK_BANKS_TOTAL.gap).toBe(2241);
+    expect(PROMOTION_RANK_BANKS_TOTAL.gap).toBe(2216);
   });
 
   it("does not claim 500 verified items per rank", () => {
@@ -63,8 +63,10 @@ describe("promotion rank banks inventory", () => {
 
   it("ships MCQs with stable option ids and no answer key in public shape", () => {
     for (const slug of RANK_SLUGS) {
-      const qs = getTechBankQuestions(slug);
+      const qs = getTechBankQuestions(slug, { questionType: "mcq" });
+      expect(qs.length).toBeGreaterThan(0);
       for (const q of qs) {
+        expect(q.questionType).toBe("mcq");
         expect(q.options).toHaveLength(4);
         expect(q.optionIds?.length).toBe(4);
         expect(q.correctIndex).toBeGreaterThanOrEqual(0);
@@ -77,6 +79,7 @@ describe("promotion rank banks inventory", () => {
         expect(pub).not.toHaveProperty("correctIndex");
         expect(pub).not.toHaveProperty("explanation");
         expect(pub).not.toHaveProperty("correctOptionId");
+        expect(pub.questionType).toBe("mcq");
       }
     }
   });
@@ -85,7 +88,8 @@ describe("promotion rank banks inventory", () => {
 describe("promotion rank free / premium entitlement gate", () => {
   it("excludes premium-only stems from free selection pools", () => {
     const freePool = getTechBankQuestions("exam-ad-ii", { freeTierOnly: true });
-    expect(freePool.length).toBe(50);
+    // 50 free MCQs + 25 free True/False (all AD2 TF are free-tier tagged)
+    expect(freePool.length).toBe(75);
     expect(freePool.every((q) => isTechQuestionAccessible(q, false))).toBe(true);
 
     const freeIds = selectTechQuestionIds({
@@ -95,6 +99,7 @@ describe("promotion rank free / premium entitlement gate", () => {
       seed: 42,
       premiumAccess: false,
     });
+    // Free entitlement clamps selection to 50 even when the free pool is larger.
     expect(freeIds.length).toBe(50);
     for (const id of freeIds) {
       const q = getTechBankQuestionById("exam-ad-ii", id)!;
@@ -109,8 +114,9 @@ describe("promotion rank free / premium entitlement gate", () => {
       seed: 42,
       premiumAccess: true,
     });
-    expect(premiumIds.length).toBe(60);
+    expect(premiumIds.length).toBe(85);
     expect(premiumIds.some((id) => id === "exam-ad-ii-q051")).toBe(true);
+    expect(premiumIds.some((id) => id.startsWith("exam-ad-ii-tf-"))).toBe(true);
   });
 
   it("clamps free sessions to free pool size without leaking premium count as bankSize", () => {

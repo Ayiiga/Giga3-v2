@@ -13,7 +13,10 @@ import {
   getTechCourseMeta,
   techPracticeHref,
 } from "@/lib/gigalearn/academy/techBanks/techBankMeta";
-import type { TechPracticeMode } from "@/lib/gigalearn/academy/techBanks/techBankTypes";
+import type {
+  TechPracticeMode,
+  TechQuestionType,
+} from "@/lib/gigalearn/academy/techBanks/techBankTypes";
 import { ACADEMY_SURFACE_CLASS } from "@/lib/gigalearn/academy/visualTheme";
 import {
   EXAM_PRACTICE_FREE_QUESTION_COUNT,
@@ -24,6 +27,7 @@ import {
 } from "@/lib/gigalearn/examPractice/practiceLimits";
 import {
   rewardForCorrectAnswer,
+  rewardForIncorrectAnswer,
   rewardForSessionScore,
 } from "@/lib/gigalearn/examPractice/rewardCopy";
 import { cn } from "@/lib/utils";
@@ -51,6 +55,9 @@ function TechHubInner() {
   const isExamCourse = isExamPracticeCourseSlug(courseSlug);
   const initialMode = (params.get("mode") || (isExamCourse ? "timed" : "learn")).trim() as TechPracticeMode;
   const urlCount = Number(params.get("count") || "");
+  const urlQType = (params.get("qtype") || "").trim().toLowerCase();
+  const initialQuestionType: TechQuestionType | "" =
+    urlQType === "true_false" || urlQType === "mcq" ? urlQType : "";
   const sessionToken = getSessionToken();
   const course = useMemo(
     () => (courseSlug ? getBuiltinAcademyCourse(courseSlug) : undefined),
@@ -106,6 +113,9 @@ function TechHubInner() {
     MODES.some((m) => m.id === initialMode) ? initialMode : "learn"
   );
   const [topicId, setTopicId] = useState(params.get("topic") || "");
+  const [questionType, setQuestionType] = useState<TechQuestionType | "">(
+    initialQuestionType
+  );
   const [count, setCount] = useState(defaultCount);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -117,6 +127,7 @@ function TechHubInner() {
       questionText: string;
       options: string[];
       difficulty: string;
+      questionType?: TechQuestionType;
     }>
   >([]);
   const [index, setIndex] = useState(0);
@@ -234,9 +245,24 @@ function TechHubInner() {
         topicId: mode === "topic" || mode === "challenge" ? topicId || undefined : undefined,
         count,
         timeLimitMinutes: mode === "timed" ? 30 : undefined,
+        questionType: questionType || undefined,
       });
       setSessionId(started.sessionId);
-      setLocalQuestions(started.questions);
+      setLocalQuestions(
+        started.questions.map(
+          (q: {
+            questionId: string;
+            topicLabel: string;
+            questionText: string;
+            options: string[];
+            difficulty: string;
+            questionType?: TechQuestionType;
+          }) => ({
+            ...q,
+            questionType: q.questionType === "true_false" ? "true_false" : "mcq",
+          })
+        )
+      );
       setIndex(0);
       setAnswers({});
       setReward(null);
@@ -285,7 +311,7 @@ function TechHubInner() {
           );
         } else {
           setStreak(0);
-          setReward(null);
+          setReward(rewardForIncorrectAnswer({ seed: index }));
         }
       }
     } catch (e) {
@@ -388,6 +414,11 @@ function TechHubInner() {
   if (sessionId && current) {
     const selected = answers[current.questionId];
     const revealed = mode === "learn" && learnFeedback != null;
+    const isTrueFalse =
+      current.questionType === "true_false" ||
+      (current.options.length === 2 &&
+        current.options[0]?.toLowerCase() === "true" &&
+        current.options[1]?.toLowerCase() === "false");
     const mm =
       secondsLeft != null ? String(Math.floor(secondsLeft / 60)).padStart(2, "0") : null;
     const ss = secondsLeft != null ? String(secondsLeft % 60).padStart(2, "0") : null;
@@ -445,25 +476,36 @@ function TechHubInner() {
               <div className="exam-session-chips">
                 <span className="exam-session-chip">{current.topicLabel}</span>
                 <span className="exam-session-chip exam-session-chip--muted capitalize">
-                  {current.difficulty}
+                  {isTrueFalse ? "True / False" : current.difficulty}
                 </span>
               </div>
-              <p className="exam-session-kicker">Question {index + 1}</p>
+              <p className="exam-session-kicker">
+                {isTrueFalse ? "Statement" : "Question"} {index + 1}
+              </p>
               <h2 className="exam-session-stem">{current.questionText}</h2>
-              <ul className="exam-session-options">
+              <ul
+                className={cn(
+                  "exam-session-options",
+                  isTrueFalse && "exam-session-options--true-false"
+                )}
+                role="list"
+              >
                 {current.options.map((opt, optIndex) => {
                   const isSelected = selected === optIndex;
                   const isCorrect = revealed && learnFeedback?.correctIndex === optIndex;
                   const isWrong = revealed && isSelected && !learnFeedback?.correct;
+                  const label = isTrueFalse ? opt.toUpperCase() : opt;
                   return (
                     <li key={optIndex}>
                       <button
                         type="button"
+                        aria-pressed={isSelected}
                         disabled={busy || (mode === "learn" && revealed)}
                         onClick={() => {
                           if (mode === "learn") {
                             if (!revealed) void onSubmitAnswer(optIndex);
                           } else {
+                            if (selected === optIndex) return;
                             setAnswers((prev) => ({
                               ...prev,
                               [current.questionId]: optIndex,
@@ -472,16 +514,32 @@ function TechHubInner() {
                           }
                         }}
                         className={cn(
-                          "exam-session-option",
-                          isCorrect && "exam-session-option--correct",
-                          isWrong && "exam-session-option--wrong",
-                          !revealed && isSelected && "exam-session-option--picked"
+                          isTrueFalse ? "exam-session-tf" : "exam-session-option",
+                          isCorrect &&
+                            (isTrueFalse
+                              ? "exam-session-tf--correct"
+                              : "exam-session-option--correct"),
+                          isWrong &&
+                            (isTrueFalse
+                              ? "exam-session-tf--wrong"
+                              : "exam-session-option--wrong"),
+                          !revealed &&
+                            isSelected &&
+                            (isTrueFalse
+                              ? "exam-session-tf--picked"
+                              : "exam-session-option--picked")
                         )}
                       >
-                        <span className="exam-session-option-letter">
-                          {String.fromCharCode(65 + optIndex)}.
-                        </span>
-                        <span className="exam-session-option-text">{opt}</span>
+                        {isTrueFalse ? (
+                          <span className="exam-session-tf-label">{label}</span>
+                        ) : (
+                          <>
+                            <span className="exam-session-option-letter">
+                              {String.fromCharCode(65 + optIndex)}.
+                            </span>
+                            <span className="exam-session-option-text">{opt}</span>
+                          </>
+                        )}
                         {isCorrect ? (
                           <Check className="exam-session-icon-ok" aria-hidden />
                         ) : null}
@@ -655,6 +713,38 @@ function TechHubInner() {
                 </select>
               </label>
             )}
+            {isExamCourse ? (
+              <fieldset className="space-y-2">
+                <legend className="mb-1 text-sm font-medium">Question type</legend>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                  {(
+                    [
+                      { id: "" as const, label: "Mixed (all available)" },
+                      { id: "mcq" as const, label: "Multiple choice" },
+                      { id: "true_false" as const, label: "True / False" },
+                    ] as const
+                  ).map((opt) => (
+                    <button
+                      key={opt.id || "mixed"}
+                      type="button"
+                      onClick={() => setQuestionType(opt.id)}
+                      className={cn(
+                        "min-h-11 rounded-xl border px-3 py-2 text-left text-sm font-semibold",
+                        questionType === opt.id
+                          ? "border-teal-600 bg-teal-50 text-teal-950"
+                          : "border-slate-200 bg-white text-slate-800"
+                      )}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-slate-500">
+                  Only formats with published items for this bank will start a session. Empty
+                  True/False or MCQ selections return an honest error instead of an empty test.
+                </p>
+              </fieldset>
+            ) : null}
             <label className="block text-sm">
               <span className="mb-1 block font-medium">Questions this session</span>
               <select

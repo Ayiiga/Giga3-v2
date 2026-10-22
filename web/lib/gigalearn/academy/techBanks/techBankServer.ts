@@ -19,6 +19,7 @@ import deputyDirector from "@/lib/gigalearn/examPractice/banks/deputy-director.j
 import directorIi from "@/lib/gigalearn/examPractice/banks/director-ii.json";
 import directorI from "@/lib/gigalearn/examPractice/banks/director-i.json";
 import {
+  EXAM_PRACTICE_FREE_QUESTION_COUNT,
   EXAM_PRACTICE_PREMIUM_QUESTION_COUNT,
   TECH_HUB_DEFAULT_MAX_COUNT,
   isExamPracticeCourseSlug,
@@ -91,6 +92,8 @@ export function getTechBankQuestions(
     includePending?: boolean;
     /** When true, drop premium-only items (backend entitlement gate). */
     freeTierOnly?: boolean;
+    /** Filter to MCQ or True/False only. */
+    questionType?: "mcq" | "true_false";
   }
 ): TechBankQuestion[] {
   const slug = courseSlug.trim().toLowerCase();
@@ -110,6 +113,9 @@ export function getTechBankQuestions(
   }
   if (opts?.topicId) {
     rows = rows.filter((q) => q.topicId === opts.topicId);
+  }
+  if (opts?.questionType) {
+    rows = rows.filter((q) => (q.questionType || "mcq") === opts.questionType);
   }
   if (opts?.freeTierOnly) {
     rows = rows.filter((q) => isTechQuestionAccessible(q, false));
@@ -136,7 +142,19 @@ export function toPublicTechQuestion(q: TechBankQuestion): TechPublicQuestion {
     difficulty: q.difficulty,
     sourceQuestionNumber: q.sourceQuestionNumber,
     reviewStatus: q.reviewStatus,
+    questionType: q.questionType === "true_false" ? "true_false" : "mcq",
   };
+}
+
+/** True/False options stay in fixed True→False order (no Fisher–Yates). */
+export function isTrueFalseQuestion(q: {
+  questionType?: string;
+  options?: readonly string[];
+}): boolean {
+  if (q.questionType === "true_false") return true;
+  if (!q.options || q.options.length !== 2) return false;
+  const [a, b] = q.options.map((o) => (o || "").trim().toLowerCase());
+  return a === "true" && b === "false";
 }
 
 function mulberry32(seed: number): () => number {
@@ -151,12 +169,21 @@ function shuffleInPlace<T>(arr: T[], rand: () => number): T[] {
 export type OptionPermutationMap = Record<string, number[]>;
 
 export function buildSessionOptionPermutations(
-  questions: Array<{ questionId: string; options: string[] }>,
+  questions: Array<{
+    questionId: string;
+    options: string[];
+    questionType?: string;
+  }>,
   seed: number
 ): OptionPermutationMap {
   const rand = createSeededRng(seed ^ 0x9e3779b9);
   const out: OptionPermutationMap = {};
   for (const q of questions) {
+    // Never shuffle True/False — presentation must stay [TRUE] [FALSE].
+    if (isTrueFalseQuestion(q)) {
+      out[q.questionId] = q.options.map((_, i) => i);
+      continue;
+    }
     out[q.questionId] = buildOptionPermutation(q.options.length, rand);
   }
   return out;
@@ -183,11 +210,18 @@ export function selectTechQuestionIds(args: {
   revisionQuestionIds?: string[];
   /** When false, exclude premium-only items from the selection pool. */
   premiumAccess?: boolean;
+  /** Optional MCQ / True-False filter for type-specific practice. */
+  questionType?: "mcq" | "true_false";
 }): string[] {
   // Exam Practice packs allow up to 500; Technology Hub courses stay within 50.
-  // Entitlement clamp (free 50 vs premium 500) is enforced in startTechPracticeSession.
-  const hardMax = isExamPracticeCourseSlug(args.courseSlug)
-    ? EXAM_PRACTICE_PREMIUM_QUESTION_COUNT
+  // Also clamp here when premiumAccess is false so free callers never receive
+  // more than EXAM_PRACTICE_FREE_QUESTION_COUNT even if count is overstated
+  // (defense in depth alongside startTechPracticeSession).
+  const isExam = isExamPracticeCourseSlug(args.courseSlug);
+  const hardMax = isExam
+    ? args.premiumAccess === false
+      ? EXAM_PRACTICE_FREE_QUESTION_COUNT
+      : EXAM_PRACTICE_PREMIUM_QUESTION_COUNT
     : TECH_HUB_DEFAULT_MAX_COUNT;
   const count = Math.max(1, Math.min(hardMax, Math.floor(args.count)));
   const rand = mulberry32(args.seed);
@@ -198,6 +232,7 @@ export function selectTechQuestionIds(args: {
       getTechBankQuestions(args.courseSlug, {
         approvedOnly: false,
         freeTierOnly,
+        questionType: args.questionType,
       }).map((q) => q.questionId)
     );
     const ids = args.revisionQuestionIds.filter((id) => allowed.has(id));
@@ -209,6 +244,7 @@ export function selectTechQuestionIds(args: {
     approvedOnly: true,
     topicId: args.mode === "topic" || args.mode === "challenge" ? args.topicId : undefined,
     freeTierOnly,
+    questionType: args.questionType,
   });
 
   if (args.mode === "challenge") {
@@ -222,6 +258,7 @@ export function selectTechQuestionIds(args: {
         approvedOnly: true,
         topicId: args.topicId,
         freeTierOnly,
+        questionType: args.questionType,
       });
     }
   }

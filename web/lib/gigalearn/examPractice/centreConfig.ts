@@ -88,6 +88,10 @@ export const EXAM_PRACTICE_DESTINATIONS = {
   teacherPromotionCourse: "/gigalearn/academy/course/?slug=exam-teacher-promotion",
   /** Rank-specific promotion practice banks (honest published counts; not 500 verified). */
   adIiPractice: "/gigalearn/academy/tech/?course=exam-ad-ii&count=50",
+  adIiPracticeMcq:
+    "/gigalearn/academy/tech/?course=exam-ad-ii&qtype=mcq&count=50",
+  adIiPracticeTf:
+    "/gigalearn/academy/tech/?course=exam-ad-ii&qtype=true_false&count=25",
   adIiPracticeFull:
     "/gigalearn/academy/tech/?course=exam-ad-ii&mode=practice_test&count=500",
   adIiCourse: "/gigalearn/academy/course/?slug=exam-ad-ii",
@@ -108,6 +112,9 @@ export const EXAM_PRACTICE_DESTINATIONS = {
   directorIPracticeFull:
     "/gigalearn/academy/tech/?course=exam-director-i&mode=practice_test&count=500",
   directorICourse: "/gigalearn/academy/course/?slug=exam-director-i",
+  /** Mixed teacher-promotion bank True/False practice (rank unconfirmed for mock sources). */
+  teacherPromotionTf:
+    "/gigalearn/academy/tech/?course=exam-teacher-promotion&qtype=true_false&count=50",
   academy: "/gigalearn/academy/",
   academyAssess: "/gigalearn/academy/assess/",
   academyMy: "/gigalearn/academy/my/",
@@ -134,11 +141,19 @@ function rankBankSummary(meta: ReturnType<typeof getExamBankMeta>) {
   const approved = meta?.approvedQuestionCount ?? 0;
   const pending = meta?.pendingQuestionCount ?? 0;
   const published = approved + pending;
+  const mcqCount = meta?.mcqCount ?? published;
+  const trueFalseCount = meta?.trueFalseCount ?? 0;
+  const types: Array<"mcq" | "true_false"> = [];
+  if (mcqCount > 0) types.push("mcq");
+  if (trueFalseCount > 0) types.push("true_false");
   return {
     available: published > 0,
     approvedCount: approved,
     pendingCount: pending,
     publishedCount: published,
+    mcqCount,
+    trueFalseCount,
+    questionTypes: types,
     targetCount: 500,
     gapToTarget: Math.max(0, 500 - published),
     sourceDocument: meta?.sourceDocument ?? null,
@@ -197,6 +212,8 @@ export const PROMOTION_RANK_BANK_SUMMARIES = [
     focus:
       "Classroom practice, educational assessment, curriculum, professional ethics, teaching and learning.",
     practiceHref: EXAM_PRACTICE_DESTINATIONS.adIiPractice,
+    mcqHref: EXAM_PRACTICE_DESTINATIONS.adIiPracticeMcq,
+    trueFalseHref: EXAM_PRACTICE_DESTINATIONS.adIiPracticeTf,
     fullHref: EXAM_PRACTICE_DESTINATIONS.adIiPracticeFull,
     courseHref: EXAM_PRACTICE_DESTINATIONS.adIiCourse,
     ...rankBankSummary(adIiMeta),
@@ -207,6 +224,8 @@ export const PROMOTION_RANK_BANK_SUMMARIES = [
     focus:
       "Instructional supervision, staff development, school improvement, operational leadership.",
     practiceHref: EXAM_PRACTICE_DESTINATIONS.adIPractice,
+    mcqHref: EXAM_PRACTICE_DESTINATIONS.adIPractice,
+    trueFalseHref: null as string | null,
     fullHref: EXAM_PRACTICE_DESTINATIONS.adIPracticeFull,
     courseHref: EXAM_PRACTICE_DESTINATIONS.adICourse,
     ...rankBankSummary(adIMeta),
@@ -217,6 +236,8 @@ export const PROMOTION_RANK_BANK_SUMMARIES = [
     focus:
       "Institutional and district management, monitoring and evaluation, resource accountability.",
     practiceHref: EXAM_PRACTICE_DESTINATIONS.deputyDirectorPractice,
+    mcqHref: EXAM_PRACTICE_DESTINATIONS.deputyDirectorPractice,
+    trueFalseHref: null as string | null,
     fullHref: EXAM_PRACTICE_DESTINATIONS.deputyDirectorPracticeFull,
     courseHref: EXAM_PRACTICE_DESTINATIONS.deputyDirectorCourse,
     ...rankBankSummary(deputyDirectorMeta),
@@ -227,6 +248,8 @@ export const PROMOTION_RANK_BANK_SUMMARIES = [
     focus:
       "Strategic planning, governance, policy implementation, institutional performance.",
     practiceHref: EXAM_PRACTICE_DESTINATIONS.directorIiPractice,
+    mcqHref: EXAM_PRACTICE_DESTINATIONS.directorIiPractice,
+    trueFalseHref: null as string | null,
     fullHref: EXAM_PRACTICE_DESTINATIONS.directorIiPracticeFull,
     courseHref: EXAM_PRACTICE_DESTINATIONS.directorIiCourse,
     ...rankBankSummary(directorIiMeta),
@@ -237,6 +260,8 @@ export const PROMOTION_RANK_BANK_SUMMARIES = [
     focus:
       "Advanced strategic leadership, organisational governance, public-sector accountability.",
     practiceHref: EXAM_PRACTICE_DESTINATIONS.directorIPractice,
+    mcqHref: EXAM_PRACTICE_DESTINATIONS.directorIPractice,
+    trueFalseHref: null as string | null,
     fullHref: EXAM_PRACTICE_DESTINATIONS.directorIPracticeFull,
     courseHref: EXAM_PRACTICE_DESTINATIONS.directorICourse,
     ...rankBankSummary(directorIMeta),

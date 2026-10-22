@@ -11,6 +11,10 @@ export type ExamBankMeta = {
   sourceDocument: string;
   approvedQuestionCount: number;
   pendingQuestionCount: number;
+  /** Published MCQs (approved + pending_review practice pool). */
+  mcqCount?: number;
+  /** Published True/False items in the practice pool. */
+  trueFalseCount?: number;
   topics: TechTopicMeta[];
 };
 
