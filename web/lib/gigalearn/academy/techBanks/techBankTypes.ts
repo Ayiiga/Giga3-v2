@@ -25,9 +25,8 @@ export type TechBankQuestion = {
   questionText: string;
   options: string[];
   /**
-   * Stable option identities (parallel to `options` at publish time).
-   * Runtime shuffle remaps display order; grading uses correctIndex /
-   * correctOptionId + session permutations — not displayed A–D alone.
+   * Stable option identities (parallel to `options`). Runtime shuffle remaps
+   * display order; grading uses correctIndex / correctOptionId + permutations.
    */
   optionIds?: string[];
   correctIndex: number;
@@ -41,6 +40,8 @@ export type TechBankQuestion = {
   tags: string[];
   sourceType?: "original_practice" | "adapted" | "verified_historical" | "awaiting_verification";
   verificationStatus?: "awaiting_verification" | "human_verified" | "rejected";
+  /** Public-source notes — never implies official GES exam approval. */
+  verificationNotes?: string;
   publicationStatus?: "published_practice" | "draft" | "retired";
   accessTier?: Array<"free" | "premium">;
   promotionRank?: string;

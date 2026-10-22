@@ -65,8 +65,8 @@
       "courseSlug": "exam-teacher-promotion",
       "title": "GES Teachers Promotion Aptitude",
       "sourceDocument": "GES_Teachers_Promotion_500_Objective_Questions_Explained_fb4d.pdf",
-      "approvedQuestionCount": 60,
-      "pendingQuestionCount": 179,
+      "approvedQuestionCount": 238,
+      "pendingQuestionCount": 1,
       "topics": [
         {
           "id": "applied-education-administration-professional-judgement",

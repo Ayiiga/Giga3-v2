@@ -43,8 +43,8 @@ describe("Exam Practice Centre Phase B", () => {
     ]);
     expect(TEACHER_PROMOTION_SOURCE_INVENTORY.length).toBeGreaterThanOrEqual(4);
     expect(TEACHER_PROMOTION_BANK_SUMMARY.available).toBe(true);
-    expect(TEACHER_PROMOTION_BANK_SUMMARY.approvedCount).toBe(60);
-    expect(TEACHER_PROMOTION_BANK_SUMMARY.pendingCount).toBe(179);
+    expect(TEACHER_PROMOTION_BANK_SUMMARY.approvedCount).toBe(238);
+    expect(TEACHER_PROMOTION_BANK_SUMMARY.pendingCount).toBe(1);
     for (const src of TEACHER_PROMOTION_SOURCE_INVENTORY) {
       expect(src.answerStatus).not.toBe("verified");
       expect(answerStatusLabel(src.answerStatus).toLowerCase()).toMatch(
