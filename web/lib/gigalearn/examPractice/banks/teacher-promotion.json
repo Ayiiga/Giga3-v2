@@ -7819,6 +7819,2001 @@
         "exam-teacher-promotion-q279-opt-3"
       ],
       "correctOptionId": "exam-teacher-promotion-q279-opt-3"
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-097",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "The Ministry of Education formulates and implements approved national policies and programmes on education in Ghana.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-097-opt-true",
+        "exam-teacher-promotion-tf-097-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-097-opt-true",
+      "explanation": "Source indicates True. Note: formulates, but implementation is done by its agencies",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 97,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-098",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "The West African Examination Council (W AEC) operates both in the Anglophone and Francophone countries.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-098-opt-true",
+        "exam-teacher-promotion-tf-098-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-098-opt-true",
+      "explanation": "Source-supplied key: True.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 98,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-099",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "The Ghana National Commission for UNESCO is not an agency under the Ministry of Education.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-099-opt-true",
+        "exam-teacher-promotion-tf-099-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-099-opt-true",
+      "explanation": "Source-supplied key: True.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 99,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-100",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "The vision of the Ministry of Education is to build a highly educated and skilled nation where some Ghanaians everywhere can achieve their potentials.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-100-opt-true",
+        "exam-teacher-promotion-tf-100-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-100-opt-true",
+      "explanation": "Source indicates True. Note: all",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 100,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-101",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "The National Schools Inspectorate Authority (NaSIA), in exercising its authority, has the exert power to close down a school that fails to meet the standards and guidelines; in consultation with the Sector Minister, Regional and the District Education Directorates concerned.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-101-opt-true",
+        "exam-teacher-promotion-tf-101-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-101-opt-true",
+      "explanation": "Source-supplied key: True.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 101,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-102",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "The Ghana Education Service is the implementer of all national educational policies and programmes of the Ministry of Education.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-102-opt-true",
+        "exam-teacher-promotion-tf-102-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-102-opt-true",
+      "explanation": "Source indicates True. Note: only at the pre-tertiary level",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 102,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-103",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "The ICT in Education Policy seeks to standardized and enhance the implementation and post- implementation stage of ICT in Education Interviews.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-103-opt-true",
+        "exam-teacher-promotion-tf-103-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-103-opt-true",
+      "explanation": "Source-supplied key: True.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 103,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-104",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "The key purpose for Ghana’s transforming teaching and learning on Education Strategic Plan (ESP 2018-2030) is to ensure that all students are given equitable quality learning opportunities.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-104-opt-true",
+        "exam-teacher-promotion-tf-104-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-104-opt-true",
+      "explanation": "Source-supplied key: True.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 104,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-105",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "One of the functions of the Ghana Education Service is to ensure that quality education is assessible to all Ghanaians, in order to support human capital and national development.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-105-opt-true",
+        "exam-teacher-promotion-tf-105-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-105-opt-true",
+      "explanation": "Source-supplied key: True.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 105,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-106",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "The Ministry of Education primarily focuses on h igher education institutions such as universities and Colleges Education.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-106-opt-true",
+        "exam-teacher-promotion-tf-106-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-106-opt-true",
+      "explanation": "Source indicates True. Note: including the pre-tertiary",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 106,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-107",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "National Teaching Council (NTC), in collaboration with the Colleges of Education, trains professional teachers and assist the Gha na Education Service to post them in all pre -tertiary institutions in the country.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-107-opt-true",
+        "exam-teacher-promotion-tf-107-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-107-opt-true",
+      "explanation": "Source-supplied key: True.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 107,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-108",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "The Ministry of Education is responsible for providing financial assistance to the needy students through Scholarship Secretariat.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-108-opt-true",
+        "exam-teacher-promotion-tf-108-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-108-opt-true",
+      "explanation": "Source-supplied key: True.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 108,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-109",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "All Divisional Directors at the GES Headquarters submit directly to the Director-General.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-109-opt-true",
+        "exam-teacher-promotion-tf-109-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-109-opt-true",
+      "explanation": "Source indicates True. Note: submit to the two Deputy Directors-General",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 109,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-110",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "Members of both GES Council and Ghana TVET Service Council hold office for four years; and are eligible for another term.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-110-opt-true",
+        "exam-teacher-promotion-tf-110-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-110-opt-true",
+      "explanation": "Source-supplied key: True.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 110,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-111",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "The Ministry of Education, by law, reports to the Parliament; and hence, does not need an Advisory Board.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-111-opt-true",
+        "exam-teacher-promotion-tf-111-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-111-opt-true",
+      "explanation": "Source indicates True. Note: The Ministry of Education has an Advisory Board",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 111,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-112",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "The Director-General of Ghana Education Service, and the Director -General, Ghana TVET Service, are both responsible for ensuring effective implementation of national educational policies and programmes pre-tertiary levels.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-112-opt-true",
+        "exam-teacher-promotion-tf-112-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-112-opt-true",
+      "explanation": "Source-supplied key: True.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 112,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-113",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "In GES , the IPPD Unit that deals with salary issues of the staff in the Service is under the Finance & Administration Department and Finance Division respectively.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-113-opt-true",
+        "exam-teacher-promotion-tf-113-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-113-opt-true",
+      "explanation": "Source indicates True. Note: HRMD",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 113,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-114",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "Ghana Education Service, as an autonomous body under the Ministry of Education, is not accountable to any other agency under the Ministry of Education.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-114-opt-true",
+        "exam-teacher-promotion-tf-114-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-114-opt-true",
+      "explanation": "Source indicates True. Note: accountable to NTC, NaCCA and NaSIA.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 114,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-115",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "Currently, the Minister of Education is assisted by only one Deputy Minister.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-115-opt-true",
+        "exam-teacher-promotion-tf-115-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-115-opt-true",
+      "explanation": "Source-supplied key: True.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 115,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-116",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "The National Council for Curriculum and Assessment (NaCCA), and the National Teaching Council (NTC) were established by Act 778 before their current establishment by another Education Act.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-116-opt-true",
+        "exam-teacher-promotion-tf-116-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-116-opt-true",
+      "explanation": "Source-supplied key: True.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 116,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-117",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "The Ghana Education Service (GES) was establi shed as part of the Public Service of Ghana in 1974.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-117-opt-true",
+        "exam-teacher-promotion-tf-117-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-117-opt-true",
+      "explanation": "Source-supplied key: True.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 117,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-118",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "The Ministry of Education is responsible for higher education in Ghana.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-118-opt-true",
+        "exam-teacher-promotion-tf-118-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-118-opt-true",
+      "explanation": "Source indicates True. Note: All levels of education, but not only higher level",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 118,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-119",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "The Director-General is the head of the Ghana Education Service.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-119-opt-true",
+        "exam-teacher-promotion-tf-119-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-119-opt-true",
+      "explanation": "Source-supplied key: True.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 119,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-120",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "The National Council for Curriculum and Assessment (NaCCA) is responsible for developing curriculum for tertiary education in Ghana.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-120-opt-true",
+        "exam-teacher-promotion-tf-120-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-120-opt-true",
+      "explanation": "Source-supplied key: True.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 120,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-121",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "The Free Compulso ry Universal Basic Education (FCUBE) policy aims to provide tertiary education in Ghana.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-121-opt-true",
+        "exam-teacher-promotion-tf-121-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-121-opt-true",
+      "explanation": "Source-supplied key: True.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 121,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-122",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "The Education Strategic Plan (ESP) aims to provide equitable access to education for all Ghanaians. BENITO PROMOTIONS FINAL SUPER MOCK, 2025 @0247812878 BENITO PROMOTIONS FINAL SUPER MOCK, 2025: BENJAMIN KWAME KOOMSON @0247812878",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-122-opt-true",
+        "exam-teacher-promotion-tf-122-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-122-opt-true",
+      "explanation": "Source-supplied key: True.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 122,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-123",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "John Dewey advocated for a traditional, teacher-centred approach to education.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-123-opt-true",
+        "exam-teacher-promotion-tf-123-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-123-opt-true",
+      "explanation": "Source-supplied key: True.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 123,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-124",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "Behavourism emphasizes the role of internal mental states in learning.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-124-opt-true",
+        "exam-teacher-promotion-tf-124-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-124-opt-true",
+      "explanation": "Source-supplied key: True.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 124,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-125",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "Constructivist teaching often involves hand-on, experiential learning techniques.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-125-opt-true",
+        "exam-teacher-promotion-tf-125-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-125-opt-true",
+      "explanation": "Source-supplied key: True.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 125,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-128",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "Cognitivism focuses on observable behaviours rather than mental process.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-128-opt-true",
+        "exam-teacher-promotion-tf-128-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-128-opt-true",
+      "explanation": "Source-supplied key: True.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 128,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-129",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "An authoritative classroom management style combines high expectations with support and encouragement.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-129-opt-true",
+        "exam-teacher-promotion-tf-129-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-129-opt-true",
+      "explanation": "Source-supplied key: True.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 129,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-130",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "Formative Assessments are used primarily to evaluate the effectiveness of a completed instructional programme.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-130-opt-true",
+        "exam-teacher-promotion-tf-130-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-130-opt-true",
+      "explanation": "Source indicates True. Note: Rather, Summative Assessments",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 130,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-132",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "A Valid Assessment accurately measures what is intended to measure.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-132-opt-true",
+        "exam-teacher-promotion-tf-132-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-132-opt-true",
+      "explanation": "Source indicates True. Note: Rather, Formative Assessment",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 132,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-136",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "STEM Education includes the study of Science, Technology, English and Mathematics.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-136-opt-true",
+        "exam-teacher-promotion-tf-136-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-136-opt-true",
+      "explanation": "Source-supplied key: True.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 136,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-137",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "A flipped classroom model typically involves students doing homework in class and watching lectures at home.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-137-opt-true",
+        "exam-teacher-promotion-tf-137-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-137-opt-true",
+      "explanation": "Source-supplied key: True.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 137,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-138",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "In Ghana, 21st-century Skills are limited to technical and vocational skills.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-138-opt-true",
+        "exam-teacher-promotion-tf-138-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-138-opt-true",
+      "explanation": "Source-supplied key: True.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 138,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-tf-139",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "One of the challenges of the COVID-19 Pandemic for educational systems has been the need to transition to remote learning solutions.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-tf-139-opt-true",
+        "exam-teacher-promotion-tf-139-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-tf-139-opt-true",
+      "explanation": "Source-supplied key: True.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "2025_Benito_Final_Super_Mock_ANSWERS_cb90.pdf",
+      "sourceQuestionNumber": 139,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-aug-tf-091",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "The only decision-making body in the GES is the GES Council.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-aug-tf-091-opt-true",
+        "exam-teacher-promotion-aug-tf-091-opt-false"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-teacher-promotion-aug-tf-091-opt-false",
+      "explanation": "Source-supplied key: False.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "Solved-FINAL_FINAL_MOCK__AUGUST_-_2024_QUESTION_03b1.pdf",
+      "sourceQuestionNumber": 91,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-aug-tf-092",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "Teachers group decision-making produces shared leadership in the school.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-aug-tf-092-opt-true",
+        "exam-teacher-promotion-aug-tf-092-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-aug-tf-092-opt-true",
+      "explanation": "Source-supplied key: True.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "Solved-FINAL_FINAL_MOCK__AUGUST_-_2024_QUESTION_03b1.pdf",
+      "sourceQuestionNumber": 92,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-aug-tf-093",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "National Accreditation Board is not the current body that gives accreditations to tertiary institutions in the country.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-aug-tf-093-opt-true",
+        "exam-teacher-promotion-aug-tf-093-opt-false"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-teacher-promotion-aug-tf-093-opt-false",
+      "explanation": "Source-supplied key: False.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "Solved-FINAL_FINAL_MOCK__AUGUST_-_2024_QUESTION_03b1.pdf",
+      "sourceQuestionNumber": 93,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-aug-tf-094",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "The key focus of Education 2030 Agenda underline the importance of citizenship education.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-aug-tf-094-opt-true",
+        "exam-teacher-promotion-aug-tf-094-opt-false"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-teacher-promotion-aug-tf-094-opt-false",
+      "explanation": "Source-supplied key: False.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "Solved-FINAL_FINAL_MOCK__AUGUST_-_2024_QUESTION_03b1.pdf",
+      "sourceQuestionNumber": 94,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-aug-tf-095",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "Teachers are advised to address isolated behaviour in managing the classroom.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-aug-tf-095-opt-true",
+        "exam-teacher-promotion-aug-tf-095-opt-false"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-teacher-promotion-aug-tf-095-opt-false",
+      "explanation": "Source-supplied key: False.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "Solved-FINAL_FINAL_MOCK__AUGUST_-_2024_QUESTION_03b1.pdf",
+      "sourceQuestionNumber": 95,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-aug-tf-096",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "IPPD Unit at GES Headquarters that deals with salary issues is under the Finance Division.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-aug-tf-096-opt-true",
+        "exam-teacher-promotion-aug-tf-096-opt-false"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-teacher-promotion-aug-tf-096-opt-false",
+      "explanation": "Source-supplied key: False.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "Solved-FINAL_FINAL_MOCK__AUGUST_-_2024_QUESTION_03b1.pdf",
+      "sourceQuestionNumber": 96,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-aug-tf-097",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "The term Reactivation of a staff in GES is mainly associated with disciplinary issues.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-aug-tf-097-opt-true",
+        "exam-teacher-promotion-aug-tf-097-opt-false"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-teacher-promotion-aug-tf-097-opt-false",
+      "explanation": "Source-supplied key: False.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "Solved-FINAL_FINAL_MOCK__AUGUST_-_2024_QUESTION_03b1.pdf",
+      "sourceQuestionNumber": 97,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-aug-tf-098",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "Analytical thinking is a mental process of carefully evaluating information and determining how to interpret it in order to make a sound judgment.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-aug-tf-098-opt-true",
+        "exam-teacher-promotion-aug-tf-098-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-aug-tf-098-opt-true",
+      "explanation": "Source-supplied key: True.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "Solved-FINAL_FINAL_MOCK__AUGUST_-_2024_QUESTION_03b1.pdf",
+      "sourceQuestionNumber": 98,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-aug-tf-099",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "The principal feature of measurement is underpinned in quantification.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-aug-tf-099-opt-true",
+        "exam-teacher-promotion-aug-tf-099-opt-false"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-teacher-promotion-aug-tf-099-opt-false",
+      "explanation": "Source-supplied key: False.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "Solved-FINAL_FINAL_MOCK__AUGUST_-_2024_QUESTION_03b1.pdf",
+      "sourceQuestionNumber": 99,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-aug-tf-100",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "National Teaching Council is responsible for advising and recommendations on employment of teachers at the pre-tertiary institutions.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-aug-tf-100-opt-true",
+        "exam-teacher-promotion-aug-tf-100-opt-false"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-teacher-promotion-aug-tf-100-opt-false",
+      "explanation": "Source-supplied key: False.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "Solved-FINAL_FINAL_MOCK__AUGUST_-_2024_QUESTION_03b1.pdf",
+      "sourceQuestionNumber": 100,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-aug-tf-010",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "The Ministry of Education, with collaboration with the Ministry of Finance, recruit teachers for pre-tertiary educational institutions.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-aug-tf-010-opt-true",
+        "exam-teacher-promotion-aug-tf-010-opt-false"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-teacher-promotion-aug-tf-010-opt-false",
+      "explanation": "Source-supplied key: False.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "Solved-FINAL_FINAL_MOCK__AUGUST_-_2024_QUESTION_03b1.pdf",
+      "sourceQuestionNumber": 10,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-aug-tf-102",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "If a Lesson plan is well prepared, it is not a full guarantee that the objectives of the will be fully achieved.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-aug-tf-102-opt-true",
+        "exam-teacher-promotion-aug-tf-102-opt-false"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-teacher-promotion-aug-tf-102-opt-false",
+      "explanation": "Source-supplied key: False.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "Solved-FINAL_FINAL_MOCK__AUGUST_-_2024_QUESTION_03b1.pdf",
+      "sourceQuestionNumber": 102,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-aug-tf-103",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "Interviews and questionnaires are primary sources of information.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-aug-tf-103-opt-true",
+        "exam-teacher-promotion-aug-tf-103-opt-false"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-teacher-promotion-aug-tf-103-opt-false",
+      "explanation": "Source-supplied key: False.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "Solved-FINAL_FINAL_MOCK__AUGUST_-_2024_QUESTION_03b1.pdf",
+      "sourceQuestionNumber": 103,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "premium"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-aug-tf-104",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "The type o f education that is acquired casually is referred to as non- formal education.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-aug-tf-104-opt-true",
+        "exam-teacher-promotion-aug-tf-104-opt-false"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-teacher-promotion-aug-tf-104-opt-false",
+      "explanation": "Source-supplied key: False.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "Solved-FINAL_FINAL_MOCK__AUGUST_-_2024_QUESTION_03b1.pdf",
+      "sourceQuestionNumber": 104,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "premium"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-aug-tf-105",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "Quality education is relative to individual contexts.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-aug-tf-105-opt-true",
+        "exam-teacher-promotion-aug-tf-105-opt-false"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-teacher-promotion-aug-tf-105-opt-false",
+      "explanation": "Source-supplied key: False.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "Solved-FINAL_FINAL_MOCK__AUGUST_-_2024_QUESTION_03b1.pdf",
+      "sourceQuestionNumber": 105,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "premium"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-aug-tf-106",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "Formal education in the country starts from age 6.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-aug-tf-106-opt-true",
+        "exam-teacher-promotion-aug-tf-106-opt-false"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-teacher-promotion-aug-tf-106-opt-false",
+      "explanation": "Source-supplied key: False.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "Solved-FINAL_FINAL_MOCK__AUGUST_-_2024_QUESTION_03b1.pdf",
+      "sourceQuestionNumber": 106,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "premium"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-aug-tf-107",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "National Standardized Test that was administered for Basic 4 and Basic 6 Learners in July, 2024 is a form of Evaluative Assessment.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-aug-tf-107-opt-true",
+        "exam-teacher-promotion-aug-tf-107-opt-false"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-teacher-promotion-aug-tf-107-opt-false",
+      "explanation": "Source-supplied key: False.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "Solved-FINAL_FINAL_MOCK__AUGUST_-_2024_QUESTION_03b1.pdf",
+      "sourceQuestionNumber": 107,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "premium"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-aug-tf-108",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "Regional Directors of Educational are on different ranks with the Divisional Directors at the GES Headquarters.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-aug-tf-108-opt-true",
+        "exam-teacher-promotion-aug-tf-108-opt-false"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-teacher-promotion-aug-tf-108-opt-false",
+      "explanation": "Source-supplied key: False.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "Solved-FINAL_FINAL_MOCK__AUGUST_-_2024_QUESTION_03b1.pdf",
+      "sourceQuestionNumber": 108,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "premium"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-aug-tf-109",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "While evaluation is concerned with quality, measurement focuses on quantity.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-aug-tf-109-opt-true",
+        "exam-teacher-promotion-aug-tf-109-opt-false"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-teacher-promotion-aug-tf-109-opt-false",
+      "explanation": "Source-supplied key: False.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "Solved-FINAL_FINAL_MOCK__AUGUST_-_2024_QUESTION_03b1.pdf",
+      "sourceQuestionNumber": 109,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "premium"
+      ],
+      "promotionRank": null
+    },
+    {
+      "questionId": "exam-teacher-promotion-aug-tf-110",
+      "courseSlug": "exam-teacher-promotion",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "The core mandate of Ghana Education Service is to implement approved national educational policies and programmes at all levels of educational delivery of the country.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-teacher-promotion-aug-tf-110-opt-true",
+        "exam-teacher-promotion-aug-tf-110-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-teacher-promotion-aug-tf-110-opt-true",
+      "explanation": "Source-supplied key: True.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "Solved-FINAL_FINAL_MOCK__AUGUST_-_2024_QUESTION_03b1.pdf",
+      "sourceQuestionNumber": 110,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "premium"
+      ],
+      "promotionRank": null
     }
   ]
 }

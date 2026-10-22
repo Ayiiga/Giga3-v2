@@ -81,9 +81,9 @@
       "extracted": 500,
       "pages": 46,
       "nearDuplicates": 261,
-      "uniqueImportable": 239,
+      "uniqueImportable": 296,
       "approvedImported": 238,
-      "pendingImported": 1,
+      "pendingImported": 58,
       "parseFailed": 0,
       "rejected": 0,
       "exactDuplicates": 0,
@@ -103,7 +103,8 @@
       "claimedAsOfficialGes": false,
       "sourceKind": "authored_practice",
       "humanVerified": 24,
-      "heldPendingReview": 1
+      "heldPendingReview": 58,
+      "trueFalseImported": 57
     },
     {
       "sourceFile": "Attractive_GES_Assistant_Director_II_Study_Guide_2026_d118.pdf",
@@ -118,7 +119,7 @@
       "rejected": 0,
       "topics": [],
       "topicCount": 0,
-      "note": "Study guide PDF with no extractable A\u2013D MCQs; not invented."
+      "note": "Study guide PDF with no extractable A–D MCQs; not invented."
     },
     {
       "sourceFile": "assistant_director_ii_500_promotion_questions_answers_24c1.pdf",
@@ -126,12 +127,12 @@
       "bankId": "ad-ii",
       "courseSlug": "exam-ad-ii",
       "extracted": 500,
-      "uniqueImportable": 60,
+      "uniqueImportable": 85,
       "approvedImported": 0,
-      "pendingImported": 60,
-      "freeImported": 50,
+      "pendingImported": 85,
+      "freeImported": 75,
       "premiumImported": 10,
-      "gapToTarget500": 440,
+      "gapToTarget500": 415,
       "claimedAs500Unique": false,
       "claimedAsOfficialGes": false,
       "sourceKind": "original_practice",
@@ -218,9 +219,9 @@
   "totals": {
     "techUniqueApproved": 1092,
     "examExtracted": 1000,
-    "examUniqueImportable": 707,
+    "examUniqueImportable": 1048,
     "examApproved": 706,
-    "examPendingReview": 260,
+    "examPendingReview": 342,
     "claimedAs2500Tech": false,
     "techExtracted": 2000,
     "aiExtracted": 500,
@@ -229,17 +230,18 @@
     "aiRejected": 0,
     "claimedAs500AiUnique": false,
     "teacherPromotionHumanVerified": 24,
-    "promotionRankUniquePublished": 259,
-    "promotionRankGapTo2500": 2241,
+    "promotionRankUniquePublished": 284,
+    "promotionRankGapTo2500": 2216,
     "claimedAs2500PromotionVerified": false
   },
   "notes": [
     "AI bank: extracted 500, removed 227 near-duplicates, imported 273 unique approved. Not claimed as 500 unique.",
     "Website/PWA, Robotics, Other Digital: 273 unique approved each (same extract pipeline).",
     "BECE: 468 approved across 10 subjects; independent practice, not an official WAEC paper.",
-    "Teacher Promotion: 60 approved + 179 provisional pending_review; not an official GES paper.",
-    "AD II study guide: 0 extractable A\u2013D MCQs (not invented).",
-    "Mobile App PDF still missing \u2014 course remains awaitingMaterials until import.",
+    "Teacher Promotion: 238 approved MCQ + 58 pending_review (incl. 57 True/False); not an official GES paper.",
+    "AD II study guide: 0 extractable A–D MCQs (not invented).",
+    "AD II rank bank: 60 MCQ + 25 True/False from AD2 Feb 2023 (SOURCE ANSWER — REVIEW REQUIRED).",
+    "Mobile App PDF still missing — course remains awaitingMaterials until import.",
     "Exam banks reuse gigaLearnTechSessions server-graded practice (no second assessment system)."
   ]
 }

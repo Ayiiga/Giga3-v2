@@ -17,6 +17,9 @@ export type TechPracticeMode =
   | "random"
   | "challenge";
 
+/** Supported interactive formats in Exam Practice / Tech Hub banks. */
+export type TechQuestionType = "mcq" | "true_false";
+
 export type TechBankQuestion = {
   questionId: string;
   courseSlug: string;
@@ -27,13 +30,14 @@ export type TechBankQuestion = {
   /**
    * Stable option identities (parallel to `options`). Runtime shuffle remaps
    * display order; grading uses correctIndex / correctOptionId + permutations.
+   * True/False uses fixed ["True","False"] — never shuffled.
    */
   optionIds?: string[];
   correctIndex: number;
   correctOptionId?: string;
   explanation: string;
   difficulty: TechDifficulty;
-  questionType: "mcq";
+  questionType: TechQuestionType;
   sourceDocument: string;
   sourceQuestionNumber: number;
   reviewStatus: TechReviewStatus;
@@ -83,4 +87,6 @@ export type TechPublicQuestion = {
   difficulty: TechDifficulty;
   sourceQuestionNumber: number;
   reviewStatus: TechReviewStatus;
+  /** Presentation format — True/False must not render as four-option MCQ. */
+  questionType: TechQuestionType;
 };

@@ -51,6 +51,7 @@ function parseAnswers(raw: string): Record<string, number> {
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
     const out: Record<string, number> = {};
     for (const [k, val] of Object.entries(parsed as Record<string, unknown>)) {
+      // MCQ uses 0–3; True/False uses 0–1. Cap at 3 for storage hygiene.
       if (typeof val === "number" && Number.isInteger(val) && val >= 0 && val <= 3) {
         out[k.slice(0, 120)] = val;
       }
@@ -197,11 +198,14 @@ export const startTechPracticeSession = mutation({
     topicId: v.optional(v.string()),
     count: v.optional(v.number()),
     timeLimitMinutes: v.optional(v.number()),
+    /** Optional: "mcq" | "true_false" — type-specific practice when the bank has that format. */
+    questionType: v.optional(v.union(v.literal("mcq"), v.literal("true_false"))),
   },
   handler: async (ctx, args) => {
     const email = await requireSession(args.sessionToken, ctx);
     const { slug, meta } = await requireActiveEnrolment(ctx, email, args.courseSlug);
     const mode = args.mode as TechPracticeMode;
+    const questionType = args.questionType;
 
     if ((mode === "topic" || mode === "challenge") && !args.topicId?.trim()) {
       // challenge may omit topic — use full bank; topic mode requires topic
@@ -275,7 +279,15 @@ export const startTechPracticeSession = mutation({
     });
     const bankSize = getTechBankQuestions(slug, {
       freeTierOnly: !premiumAccess,
+      questionType,
     }).length;
+    if (questionType && bankSize === 0) {
+      throw new Error(
+        questionType === "true_false"
+          ? "True/False practice is not yet available for this rank. Multiple-choice items may still be available."
+          : "Multiple-choice practice is not yet available for this selection."
+      );
+    }
     const resolved = resolveExamPracticeSessionCount({
       requested: args.count ?? defaultCount,
       courseSlug: slug,
@@ -295,6 +307,7 @@ export const startTechPracticeSession = mutation({
       seed,
       revisionQuestionIds: revisionIds,
       premiumAccess: resolved.premiumAccess,
+      questionType,
     });
     if (questionIds.length === 0) {
       throw new Error("No approved questions available for this selection.");
@@ -329,7 +342,11 @@ export const startTechPracticeSession = mutation({
 
     const bankQuestions = questionIds.map((id) => getTechBankQuestionById(slug, id)!);
     const optionPermutations = buildSessionOptionPermutations(
-      bankQuestions.map((q) => ({ questionId: q.questionId, options: q.options })),
+      bankQuestions.map((q) => ({
+        questionId: q.questionId,
+        options: q.options,
+        questionType: q.questionType,
+      })),
       seed
     );
 
@@ -445,16 +462,20 @@ export const saveTechPracticeAnswer = mutation({
     if (!questionIds.includes(args.questionId)) {
       throw new Error("Question is not part of this session.");
     }
+    const bankQuestion = getTechBankQuestionById(session.courseSlug, args.questionId);
+    const maxOptionIndex = Math.max(0, (bankQuestion?.options.length ?? 4) - 1);
     if (
       !Number.isInteger(args.selectedIndex) ||
       args.selectedIndex < 0 ||
-      args.selectedIndex > 3
+      args.selectedIndex > maxOptionIndex
     ) {
       throw new Error("Invalid answer selection.");
     }
 
     const now = Date.now();
     const answers = parseAnswers(session.answersJson);
+    // Idempotent overwrite — repeated saves do not award duplicate score points
+    // (scoring runs once in finalizeSession / submit).
     answers[args.questionId] = args.selectedIndex;
     await ctx.db.patch(session._id, {
       answersJson: JSON.stringify(answers),
@@ -473,7 +494,7 @@ export const saveTechPracticeAnswer = mutation({
     }
 
     if (session.mode === "learn") {
-      const q = getTechBankQuestionById(session.courseSlug, args.questionId);
+      const q = bankQuestion;
       const perm = parseOptionPermutations(session.optionPermutationsJson)[args.questionId];
       if (
         !q ||

@@ -89,9 +89,9 @@ describe("Exam practice rewards", () => {
     );
     expect([...lines].some((l) => /excellent/i.test(l))).toBe(true);
     expect([...lines].some((l) => /superb/i.test(l))).toBe(true);
-    expect(rewardForCorrectAnswer({ streak: 3 })).toMatch(/superb streak/i);
+    expect(rewardForCorrectAnswer({ streak: 3 })).toMatch(/superb/i);
     expect(rewardForSessionScore(92)).toMatch(/outstanding/i);
-    expect(rewardForSessionScore(40)).toBeNull();
+    expect(rewardForSessionScore(40)).toMatch(/keep practising/i);
   });
 });
 

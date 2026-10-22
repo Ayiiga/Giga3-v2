@@ -2391,6 +2391,881 @@
         "premium_tier",
         "length_clue_risk"
       ]
+    },
+    {
+      "questionId": "exam-ad-ii-tf-051",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "In any school situation, performance tasks are hands-on activities that require students to demonstrate their ability to perform certain actions.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-ad-ii-tf-051-opt-true",
+        "exam-ad-ii-tf-051-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-ii-tf-051-opt-true",
+      "explanation": "Source-supplied key. Treat as provisional pending authoritative review.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "AD2_28TH_FEB_2023_QUESTIONS_AND_ANSWERS_d2cf.pdf",
+      "sourceQuestionNumber": 51,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "assistant-director-ii"
+    },
+    {
+      "questionId": "exam-ad-ii-tf-052",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "The final outcome of successful strategic competitiveness is above average returns.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-ad-ii-tf-052-opt-true",
+        "exam-ad-ii-tf-052-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-ii-tf-052-opt-true",
+      "explanation": "Source-supplied key. Treat as provisional pending authoritative review.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "AD2_28TH_FEB_2023_QUESTIONS_AND_ANSWERS_d2cf.pdf",
+      "sourceQuestionNumber": 52,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "assistant-director-ii"
+    },
+    {
+      "questionId": "exam-ad-ii-tf-053",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "Teachers who are respected and liked are associated with greater student satisfaction and higher achievement.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-ad-ii-tf-053-opt-true",
+        "exam-ad-ii-tf-053-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-ii-tf-053-opt-true",
+      "explanation": "Source-supplied key. Treat as provisional pending authoritative review.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "AD2_28TH_FEB_2023_QUESTIONS_AND_ANSWERS_d2cf.pdf",
+      "sourceQuestionNumber": 53,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "assistant-director-ii"
+    },
+    {
+      "questionId": "exam-ad-ii-tf-054",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "Monitoring involves the development of a forecast of what might happen at a future point in time.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-ad-ii-tf-054-opt-true",
+        "exam-ad-ii-tf-054-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-ii-tf-054-opt-true",
+      "explanation": "Source-supplied key. Treat as provisional pending authoritative review.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "AD2_28TH_FEB_2023_QUESTIONS_AND_ANSWERS_d2cf.pdf",
+      "sourceQuestionNumber": 54,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "assistant-director-ii"
+    },
+    {
+      "questionId": "exam-ad-ii-tf-055",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "A teacher cannot exhibit referent power from the first day in class by giving students a sense of belonging and acceptance.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-ad-ii-tf-055-opt-true",
+        "exam-ad-ii-tf-055-opt-false"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-ad-ii-tf-055-opt-false",
+      "explanation": "Source-supplied key. Treat as provisional pending authoritative review.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "AD2_28TH_FEB_2023_QUESTIONS_AND_ANSWERS_d2cf.pdf",
+      "sourceQuestionNumber": 55,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "assistant-director-ii"
+    },
+    {
+      "questionId": "exam-ad-ii-tf-056",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "Since the health of a nations economy affects the performance of individual firms and industries, organisations study the economic environment to identify changes, trends and their strategic implications.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-ad-ii-tf-056-opt-true",
+        "exam-ad-ii-tf-056-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-ii-tf-056-opt-true",
+      "explanation": "Source-supplied key. Treat as provisional pending authoritative review.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "AD2_28TH_FEB_2023_QUESTIONS_AND_ANSWERS_d2cf.pdf",
+      "sourceQuestionNumber": 56,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "assistant-director-ii"
+    },
+    {
+      "questionId": "exam-ad-ii-tf-057",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "Licensure and exit test are the best predictors of classroom performance of teachers.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-ad-ii-tf-057-opt-true",
+        "exam-ad-ii-tf-057-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-ii-tf-057-opt-true",
+      "explanation": "Source-supplied key. Treat as provisional pending authoritative review.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "AD2_28TH_FEB_2023_QUESTIONS_AND_ANSWERS_d2cf.pdf",
+      "sourceQuestionNumber": 57,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "assistant-director-ii"
+    },
+    {
+      "questionId": "exam-ad-ii-tf-058",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "External environment analysis should be conducted annually.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-ad-ii-tf-058-opt-true",
+        "exam-ad-ii-tf-058-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-ii-tf-058-opt-true",
+      "explanation": "Source-supplied key. Treat as provisional pending authoritative review.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "AD2_28TH_FEB_2023_QUESTIONS_AND_ANSWERS_d2cf.pdf",
+      "sourceQuestionNumber": 58,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "assistant-director-ii"
+    },
+    {
+      "questionId": "exam-ad-ii-tf-059",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "If a person teaches with a high degree of clarity, he/she will spend less time going over material.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-ad-ii-tf-059-opt-true",
+        "exam-ad-ii-tf-059-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-ii-tf-059-opt-true",
+      "explanation": "Source-supplied key. Treat as provisional pending authoritative review.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "AD2_28TH_FEB_2023_QUESTIONS_AND_ANSWERS_d2cf.pdf",
+      "sourceQuestionNumber": 59,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "assistant-director-ii"
+    },
+    {
+      "questionId": "exam-ad-ii-tf-060",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "Students performance is higher in classes where the teacher devotes large amounts of time to the materials needed rather than teaching content.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-ad-ii-tf-060-opt-true",
+        "exam-ad-ii-tf-060-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-ii-tf-060-opt-true",
+      "explanation": "Source-supplied key. Treat as provisional pending authoritative review.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "AD2_28TH_FEB_2023_QUESTIONS_AND_ANSWERS_d2cf.pdf",
+      "sourceQuestionNumber": 60,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "assistant-director-ii"
+    },
+    {
+      "questionId": "exam-ad-ii-tf-061",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "In Ghana, the National Teachers Standards set out the minimum levels of practice that all trained teachers must reach by the end of their pre- service teachers education course in order to play such a critical role.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-ad-ii-tf-061-opt-true",
+        "exam-ad-ii-tf-061-opt-false"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-ad-ii-tf-061-opt-false",
+      "explanation": "Source-supplied key. Treat as provisional pending authoritative review.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "AD2_28TH_FEB_2023_QUESTIONS_AND_ANSWERS_d2cf.pdf",
+      "sourceQuestionNumber": 61,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "assistant-director-ii"
+    },
+    {
+      "questionId": "exam-ad-ii-tf-062",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "The purpose of evaluating is to make a judgement about the quality of education provided.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-ad-ii-tf-062-opt-true",
+        "exam-ad-ii-tf-062-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-ii-tf-062-opt-true",
+      "explanation": "Source-supplied key. Treat as provisional pending authoritative review.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "AD2_28TH_FEB_2023_QUESTIONS_AND_ANSWERS_d2cf.pdf",
+      "sourceQuestionNumber": 62,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "assistant-director-ii"
+    },
+    {
+      "questionId": "exam-ad-ii-tf-063",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "Measurement is the qualitative assessment of performance of learners.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-ad-ii-tf-063-opt-true",
+        "exam-ad-ii-tf-063-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-ii-tf-063-opt-true",
+      "explanation": "Source-supplied key. Treat as provisional pending authoritative review.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "AD2_28TH_FEB_2023_QUESTIONS_AND_ANSWERS_d2cf.pdf",
+      "sourceQuestionNumber": 63,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "assistant-director-ii"
+    },
+    {
+      "questionId": "exam-ad-ii-tf-064",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "What a teacher does not say is as important as what a teacher does say.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-ad-ii-tf-064-opt-true",
+        "exam-ad-ii-tf-064-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-ii-tf-064-opt-true",
+      "explanation": "Source-supplied key. Treat as provisional pending authoritative review.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "AD2_28TH_FEB_2023_QUESTIONS_AND_ANSWERS_d2cf.pdf",
+      "sourceQuestionNumber": 64,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "assistant-director-ii"
+    },
+    {
+      "questionId": "exam-ad-ii-tf-065",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "Competitive activities have little value in establishing or maintaining an effective classroom climate and should thus be avoided.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-ad-ii-tf-065-opt-true",
+        "exam-ad-ii-tf-065-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-ii-tf-065-opt-true",
+      "explanation": "Source-supplied key. Treat as provisional pending authoritative review.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "AD2_28TH_FEB_2023_QUESTIONS_AND_ANSWERS_d2cf.pdf",
+      "sourceQuestionNumber": 65,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "assistant-director-ii"
+    },
+    {
+      "questionId": "exam-ad-ii-tf-066",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "Students feel important and are encouraged to participate in class when a teacher uses their ideas in moving a class lecture or activity forward.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-ad-ii-tf-066-opt-true",
+        "exam-ad-ii-tf-066-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-ii-tf-066-opt-true",
+      "explanation": "Source-supplied key. Treat as provisional pending authoritative review.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "AD2_28TH_FEB_2023_QUESTIONS_AND_ANSWERS_d2cf.pdf",
+      "sourceQuestionNumber": 66,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "assistant-director-ii"
+    },
+    {
+      "questionId": "exam-ad-ii-tf-067",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "The advancement in literacy, numeracy as well as Science, Technology, Engineering and Mathematics (STEM) fields is central to the Ministry of Education’s vision of producing learners with strong experiential learning capabilities and backgrounds in career focused programmes.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-ad-ii-tf-067-opt-true",
+        "exam-ad-ii-tf-067-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-ii-tf-067-opt-true",
+      "explanation": "Source-supplied key. Treat as provisional pending authoritative review.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "AD2_28TH_FEB_2023_QUESTIONS_AND_ANSWERS_d2cf.pdf",
+      "sourceQuestionNumber": 67,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "assistant-director-ii"
+    },
+    {
+      "questionId": "exam-ad-ii-tf-068",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "Strategies such as writing detailed test questions or prompts, including clear directions, and establishing and communicating clear grading criteria increase test reliability.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-ad-ii-tf-068-opt-true",
+        "exam-ad-ii-tf-068-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-ii-tf-068-opt-true",
+      "explanation": "Source-supplied key. Treat as provisional pending authoritative review.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "AD2_28TH_FEB_2023_QUESTIONS_AND_ANSWERS_d2cf.pdf",
+      "sourceQuestionNumber": 68,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "assistant-director-ii"
+    },
+    {
+      "questionId": "exam-ad-ii-tf-069",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "The standard-based curriculum was rolled for the primary schools in Ghana in academic year 2017/2018.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-ad-ii-tf-069-opt-true",
+        "exam-ad-ii-tf-069-opt-false"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-ad-ii-tf-069-opt-false",
+      "explanation": "Source-supplied key. Treat as provisional pending authoritative review.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "AD2_28TH_FEB_2023_QUESTIONS_AND_ANSWERS_d2cf.pdf",
+      "sourceQuestionNumber": 69,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "assistant-director-ii"
+    },
+    {
+      "questionId": "exam-ad-ii-tf-070",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "Written assessments are activities in which the students selects or composes a response to a prompt.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-ad-ii-tf-070-opt-true",
+        "exam-ad-ii-tf-070-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-ii-tf-070-opt-true",
+      "explanation": "Source-supplied key. Treat as provisional pending authoritative review.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "AD2_28TH_FEB_2023_QUESTIONS_AND_ANSWERS_d2cf.pdf",
+      "sourceQuestionNumber": 70,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "assistant-director-ii"
+    },
+    {
+      "questionId": "exam-ad-ii-tf-071",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "The teacher cannot alter the classroom climate but should work for student success regardless of the climate.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-ad-ii-tf-071-opt-true",
+        "exam-ad-ii-tf-071-opt-false"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-ad-ii-tf-071-opt-false",
+      "explanation": "Source-supplied key. Treat as provisional pending authoritative review.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "AD2_28TH_FEB_2023_QUESTIONS_AND_ANSWERS_d2cf.pdf",
+      "sourceQuestionNumber": 71,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "assistant-director-ii"
+    },
+    {
+      "questionId": "exam-ad-ii-tf-072",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "The overall goal of the Ministry of Education is to provide relevant and quality education for disadvantaged Ghanaians.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-ad-ii-tf-072-opt-true",
+        "exam-ad-ii-tf-072-opt-false"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-ad-ii-tf-072-opt-false",
+      "explanation": "Source-supplied key. Treat as provisional pending authoritative review.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "AD2_28TH_FEB_2023_QUESTIONS_AND_ANSWERS_d2cf.pdf",
+      "sourceQuestionNumber": 72,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "assistant-director-ii"
+    },
+    {
+      "questionId": "exam-ad-ii-tf-073",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "The National Teaching Council is not the mandated body that oversees the posting of newly trained teachers in Ghana.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-ad-ii-tf-073-opt-true",
+        "exam-ad-ii-tf-073-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-ii-tf-073-opt-true",
+      "explanation": "Source-supplied key. Treat as provisional pending authoritative review.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "AD2_28TH_FEB_2023_QUESTIONS_AND_ANSWERS_d2cf.pdf",
+      "sourceQuestionNumber": 73,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "assistant-director-ii"
+    },
+    {
+      "questionId": "exam-ad-ii-tf-074",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "The skill that must be demonstrated in performance task cannot vary considerably.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-ad-ii-tf-074-opt-true",
+        "exam-ad-ii-tf-074-opt-false"
+      ],
+      "correctIndex": 1,
+      "correctOptionId": "exam-ad-ii-tf-074-opt-false",
+      "explanation": "Source-supplied key. Treat as provisional pending authoritative review.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "AD2_28TH_FEB_2023_QUESTIONS_AND_ANSWERS_d2cf.pdf",
+      "sourceQuestionNumber": 74,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "assistant-director-ii"
+    },
+    {
+      "questionId": "exam-ad-ii-tf-075",
+      "courseSlug": "exam-ad-ii",
+      "topicId": "true-false-promotion",
+      "topicLabel": "True / False — Promotion Aptitude",
+      "questionText": "In a school, teachers have many different types of assessment available to them.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "optionIds": [
+        "exam-ad-ii-tf-075-opt-true",
+        "exam-ad-ii-tf-075-opt-false"
+      ],
+      "correctIndex": 0,
+      "correctOptionId": "exam-ad-ii-tf-075-opt-true",
+      "explanation": "Source-supplied key. Treat as provisional pending authoritative review.",
+      "difficulty": "intermediate",
+      "questionType": "true_false",
+      "sourceDocument": "AD2_28TH_FEB_2023_QUESTIONS_AND_ANSWERS_d2cf.pdf",
+      "sourceQuestionNumber": 75,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "true_false",
+        "source_answer_review_required"
+      ],
+      "sourceType": "awaiting_verification",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "SOURCE ANSWER — REVIEW REQUIRED. Not auto-approved as fact.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free"
+      ],
+      "promotionRank": "assistant-director-ii"
     }
   ]
 }
