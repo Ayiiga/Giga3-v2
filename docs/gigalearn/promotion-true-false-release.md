@@ -59,11 +59,12 @@ True/False from Benito 2025 / Aug 2024 mocks live on `exam-teacher-promotion` wi
 
 | Item | Status |
 |------|--------|
-| Pull request | **#580** draft — awaiting CI |
-| Merge | **Not merged** (pending green CI + review) |
-| Convex deploy | **Not deployed** until merge → Deploy Convex workflow |
-| Pages deploy | **Not deployed** until merge → Pages workflow |
-| Production smoke (signed-in TF session) | **BLOCKED** — no `GIGA3_E2E_*` credentials in this environment |
+| Pull request | **#580** MERGED into `main` at `a36c3ded` (Africa/Accra 22 Oct 2026 17:02 UTC) |
+| Vitest CI on PR | SUCCESS (`39818613988`) |
+| Convex deploy | SUCCESS (`39819154321`) |
+| Cloudflare Pages deploy | SUCCESS (`39819154344`) |
+| Production public smoke | HTTP 200 for exam centre + AD II TF/MCQ deep links |
+| Production signed-in TF session | **BLOCKED** — no `GIGA3_E2E_*` credentials in this environment |
 
 ## Remaining limitations
 
