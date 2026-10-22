@@ -387,47 +387,42 @@ function TeacherPromotionCentreCard() {
       {TEACHER_PROMOTION_BANK_SUMMARY.available ? (
         <article className="exam-landing-card" data-testid="teacher-promotion-bank-ready">
           <span className="exam-landing-pill">
-            {TEACHER_PROMOTION_BANK_SUMMARY.approvedCount} approved ·{" "}
-            {TEACHER_PROMOTION_BANK_SUMMARY.pendingCount} provisional
+            Five ranks · {PROMOTION_RANK_BANKS_TOTAL.published} distinct practice items
           </span>
           <h3 className="mt-3 text-base font-bold text-[#14532D]">
-            GES Teachers Promotion aptitude bank
+            Rank banks (AD II → Director I)
           </h3>
           <p className="mt-1 text-sm text-slate-600">
-            Interactive practice from the imported promotion objective set. Provisional items are
-            labelled in learn mode — not claimed as an official GES examination paper.
+            Free learn-mode practice with explanations after each answer. Choose your promotion rank
+            first — not a mixed general course list. Original practice items awaiting verification;
+            not an official GES examination paper.
           </p>
           <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
             <Link
-              href={EXAM_PRACTICE_DESTINATIONS.teacherPromotionPractice}
+              href={EXAM_PRACTICE_DESTINATIONS.promotionRankSelect}
               className="exam-landing-cta"
+              data-testid="teacher-promotion-bank-choose-rank"
             >
               <Play className="h-4 w-4 fill-current" aria-hidden />
-              Open promotion practice
+              Choose rank · Start Free Practice
             </Link>
             <Link
-              href={EXAM_PRACTICE_DESTINATIONS.teacherPromotionLearn}
+              href={EXAM_PRACTICE_DESTINATIONS.promotionRankSelect}
               className="exam-landing-cta exam-landing-cta--ghost"
             >
-              Learn mode
+              Learn mode by rank
             </Link>
             <Link
-              href={EXAM_PRACTICE_DESTINATIONS.teacherPromotionPracticeFull}
+              href={EXAM_PRACTICE_DESTINATIONS.promotionRankSelect}
               className="exam-landing-cta exam-landing-cta--ghost"
             >
-              Full pack (up to {EXAM_PRACTICE_PREMIUM_QUESTION_COUNT})
-            </Link>
-            <Link
-              href={EXAM_PRACTICE_DESTINATIONS.teacherPromotionCourse}
-              className="exam-landing-cta exam-landing-cta--ghost"
-            >
-              Enrol / course page
+              Timed / full pack by rank
             </Link>
           </div>
           <p className="mt-2 text-xs text-slate-500">
-            Free sessions use {EXAM_PRACTICE_FREE_QUESTION_COUNT} questions.{" "}
+            Free sessions use {EXAM_PRACTICE_FREE_QUESTION_COUNT} questions per rank.{" "}
             {EXAM_PRACTICE_PAID_UNLOCK_COPY} unlocks up to {EXAM_PRACTICE_PREMIUM_QUESTION_COUNT} from
-            the imported bank. {AD2_STUDY_GUIDE_SUMMARY.note}
+            each rank bank. {AD2_STUDY_GUIDE_SUMMARY.note}
           </p>
         </article>
       ) : null}
