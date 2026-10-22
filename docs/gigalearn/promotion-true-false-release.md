@@ -66,6 +66,17 @@ True/False from Benito 2025 / Aug 2024 mocks live on `exam-teacher-promotion` wi
 | Production public smoke | HTTP 200 for exam centre + AD II TF/MCQ deep links |
 | Production signed-in TF session | **BLOCKED** — no `GIGA3_E2E_*` credentials in this environment |
 
+## Post-merge follow-ups (Africa/Accra 22 Oct 2026)
+
+| Item | Status |
+|------|--------|
+| Superseded PR #573 (empty vs main) | **Closed** |
+| Deploy evidence PR #581 | **Merged** (`564f09b6`); Pages SUCCESS |
+| PWA `CACHE_VERSION` bump (stale SW after TF UI) | **In progress** — `giga3-v58` |
+| Factory Rollouts plan + production run for #580 | **Started** (convex + web) |
+| Live exam JS contains True/False / `exam-session-tf` | **Verified** |
+| Convex `/health` | **HTTP 200** `ok:true` |
+
 ## Remaining limitations
 
 1. No True/False items are **human_verified**; practice shows provisional keys in learn mode.
@@ -74,3 +85,4 @@ True/False from Benito 2025 / Aug 2024 mocks live on `exam-teacher-promotion` wi
 4. Source-supplied TRUE/FALSE keys are **not** treated as proof of legal/policy accuracy.
 5. Authenticated production E2E smoke remains blocked without test credentials.
 6. Do not advertise 500 / 2,500 verified questions — published ranks total **284**.
+7. Draft PR #572 (answer-position bias) still open with a non-empty diff vs main — separate from TF; not auto-closed.
