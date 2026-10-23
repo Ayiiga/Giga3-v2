@@ -189,7 +189,9 @@ export function FoundingMembersOfferCard() {
         Founding
       </span>
       <div className="pr-10">
-        <span className="exam-landing-pill">Limited · first {maxAllocations}</span>
+        <span className="exam-landing-pill">
+          Limited · first {maxAllocations} successful purchases
+        </span>
         <h3
           id="founding-members-heading"
           className="mt-3 text-lg font-bold text-[#14532D]"

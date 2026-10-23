@@ -2,6 +2,7 @@
 
 import { AcademyChrome } from "@/components/gigalearn/academy/AcademyChrome";
 import { ExamPracticeShareButton } from "@/components/gigalearn/exam/ExamPracticeShareButton";
+import { PremiumPracticeNudge } from "@/components/gigalearn/exam/PremiumPracticeNudge";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
@@ -914,6 +915,9 @@ function TechHubInner() {
                 balance alone does not unlock larger packs. Correct answers earn praise like
                 Excellent and Superb.
               </p>
+            ) : null}
+            {isExamCourse && !premiumAccess ? (
+              <PremiumPracticeNudge variant="locked" />
             ) : null}
             {error ? <p className="text-sm text-rose-700">{error}</p> : null}
             <Button

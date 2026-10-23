@@ -2,6 +2,7 @@
 
 import { ExamPracticeShareButton } from "@/components/gigalearn/exam/ExamPracticeShareButton";
 import { FoundingMembersOfferCard } from "@/components/gigalearn/exam/FoundingMembersOfferCard";
+import { PremiumPracticeNudge } from "@/components/gigalearn/exam/PremiumPracticeNudge";
 import { LearningProgressRing } from "@/components/gigalearn/ui/LearningProgressRing";
 import { ButtonLink } from "@/components/ui/Button";
 import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
@@ -366,6 +367,9 @@ function TeacherPromotionCentreCard() {
             <h3 className="text-base font-bold text-[#14532D]">{PROMOTION_FREE_SET_META.title}</h3>
             <p className="mt-1 text-sm text-slate-600">{PROMOTION_FREE_SET_META.subtitle}</p>
           </div>
+        </div>
+        <div className="mt-3">
+          <PremiumPracticeNudge variant="prestart" />
         </div>
         <Link
           href={EXAM_PRACTICE_DESTINATIONS.promotionFreePractice}

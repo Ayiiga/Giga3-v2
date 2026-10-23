@@ -285,13 +285,23 @@ export const getOfferStatus = query({
   },
 });
 
+const funnelEventValidator = v.union(
+  v.literal("impression"),
+  v.literal("checkout_abandon"),
+  v.literal("sold_out_view"),
+  v.literal("free_practice_started"),
+  v.literal("free_practice_completed"),
+  v.literal("upgrade_modal_shown"),
+  v.literal("upgrade_modal_dismissed"),
+  v.literal("upgrade_ghs30_selected"),
+  v.literal("upgrade_ghs60_selected"),
+  v.literal("upgrade_credits_selected"),
+  v.literal("payment_initiated")
+);
+
 export const recordOfferEvent = mutation({
   args: {
-    eventType: v.union(
-      v.literal("impression"),
-      v.literal("checkout_abandon"),
-      v.literal("sold_out_view")
-    ),
+    eventType: funnelEventValidator,
     sessionToken: v.optional(v.string()),
     meta: v.optional(v.string()),
   },

@@ -471,7 +471,7 @@ export default defineSchema({
     .index("by_reference", ["paymentReference"])
     .index("by_reservation_expiry", ["status", "reservationExpiresAt"]),
 
-  /** Lightweight commerce analytics for the Founding Members offer (no secrets). */
+  /** Lightweight commerce / exam-practice funnel analytics (no secrets). */
   foundingOfferEvents: defineTable({
     offerId: v.string(),
     eventType: v.union(
@@ -482,7 +482,15 @@ export default defineSchema({
       v.literal("checkout_abandon"),
       v.literal("entitlement_activated"),
       v.literal("reservation_expired"),
-      v.literal("sold_out_view")
+      v.literal("sold_out_view"),
+      v.literal("free_practice_started"),
+      v.literal("free_practice_completed"),
+      v.literal("upgrade_modal_shown"),
+      v.literal("upgrade_modal_dismissed"),
+      v.literal("upgrade_ghs30_selected"),
+      v.literal("upgrade_ghs60_selected"),
+      v.literal("upgrade_credits_selected"),
+      v.literal("payment_initiated")
     ),
     userId: v.optional(v.string()),
     paymentReference: v.optional(v.string()),
