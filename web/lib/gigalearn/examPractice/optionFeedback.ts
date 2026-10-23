@@ -17,13 +17,17 @@ export function optionFeedbackNotes(
       continue;
     }
     const label = question.options[oid];
+    const lead = question.explanation.split(".")[0]?.trim();
     if (oid === question.correct) {
-      const lead = question.explanation.split(".")[0]?.trim();
       out[oid] = lead
         ? `Correct — ${lead}.`
         : `Correct — ${label} satisfies the question.`;
     } else {
-      out[oid] = `Incorrect — ${label} does not satisfy the question.`;
+      // Tie the miss to the authored explanation — avoid identical generic lines
+      // that teach nothing about why this option fails.
+      out[oid] = lead
+        ? `Incorrect — ${label} is not right here. ${lead}.`
+        : `Incorrect — ${label} does not satisfy the question.`;
     }
   }
   return out;

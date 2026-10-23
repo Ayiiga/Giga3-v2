@@ -55,6 +55,51 @@ test.describe("Production — Exam Practice public routes", () => {
     ]) {
       await expect(page.getByText(label).first()).toBeVisible({ timeout: 30_000 });
     }
+
+    // Rank MCQ CTAs must open learn mode (immediate explanations), not timed default.
+    const mcqHrefs = await page
+      .locator('a', { hasText: /MCQ practice/i })
+      .evaluateAll((as) => as.map((a) => (a as HTMLAnchorElement).href));
+    expect(mcqHrefs.length).toBeGreaterThanOrEqual(5);
+    for (const href of mcqHrefs) {
+      expect(href, href).toMatch(/mode=learn/);
+      expect(href).toMatch(/course=exam-(ad-ii|ad-i|deputy-director|director-ii|director-i)/);
+    }
+  });
+
+  test("Free practice: option notes, reward on correct, no stale notes after Next", async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      localStorage.clear();
+      sessionStorage.clear();
+    });
+    await page.goto("/gigalearn/exam/practice/", { waitUntil: "domcontentloaded" });
+    await page.locator("button.exam-session-option").first().waitFor({ timeout: 45_000 });
+
+    // Probe correct letter, then restart clean and select it.
+    await page.locator("button.exam-session-option").nth(0).click();
+    const correctText = await page.locator('[data-testid="exam-option-note-correct"]').innerText();
+    const letter = correctText.match(/^([A-D])\./)?.[1];
+    expect(letter).toBeTruthy();
+    expect(await page.locator('[data-testid="exam-option-note"]').count()).toBeGreaterThanOrEqual(3);
+
+    await page.evaluate(() => {
+      localStorage.clear();
+      sessionStorage.clear();
+    });
+    await page.goto("/gigalearn/exam/practice/", { waitUntil: "domcontentloaded" });
+    await page.locator("button.exam-session-option").first().waitFor({ timeout: 45_000 });
+    const idx = { A: 0, B: 1, C: 2, D: 3 }[letter as "A" | "B" | "C" | "D"] ?? 0;
+    await page.locator("button.exam-session-option").nth(idx).click();
+    await expect(page.locator('[data-testid="exam-reward"]')).toBeVisible({ timeout: 10_000 });
+    await expect(page.locator(".exam-session-option--correct")).toHaveCount(1);
+    await expect(page.locator('[data-testid="exam-option-note-correct"]')).toBeVisible();
+
+    await page.getByRole("button", { name: /next/i }).click();
+    await expect(page.locator('[data-testid="exam-option-note"]')).toHaveCount(0);
+    await expect(page.locator('[data-testid="exam-reward"]')).toHaveCount(0);
+    await expect(page.getByText(/question 2 of/i)).toBeVisible();
   });
 });
 

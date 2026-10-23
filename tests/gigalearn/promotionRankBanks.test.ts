@@ -146,4 +146,33 @@ describe("promotion rank centre destinations", () => {
     expect(EXAM_PRACTICE_DESTINATIONS.directorIiPractice).toContain("exam-director-ii");
     expect(EXAM_PRACTICE_DESTINATIONS.directorIPractice).toContain("exam-director-i");
   });
+
+  it("routes free MCQ/TF practice CTAs through mode=learn (immediate option notes)", () => {
+    const learnLinks = [
+      EXAM_PRACTICE_DESTINATIONS.adIiPractice,
+      EXAM_PRACTICE_DESTINATIONS.adIiPracticeMcq,
+      EXAM_PRACTICE_DESTINATIONS.adIiPracticeTf,
+      EXAM_PRACTICE_DESTINATIONS.adIPractice,
+      EXAM_PRACTICE_DESTINATIONS.adIPracticeMcq,
+      EXAM_PRACTICE_DESTINATIONS.adIPracticeTf,
+      EXAM_PRACTICE_DESTINATIONS.deputyDirectorPractice,
+      EXAM_PRACTICE_DESTINATIONS.deputyDirectorPracticeMcq,
+      EXAM_PRACTICE_DESTINATIONS.deputyDirectorPracticeTf,
+      EXAM_PRACTICE_DESTINATIONS.directorIiPractice,
+      EXAM_PRACTICE_DESTINATIONS.directorIiPracticeMcq,
+      EXAM_PRACTICE_DESTINATIONS.directorIiPracticeTf,
+      EXAM_PRACTICE_DESTINATIONS.directorIPractice,
+      EXAM_PRACTICE_DESTINATIONS.directorIPracticeMcq,
+      EXAM_PRACTICE_DESTINATIONS.directorIPracticeTf,
+      EXAM_PRACTICE_DESTINATIONS.teacherPromotionPractice,
+      EXAM_PRACTICE_DESTINATIONS.becePractice,
+    ];
+    for (const href of learnLinks) {
+      expect(href, href).toContain("mode=learn");
+    }
+    // Full packs keep end-of-session scoring (not learn).
+    expect(EXAM_PRACTICE_DESTINATIONS.adIiPracticeFull).toContain("mode=practice_test");
+    expect(EXAM_PRACTICE_DESTINATIONS.adIiPracticeFull).not.toContain("mode=learn");
+    expect(EXAM_PRACTICE_DESTINATIONS.beceTimed).toContain("mode=timed");
+  });
 });

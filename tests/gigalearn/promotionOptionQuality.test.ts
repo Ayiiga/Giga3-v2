@@ -138,6 +138,21 @@ describe("free orientation option feedback + rewards", () => {
     }
   });
 
+  it("incorrect notes are distinct and cite the authored explanation lead", () => {
+    const q = getPromotionFreeQuestions()[0]!;
+    const notes = optionFeedbackNotes(q);
+    const wrong = (["A", "B", "C", "D"] as const).filter((id) => id !== q.correct);
+    const lead = q.explanation.split(".")[0]?.trim() ?? "";
+    expect(lead.length).toBeGreaterThan(8);
+    for (const id of wrong) {
+      expect(notes[id].toLowerCase()).toMatch(/incorrect/);
+      expect(notes[id]).toContain(lead);
+      expect(notes[id]).not.toBe(notes[q.correct]);
+    }
+    // Wrong options must not all share one identical generic sentence.
+    expect(new Set(wrong.map((id) => notes[id])).size).toBeGreaterThan(1);
+  });
+
   it("praise rewards differ for correct vs incorrect and stay non-empty", () => {
     expect(rewardForCorrectAnswer({ streak: 1, seed: 3 })).toBeTruthy();
     expect(rewardForIncorrectAnswer({ seed: 3 })).toBeTruthy();
@@ -145,6 +160,19 @@ describe("free orientation option feedback + rewards", () => {
       rewardForIncorrectAnswer({ seed: 3 })
     );
     expect(rewardForCorrectAnswer({ streak: 3, seed: 0 })).toMatch(/3 in a row/i);
+  });
+
+  it("keeps exam-ad-ii-q001 flagged for human answer-key review", () => {
+    const report = JSON.parse(
+      readFileSync(resolve(ROOT, "docs/gigalearn/promotion-option-quality-report.json"), "utf8")
+    );
+    expect(report.flaggedIds).toContain("exam-ad-ii-q001");
+    const bank = getTechBankQuestions("exam-ad-ii", { approvedOnly: false });
+    const q001 = bank.find((q) => q.questionId === "exam-ad-ii-q001");
+    expect(q001).toBeTruthy();
+    expect(q001?.tags ?? []).toEqual(
+      expect.arrayContaining(["needs_human_review_answer_key"])
+    );
   });
 });
 
