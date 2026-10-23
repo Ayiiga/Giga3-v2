@@ -110,6 +110,21 @@ const BUILD_LISTING_LIMIT = 200;
 const BUILD_POST_LIMIT = 120;
 const BUILD_PROFILE_LIMIT = 120;
 
+/** Keep in sync with web/lib/seo/marketplaceProductSchema.ts */
+function isExcludedMarketplaceSeoListing(entry) {
+  const haystack = [entry?.title, entry?.creatorName, entry?.creatorHandle]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  if (!haystack) return false;
+  return (
+    /\be2e\b/.test(haystack) ||
+    /\bqa\s*test\b/.test(haystack) ||
+    /\btest\s*ebook\b/.test(haystack) ||
+    /\bload\s*test\b/.test(haystack)
+  );
+}
+
 async function loadSitemapEntries() {
   const [seoListings, seoPosts, seoProfiles] = await Promise.all([
     convexQuery("publicSeo:listMarketplaceSitemapEntries", { limit: BUILD_LISTING_LIMIT }),
@@ -119,7 +134,7 @@ async function loadSitemapEntries() {
 
   if (seoListings || seoPosts || seoProfiles) {
     return {
-      listings: seoListings ?? [],
+      listings: (seoListings ?? []).filter((entry) => !isExcludedMarketplaceSeoListing(entry)),
       posts: seoPosts ?? [],
       profiles: seoProfiles ?? [],
     };
@@ -137,10 +152,13 @@ async function loadSitemapEntries() {
 
   return {
     listings:
-      listings?.map((row) => ({
-        listingId: row._id,
-        updatedAt: row.updatedAt ?? row.createdAt ?? Date.now(),
-      })) ?? [],
+      listings
+        ?.map((row) => ({
+          listingId: row._id,
+          title: row.title,
+          updatedAt: row.updatedAt ?? row.createdAt ?? Date.now(),
+        }))
+        .filter((entry) => !isExcludedMarketplaceSeoListing(entry)) ?? [],
     posts:
       feed?.posts?.map((post) => ({
         postId: post._id,
