@@ -18,9 +18,9 @@ const ExamPracticeSessionRoot = dynamic(
 
 export const metadata = publicMetadata({
   path: "/gigalearn/exam/practice",
-  title: "Teacher Promotion Free Practice | GigaLearn Exam Practice",
+  title: "General Teacher Promotion Practice | GigaLearn Exam Practice",
   description:
-    "Timed free 50-question Teacher Promotion orientation practice on GigaLearn. Not an official GES examination paper.",
+    "Timed general 50-question Teacher Promotion orientation practice on GigaLearn — no specific promotion rank. Not an official GES examination paper.",
 });
 
 export default function ExamPracticeSessionPage() {
@@ -29,9 +29,9 @@ export default function ExamPracticeSessionPage() {
       <JsonLd
         webPage={{
           path: "/gigalearn/exam/practice",
-          name: "Teacher Promotion Free Practice",
+          name: "General Teacher Promotion Practice",
           description:
-            "Mobile-first timed practice session for Ghana Teacher Promotion orientation on GigaLearn.",
+            "Mobile-first timed general Teacher Promotion orientation practice on GigaLearn. No specific promotion rank selected.",
         }}
       />
       <JsonLd
@@ -39,13 +39,16 @@ export default function ExamPracticeSessionPage() {
           { name: "Giga3 AI", path: "/" },
           { name: "GigaLearn", path: "/gigalearn" },
           { name: "Exam Practice", path: "/gigalearn/exam" },
-          { name: "Free practice", path: "/gigalearn/exam/practice" },
+          {
+            name: "General Teacher Promotion Practice",
+            path: "/gigalearn/exam/practice",
+          },
         ]}
       />
       <ProductSeoHeader
         compact
-        title="Teacher Promotion Free Practice"
-        description="Timed orientation practice — not an official GES paper."
+        title="Welcome to General Teacher Promotion Practice"
+        description="General practice — no specific promotion rank selected. Timed orientation practice — not an official GES paper."
         showProductNav={false}
       />
       <div className="marketing-stable gigalearn-stable section-padding pt-2 pb-4 sm:pt-4">

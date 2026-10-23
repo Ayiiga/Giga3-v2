@@ -122,7 +122,8 @@ describe("Free orientation bank + UI wiring for 50 / share / rewards", () => {
       resolve(ROOT, "web/components/gigalearn/exam/ExamPracticeCentre.tsx"),
       "utf8"
     );
-    expect(centre).toContain("Start Free {EXAM_PRACTICE_FREE_QUESTION_COUNT} Questions");
+    expect(centre).toContain("PROMOTION_FREE_SET_META.startCta");
+    expect(centre).toContain("Start free {EXAM_PRACTICE_FREE_QUESTION_COUNT} questions");
     expect(centre).toContain("ExamPracticeShareButton");
     expect(centre).toContain('kind="bece"');
     expect(centre).toContain('kind="teacher_promotion"');
