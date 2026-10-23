@@ -31,6 +31,10 @@ import {
   fisherYatesShuffleInPlace,
   toOriginalOptionIndex,
 } from "@/lib/gigalearn/examPractice/optionShuffle";
+import {
+  sanitizePracticeExplanation,
+  sanitizePracticeStem,
+} from "@/lib/gigalearn/examPractice/sanitizePracticeStem";
 
 type BankFile = {
   bankId: string;
@@ -142,7 +146,7 @@ export function toPublicTechQuestion(q: TechBankQuestion): TechPublicQuestion {
     questionId: q.questionId,
     topicId: q.topicId,
     topicLabel: q.topicLabel,
-    questionText: q.questionText,
+    questionText: sanitizePracticeStem(q.questionText),
     options: q.options,
     difficulty: q.difficulty,
     sourceQuestionNumber: q.sourceQuestionNumber,
@@ -217,7 +221,9 @@ export function presentOptionExplanations(
     permutation && permutation.length === q.options.length
       ? permutation
       : q.options.map((_, i) => i);
-  return order.map((original) => q.optionExplanations?.[original] ?? "");
+  return order.map((original) =>
+    sanitizePracticeExplanation(q.optionExplanations?.[original] ?? "")
+  );
 }
 
 export function selectTechQuestionIds(args: {
@@ -313,6 +319,10 @@ export function gradeTechAnswers(args: {
     /** Display-order notes parallel to `options` (when available). */
     optionExplanations?: string[];
     provisional?: boolean;
+    /** Matched the provisional key — never treated as a verified correct score. */
+    provisionalMatch?: boolean;
+    /** Counts toward session score (approved keys only). */
+    scored?: boolean;
   }>;
 } {
   const results = args.questionIds.map((id) => {
@@ -329,6 +339,10 @@ export function gradeTechAnswers(args: {
       ? displayCorrectIndex(q.correctIndex, perm ?? q.options.map((_, i) => i))
       : -1;
     const displayOptionExplanations = presentOptionExplanations(q, perm);
+    const cleanStem = presented?.questionText ?? sanitizePracticeStem(q?.questionText ?? "Unavailable");
+    const cleanExplanation = q
+      ? sanitizePracticeExplanation(q.explanation)
+      : "";
     if (!q || !isScorableReviewStatus(q.reviewStatus)) {
       return {
         questionId: id,
@@ -336,30 +350,47 @@ export function gradeTechAnswers(args: {
         correctIndex: -1,
         correct: false,
         explanation:
-          "This item is awaiting review and was not scored as an approved answer key.",
-        questionText: q?.questionText ?? "Unavailable",
+          "Answer under review — this item was not scored with a verified answer key.",
+        questionText: cleanStem,
         options: presented?.options ?? q?.options ?? [],
         optionExplanations: displayOptionExplanations,
+        scored: false,
       };
     }
     const provisional = q.reviewStatus === "pending_review";
-    const correct = selectedOriginal === q.correctIndex;
+    const matchedKey = selectedOriginal === q.correctIndex;
+    if (provisional) {
+      return {
+        questionId: id,
+        selectedIndex: selectedDisplay,
+        correctIndex: displayCorrect,
+        // Never count provisional keys as verified-correct toward score/rewards.
+        correct: false,
+        explanation: `Answer under review. Provisional key (not human-verified). ${cleanExplanation}`,
+        questionText: cleanStem,
+        options: presented?.options ?? q.options,
+        optionExplanations: displayOptionExplanations,
+        provisional: true,
+        provisionalMatch: matchedKey,
+        scored: false,
+      };
+    }
     return {
       questionId: id,
       selectedIndex: selectedDisplay,
       correctIndex: displayCorrect,
-      correct,
-      explanation: provisional
-        ? `Provisional key (pending review). ${q.explanation}`
-        : q.explanation,
-      questionText: q.questionText,
+      correct: matchedKey,
+      explanation: cleanExplanation,
+      questionText: cleanStem,
       options: presented?.options ?? q.options,
       optionExplanations: displayOptionExplanations,
-      provisional,
+      provisional: false,
+      scored: true,
     };
   });
-  const maxScore = results.length;
-  const score = results.filter((r) => r.correct).length;
+  const scored = results.filter((r) => r.scored);
+  const maxScore = scored.length;
+  const score = scored.filter((r) => r.correct).length;
   return {
     score,
     maxScore,

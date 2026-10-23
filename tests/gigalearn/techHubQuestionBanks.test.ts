@@ -182,8 +182,12 @@ describe("Technology Learning Hub question banks", () => {
       questionIds: [provisional.questionId],
       answers: { [provisional.questionId]: provisional.correctIndex },
     });
-    expect(graded.score).toBe(1);
+    // Provisional keys may match for practice feedback but never count as verified score.
+    expect(graded.score).toBe(0);
+    expect(graded.maxScore).toBe(0);
     expect(graded.results[0]?.provisional).toBe(true);
+    expect(graded.results[0]?.provisionalMatch).toBe(true);
+    expect(graded.results[0]?.correct).toBe(false);
 
     // Answer keys stripped from public shape for exam banks too.
     const pubBece = toPublicTechQuestion(bece[0]!);

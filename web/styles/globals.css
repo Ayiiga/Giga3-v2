@@ -1258,6 +1258,23 @@ button:focus-visible {
   color: #7f1d1d;
 }
 
+.exam-session-option--provisional {
+  border-color: #fcd34d;
+  background: #fffbeb;
+  color: #78350f;
+}
+
+.exam-session-review-banner {
+  margin: 0.75rem 0 0;
+  border-radius: 0.85rem;
+  border: 1px solid #fcd34d;
+  background: #fffbeb;
+  padding: 0.65rem 0.9rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #92400e;
+}
+
 .exam-session-explain {
   border-radius: 0.85rem;
   background: #f1f5f9;
