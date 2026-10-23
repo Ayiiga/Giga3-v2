@@ -45,6 +45,8 @@ type LearnFeedback = {
   explanation: string;
   correctIndex: number | null;
   pendingReview?: boolean;
+  /** Matched provisional key — never drives verified praise rewards. */
+  provisionalMatch?: boolean;
   optionExplanations?: string[];
 };
 
@@ -170,6 +172,9 @@ function TechHubInner() {
       questionText: string;
       options: string[];
       optionExplanations?: string[];
+      provisional?: boolean;
+      provisionalMatch?: boolean;
+      scored?: boolean;
     }>;
   }>(null);
 
@@ -326,7 +331,11 @@ function TechHubInner() {
         const alreadyRewarded = rewardedQuestionIdsRef.current.has(current.questionId);
         if (!alreadyRewarded) {
           rewardedQuestionIdsRef.current.add(current.questionId);
-          if (fb.correct) {
+          // Unverified / provisional keys never grant correctness-dependent praise.
+          if (fb.pendingReview) {
+            setStreak(0);
+            setReward(null);
+          } else if (fb.correct) {
             const nextStreak = streak + 1;
             setStreak(nextStreak);
             setReward(
@@ -392,8 +401,11 @@ function TechHubInner() {
             </p>
           ) : null}
           <p className="text-sm text-slate-600">
-            Score {results.score}/{results.maxScore}
-            {results.percent != null ? ` · ${results.percent}%` : ""}
+            {results.maxScore > 0
+              ? `Verified score ${results.score}/${results.maxScore}${
+                  results.percent != null ? ` · ${results.percent}%` : ""
+                }`
+              : "No verified answer keys in this session — provisional items were not scored."}
           </p>
           <ul className="space-y-3">
             {results.results.map((r, i) => (
@@ -401,11 +413,27 @@ function TechHubInner() {
                 <p className="font-semibold text-slate-900">
                   {i + 1}. {r.questionText}
                 </p>
-                <p className={r.correct ? "mt-1 text-emerald-700" : "mt-1 text-rose-700"}>
-                  {r.correct ? "Correct" : "Incorrect"}
-                  {r.correctIndex >= 0
+                <p
+                  className={
+                    r.provisional
+                      ? "mt-1 text-amber-800"
+                      : r.correct
+                        ? "mt-1 text-emerald-700"
+                        : "mt-1 text-rose-700"
+                  }
+                >
+                  {r.provisional
+                    ? r.provisionalMatch
+                      ? "Answer under review · matched provisional key"
+                      : "Answer under review · provisional key differs"
+                    : r.correct
+                      ? "Correct"
+                      : "Incorrect"}
+                  {!r.provisional && r.correctIndex >= 0
                     ? ` · Answer: ${r.options[r.correctIndex] ?? "—"}`
-                    : " · Key under review"}
+                    : r.provisional && r.correctIndex >= 0
+                      ? ` · Provisional key: ${r.options[r.correctIndex] ?? "—"}`
+                      : ""}
                 </p>
                 <p className="mt-1 text-slate-600">{r.explanation}</p>
                 {r.optionExplanations && r.optionExplanations.length === r.options.length ? (
@@ -551,10 +579,21 @@ function TechHubInner() {
               >
                 {current.options.map((opt, optIndex) => {
                   const isSelected = selected === optIndex;
-                  const isCorrect =
-                    revealed && activeFeedback?.correctIndex === optIndex;
-                  const isWrong =
-                    revealed && isSelected && !activeFeedback?.correct;
+                  const pending = Boolean(activeFeedback?.pendingReview);
+                  const isVerifiedCorrect =
+                    revealed &&
+                    !pending &&
+                    activeFeedback?.correct &&
+                    activeFeedback.correctIndex === optIndex;
+                  const isVerifiedWrong =
+                    revealed &&
+                    !pending &&
+                    isSelected &&
+                    !activeFeedback?.correct;
+                  const isProvisionalKey =
+                    revealed &&
+                    pending &&
+                    activeFeedback?.correctIndex === optIndex;
                   const label = isTrueFalse ? opt.toUpperCase() : opt;
                   return (
                     <li key={optIndex}>
@@ -576,14 +615,15 @@ function TechHubInner() {
                         }}
                         className={cn(
                           isTrueFalse ? "exam-session-tf" : "exam-session-option",
-                          isCorrect &&
+                          isVerifiedCorrect &&
                             (isTrueFalse
                               ? "exam-session-tf--correct"
                               : "exam-session-option--correct"),
-                          isWrong &&
+                          isVerifiedWrong &&
                             (isTrueFalse
                               ? "exam-session-tf--wrong"
                               : "exam-session-option--wrong"),
+                          isProvisionalKey && "exam-session-option--provisional",
                           !revealed &&
                             isSelected &&
                             (isTrueFalse
@@ -601,15 +641,26 @@ function TechHubInner() {
                             <span className="exam-session-option-text">{opt}</span>
                           </>
                         )}
-                        {isCorrect ? (
+                        {isVerifiedCorrect ? (
                           <Check className="exam-session-icon-ok" aria-hidden />
                         ) : null}
-                        {isWrong ? <X className="exam-session-icon-bad" aria-hidden /> : null}
+                        {isVerifiedWrong ? (
+                          <X className="exam-session-icon-bad" aria-hidden />
+                        ) : null}
                       </button>
                     </li>
                   );
                 })}
               </ul>
+              {revealed && activeFeedback?.pendingReview ? (
+                <p
+                  className="exam-session-review-banner"
+                  role="status"
+                  data-testid="exam-answer-under-review"
+                >
+                  Answer under review — provisional key only (not human-verified).
+                </p>
+              ) : null}
               {revealed && reward ? (
                 <p className="exam-session-reward" role="status" data-testid="exam-reward">
                   {reward}
@@ -620,7 +671,7 @@ function TechHubInner() {
                   <p>
                     <span className="exam-session-explain-label">
                       {activeFeedback.pendingReview
-                        ? "Review note: "
+                        ? "Answer under review — "
                         : activeFeedback.correct
                           ? "Correct — "
                           : "Incorrect — "}
@@ -633,17 +684,24 @@ function TechHubInner() {
                       {current.options.map((opt, oi) => {
                         const note = activeFeedback.optionExplanations?.[oi] ?? "";
                         const isKey = activeFeedback.correctIndex === oi;
+                        const pending = Boolean(activeFeedback.pendingReview);
                         return (
                           <li
                             key={`${current.questionId}-note-${oi}`}
                             className={cn(
                               "rounded-lg border px-3 py-2 text-sm leading-snug",
-                              isKey
-                                ? "border-emerald-200 bg-emerald-50 text-emerald-950"
-                                : "border-slate-200 bg-slate-50 text-slate-700"
+                              isKey && pending
+                                ? "border-amber-200 bg-amber-50 text-amber-950"
+                                : isKey
+                                  ? "border-emerald-200 bg-emerald-50 text-emerald-950"
+                                  : "border-slate-200 bg-slate-50 text-slate-700"
                             )}
                             data-testid={
-                              isKey ? "exam-option-note-correct" : "exam-option-note"
+                              isKey
+                                ? pending
+                                  ? "exam-option-note-provisional"
+                                  : "exam-option-note-correct"
+                                : "exam-option-note"
                             }
                           >
                             <span className="font-semibold">

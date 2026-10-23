@@ -95,7 +95,14 @@ describe("promotion rank option quality (5 ranks)", () => {
           answers: { [q.questionId]: displayCorrect },
           optionPermutations: perms,
         });
-        expect(graded.score).toBe(1);
+        if (q.reviewStatus === "approved") {
+          expect(graded.score).toBe(1);
+          expect(graded.results[0]?.correct).toBe(true);
+        } else {
+          expect(graded.score).toBe(0);
+          expect(graded.results[0]?.provisionalMatch).toBe(true);
+          expect(graded.results[0]?.correct).toBe(false);
+        }
         expect(graded.results[0]?.optionExplanations?.[displayCorrect]).toMatch(/correct/i);
         // Wrong display index must map back and score 0
         const wrongDisplay = (displayCorrect + 1) % q.options.length;
@@ -108,6 +115,9 @@ describe("promotion rank option quality (5 ranks)", () => {
           optionPermutations: perms,
         });
         expect(miss.score).toBe(0);
+        if (q.reviewStatus !== "approved") {
+          expect(miss.results[0]?.provisionalMatch).toBe(false);
+        }
       }
     }
   });

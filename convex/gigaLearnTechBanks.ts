@@ -30,6 +30,7 @@ import {
   resolveExamPracticeSessionCount,
   shouldAbandonPriorExamInProgress,
 } from "../web/lib/gigalearn/examPractice/practiceLimits";
+import { sanitizePracticeExplanation } from "../web/lib/gigalearn/examPractice/sanitizePracticeStem";
 
 const MODE_VALIDATOR = v.union(
   v.literal("learn"),
@@ -507,30 +508,52 @@ export const saveTechPracticeAnswer = mutation({
           feedback: {
             correct: false,
             pendingReview: true,
+            provisionalMatch: false,
             explanation:
-              "This item is flagged for review — treat the key as provisional, not authoritative.",
+              "Answer under review — this item has no verified answer key yet.",
             correctIndex: null as number | null,
           },
         };
       }
       const pendingReview = q.reviewStatus === "pending_review";
       const originalSelected = toOriginalOptionIndex(args.selectedIndex, perm);
+      const matchedKey = originalSelected === q.correctIndex;
       const displayOrder = perm ?? q.options.map((_, i) => i);
       const displayCorrect = displayCorrectIndex(q.correctIndex, displayOrder);
       const optionExplanations =
         q.optionExplanations && q.optionExplanations.length === q.options.length
           ? displayOrder.map((original) => q.optionExplanations?.[original] ?? "")
           : undefined;
+      const cleanExplanation = sanitizePracticeExplanation(q.explanation);
+      const cleanOptionNotes = optionExplanations?.map((note) =>
+        sanitizePracticeExplanation(note)
+      );
+      if (pendingReview) {
+        // Practice may continue, but never claim a verified correct/incorrect result
+        // or drive correctness-dependent praise from an unverified key.
+        return {
+          saved: true,
+          feedback: {
+            correct: false,
+            pendingReview: true,
+            provisionalMatch: matchedKey,
+            explanation: matchedKey
+              ? `Answer under review. Your choice matches the provisional key — this is not a human-verified result. ${cleanExplanation}`
+              : `Answer under review. The provisional key differs from your choice — treat this feedback as non-authoritative. ${cleanExplanation}`,
+            correctIndex: displayCorrect,
+            optionExplanations: cleanOptionNotes,
+          },
+        };
+      }
       return {
         saved: true,
         feedback: {
-          correct: originalSelected === q.correctIndex,
-          pendingReview,
-          explanation: pendingReview
-            ? `Provisional key (pending review). ${q.explanation}`
-            : q.explanation,
+          correct: matchedKey,
+          pendingReview: false,
+          provisionalMatch: false,
+          explanation: cleanExplanation,
           correctIndex: displayCorrect,
-          optionExplanations,
+          optionExplanations: cleanOptionNotes,
         },
       };
     }

@@ -59,8 +59,9 @@ describe("teacher-promotion distractor repair", () => {
 
   it("keeps answer-key integrity under option permutations after repair", () => {
     const sample = bank
-      .filter((q) => (q.questionType || "mcq") === "mcq")
+      .filter((q) => (q.questionType || "mcq") === "mcq" && q.reviewStatus === "approved")
       .slice(0, 40);
+    expect(sample.length).toBeGreaterThan(10);
     const perms = buildSessionOptionPermutations(
       sample.map((q) => ({
         questionId: q.questionId,
