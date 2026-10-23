@@ -1,4 +1,5 @@
 import { buildGigaSocialOgDescription, buildGigaSocialOgTitle } from "@/lib/gigasocial/ogMeta";
+import { isExcludedMarketplaceSeoListing } from "@/lib/seo/marketplaceProductSchema";
 import { clampSeoDescription, clampSeoTitle } from "@/lib/seo/seoText";
 import { splitPostDisplay } from "@/lib/gigasocial/postDisplay";
 
@@ -57,6 +58,9 @@ type MarketplaceListingBundle = {
   creator: { displayName: string; handle: string; verified: boolean } | null;
   reviewCount: number;
   ratingValue?: number;
+  reviews?: Array<{ rating: number; comment?: string; createdAt: number }>;
+  /** false for QA/E2E fixtures — page stays reachable but noindex. */
+  indexable?: boolean;
 };
 
 type PublicPostRow = {
@@ -102,9 +106,10 @@ type PublicProfileBundle = {
 };
 
 export async function fetchMarketplaceListingIds(): Promise<string[]> {
+  // Include QA fixtures so static export can emit noindex Product pages for them.
   const fromSeo = await convexQuery<Array<{ listingId: string }>>(
     "publicSeo:listMarketplaceSitemapEntries",
-    { limit: BUILD_LISTING_LIMIT }
+    { limit: BUILD_LISTING_LIMIT, includeExcluded: true }
   );
   if (fromSeo?.length) {
     return fromSeo.map((row) => String(row.listingId));
@@ -125,17 +130,36 @@ export async function fetchMarketplaceSeoBundle(
   const fromSeo = await convexQuery<MarketplaceListingBundle>("publicSeo:getMarketplaceSeoBundle", {
     listingId,
   });
-  if (fromSeo) return fromSeo;
+  if (fromSeo) {
+    const excluded = isExcludedMarketplaceSeoListing({
+      title: fromSeo.listing.title,
+      creatorName: fromSeo.creator?.displayName,
+      creatorHandle: fromSeo.creator?.handle,
+    });
+    return {
+      ...fromSeo,
+      reviews: fromSeo.reviews ?? [],
+      indexable: fromSeo.indexable !== false && !excluded,
+    };
+  }
 
   const data = await convexQuery<{
     listing: MarketplaceListingRow;
     creator: MarketplaceListingBundle["creator"];
-    reviews: Array<{ rating: number }>;
+    reviews: Array<{ rating: number; comment?: string; createdAt: number }>;
   }>("marketplace:getListing", { listingId });
 
   if (!data?.listing) return null;
 
-  const ratings = data.reviews?.map((review) => review.rating).filter((n) => n >= 1 && n <= 5) ?? [];
+  const reviewRows =
+    data.reviews
+      ?.filter((review) => review.rating >= 1 && review.rating <= 5)
+      .map((review) => ({
+        rating: review.rating,
+        comment: review.comment,
+        createdAt: review.createdAt,
+      })) ?? [];
+  const ratings = reviewRows.map((review) => review.rating);
   const reviewCount = ratings.length;
   const ratingValue =
     reviewCount > 0
@@ -143,6 +167,11 @@ export async function fetchMarketplaceSeoBundle(
       : undefined;
 
   const description = data.listing.description.replace(/\s+/g, " ").trim().slice(0, 320);
+  const excluded = isExcludedMarketplaceSeoListing({
+    title: data.listing.title,
+    creatorName: data.creator?.displayName,
+    creatorHandle: data.creator?.handle,
+  });
 
   return {
     listing: {
@@ -156,6 +185,8 @@ export async function fetchMarketplaceSeoBundle(
     creator: data.creator,
     reviewCount,
     ratingValue,
+    reviews: reviewRows.slice(0, 5),
+    indexable: !excluded,
   };
 }
 

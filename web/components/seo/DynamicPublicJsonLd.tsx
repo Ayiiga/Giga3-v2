@@ -1,4 +1,8 @@
 import { brandingAssetUrl } from "@/lib/brandingAssets";
+import {
+  buildMarketplaceProductJsonLd,
+  type MarketplaceSeoReview,
+} from "@/lib/seo/marketplaceProductSchema";
 import { marketplaceItemUrl } from "@/lib/seo/publicPaths";
 import { siteConfig } from "@/lib/site";
 
@@ -10,11 +14,15 @@ type MarketplaceProductJsonLdProps = {
   category?: string;
   imageUrl?: string;
   creatorName?: string;
+  /** Genuine listing reviews only — never invent scores or comments. */
+  reviews?: MarketplaceSeoReview[];
+  /** @deprecated Prefer `reviews`. Kept for call sites that only have aggregates. */
   reviewCount?: number;
+  /** @deprecated Prefer `reviews`. */
   ratingValue?: number;
 };
 
-/** Product JSON-LD for public marketplace listings — truthful pricing only. */
+/** Product JSON-LD for public marketplace listings — truthful pricing and reviews only. */
 export function MarketplaceProductJsonLd({
   listingId,
   title,
@@ -23,41 +31,43 @@ export function MarketplaceProductJsonLd({
   category,
   imageUrl,
   creatorName,
+  reviews = [],
   reviewCount = 0,
   ratingValue,
 }: MarketplaceProductJsonLdProps) {
-  const payload: Record<string, unknown> = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    name: title,
-    description,
-    url: marketplaceItemUrl(listingId),
-    category,
-    image: imageUrl || brandingAssetUrl("/images/logo.png"),
-    brand: {
-      "@type": "Brand",
-      name: "Giga3 AI Marketplace",
-    },
-    offers: {
-      "@type": "Offer",
-      url: marketplaceItemUrl(listingId),
-      priceCurrency: "GHS",
-      price: priceGhs,
-      availability: "https://schema.org/InStock",
-      seller: creatorName
-        ? {
-            "@type": "Organization",
-            name: creatorName,
-          }
-        : undefined,
-    },
-  };
+  const reviewRows =
+    reviews.length > 0
+      ? reviews
+      : reviewCount > 0 && ratingValue != null
+        ? // Aggregate-only fallback: do not invent individual Review entities.
+          []
+        : [];
 
-  if (reviewCount > 0 && ratingValue != null) {
+  const payload = buildMarketplaceProductJsonLd({
+    listingId,
+    title,
+    description,
+    priceGhs,
+    url: marketplaceItemUrl(listingId),
+    image: imageUrl || brandingAssetUrl("/images/logo.png"),
+    category,
+    creatorName,
+    reviews: reviewRows,
+  });
+
+  // When callers only supply aggregates (legacy), keep aggregateRating without fake reviews.
+  if (
+    !payload.aggregateRating &&
+    reviewCount > 0 &&
+    ratingValue != null &&
+    ratingValue >= 1 &&
+    ratingValue <= 5
+  ) {
     payload.aggregateRating = {
       "@type": "AggregateRating",
       ratingValue,
       reviewCount,
+      ratingCount: reviewCount,
       bestRating: 5,
       worstRating: 1,
     };
