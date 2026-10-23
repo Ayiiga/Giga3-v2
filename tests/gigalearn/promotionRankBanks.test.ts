@@ -170,9 +170,9 @@ describe("promotion rank centre destinations", () => {
     for (const href of learnLinks) {
       expect(href, href).toContain("mode=learn");
     }
-    // Full packs keep end-of-session scoring (not learn).
-    expect(EXAM_PRACTICE_DESTINATIONS.adIiPracticeFull).toContain("mode=practice_test");
-    expect(EXAM_PRACTICE_DESTINATIONS.adIiPracticeFull).not.toContain("mode=learn");
+    // Full packs (premium) use learn so large banks get immediate feedback.
+    expect(EXAM_PRACTICE_DESTINATIONS.adIiPracticeFull).toContain("mode=learn");
+    expect(EXAM_PRACTICE_DESTINATIONS.adIiPracticeFull).toContain("count=500");
     expect(EXAM_PRACTICE_DESTINATIONS.beceTimed).toContain("mode=timed");
   });
 });

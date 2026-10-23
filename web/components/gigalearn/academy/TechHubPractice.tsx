@@ -9,6 +9,7 @@ import { ProductSignInPrompt } from "@/components/seo/ProductSignInPrompt";
 import { getSessionToken } from "@/lib/auth";
 import { hasPersistedAuth } from "@/lib/auth/sessionRestore";
 import { getBuiltinAcademyCourse } from "@/lib/gigalearn/academy/courseCatalog";
+import { techModeShowsImmediateFeedback } from "@/lib/gigalearn/academy/techBanks/immediateFeedback";
 import {
   getTechCourseMeta,
   techPracticeHref,
@@ -37,11 +38,23 @@ import { useMutation, useQuery } from "convex/react";
 import { Check, Clock3, Play, X } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+
+type LearnFeedback = {
+  correct: boolean;
+  explanation: string;
+  correctIndex: number | null;
+  pendingReview?: boolean;
+  optionExplanations?: string[];
+};
 
 const MODES: { id: TechPracticeMode; label: string; hint: string }[] = [
   { id: "learn", label: "Learn", hint: "One question · explain after submit" },
-  { id: "practice_test", label: "Practice test", hint: "Score after you finish" },
+  {
+    id: "practice_test",
+    label: "Practice test",
+    hint: "Feedback after each answer · score summary at finish",
+  },
   { id: "timed", label: "Timed", hint: "Server deadline · auto-submit" },
   { id: "topic", label: "Topic", hint: "Pick a topic below" },
   { id: "random", label: "Random", hint: "Shuffled approved set" },
@@ -134,13 +147,14 @@ function TechHubInner() {
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [reward, setReward] = useState<string | null>(null);
   const [streak, setStreak] = useState(0);
-  const [learnFeedback, setLearnFeedback] = useState<{
-    correct: boolean;
-    explanation: string;
-    correctIndex: number | null;
-    pendingReview?: boolean;
-    optionExplanations?: string[];
-  } | null>(null);
+  const [learnFeedback, setLearnFeedback] = useState<LearnFeedback | null>(null);
+  /** Persist feedback per question so Previous/Next does not lose notes. */
+  const [feedbackByQuestion, setFeedbackByQuestion] = useState<
+    Record<string, LearnFeedback>
+  >({});
+  /** Client praise once per questionId (server scoring remains finalize-once). */
+  const rewardedQuestionIdsRef = useRef<Set<string>>(new Set());
+  const immediateFeedback = techModeShowsImmediateFeedback(mode);
   const [endsAt, setEndsAt] = useState<number | null>(null);
   const [serverSkew, setServerSkew] = useState(0);
   const [results, setResults] = useState<null | {
@@ -267,8 +281,11 @@ function TechHubInner() {
       );
       setIndex(0);
       setAnswers({});
+      setFeedbackByQuestion({});
+      setLearnFeedback(null);
       setReward(null);
       setStreak(0);
+      rewardedQuestionIdsRef.current = new Set();
       setEndsAt(started.endsAt);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not start practice.");
@@ -281,8 +298,8 @@ function TechHubInner() {
 
   async function onSubmitAnswer(selectedIndex: number) {
     if (!sessionToken || !sessionId || !current) return;
-    // Learn mode: one reveal + one reward pulse per question (no resubmit farming).
-    if (mode === "learn" && learnFeedback != null) return;
+    // Immediate-feedback modes: one reveal + one praise pulse per question.
+    if (immediateFeedback && feedbackByQuestion[current.questionId] != null) return;
     setBusy(true);
     setError(null);
     try {
@@ -303,19 +320,25 @@ function TechHubInner() {
         return;
       }
       if (res.feedback) {
-        setLearnFeedback(res.feedback);
-        if (res.feedback.correct) {
-          const nextStreak = streak + 1;
-          setStreak(nextStreak);
-          setReward(
-            rewardForCorrectAnswer({
-              streak: nextStreak,
-              seed: index + nextStreak,
-            })
-          );
-        } else {
-          setStreak(0);
-          setReward(rewardForIncorrectAnswer({ seed: index }));
+        const fb = res.feedback as LearnFeedback;
+        setLearnFeedback(fb);
+        setFeedbackByQuestion((prev) => ({ ...prev, [current.questionId]: fb }));
+        const alreadyRewarded = rewardedQuestionIdsRef.current.has(current.questionId);
+        if (!alreadyRewarded) {
+          rewardedQuestionIdsRef.current.add(current.questionId);
+          if (fb.correct) {
+            const nextStreak = streak + 1;
+            setStreak(nextStreak);
+            setReward(
+              rewardForCorrectAnswer({
+                streak: nextStreak,
+                seed: index + nextStreak,
+              })
+            );
+          } else {
+            setStreak(0);
+            setReward(rewardForIncorrectAnswer({ seed: index }));
+          }
         }
       }
     } catch (e) {
@@ -323,6 +346,13 @@ function TechHubInner() {
     } finally {
       setBusy(false);
     }
+  }
+
+  function goToQuestion(nextIndex: number) {
+    const q = localQuestions[nextIndex];
+    setIndex(nextIndex);
+    setReward(null);
+    setLearnFeedback(q ? feedbackByQuestion[q.questionId] ?? null : null);
   }
 
   async function onFinish() {
@@ -441,7 +471,8 @@ function TechHubInner() {
 
   if (sessionId && current) {
     const selected = answers[current.questionId];
-    const revealed = mode === "learn" && learnFeedback != null;
+    const activeFeedback = learnFeedback ?? feedbackByQuestion[current.questionId] ?? null;
+    const revealed = immediateFeedback && activeFeedback != null;
     const isTrueFalse =
       current.questionType === "true_false" ||
       (current.options.length === 2 &&
@@ -520,17 +551,19 @@ function TechHubInner() {
               >
                 {current.options.map((opt, optIndex) => {
                   const isSelected = selected === optIndex;
-                  const isCorrect = revealed && learnFeedback?.correctIndex === optIndex;
-                  const isWrong = revealed && isSelected && !learnFeedback?.correct;
+                  const isCorrect =
+                    revealed && activeFeedback?.correctIndex === optIndex;
+                  const isWrong =
+                    revealed && isSelected && !activeFeedback?.correct;
                   const label = isTrueFalse ? opt.toUpperCase() : opt;
                   return (
                     <li key={optIndex}>
                       <button
                         type="button"
                         aria-pressed={isSelected}
-                        disabled={busy || (mode === "learn" && revealed)}
+                        disabled={busy || (immediateFeedback && revealed)}
                         onClick={() => {
-                          if (mode === "learn") {
+                          if (immediateFeedback) {
                             if (!revealed) void onSubmitAnswer(optIndex);
                           } else {
                             if (selected === optIndex) return;
@@ -582,24 +615,24 @@ function TechHubInner() {
                   {reward}
                 </p>
               ) : null}
-              {revealed && learnFeedback ? (
+              {revealed && activeFeedback ? (
                 <div className="exam-session-explain" role="status">
                   <p>
                     <span className="exam-session-explain-label">
-                      {learnFeedback.pendingReview
+                      {activeFeedback.pendingReview
                         ? "Review note: "
-                        : learnFeedback.correct
+                        : activeFeedback.correct
                           ? "Correct — "
                           : "Incorrect — "}
                     </span>
-                    {learnFeedback.explanation}
+                    {activeFeedback.explanation}
                   </p>
-                  {learnFeedback.optionExplanations &&
-                  learnFeedback.optionExplanations.length === current.options.length ? (
+                  {activeFeedback.optionExplanations &&
+                  activeFeedback.optionExplanations.length === current.options.length ? (
                     <ul className="exam-session-option-notes mt-3 space-y-2">
                       {current.options.map((opt, oi) => {
-                        const note = learnFeedback.optionExplanations?.[oi] ?? "";
-                        const isKey = learnFeedback.correctIndex === oi;
+                        const note = activeFeedback.optionExplanations?.[oi] ?? "";
+                        const isKey = activeFeedback.correctIndex === oi;
                         return (
                           <li
                             key={`${current.questionId}-note-${oi}`}
@@ -635,11 +668,7 @@ function TechHubInner() {
               type="button"
               className="exam-session-btn-secondary"
               disabled={index === 0}
-              onClick={() => {
-                setIndex((i) => Math.max(0, i - 1));
-                setLearnFeedback(null);
-                setReward(null);
-              }}
+              onClick={() => goToQuestion(Math.max(0, index - 1))}
             >
               ← Previous
             </button>
@@ -647,12 +676,10 @@ function TechHubInner() {
               <button
                 type="button"
                 className="exam-session-btn-primary"
-                disabled={mode === "learn" && !revealed}
-                onClick={() => {
-                  setIndex((i) => i + 1);
-                  setLearnFeedback(null);
-                  setReward(null);
-                }}
+                disabled={immediateFeedback && !revealed}
+                onClick={() =>
+                  goToQuestion(Math.min(localQuestions.length - 1, index + 1))
+                }
               >
                 Next →
               </button>
@@ -660,7 +687,7 @@ function TechHubInner() {
               <button
                 type="button"
                 className="exam-session-btn-primary"
-                disabled={busy || (mode === "learn" && !revealed)}
+                disabled={busy || (immediateFeedback && !revealed)}
                 onClick={() => void onFinish()}
               >
                 Finish &amp; review
