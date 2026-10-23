@@ -42,9 +42,19 @@ test.describe("Production — Exam Practice public routes", () => {
     await page.goto("/gigalearn/exam/", { waitUntil: "domcontentloaded" });
     await page.waitForLoadState("networkidle", { timeout: 45_000 }).catch(() => undefined);
 
-    await expect(page.getByRole("link", { name: /free practice|start free/i }).first()).toBeVisible({
+    await expect(
+      page.getByRole("link", { name: /start general practice/i }).first()
+    ).toBeVisible({
       timeout: 45_000,
     });
+    await expect(
+      page.getByText(/general practice — no specific promotion rank selected/i).first()
+    ).toBeVisible({ timeout: 30_000 });
+    const generalHref = await page
+      .getByRole("link", { name: /start general practice/i })
+      .first()
+      .getAttribute("href");
+    expect(generalHref || "").toMatch(/\/gigalearn\/exam\/practice\/?/);
 
     for (const label of [
       /assistant director ii/i,

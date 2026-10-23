@@ -330,24 +330,29 @@ function TeacherPromotionCentreCard() {
         <div className="exam-ghana-stripe" aria-hidden />
         <div className="space-y-2 p-4 sm:p-5">
           <p className="text-[11px] font-bold uppercase tracking-wide text-[#FACC15]">Welcome</p>
+          <p className="text-sm font-semibold text-[#FACC15]">
+            {PROMOTION_FREE_SET_META.welcomeMessage ??
+              "Welcome to General Teacher Promotion Practice"}
+          </p>
           <h2 id="teacher-promotion-heading" className="text-xl font-bold sm:text-2xl">
-            Ghana Teacher Promotion Practice
+            {PROMOTION_FREE_SET_META.centreHeading ??
+              "General Teacher Promotion Practice"}
           </h2>
           {signedIn ? (
             <p className="text-sm font-semibold text-[#FACC15]">Hello, {name}</p>
           ) : null}
           <p className="text-sm text-white/90">
             {signedIn
-              ? `Your free ${EXAM_PRACTICE_FREE_QUESTION_COUNT}-question practice is ready.`
-              : "Independent practice for Ghana Education Service promotion-exam preparation."}
+              ? `Your general ${EXAM_PRACTICE_FREE_QUESTION_COUNT}-question practice is ready.`
+              : "Independent general practice for Ghana Education Service promotion-exam preparation — no specific rank selected."}
           </p>
           <p className="text-xs text-white/75">
-            Promotion Exam Preparation Practice · GigaLearn on {siteConfig.name}
+            General Teacher Promotion Practice · GigaLearn on {siteConfig.name}
           </p>
         </div>
       </div>
 
-      <article className="exam-landing-card">
+      <article className="exam-landing-card" data-testid="general-promotion-free-practice">
         <span className="exam-landing-pill">{PROMOTION_FREE_SET_META.freeLabel}</span>
         <div className="mt-3 flex items-start gap-3">
           <div
@@ -364,14 +369,17 @@ function TeacherPromotionCentreCard() {
         <Link
           href={EXAM_PRACTICE_DESTINATIONS.promotionFreePractice}
           className="exam-landing-cta mt-4"
+          aria-label={
+            PROMOTION_FREE_SET_META.startCta ?? "Start General Practice"
+          }
         >
           <Play className="h-4 w-4 fill-current" aria-hidden />
-          Start Free {EXAM_PRACTICE_FREE_QUESTION_COUNT} Questions
+          {PROMOTION_FREE_SET_META.startCta ?? "Start General Practice"}
         </Link>
         <div className="mt-2">
           <ExamPracticeShareButton
             kind="teacher_promotion"
-            label="Share Teacher Promotion practice"
+            label="Share general Teacher Promotion practice"
           />
         </div>
         <p className="mt-2 text-xs text-slate-500">{PROMOTION_FREE_SET_META.provenanceNote}</p>

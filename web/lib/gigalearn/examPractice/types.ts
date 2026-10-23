@@ -20,8 +20,14 @@ export type ExamPracticeSetMeta = {
   id: string;
   title: string;
   subtitle: string;
-  /** Shown on landing CTA */
+  /** Pill / scope label on landing (e.g. rank-unspecified notice) */
   freeLabel: string;
+  /** Exam Centre banner H2 when this set is featured */
+  centreHeading?: string;
+  /** Welcome line on the Exam Centre banner */
+  welcomeMessage?: string;
+  /** Primary start CTA label */
+  startCta?: string;
   questionCount: number;
   /** Minutes for timed free practice */
   durationMinutes: number;

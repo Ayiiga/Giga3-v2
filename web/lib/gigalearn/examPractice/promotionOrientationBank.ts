@@ -1,18 +1,22 @@
 /**
- * GigaLearn Teacher Promotion — free orientation practice set.
+ * GigaLearn — general (rank-unspecified) Teacher Promotion orientation set.
  *
  * Purpose: in-app timed practice UI (format + confidence), using publicly known
  * Ghana education-system facts written for Giga3. This is NOT an official GES
- * paper and is NOT imported from third-party mock compilations.
+ * paper, is NOT imported from third-party mock compilations, and is NOT tied to
+ * a specific promotion rank (AD II / AD I / DD / D II / D I).
  */
 import type { ExamPracticeQuestion, ExamPracticeSetMeta } from "./types";
 
 export const PROMOTION_FREE_SET_META: ExamPracticeSetMeta = {
   id: "promotion-free-50",
-  title: "Free 50-question practice",
+  title: "General Teacher Promotion Practice — Free 50 Questions",
   subtitle:
-    "Practise the free 50 questions, see your score, earn praise for correct answers, and repeat as often as you need.",
-  freeLabel: "Free practice",
+    "Practise 50 general teacher promotion preparation questions, review your score, receive feedback for your answers, and practise again at any time.",
+  freeLabel: "General practice — no specific promotion rank selected.",
+  centreHeading: "General Teacher Promotion Practice",
+  welcomeMessage: "Welcome to General Teacher Promotion Practice",
+  startCta: "Start General Practice",
   questionCount: 50,
   durationMinutes: 50,
   provenanceNote:

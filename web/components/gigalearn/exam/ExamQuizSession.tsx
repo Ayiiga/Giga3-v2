@@ -128,7 +128,7 @@ export function ExamQuizSession({
   const bannerTitle =
     theme === "bece"
       ? "BECE Preparation Practice"
-      : "Promotion Exam Preparation Practice";
+      : meta.centreHeading ?? "General Teacher Promotion Practice";
 
   if (!current || finished) {
     const sessionPraise = rewardForSessionScore(score.percent);
