@@ -493,7 +493,9 @@ export const saveTechPracticeAnswer = mutation({
       return { saved: true, feedback: null, autoSubmitted: graded };
     }
 
-    if (session.mode === "learn") {
+    // Learn + practice_test: immediate per-answer feedback (premium Full pack
+    // and mode-picker Practice test). Timed exams still withhold until finish.
+    if (session.mode === "learn" || session.mode === "practice_test") {
       const q = bankQuestion;
       const perm = parseOptionPermutations(session.optionPermutationsJson)[args.questionId];
       if (
