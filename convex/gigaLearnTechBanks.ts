@@ -277,6 +277,7 @@ export const startTechPracticeSession = mutation({
       subscriptionActive,
       hasPurchasedCredits,
       credits: user?.credits ?? 0,
+      examPracticePremiumExpiresAt: user?.examPracticePremiumExpiresAt,
     });
     const bankSize = getTechBankQuestions(slug, {
       freeTierOnly: !premiumAccess,
@@ -297,6 +298,7 @@ export const startTechPracticeSession = mutation({
       hasPurchasedCredits,
       // Residual balance must not unlock — pass through only for API clarity.
       credits: user?.credits ?? 0,
+      examPracticePremiumExpiresAt: user?.examPracticePremiumExpiresAt,
     });
     const count = resolved.count;
     const seed = Date.now() ^ Math.floor(Math.random() * 1e9);

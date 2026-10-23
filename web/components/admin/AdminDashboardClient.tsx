@@ -7,6 +7,7 @@ import { AdminPhase5ControlsPanel } from "@/components/admin/AdminPhase5Controls
 import { AdminPhase5FeedbackPanel } from "@/components/admin/AdminPhase5FeedbackPanel";
 import { AdminPhase6ControlsPanel } from "@/components/admin/AdminPhase6ControlsPanel";
 import { AdminPhase6OpsPanel } from "@/components/admin/AdminPhase6OpsPanel";
+import { AdminFoundingMembersPanel } from "@/components/admin/AdminFoundingMembersPanel";
 import { AdminPlatformOverview } from "@/components/admin/AdminPlatformOverview";
 import { AdminSecurityHealthPanel } from "@/components/admin/AdminSecurityHealthPanel";
 import { AdminSocialEconomyPanel } from "@/components/admin/AdminSocialEconomyPanel";
@@ -118,6 +119,7 @@ function AdminInner() {
       )}
 
       <AdminPlatformOverview adminCreds={adminCreds} />
+      <AdminFoundingMembersPanel adminCreds={adminCreds} />
 
       <AdminInvitesPanel />
 

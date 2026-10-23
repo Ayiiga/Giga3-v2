@@ -44,7 +44,9 @@ export const paymentTypeValidator = v.union(
   v.literal("video_credits"),
   v.literal("marketplace"),
   v.literal("creator_gift"),
-  v.literal("boost_campaign")
+  v.literal("boost_campaign"),
+  /** Limited Founding Members Teacher Promotion premium (GHS 30 / 30 seats). */
+  v.literal("exam_founding_premium")
 );
 
 export const marketplaceProductTypeValidator = v.union(
@@ -257,6 +259,13 @@ export default defineSchema({
     subscriptionPlan: subscriptionPlanValidator,
     credits: v.number(),
     subscriptionExpiresAt: v.optional(v.number()),
+    /**
+     * Scoped Teacher Promotion / Exam Practice premium from Founding Members
+     * (or similar) offers. Independent of AI credit subscriptions.
+     */
+    examPracticePremiumExpiresAt: v.optional(v.number()),
+    examPracticePremiumOfferId: v.optional(v.string()),
+    examPracticePremiumPaymentRef: v.optional(v.string()),
     starterCreditsGranted: v.boolean(),
     /** JSON InterestProfile — built from chat history for personalization */
     interestProfile: v.optional(v.string()),
@@ -431,6 +440,57 @@ export default defineSchema({
   })
     .index("by_reference", ["reference"])
     .index("by_user", ["userId"]),
+
+  /**
+   * Fixed 30-slot inventory for Founding Members Teacher Promotion premium.
+   * Slots are claimed atomically (reserved → paid). Never trust client counts.
+   */
+  foundingOfferSlots: defineTable({
+    offerId: v.string(),
+    slotIndex: v.number(),
+    status: v.union(
+      v.literal("open"),
+      v.literal("reserved"),
+      v.literal("paid"),
+      v.literal("expired"),
+      v.literal("released"),
+      v.literal("failed")
+    ),
+    userId: v.optional(v.string()),
+    paymentReference: v.optional(v.string()),
+    amountGhs: v.optional(v.number()),
+    reservedAt: v.optional(v.number()),
+    reservationExpiresAt: v.optional(v.number()),
+    paidAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_offer_status", ["offerId", "status"])
+    .index("by_offer_slot", ["offerId", "slotIndex"])
+    .index("by_offer_user", ["offerId", "userId"])
+    .index("by_reference", ["paymentReference"])
+    .index("by_reservation_expiry", ["status", "reservationExpiresAt"]),
+
+  /** Lightweight commerce analytics for the Founding Members offer (no secrets). */
+  foundingOfferEvents: defineTable({
+    offerId: v.string(),
+    eventType: v.union(
+      v.literal("impression"),
+      v.literal("checkout_start"),
+      v.literal("payment_success"),
+      v.literal("payment_failed"),
+      v.literal("checkout_abandon"),
+      v.literal("entitlement_activated"),
+      v.literal("reservation_expired"),
+      v.literal("sold_out_view")
+    ),
+    userId: v.optional(v.string()),
+    paymentReference: v.optional(v.string()),
+    meta: v.optional(v.string()),
+    createdAt: v.number(),
+  })
+    .index("by_offer_created", ["offerId", "createdAt"])
+    .index("by_offer_type", ["offerId", "eventType"]),
 
   creditLogs: defineTable({
     userId: v.string(),

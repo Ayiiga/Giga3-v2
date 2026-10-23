@@ -107,4 +107,12 @@ crons.daily(
   {}
 );
 
+// Release abandoned Founding Members checkout seats (default 30 min TTL).
+crons.interval(
+  "expire founding members reservations",
+  { minutes: 10 },
+  internal.foundingMembersOffer.expireAbandonedReservations,
+  {}
+);
+
 export default crons;

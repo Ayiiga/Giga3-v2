@@ -103,6 +103,7 @@ function TechHubInner() {
     subscriptionActive: chatCredits?.subscriptionActive,
     isPremium: chatCredits?.isPremium,
     hasPurchasedCredits: chatCredits?.hasPurchasedCredits,
+    examPracticePremiumExpiresAt: chatCredits?.examPracticePremiumExpiresAt,
   });
 
   const countChoices = useMemo(() => {

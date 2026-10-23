@@ -1,6 +1,7 @@
 "use client";
 
 import { ExamPracticeShareButton } from "@/components/gigalearn/exam/ExamPracticeShareButton";
+import { FoundingMembersOfferCard } from "@/components/gigalearn/exam/FoundingMembersOfferCard";
 import { LearningProgressRing } from "@/components/gigalearn/ui/LearningProgressRing";
 import { ButtonLink } from "@/components/ui/Button";
 import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
@@ -448,6 +449,8 @@ function TeacherPromotionCentreCard() {
           <p className="text-sm text-slate-600">Scores and improvement from your real practice.</p>
         </div>
       </Link>
+
+      <FoundingMembersOfferCard />
 
       <article className="exam-landing-card exam-landing-card--gold">
         <span className="exam-landing-ribbon" aria-hidden>
