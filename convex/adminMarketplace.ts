@@ -169,6 +169,16 @@ export const setPayoutStatus = mutation({
       throw new Error(`Invalid payout transition: ${from} → ${to}.`);
     }
 
+    // Never mark paid without an explicit provider/ops reference (no silent "paid").
+    if (to === "paid") {
+      const ref = (args.reference?.trim() || payout.reference?.trim() || "");
+      if (!ref) {
+        throw new Error(
+          "Provider confirmation reference is required before marking a payout as paid."
+        );
+      }
+    }
+
     // Refund balance only when abandoning an in-flight (pending/processing) payout.
     if (to === "failed" && (from === "pending" || from === "processing")) {
       const profile = await ctx.db

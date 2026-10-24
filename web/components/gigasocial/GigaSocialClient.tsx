@@ -384,11 +384,14 @@ function GigaSocialContent() {
           <>
             <SectionIntro
               title="Creator economy"
-              description="Tips and ad boosts pay via Paystack. Affiliate is open to everyone. Monetisation starts at 5 fans (accept rules); withdrawals at 50 fans."
+              description="Earnings Centre with transparent GH₵ figures. Tips and boosts use Paystack. Monetisation unlocks at 500 fans (accept rules + application); withdrawals need balance checks. Affiliate is open to everyone."
             />
             {sessionToken ? (
               <GigaSocialPanelErrorBoundary panelName="Creator">
-                <GigaSocialCreatorPanel sessionToken={sessionToken} />
+                <GigaSocialCreatorPanel
+                  sessionToken={sessionToken}
+                  initialTab={resolveCreatorTab(params.get("creatorTab"))}
+                />
               </GigaSocialPanelErrorBoundary>
             ) : (
               <GigaSocialAuthPrompt title="Sign in for creator tools" />
@@ -460,6 +463,16 @@ function GigaSocialContent() {
 
     </div>
   );
+}
+
+function resolveCreatorTab(
+  raw: string | null
+): "earnings" | "dashboard" | "wallet" | "gifts" | "affiliate" | "boost" {
+  const allowed = ["earnings", "dashboard", "wallet", "gifts", "affiliate", "boost"] as const;
+  if (raw && (allowed as readonly string[]).includes(raw)) {
+    return raw as (typeof allowed)[number];
+  }
+  return "earnings";
 }
 
 function SectionIntro({ title, description }: { title: string; description: string }) {

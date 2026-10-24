@@ -1,17 +1,20 @@
 /** Client helpers for GigaSocial creator economy eligibility and formatting. */
 
-/** Fans required before a creator may accept monetisation terms and start earning. */
-export const MIN_FANS_FOR_MONETIZATION = 5;
+/**
+ * Fans required before a creator may accept monetisation terms and start earning.
+ * Product rule (2026-10-24 Earnings Centre brief): 500 genuine fans.
+ */
+export const MIN_FANS_FOR_MONETIZATION = 500;
 
-/** Fans required before a creator may request a withdrawal. */
+/** Fans required before a creator may request a withdrawal (still requires acceptance + balance). */
 export const MIN_FANS_FOR_WITHDRAWAL = 50;
 
 /** @deprecated Use MIN_FANS_FOR_MONETIZATION — kept for older imports. */
 export const DEFAULT_MIN_FANS_FOR_MONETIZATION = MIN_FANS_FOR_MONETIZATION;
 
 export function formatGhs(amount: number): string {
-  if (!Number.isFinite(amount)) return "GHS 0.00";
-  return `GHS ${amount.toFixed(2)}`;
+  if (!Number.isFinite(amount)) return "GH₵ 0.00";
+  return `GH₵ ${amount.toFixed(2)}`;
 }
 
 export function fanProgressPercent(fanCount: number, required: number): number {
@@ -62,13 +65,13 @@ export function monetizationStatusMessage(args: {
   } = args;
   if (!isEligibleForMonetization(fanCount, fansRequired)) {
     const n = fansRemaining(fanCount, fansRequired);
-    return `Invite ${n} more ${n === 1 ? "fan" : "fans"} to unlock creator monetisation.`;
+    return `Invite ${n} more ${n === 1 ? "fan" : "fans"} to unlock creator monetisation (need ${fansRequired}).`;
   }
   if (!accepted) {
     if (requiresPolicyReacceptance) {
       return "Please accept the current creator monetisation rules to continue earning and withdraw.";
     }
-    return "You are eligible to monetise. Accept the creator rules to get started.";
+    return "You are eligible to apply. Accept the creator rules and submit your application.";
   }
   if (!isEligibleForWithdrawal(fanCount, withdrawalFansRequired)) {
     const n = fansRemaining(fanCount, withdrawalFansRequired);
