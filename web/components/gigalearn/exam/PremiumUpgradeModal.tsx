@@ -170,8 +170,9 @@ export function PremiumUpgradeModal({
           {score.answered < score.total ? ` · ${score.answered} answered` : ""}
         </p>
         <p className="premium-upgrade-lead">
-          Ready to continue preparing for your next promotion? Unlock more available
-          rank-specific practice questions and keep building your confidence.
+          Your results are ready. Continue preparing with available rank-specific practice
+          questions by choosing the access option that suits you — or dismiss this and review
+          your score first.
         </p>
 
         {alreadyPremium ? (
@@ -197,20 +198,25 @@ export function PremiumUpgradeModal({
               <p className="premium-upgrade-option-label">Founding Teacher Offer</p>
               <p className="premium-upgrade-option-price">
                 GHS {FOUNDING_MEMBERS_PRICE_GHS}
-                <span> one-time</span>
+                <span> — {FOUNDING_MEMBERS_ACCESS_DURATION_LABEL} of premium access</span>
               </p>
               <p className="premium-upgrade-option-copy">
-                Unlock Teacher Promotion Premium for just GHS {FOUNDING_MEMBERS_PRICE_GHS}.
-                Limited to the first {FOUNDING_MEMBERS_MAX_ALLOCATIONS}{" "}
+                Available to the first {FOUNDING_MEMBERS_MAX_ALLOCATIONS}{" "}
                 <strong>successful purchases</strong>
                 {typeof remaining === "number" ? (
                   <>
-                    {" "}
-                    · <span data-testid="premium-upgrade-remaining">{remaining} remaining</span>
+                    .{" "}
+                    <span data-testid="premium-upgrade-remaining">
+                      {remaining} remaining
+                    </span>{" "}
+                    (from the server — check before purchasing)
                   </>
-                ) : null}
-                . Access for {FOUNDING_MEMBERS_ACCESS_DURATION_LABEL} after verification (scoped
-                Exam Practice premium — not a full AI credit subscription).
+                ) : (
+                  ". Check remaining availability before purchasing"
+                )}
+                . One-time Paystack charge; scoped Exam Practice premium for{" "}
+                {FOUNDING_MEMBERS_ACCESS_DURATION_LABEL} after verification — not a full AI credit
+                subscription.
               </p>
               <ul className="premium-upgrade-bullets">
                 {FOUNDING_MEMBERS_SCOPE_BULLETS.slice(0, 3).map((line) => (
@@ -261,10 +267,11 @@ export function PremiumUpgradeModal({
                 <span>/month</span>
               </p>
               <p className="premium-upgrade-option-copy">
-                Subscribe with the existing <strong>Basic</strong> plan ({EXAM_PRACTICE_PAID_UNLOCK_COPY.split(",")[0]}
-                ). Unlocks eligible Teacher Promotion full packs while the subscription is active,
-                plus {BASIC?.credits ?? 100} AI credits each billing period. Renews automatically
-                when a reusable card is saved; manage auto-renew from your account / wallet.
+                Access eligible premium practice content while your subscription is active. This is
+                the existing <strong>Basic</strong> plan ({EXAM_PRACTICE_PAID_UNLOCK_COPY.split(",")[0]}
+                ): full packs while active, plus {BASIC?.credits ?? 100} AI credits each billing
+                period. Renews automatically when a reusable card is saved — review renewal and
+                cancellation terms in your account / wallet before subscribing.
               </p>
               {signedIn ? (
                 <button
@@ -294,10 +301,11 @@ export function PremiumUpgradeModal({
             >
               <p className="premium-upgrade-option-label">Credit purchase</p>
               <p className="premium-upgrade-option-copy">
-                Buying any Giga3 <strong>credit pack</strong> (existing Paystack packs) records a
-                credit purchase and unlocks the same Exam Practice full-pack gate as an active
-                subscription. Residual wallet balance alone does <em>not</em> unlock packs — there
-                is no per-question credit price for exam practice.
+                Use an available credit pack to unlock the content described before checkout.
+                Buying a Giga3 <strong>credit pack</strong> (existing Paystack prices on the credits
+                page) records a purchase and unlocks the same Exam Practice full-pack gate as an
+                active subscription. Residual wallet balance alone does <em>not</em> unlock packs —
+                there is no per-question credit price for exam practice.
               </p>
               <Link
                 href={EXAM_PRACTICE_DESTINATIONS.credits}

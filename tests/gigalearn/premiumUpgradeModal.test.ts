@@ -127,14 +127,21 @@ describe("premium upgrade UX wiring (source)", () => {
     expect(modal).toContain("successful purchases");
     expect(modal).toContain("FOUNDING_MEMBERS_MAX_ALLOCATIONS");
     expect(FOUNDING_MEMBERS_MAX_ALLOCATIONS).toBe(30);
+    expect(modal).toContain("of premium access");
     expect(modal).toContain("sub_basic_monthly");
     expect(modal).toContain("basicPrice");
     expect(SUBSCRIPTION_PLANS.basic.priceGhs).toBe(60);
+    expect(modal).toContain("review renewal and");
+    expect(modal).toContain("cancellation terms");
     expect(modal).toContain("View credit options");
+    expect(modal).toContain("Use an available credit pack");
     expect(modal).toContain("Residual wallet balance alone does");
     expect(modal).toContain("Maybe later");
     expect(modal).toContain("View my results");
+    expect(modal).toContain("completed your free practice!");
     expect(modal).not.toMatch(/sk_live_|PAYSTACK_SECRET/);
+    expect(nudge).toContain("Prepare smarter for your GES promotion");
+    expect(nudge).toContain("choose whether to unlock more practice");
   });
 
   it("auto-opens modal only after free practice completion and respects dismiss", () => {

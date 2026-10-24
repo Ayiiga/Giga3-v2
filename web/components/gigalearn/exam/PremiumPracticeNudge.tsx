@@ -26,16 +26,16 @@ export function PremiumPracticeNudge({ variant, onOpenUpgrade, className }: Prop
         className={`premium-nudge premium-nudge--hero ${className ?? ""}`}
         data-testid="premium-nudge-prestart"
       >
-        <p className="premium-nudge-eyebrow">Prepare smarter for your GES promotion!</p>
+        <p className="premium-nudge-eyebrow">Prepare smarter for your GES promotion</p>
         <p className="premium-nudge-body">
-          Practise available sample questions, check your answers, and understand your
-          performance.
+          Start with free practice to understand the question format and check your performance.
+          When you finish, you can review your results and choose whether to unlock more practice.
         </p>
         <p className="premium-nudge-body">
-          Enjoy your free practice trial ({EXAM_PRACTICE_FREE_QUESTION_COUNT} questions). Ready for
-          more questions and deeper preparation? Unlock Premium when you finish — Founding Teacher
-          offer GHS {FOUNDING_MEMBERS_PRICE_GHS} (first {FOUNDING_MEMBERS_MAX_ALLOCATIONS} successful
-          purchases) or Basic GHS 60/month.
+          Free trial: {EXAM_PRACTICE_FREE_QUESTION_COUNT} questions. After results, options include
+          the Founding Teacher offer (GHS {FOUNDING_MEMBERS_PRICE_GHS} · 30 days · first{" "}
+          {FOUNDING_MEMBERS_MAX_ALLOCATIONS} successful purchases) or Basic GHS 60/month — only if
+          you choose to continue.
         </p>
       </aside>
     );

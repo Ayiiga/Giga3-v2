@@ -246,6 +246,31 @@ describe("Founding Members Paystack / Convex wiring (source)", () => {
     expect(founding).toContain("reservation_expired");
   });
 
+  it("keeps expired reservations claimable for late Paystack webhooks", () => {
+    // Stale reserved → expired (identity kept), then reclaim after grace TTL.
+    expect(founding).toContain('status: "expired"');
+    expect(founding).toContain("reclaimExpiredSlotsToOpen");
+    expect(founding).toContain("grace for late webhooks");
+    expect(founding).toMatch(/slot\.status === "reserved"/);
+    expect(founding).toMatch(/slot\.status === "expired"/);
+    expect(founding).toMatch(/slot\.status === "failed"/);
+  });
+
+  it("defaults live checkout off until FOUNDING_MEMBERS_OFFER_LIVE=true", () => {
+    expect(founding).toContain(
+      'return process.env.FOUNDING_MEMBERS_OFFER_LIVE?.trim() === "true"'
+    );
+    expect(founding).toContain(
+      "Founding Members offer is not live yet"
+    );
+  });
+
+  it("rejects amount mismatches before entitlement grant", () => {
+    expect(founding).toContain("Founding Members amount mismatch");
+    expect(founding).toContain("args.amountGhs !== FOUNDING_MEMBERS_PRICE_GHS");
+    expect(paystack).toContain("payment_amount_mismatch");
+  });
+
   it("admin audit requires admin session credentials", () => {
     expect(founding).toContain("adminOfferAudit");
     expect(founding).toContain("ensureAdminAccess");

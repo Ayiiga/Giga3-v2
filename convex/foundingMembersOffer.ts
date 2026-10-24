@@ -86,6 +86,11 @@ async function ensureSlots(ctx: MutationCtx, offerId: string, now: number) {
   }
 }
 
+/**
+ * Mark abandoned reservations as `expired` but keep paymentReference/userId so a
+ * late Paystack success can still fulfil. Expired seats do not count against the
+ * 30-slot cap; they are reclaimed to `open` when a new checkout needs a seat.
+ */
 async function expireStaleReservations(
   ctx: MutationCtx,
   offerId: string,
@@ -103,29 +108,58 @@ async function expireStaleReservations(
       slot.reservationExpiresAt != null &&
       slot.reservationExpiresAt <= now
     ) {
-      const priorUser = slot.userId;
-      const priorRef = slot.paymentReference;
-      // Return seat to the open pool (atomic patch inside this mutation).
       await ctx.db.patch(slot._id, {
-        status: "open",
-        userId: undefined,
-        paymentReference: undefined,
-        reservedAt: undefined,
-        reservationExpiresAt: undefined,
-        amountGhs: undefined,
+        status: "expired",
         updatedAt: now,
       });
       await ctx.db.insert("foundingOfferEvents", {
         offerId,
         eventType: "reservation_expired",
-        userId: priorUser,
-        paymentReference: priorRef,
+        userId: slot.userId,
+        paymentReference: slot.paymentReference,
         createdAt: now,
       });
       n++;
     }
   }
   return n;
+}
+
+/** Reclaim expired/released seats into the open pool (clears identity fields). */
+async function reclaimExpiredSlotsToOpen(
+  ctx: MutationCtx,
+  offerId: string,
+  now: number
+): Promise<void> {
+  for (const status of ["expired", "released", "failed"] as const) {
+    const rows = await ctx.db
+      .query("foundingOfferSlots")
+      .withIndex("by_offer_status", (q) =>
+        q.eq("offerId", offerId).eq("status", status)
+      )
+      .take(FOUNDING_MEMBERS_MAX_ALLOCATIONS);
+    for (const slot of rows) {
+      // Never reclaim a seat that still has a paymentReference until fulfil had a
+      // chance — only reclaim expired seats older than the reservation TTL window
+      // again (grace), or failed/released immediately.
+      if (status === "expired") {
+        const expiredAt = slot.reservationExpiresAt ?? slot.updatedAt;
+        if (now - expiredAt < foundingMembersReservationTtlMs()) {
+          continue; // grace for late webhooks
+        }
+      }
+      await ctx.db.patch(slot._id, {
+        status: "open",
+        userId: undefined,
+        paymentReference: undefined,
+        amountGhs: undefined,
+        reservedAt: undefined,
+        reservationExpiresAt: undefined,
+        paidAt: undefined,
+        updatedAt: now,
+      });
+    }
+  }
 }
 
 async function countSlots(
@@ -344,6 +378,7 @@ export const reserveSlotForCheckout = internalMutation({
     const offerId = FOUNDING_MEMBERS_OFFER_ID;
     await ensureSlots(ctx, offerId, now);
     await expireStaleReservations(ctx, offerId, now);
+    await reclaimExpiredSlotsToOpen(ctx, offerId, now);
 
     const alreadyPaid = await userPaidSlot(ctx, offerId, args.userId);
     if (alreadyPaid) {
@@ -512,29 +547,85 @@ export const fulfillFoundingMembersPurchase = internalMutation({
         `Founding Members amount mismatch: expected ${FOUNDING_MEMBERS_PRICE_GHS}, got ${args.amountGhs}`
       );
     }
-    const slot = await ctx.db
+    let slot = await ctx.db
       .query("foundingOfferSlots")
       .withIndex("by_reference", (q) =>
         q.eq("paymentReference", args.paymentReference)
       )
       .first();
-    if (!slot) {
-      throw new Error("Founding Members reservation not found for payment.");
-    }
-    if (slot.userId !== args.userId) {
-      throw new Error("Founding Members payment user mismatch.");
-    }
-    if (slot.status === "paid") {
+
+    // Idempotent: user already paid this offer under another path.
+    const existingPaid = await userPaidSlot(
+      ctx,
+      FOUNDING_MEMBERS_OFFER_ID,
+      args.userId
+    );
+    if (existingPaid && existingPaid.paymentReference === args.paymentReference) {
       return { alreadyFulfilled: true as const };
     }
-    if (slot.status !== "reserved" && slot.status !== "failed") {
-      throw new Error(`Founding Members slot not reservable (status=${slot.status}).`);
+    if (existingPaid) {
+      // One founding seat per user — release any orphan reservation for this
+      // verified duplicate payment so it cannot block inventory forever.
+      if (slot && (slot.status === "reserved" || slot.status === "expired")) {
+        await ctx.db.patch(slot._id, {
+          status: "open",
+          userId: undefined,
+          paymentReference: undefined,
+          amountGhs: undefined,
+          reservedAt: undefined,
+          reservationExpiresAt: undefined,
+          updatedAt: now,
+        });
+      }
+      return { alreadyFulfilled: true as const };
+    }
+
+    if (slot && slot.userId && slot.userId !== args.userId) {
+      throw new Error("Founding Members payment user mismatch.");
+    }
+    if (slot?.status === "paid") {
+      return { alreadyFulfilled: true as const };
+    }
+
+    // Cap before claiming.
+    const paidCount = await countSlots(ctx, FOUNDING_MEMBERS_OFFER_ID, "paid");
+    if (paidCount >= FOUNDING_MEMBERS_MAX_ALLOCATIONS) {
+      throw new Error(
+        "Founding Members offer is sold out — cannot fulfil additional purchases."
+      );
+    }
+
+    const claimable =
+      slot &&
+      (slot.status === "reserved" ||
+        slot.status === "expired" ||
+        slot.status === "failed");
+
+    // Late webhook after reclaim: claim an open seat for this verified payment.
+    if (!claimable) {
+      await ensureSlots(ctx, FOUNDING_MEMBERS_OFFER_ID, now);
+      await reclaimExpiredSlotsToOpen(ctx, FOUNDING_MEMBERS_OFFER_ID, now);
+      const openSlots = await ctx.db
+        .query("foundingOfferSlots")
+        .withIndex("by_offer_status", (q) =>
+          q.eq("offerId", FOUNDING_MEMBERS_OFFER_ID).eq("status", "open")
+        )
+        .take(FOUNDING_MEMBERS_MAX_ALLOCATIONS);
+      openSlots.sort((a, b) => a.slotIndex - b.slotIndex);
+      slot = openSlots[0] ?? null;
+      if (!slot) {
+        throw new Error(
+          "Founding Members reservation not found and no open seat remains for verified payment."
+        );
+      }
     }
 
     await ctx.db.patch(slot._id, {
       status: "paid",
       paidAt: now,
       amountGhs: FOUNDING_MEMBERS_PRICE_GHS,
+      userId: args.userId,
+      paymentReference: args.paymentReference,
       updatedAt: now,
     });
 
@@ -544,16 +635,25 @@ export const fulfillFoundingMembersPurchase = internalMutation({
       .first();
     if (!user) throw new Error("User not found for Founding Members fulfilment.");
 
-    const expiresAt = nextExamFoundingPremiumExpiry({
-      now,
-      currentExpiresAt: user.examPracticePremiumExpiresAt,
-      durationMs: FOUNDING_MEMBERS_ACCESS_DURATION_MS,
-    });
-    await ctx.db.patch(user._id, {
-      examPracticePremiumExpiresAt: expiresAt,
-      examPracticePremiumOfferId: FOUNDING_MEMBERS_OFFER_ID,
-      examPracticePremiumPaymentRef: args.paymentReference,
-    });
+    // Exactly one founding period from this payment: if this reference already
+    // set the entitlement, skip; otherwise grant from now (or extend if active).
+    const alreadyFromThisPayment =
+      user.examPracticePremiumPaymentRef === args.paymentReference &&
+      typeof user.examPracticePremiumExpiresAt === "number" &&
+      user.examPracticePremiumExpiresAt > now;
+    let expiresAt = user.examPracticePremiumExpiresAt ?? null;
+    if (!alreadyFromThisPayment) {
+      expiresAt = nextExamFoundingPremiumExpiry({
+        now,
+        currentExpiresAt: user.examPracticePremiumExpiresAt,
+        durationMs: FOUNDING_MEMBERS_ACCESS_DURATION_MS,
+      });
+      await ctx.db.patch(user._id, {
+        examPracticePremiumExpiresAt: expiresAt,
+        examPracticePremiumOfferId: FOUNDING_MEMBERS_OFFER_ID,
+        examPracticePremiumPaymentRef: args.paymentReference,
+      });
+    }
 
     await ctx.db.insert("foundingOfferEvents", {
       offerId: FOUNDING_MEMBERS_OFFER_ID,
@@ -562,21 +662,23 @@ export const fulfillFoundingMembersPurchase = internalMutation({
       paymentReference: args.paymentReference,
       createdAt: now,
     });
-    await ctx.db.insert("foundingOfferEvents", {
-      offerId: FOUNDING_MEMBERS_OFFER_ID,
-      eventType: "entitlement_activated",
-      userId: args.userId,
-      paymentReference: args.paymentReference,
-      meta: JSON.stringify({
-        expiresAt,
-        durationDays: FOUNDING_MEMBERS_ACCESS_DURATION_DAYS,
-      }),
-      createdAt: now,
-    });
+    if (!alreadyFromThisPayment) {
+      await ctx.db.insert("foundingOfferEvents", {
+        offerId: FOUNDING_MEMBERS_OFFER_ID,
+        eventType: "entitlement_activated",
+        userId: args.userId,
+        paymentReference: args.paymentReference,
+        meta: JSON.stringify({
+          expiresAt,
+          durationDays: FOUNDING_MEMBERS_ACCESS_DURATION_DAYS,
+        }),
+        createdAt: now,
+      });
+    }
 
     return {
       alreadyFulfilled: false as const,
-      expiresAt,
+      expiresAt: expiresAt ?? now,
       slotIndex: slot.slotIndex,
     };
   },
@@ -592,6 +694,7 @@ export const expireAbandonedReservations = internalMutation({
       FOUNDING_MEMBERS_OFFER_ID,
       now
     );
+    await reclaimExpiredSlotsToOpen(ctx, FOUNDING_MEMBERS_OFFER_ID, now);
     return { expired: n };
   },
 });
