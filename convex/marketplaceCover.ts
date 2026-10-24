@@ -1,4 +1,5 @@
 import type { Id } from "./_generated/dataModel";
+import type { QueryCtx } from "./_generated/server";
 
 type StorageReader = {
   getUrl: (storageId: Id<"_storage">) => Promise<string | null>;
@@ -101,4 +102,26 @@ export function hasDurableCover(listing: CoverFields): boolean {
   const stored = listing.coverImageUrl?.trim();
   if (!stored) return false;
   return !isEphemeralConvexStorageUrl(stored);
+}
+
+/**
+ * Latest approved/uploaded cover intent storage id for a listing.
+ * Used for read-time recovery when coverStorageId was never written.
+ */
+export async function coverIntentStorageIdForListing(
+  ctx: Pick<QueryCtx, "db">,
+  listingId: Id<"marketplaceListings">
+): Promise<Id<"_storage"> | undefined> {
+  const intents = await ctx.db
+    .query("marketplaceUploadIntents")
+    .withIndex("by_listing", (q) => q.eq("listingId", listingId))
+    .order("desc")
+    .take(30);
+  const cover = intents.find(
+    (intent) =>
+      intent.purpose === "cover_image" &&
+      intent.storageId &&
+      (intent.status === "approved" || intent.status === "uploaded")
+  );
+  return cover?.storageId;
 }

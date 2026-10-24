@@ -116,9 +116,9 @@ crons.interval(
 );
 
 // Recover coverStorageId for listings that only stored expired signed cover URLs.
-crons.daily(
+crons.interval(
   "backfill marketplace cover storage ids",
-  { hourUTC: 4, minuteUTC: 15 },
+  { minutes: 15 },
   internal.marketplaceCoverBackfill.backfillCoverStorageIds,
   { limit: 200 }
 );
