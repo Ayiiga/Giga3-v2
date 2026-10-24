@@ -32,7 +32,19 @@ function newOrRestoredDraft(): FreePracticeDraft {
   );
 }
 
+/**
+ * Outer shell must wrap Convex hooks — calling useMutation above ConvexAppShell
+ * crashes the free-practice route on static export (no root ConvexProvider).
+ */
 export function ExamPracticeSessionRoot() {
+  return (
+    <ConvexAppShell>
+      <ExamPracticeSessionInner />
+    </ConvexAppShell>
+  );
+}
+
+function ExamPracticeSessionInner() {
   const [draft, setDraft] = useState<FreePracticeDraft | null>(null);
   const recordEvent = useMutation(api.foundingMembersOffer.recordOfferEvent);
 
@@ -92,62 +104,66 @@ export function ExamPracticeSessionRoot() {
     }).catch(() => undefined);
   }, [recordEvent]);
 
-  return (
-    <ConvexAppShell>
-      {!draft ? (
-        <div className="exam-session">
-          <p className="exam-session-footnote">Preparing practice…</p>
-        </div>
-      ) : !draft.started ? (
-        <div className="exam-session" data-testid="free-practice-prestart">
-          <header className="exam-session-banner">
-            <div className="exam-ghana-stripe" aria-hidden />
-            <div className="exam-session-banner-inner">
-              <h1 className="exam-session-banner-title">{PROMOTION_FREE_SET_META.title}</h1>
-              <p className="exam-session-banner-sub">
-                Independent practice platform for Ghana Education Service promotion-exam
-                preparation
-              </p>
-            </div>
-          </header>
-          <div className="exam-session-body">
-            <article className="exam-session-card exam-session-card--pad space-y-4">
-              <PremiumPracticeNudge variant="prestart" />
-              <p className="text-sm text-slate-600">{PROMOTION_FREE_SET_META.subtitle}</p>
-              <p className="text-xs text-slate-500">{PROMOTION_FREE_SET_META.provenanceNote}</p>
-              <Button
-                type="button"
-                className="exam-session-btn-primary min-h-11 w-full"
-                data-testid="free-practice-begin"
-                onClick={beginPractice}
-              >
-                Start free practice
-              </Button>
-              <Link
-                href={EXAM_PRACTICE_DESTINATIONS.examHome}
-                className="exam-session-btn-secondary min-h-11 w-full"
-              >
-                Back to Exam Practice
-              </Link>
-            </article>
+  if (!draft) {
+    return (
+      <div className="exam-session">
+        <p className="exam-session-footnote">Preparing practice…</p>
+      </div>
+    );
+  }
+
+  if (!draft.started) {
+    return (
+      <div className="exam-session" data-testid="free-practice-prestart">
+        <header className="exam-session-banner">
+          <div className="exam-ghana-stripe" aria-hidden />
+          <div className="exam-session-banner-inner">
+            <h1 className="exam-session-banner-title">{PROMOTION_FREE_SET_META.title}</h1>
+            <p className="exam-session-banner-sub">
+              Independent practice platform for Ghana Education Service promotion-exam
+              preparation
+            </p>
           </div>
+        </header>
+        <div className="exam-session-body">
+          <article className="exam-session-card exam-session-card--pad space-y-4">
+            <PremiumPracticeNudge variant="prestart" />
+            <p className="text-sm text-slate-600">{PROMOTION_FREE_SET_META.subtitle}</p>
+            <p className="text-xs text-slate-500">{PROMOTION_FREE_SET_META.provenanceNote}</p>
+            <Button
+              type="button"
+              className="exam-session-btn-primary min-h-11 w-full"
+              data-testid="free-practice-begin"
+              onClick={beginPractice}
+            >
+              Start free practice
+            </Button>
+            <Link
+              href={EXAM_PRACTICE_DESTINATIONS.examHome}
+              className="exam-session-btn-secondary min-h-11 w-full"
+            >
+              Back to Exam Practice
+            </Link>
+          </article>
         </div>
-      ) : (
-        <ExamQuizSession
-          meta={PROMOTION_FREE_SET_META}
-          questions={draft.questions}
-          exitHref={EXAM_PRACTICE_DESTINATIONS.examHome}
-          theme="teacher"
-          enablePremiumUpgrade
-          initialAnswers={draft.answers}
-          initialIndex={draft.index}
-          initialSecondsLeft={draft.secondsLeft}
-          initialFinished={draft.finished}
-          initialStreak={draft.streak}
-          onDraftChange={onDraftChange}
-          onRestart={restart}
-        />
-      )}
-    </ConvexAppShell>
+      </div>
+    );
+  }
+
+  return (
+    <ExamQuizSession
+      meta={PROMOTION_FREE_SET_META}
+      questions={draft.questions}
+      exitHref={EXAM_PRACTICE_DESTINATIONS.examHome}
+      theme="teacher"
+      enablePremiumUpgrade
+      initialAnswers={draft.answers}
+      initialIndex={draft.index}
+      initialSecondsLeft={draft.secondsLeft}
+      initialFinished={draft.finished}
+      initialStreak={draft.streak}
+      onDraftChange={onDraftChange}
+      onRestart={restart}
+    />
   );
 }

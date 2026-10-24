@@ -154,6 +154,20 @@ describe("premium upgrade UX wiring (source)", () => {
     expect(root).toContain("enablePremiumUpgrade");
   });
 
+  it("wraps Convex hooks inside ConvexAppShell (static-export safe)", () => {
+    // Regression: useMutation above ConvexAppShell crashes /gigalearn/exam/practice/.
+    expect(root).toMatch(
+      /export function ExamPracticeSessionRoot\(\) \{\s*return \(\s*<ConvexAppShell>\s*<ExamPracticeSessionInner\s*\/>/
+    );
+    const innerStart = root.indexOf("function ExamPracticeSessionInner");
+    expect(innerStart).toBeGreaterThan(0);
+    const hookInInner = root.indexOf(
+      "useMutation(api.foundingMembersOffer.recordOfferEvent)",
+      innerStart
+    );
+    expect(hookInInner).toBeGreaterThan(innerStart);
+  });
+
   it("places premium messaging before / during / after free practice", () => {
     expect(nudge).toContain('variant === "prestart"');
     expect(nudge).toContain('variant === "insession"');
