@@ -51,6 +51,13 @@ export type ExamPracticeEntitlementInput = {
    * MUST NOT grant premium exam packs by itself.
    */
   credits?: number | null;
+  /**
+   * Founding-members / scoped Teacher Promotion premium expiry (epoch ms).
+   * Does not replace subscriptions; extends the same exam-pack gate.
+   */
+  examPracticePremiumExpiresAt?: number | null;
+  /** Clock override for tests. */
+  now?: number | null;
 };
 
 /**
@@ -65,6 +72,11 @@ export function hasExamPracticePremiumAccess(
   if (args.subscriptionActive) return true;
   if (args.isPremium) return true;
   if (args.hasPurchasedCredits) return true;
+  const now = typeof args.now === "number" ? args.now : Date.now();
+  const foundingExp = args.examPracticePremiumExpiresAt;
+  if (typeof foundingExp === "number" && Number.isFinite(foundingExp) && foundingExp > now) {
+    return true;
+  }
   // Intentionally ignore args.credits — balance ≠ entitlement.
   return false;
 }
@@ -111,6 +123,8 @@ export function resolveExamPracticeSessionCount(args: {
   isPremium?: boolean | null;
   hasPurchasedCredits?: boolean | null;
   credits?: number | null;
+  examPracticePremiumExpiresAt?: number | null;
+  now?: number | null;
 }): {
   premiumAccess: boolean;
   count: number;

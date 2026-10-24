@@ -1,6 +1,8 @@
 "use client";
 
 import { ExamPracticeShareButton } from "@/components/gigalearn/exam/ExamPracticeShareButton";
+import { FoundingMembersOfferCard } from "@/components/gigalearn/exam/FoundingMembersOfferCard";
+import { PremiumPracticeNudge } from "@/components/gigalearn/exam/PremiumPracticeNudge";
 import { LearningProgressRing } from "@/components/gigalearn/ui/LearningProgressRing";
 import { ButtonLink } from "@/components/ui/Button";
 import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
@@ -366,6 +368,9 @@ function TeacherPromotionCentreCard() {
             <p className="mt-1 text-sm text-slate-600">{PROMOTION_FREE_SET_META.subtitle}</p>
           </div>
         </div>
+        <div className="mt-3">
+          <PremiumPracticeNudge variant="prestart" />
+        </div>
         <Link
           href={EXAM_PRACTICE_DESTINATIONS.promotionFreePractice}
           className="exam-landing-cta mt-4"
@@ -448,6 +453,8 @@ function TeacherPromotionCentreCard() {
           <p className="text-sm text-slate-600">Scores and improvement from your real practice.</p>
         </div>
       </Link>
+
+      <FoundingMembersOfferCard />
 
       <article className="exam-landing-card exam-landing-card--gold">
         <span className="exam-landing-ribbon" aria-hidden>

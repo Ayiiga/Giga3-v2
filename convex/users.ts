@@ -503,6 +503,8 @@ export const getChatCredits = query({
       /** True when the user has a credit_purchase log — not residual balance. */
       hasPurchasedCredits,
       subscriptionActive,
+      /** Founding Members / scoped Teacher Promotion premium expiry (epoch ms). */
+      examPracticePremiumExpiresAt: user.examPracticePremiumExpiresAt ?? null,
       canUseOpenAiImage: shouldOfferOpenAiImageGeneration(
         user.subscriptionPlan ?? "free",
         user.subscriptionExpiresAt
