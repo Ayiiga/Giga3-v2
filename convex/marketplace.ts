@@ -10,6 +10,7 @@ import {
   marketplaceReportReasonValidator,
 } from "./schema";
 import { marketplaceUploadsEnabled } from "./marketplaceUploadPolicy";
+import { hasDurableCover, isEphemeralConvexStorageUrl } from "./marketplaceCover";
 import {
   isListingFileApproved,
   sanitizePublicHttpUrl,
@@ -360,7 +361,14 @@ export const updateListing = mutation({
       const ebookLike = productType.includes("ebook") || productType === "book";
       const nextCoverUrl =
         args.coverImageUrl !== undefined ? args.coverImageUrl : listing.coverImageUrl;
-      if (ebookLike && !listing.coverStorageId && !String(nextCoverUrl || "").trim()) {
+      // Reject expired Convex signed URLs — they are not durable covers.
+      if (
+        ebookLike &&
+        !hasDurableCover({
+          coverStorageId: listing.coverStorageId,
+          coverImageUrl: nextCoverUrl,
+        })
+      ) {
         throw new Error(
           "Add a cover image (upload or durable image URL) before publishing an ebook."
         );
@@ -398,7 +406,13 @@ export const updateListing = mutation({
     }
     if (args.coverImageUrl !== undefined) {
       // External / CDN covers only — seller file covers must use prepareListingUpload.
-      patch.coverImageUrl = sanitizePublicHttpUrl(args.coverImageUrl, "Cover image URL");
+      const next = sanitizePublicHttpUrl(args.coverImageUrl, "Cover image URL");
+      if (next && isEphemeralConvexStorageUrl(next) && !listing.coverStorageId) {
+        throw new Error(
+          "Cover image URL looks like an expired Convex storage link. Upload the cover image instead."
+        );
+      }
+      patch.coverImageUrl = next;
     }
     if (args.tags !== undefined) {
       patch.tags = args.tags.map((t) => t.trim().slice(0, 40)).filter(Boolean).slice(0, 12);

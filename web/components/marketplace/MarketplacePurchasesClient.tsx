@@ -85,8 +85,14 @@ function MarketplacePurchasesInner() {
                       src={row.listing.coverImageUrl}
                       title={row.listing.title}
                       category={row.listing.category}
+                      productType={
+                        row.listing.productType
+                          ? String(row.listing.productType)
+                          : null
+                      }
                       className="w-16 shrink-0 sm:w-20"
                       aspectClassName="aspect-[4/5]"
+                      fit="contain"
                     />
                     <div className="min-w-0">
                       <Link
