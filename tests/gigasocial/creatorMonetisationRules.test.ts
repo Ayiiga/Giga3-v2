@@ -3,12 +3,12 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("creator monetisation server rules", () => {
-  it("exports 5 / 50 fan thresholds and policy version", () => {
+  it("exports 500 / 50 fan thresholds and policy version", () => {
     const src = readFileSync(
       resolve(__dirname, "../../convex/gigaSocialEconomy.ts"),
       "utf8"
     );
-    expect(src).toContain("MIN_FANS_FOR_MONETIZATION = 5");
+    expect(src).toContain("MIN_FANS_FOR_MONETIZATION = 500");
     expect(src).toContain("MIN_FANS_FOR_WITHDRAWAL = 50");
     expect(src).toContain('CREATOR_MONETIZATION_POLICY_VERSION');
     expect(src).toContain("hasValidMonetizationConsent");

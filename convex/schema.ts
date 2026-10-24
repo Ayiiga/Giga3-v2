@@ -1342,6 +1342,36 @@ export default defineSchema({
     .index("by_creator_created", ["creatorId", "createdAt"])
     .index("by_code", ["affiliateCode"]),
 
+  /**
+   * Creator monetisation applications / review state (Earnings Centre).
+   * Fan thresholds alone never grant approval.
+   */
+  socialMonetizationApplications: defineTable({
+    creatorId: v.string(),
+    status: v.union(
+      v.literal("submitted"),
+      v.literal("under_review"),
+      v.literal("approved"),
+      v.literal("rejected"),
+      v.literal("appeal_available"),
+      v.literal("suspended")
+    ),
+    policyVersion: v.string(),
+    fanCountAtSubmit: v.number(),
+    statement: v.optional(v.string()),
+    rejectionReason: v.optional(v.string()),
+    submittedAt: v.number(),
+    reviewedAt: v.optional(v.number()),
+    reviewedBy: v.optional(v.string()),
+    appealSubmittedAt: v.optional(v.number()),
+    appealStatement: v.optional(v.string()),
+    suspendedAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_creator", ["creatorId", "createdAt"])
+    .index("by_status_created", ["status", "createdAt"]),
+
   /** GigaSocial paid post / product boost campaigns. */
   socialPostBoosts: defineTable({
     creatorId: v.string(),
