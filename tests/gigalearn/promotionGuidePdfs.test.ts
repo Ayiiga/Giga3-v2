@@ -18,32 +18,32 @@ const GUIDE_DIR = resolve(
 
 const CANONICAL_PDFS = [
   {
-    file: "GigaLearn_AD_II_295_Practice_Questions_Answers.pdf",
-    expected: 295,
+    file: "GigaLearn_AD_II_550_Practice_Questions_Answers.pdf",
+    expected: 550,
     rankId: "ad-ii",
     courseSlug: "exam-ad-ii",
   },
   {
-    file: "GigaLearn_AD_I_87_Practice_Questions_Answers.pdf",
-    expected: 87,
+    file: "GigaLearn_AD_I_550_Practice_Questions_Answers.pdf",
+    expected: 550,
     rankId: "ad-i",
     courseSlug: "exam-ad-i",
   },
   {
-    file: "GigaLearn_DD_52_Practice_Questions_Answers.pdf",
-    expected: 52,
+    file: "GigaLearn_DD_550_Practice_Questions_Answers.pdf",
+    expected: 550,
     rankId: "deputy-director",
     courseSlug: "exam-deputy-director",
   },
   {
-    file: "GigaLearn_D_II_40_Practice_Questions_Answers.pdf",
-    expected: 40,
+    file: "GigaLearn_D_II_550_Practice_Questions_Answers.pdf",
+    expected: 550,
     rankId: "director-ii",
     courseSlug: "exam-director-ii",
   },
   {
-    file: "GigaLearn_D_I_46_Practice_Questions_Answers.pdf",
-    expected: 46,
+    file: "GigaLearn_D_I_550_Practice_Questions_Answers.pdf",
+    expected: 550,
     rankId: "director-i",
     courseSlug: "exam-director-i",
   },
@@ -105,7 +105,7 @@ describe("promotion guide PDFs", () => {
       resolve(ROOT, "docs/gigalearn/promotion-550-content-audit.md"),
       "utf8"
     );
-    expect(audit).toMatch(/520/);
+    expect(audit).toMatch(/2,?750|2750/);
     expect(audit).toMatch(/Cross-rank|cross-rank/i);
     expect(audit).toMatch(/must \*\*not\*\* be advertised as 550 distinct/i);
   });

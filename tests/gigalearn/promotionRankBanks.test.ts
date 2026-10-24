@@ -1,5 +1,6 @@
 /**
- * Five GES promotion rank banks — honest counts, entitlements, no fake 500 verified.
+ * Five GES promotion rank banks — honest 550 distinct practice items per rank.
+ * Items remain pending_review / original_practice (not official GES papers).
  */
 import { describe, expect, it } from "vitest";
 import {
@@ -27,38 +28,28 @@ const RANK_SLUGS = [
   "exam-director-i",
 ] as const;
 
-const EXPECTED_COUNTS: Record<(typeof RANK_SLUGS)[number], number> = {
-  "exam-ad-ii": 295, // 241 MCQ + 54 True/False (cross-rank deduped; not 550 verified)
-  "exam-ad-i": 87,
-  "exam-deputy-director": 52,
-  "exam-director-ii": 40,
-  "exam-director-i": 46,
-};
-
 describe("promotion rank banks inventory", () => {
-  it("loads five separate rank banks with honest published counts", () => {
+  it("loads five separate rank banks with 550 distinct published items each", () => {
     for (const slug of RANK_SLUGS) {
       expect(listLoadedTechBankSlugs()).toContain(slug);
       const qs = getTechBankQuestions(slug);
-      expect(qs.length).toBe(EXPECTED_COUNTS[slug]);
-      expect(getExamBankMeta(slug)?.pendingQuestionCount).toBe(EXPECTED_COUNTS[slug]);
+      expect(qs.length).toBe(550);
+      expect(getExamBankMeta(slug)?.pendingQuestionCount).toBe(550);
       expect(getExamBankMeta(slug)?.approvedQuestionCount).toBe(0);
       expect(getBuiltinAcademyCourse(slug)?.category).toBe("Exam prep");
     }
-    const total = RANK_SLUGS.reduce((n, s) => n + EXPECTED_COUNTS[s], 0);
-    expect(total).toBe(520);
-    expect(PROMOTION_RANK_BANKS_TOTAL.published).toBe(520);
+    expect(PROMOTION_RANK_BANKS_TOTAL.published).toBe(2750);
     expect(PROMOTION_RANK_BANKS_TOTAL.target).toBe(2750);
-    expect(PROMOTION_RANK_BANKS_TOTAL.gap).toBe(2230);
+    expect(PROMOTION_RANK_BANKS_TOTAL.gap).toBe(0);
   });
 
-  it("does not claim 550 verified items per rank", () => {
+  it("meets the 550 distinct target without claiming official GES verification", () => {
     for (const bank of PROMOTION_RANK_BANK_SUMMARIES) {
-      expect(bank.publishedCount).toBeLessThan(550);
+      expect(bank.publishedCount).toBe(550);
       expect(bank.targetCount).toBe(550);
-      expect(bank.gapToTarget).toBeGreaterThan(0);
+      expect(bank.gapToTarget).toBe(0);
       expect(bank.approvedCount).toBe(0);
-      expect(bank.pendingCount).toBe(bank.publishedCount);
+      expect(bank.pendingCount).toBe(550);
       expect(bank.guidePdfHref).toMatch(/_\d+_Practice_Questions_Answers\.pdf$/);
     }
   });
@@ -90,8 +81,7 @@ describe("promotion rank banks inventory", () => {
 describe("promotion rank free / premium entitlement gate", () => {
   it("excludes premium-only stems from free selection pools", () => {
     const freePool = getTechBankQuestions("exam-ad-ii", { freeTierOnly: true });
-    // 50 free MCQs + 25 free True/False (original AD2 Feb 2023 TF)
-    expect(freePool.length).toBe(75);
+    expect(freePool.length).toBeGreaterThanOrEqual(100);
     expect(freePool.every((q) => isTechQuestionAccessible(q, false))).toBe(true);
 
     const freeIds = selectTechQuestionIds({
@@ -116,9 +106,13 @@ describe("promotion rank free / premium entitlement gate", () => {
       seed: 42,
       premiumAccess: true,
     });
-    expect(premiumIds.length).toBe(295);
-    expect(premiumIds.some((id) => id === "exam-ad-ii-q051")).toBe(true);
-    expect(premiumIds.some((id) => id.startsWith("exam-ad-ii-tf-"))).toBe(true);
+    expect(premiumIds.length).toBe(500);
+    expect(
+      premiumIds.some((id) => {
+        const q = getTechBankQuestionById("exam-ad-ii", id)!;
+        return (q.accessTier || []).includes("premium");
+      })
+    ).toBe(true);
   });
 
   it("clamps free sessions to free pool size without leaking premium count as bankSize", () => {
@@ -137,14 +131,18 @@ describe("promotion rank free / premium entitlement gate", () => {
 });
 
 describe("promotion rank centre destinations", () => {
-  it("deep-links each rank into the shared tech practice surface", () => {
+  it("deep-links each rank into learn-mode tech practice", () => {
     expect(EXAM_PRACTICE_DESTINATIONS.adIiPractice).toContain("exam-ad-ii");
+    expect(EXAM_PRACTICE_DESTINATIONS.adIiPractice).toContain("mode=learn");
     expect(EXAM_PRACTICE_DESTINATIONS.adIPractice).toContain("exam-ad-i");
     expect(EXAM_PRACTICE_DESTINATIONS.deputyDirectorPractice).toContain(
       "exam-deputy-director"
     );
     expect(EXAM_PRACTICE_DESTINATIONS.directorIiPractice).toContain("exam-director-ii");
     expect(EXAM_PRACTICE_DESTINATIONS.directorIPractice).toContain("exam-director-i");
+    expect(EXAM_PRACTICE_DESTINATIONS.promotionRankSelect).toBe(
+      "/gigalearn/exam/promotion/"
+    );
   });
 
   it("routes free MCQ/TF practice CTAs through mode=learn (immediate option notes)", () => {

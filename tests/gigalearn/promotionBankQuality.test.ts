@@ -32,11 +32,11 @@ const RANK_SLUGS = [
 
 const EXPECTED: Record<(typeof RANK_SLUGS)[number], { total: number; mcq: number; tf: number }> =
   {
-    "exam-ad-ii": { total: 295, mcq: 241, tf: 54 },
-    "exam-ad-i": { total: 87, mcq: 78, tf: 9 },
-    "exam-deputy-director": { total: 52, mcq: 43, tf: 9 },
-    "exam-director-ii": { total: 40, mcq: 31, tf: 9 },
-    "exam-director-i": { total: 46, mcq: 37, tf: 9 },
+    "exam-ad-ii": { total: 550, mcq: 447, tf: 103 },
+    "exam-ad-i": { total: 550, mcq: 469, tf: 81 },
+    "exam-deputy-director": { total: 550, mcq: 466, tf: 84 },
+    "exam-director-ii": { total: 550, mcq: 465, tf: 85 },
+    "exam-director-i": { total: 550, mcq: 466, tf: 84 },
   };
 
 function normalizeStem(text: string): string {
@@ -89,10 +89,10 @@ describe("promotion bank quality gate", () => {
         expect(pub).not.toHaveProperty("explanation");
       }
     }
-    expect(total).toBe(520);
-    expect(PROMOTION_RANK_BANKS_TOTAL.published).toBe(520);
+    expect(total).toBe(2750);
+    expect(PROMOTION_RANK_BANKS_TOTAL.published).toBe(2750);
     expect(PROMOTION_RANK_BANKS_TOTAL.target).toBe(2750);
-    expect(PROMOTION_RANK_BANKS_TOTAL.gap).toBe(2230);
+    expect(PROMOTION_RANK_BANKS_TOTAL.gap).toBe(0);
   });
 
   it("has no exact duplicate stems within a rank or across ranks", () => {
@@ -109,7 +109,7 @@ describe("promotion bank quality gate", () => {
         global.set(key, `${slug}:${q.questionId}`);
       }
     }
-    expect(global.size).toBe(520);
+    expect(global.size).toBe(2750);
   });
 
   it("grades MCQ and True/False correctly with and without option permutations", () => {
@@ -162,16 +162,19 @@ describe("promotion bank quality gate", () => {
       seed: 11,
       premiumAccess: true,
     });
-    expect(premiumIds.length).toBe(46);
+    // Premium may request up to 500; bank size is 550 so the session returns 500.
+    expect(premiumIds.length).toBe(500);
+    expect(premiumIds.length).toBeLessThanOrEqual(550);
   });
 
   it("wires centre summaries and honest PDF download hrefs to published counts", () => {
     for (const bank of PROMOTION_RANK_BANK_SUMMARIES) {
-      expect(bank.publishedCount).toBeLessThan(550);
-      expect(bank.gapToTarget).toBe(550 - bank.publishedCount);
+      expect(bank.publishedCount).toBe(550);
+      expect(bank.gapToTarget).toBe(0);
       expect(bank.guidePdfHref).toContain(
         `_${bank.publishedCount}_Practice_Questions_Answers.pdf`
       );
+      expect(bank.guidePdfHref).toContain("_550_Practice_Questions_Answers.pdf");
       expect(bank.guidePdfHref).not.toContain("_550_Questions_Answers.pdf");
       const path = resolve(GUIDE_DIR, bank.guidePdfHref!.replace("/downloads/gigalearn/promotion-guides/", ""));
       expect(existsSync(path), path).toBe(true);

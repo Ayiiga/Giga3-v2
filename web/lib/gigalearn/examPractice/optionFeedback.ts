@@ -3,8 +3,8 @@ import { optionIds } from "@/lib/gigalearn/examPractice/quizEngine";
 
 /**
  * Per-option notes for free local practice. Prefer authored
- * `optionExplanations`; otherwise derive concise parallel notes so every
- * option gets feedback after submission.
+ * `optionExplanations`; otherwise derive concept-oriented notes (never the
+ * empty “does not satisfy the question” template alone).
  */
 export function optionFeedbackNotes(
   question: ExamPracticeQuestion
@@ -21,7 +21,7 @@ export function optionFeedbackNotes(
     if (oid === question.correct) {
       out[oid] = lead
         ? `Correct — ${lead}.`
-        : `Correct — ${label} satisfies the question.`;
+        : `Correct — ${label} advances professional standards and learner welfare in this scenario.`;
     } else {
       // Tie the miss to the authored explanation — avoid identical generic lines
       // that teach nothing about why this option fails.

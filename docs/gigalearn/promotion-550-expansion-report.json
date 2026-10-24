@@ -1,0 +1,50 @@
+{
+  "target": 550,
+  "ranks": [
+    {
+      "rank": "ad-ii",
+      "total": 550,
+      "added": 338,
+      "mcq": 447,
+      "tf": 103,
+      "with_case": 0,
+      "generic": 52
+    },
+    {
+      "rank": "ad-i",
+      "total": 550,
+      "added": 486,
+      "mcq": 469,
+      "tf": 81,
+      "with_case": 0,
+      "generic": 12
+    },
+    {
+      "rank": "deputy-director",
+      "total": 550,
+      "added": 505,
+      "mcq": 466,
+      "tf": 84,
+      "with_case": 0,
+      "generic": 7
+    },
+    {
+      "rank": "director-ii",
+      "total": 550,
+      "added": 510,
+      "mcq": 465,
+      "tf": 85,
+      "with_case": 0,
+      "generic": 1
+    },
+    {
+      "rank": "director-i",
+      "total": 550,
+      "added": 504,
+      "mcq": 466,
+      "tf": 84,
+      "with_case": 0,
+      "generic": 6
+    }
+  ]
+}
