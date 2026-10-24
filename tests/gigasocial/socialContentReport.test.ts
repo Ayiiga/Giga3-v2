@@ -176,6 +176,32 @@ describe("social content report wiring", () => {
     expect(SOCIAL_REPORT_ALREADY_MESSAGE).toMatch(/already reported/i);
   });
 
+  it("wraps public profile Convex hooks inside ConvexAppShell (static-export safe)", () => {
+    // Regression: useQuery above ConvexAppShell crashes /gigasocial/profile/[handle]/.
+    const profile = readFileSync(
+      resolve(root, "web/components/gigasocial/GigaSocialPublicProfileClient.tsx"),
+      "utf8"
+    );
+    const post = readFileSync(
+      resolve(root, "web/components/gigasocial/GigaSocialPublicPostClient.tsx"),
+      "utf8"
+    );
+    expect(profile).toMatch(
+      /export function GigaSocialPublicProfileRoot\(\) \{\s*return \(\s*<ConvexAppShell>/
+    );
+    const innerStart = profile.indexOf("function PublicProfileInner");
+    expect(innerStart).toBeGreaterThan(0);
+    const hookInInner = profile.indexOf(
+      "useQuery(\n    api.gigaSocial.getMyProfile",
+      innerStart
+    );
+    expect(hookInInner).toBeGreaterThan(innerStart);
+    // Keep post detail on the same provider pattern.
+    expect(post).toMatch(
+      /export function GigaSocialPublicPostRoot[\s\S]*?<ConvexAppShell>/
+    );
+  });
+
   it("keeps Android video duration fix from PR #602 intact", () => {
     const duration = readFileSync(
       resolve(root, "web/lib/gigasocial/videoDuration.ts"),

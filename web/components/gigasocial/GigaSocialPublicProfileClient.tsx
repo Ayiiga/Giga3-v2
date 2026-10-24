@@ -4,7 +4,9 @@ import { GigaSocialAvatarFollow } from "@/components/gigasocial/GigaSocialAvatar
 import { GigaSocialFanButton } from "@/components/gigasocial/fans/GigaSocialFanButton";
 import { GigaSocialPostCard } from "@/components/gigasocial/GigaSocialPostCard";
 import { GigaSocialAuthPrompt } from "@/components/gigasocial/ux/GigaSocialAuthPrompt";
+import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 import { getSessionToken, getUserEmail } from "@/lib/auth";
 import { getGigaSocialFeatures } from "@/lib/gigasocial/featureFlags";
@@ -14,16 +16,15 @@ import { parseProfileHandle } from "@/lib/gigasocial/profileRoute";
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { FAN_LABELS } from "@/lib/gigasocial/fanBranding";
 import { GigaSocialGiftsHub } from "@/components/gigasocial/economy/GigaSocialGiftsHub";
+import { GigaSocialReportDialog } from "@/components/gigasocial/trust/GigaSocialReportDialog";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import { Award, Flag, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { memo, useEffect, useMemo, useState } from "react";
+import { memo, Suspense, useEffect, useMemo, useState } from "react";
 import type { SocialPostTypeId } from "@/lib/gigasocial/sections";
-import { GigaSocialReportDialog } from "@/components/gigasocial/trust/GigaSocialReportDialog";
-import { Button } from "@/components/ui/Button";
 
 type ProfileTab = "posts" | "photos" | "videos" | "ai" | "liked" | "gifts";
 
@@ -364,7 +365,21 @@ export const GigaSocialPublicProfileClient = memo(function GigaSocialPublicProfi
   );
 });
 
+/**
+ * Outer shell must wrap Convex hooks — calling useQuery above ConvexAppShell
+ * crashes /gigasocial/profile/[handle]/ on static export (no root ConvexProvider).
+ */
 export function GigaSocialPublicProfileRoot() {
+  return (
+    <ConvexAppShell>
+      <Suspense fallback={<LoadingState label="Loading profile…" />}>
+        <PublicProfileInner />
+      </Suspense>
+    </ConvexAppShell>
+  );
+}
+
+function PublicProfileInner() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
