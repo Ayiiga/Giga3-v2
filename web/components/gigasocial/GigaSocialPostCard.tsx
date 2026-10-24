@@ -16,6 +16,7 @@ import { useFeedVideoPlayback } from "@/components/gigasocial/feed/FeedVideoPlay
 import {
   Bookmark,
   Eye,
+  Flag,
   Heart,
   Megaphone,
   MessageCircle,
@@ -35,6 +36,7 @@ import { GigaSocialProfileLink } from "@/components/gigasocial/GigaSocialProfile
 import { VerifiedBadge } from "@/components/gigasocial/VerifiedBadge";
 import { GigaSocialBoostDialog } from "@/components/gigasocial/economy/GigaSocialBoostDialog";
 import { GigaSocialTipButton } from "@/components/gigasocial/economy/GigaSocialTipButton";
+import { GigaSocialReportDialog } from "@/components/gigasocial/trust/GigaSocialReportDialog";
 import { getUserEmail } from "@/lib/auth";
 import { useGigaSocialFeatures } from "@/lib/gigasocial/featureFlags";
 import { canShowTemplateButton } from "@/lib/gigasocial/templateVisibility";
@@ -110,8 +112,10 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [editorOpen, setEditorOpen] = useState(false);
   const [boostOpen, setBoostOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [following, setFollowing] = useState(Boolean(post.author.supportingByMe));
   const [heartBurst, setHeartBurst] = useState(false);
   const [pinned, setPinned] = useState(Boolean(post.pinnedAt));
@@ -484,6 +488,14 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
           {error}
         </p>
       ) : null}
+      {statusMessage ? (
+        <p
+          className={cn("text-xs text-emerald-800", isVisualPost ? "px-4 pt-2" : "mt-2")}
+          role="status"
+        >
+          {statusMessage}
+        </p>
+      ) : null}
 
       <div
         className={cn(
@@ -637,6 +649,29 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
             <Trash2 className="h-4 w-4" aria-hidden />
           </Button>
         ) : null}
+        {!isOwnPost ? (
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            className={cn(
+              "min-h-9 text-muted",
+              !canDelete && !canPin && !isOwnPost && "ml-auto"
+            )}
+            onClick={() => {
+              if (!sessionToken) {
+                promptAuth();
+                return;
+              }
+              setStatusMessage(null);
+              setReportOpen(true);
+            }}
+            aria-label="Report post"
+          >
+            <Flag className="h-4 w-4" aria-hidden />
+            <span className={cn(isVisualPost && "sr-only")}>Report</span>
+          </Button>
+        ) : null}
         </div>
 
         {enablePostAIActions ? (
@@ -688,6 +723,18 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
           sessionToken={sessionToken}
           postId={post._id}
           postPreview={displayBody.slice(0, 160)}
+        />
+      ) : null}
+
+      {!isOwnPost ? (
+        <GigaSocialReportDialog
+          open={reportOpen}
+          sessionToken={sessionToken}
+          target={{ targetType: "post", postId: post._id }}
+          title="Report post"
+          onClose={() => setReportOpen(false)}
+          onRequireAuth={promptAuth}
+          onSubmitted={(message) => setStatusMessage(message)}
         />
       ) : null}
     </article>

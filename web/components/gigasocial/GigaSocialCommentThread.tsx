@@ -7,12 +7,14 @@ import { sortCommentsNewestWithPins } from "@/lib/gigasocial/postSort";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
-import { Loader2, Pin, Send } from "lucide-react";
+import { Flag, Loader2, Pin, Send } from "lucide-react";
 import { memo, useMemo, useState } from "react";
 import { formatRelativeTime } from "@/lib/datetime";
 import { GigaSocialPostCommentBox } from "@/components/gigasocial/GigaSocialPostCommentBox";
+import { GigaSocialReportDialog } from "@/components/gigasocial/trust/GigaSocialReportDialog";
 import { getUserEmail } from "@/lib/auth";
 import { cn } from "@/lib/utils";
+import type { SocialContentReportTarget } from "@/lib/gigasocial/socialContentReport";
 
 export const GigaSocialCommentThread = memo(function GigaSocialCommentThread({
   postId,
@@ -38,7 +40,11 @@ export const GigaSocialCommentThread = memo(function GigaSocialCommentThread({
   const [busy, setBusy] = useState(false);
   const [pinBusyId, setPinBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [showAuth, setShowAuth] = useState(false);
+  const [reportTarget, setReportTarget] = useState<SocialContentReportTarget | null>(
+    null
+  );
 
   const myUserId = useMemo(() => getUserEmail(), []);
   const canPinComments = Boolean(
@@ -143,6 +149,27 @@ export const GigaSocialCommentThread = memo(function GigaSocialCommentThread({
                   {comment.pinnedAt ? "Unpin" : "Pin"}
                 </button>
               ) : null}
+              {myUserId && comment.author.userId && myUserId !== comment.author.userId ? (
+                <button
+                  type="button"
+                  className="inline-flex min-h-11 items-center gap-1 text-xs font-medium text-muted hover:underline"
+                  onClick={() => {
+                    if (!sessionToken) {
+                      setShowAuth(true);
+                      onRequireAuth?.();
+                      return;
+                    }
+                    setStatusMessage(null);
+                    setReportTarget({
+                      targetType: "comment",
+                      commentId: comment._id,
+                    });
+                  }}
+                >
+                  <Flag className="h-3 w-3" aria-hidden />
+                  Report
+                </button>
+              ) : null}
             </div>
           </li>
         ))}
@@ -208,6 +235,24 @@ export const GigaSocialCommentThread = memo(function GigaSocialCommentThread({
           {error}
         </p>
       ) : null}
+      {statusMessage ? (
+        <p className="mt-2 text-xs text-emerald-800" role="status">
+          {statusMessage}
+        </p>
+      ) : null}
+
+      <GigaSocialReportDialog
+        open={Boolean(reportTarget)}
+        sessionToken={sessionToken}
+        target={reportTarget}
+        title="Report comment"
+        onClose={() => setReportTarget(null)}
+        onRequireAuth={() => {
+          setShowAuth(true);
+          onRequireAuth?.();
+        }}
+        onSubmitted={(message) => setStatusMessage(message)}
+      />
     </div>
   );
 });
