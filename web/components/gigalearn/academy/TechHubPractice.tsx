@@ -2,6 +2,7 @@
 
 import { AcademyChrome } from "@/components/gigalearn/academy/AcademyChrome";
 import { ExamPracticeShareButton } from "@/components/gigalearn/exam/ExamPracticeShareButton";
+import { PremiumPracticeNudge } from "@/components/gigalearn/exam/PremiumPracticeNudge";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
@@ -9,6 +10,7 @@ import { ProductSignInPrompt } from "@/components/seo/ProductSignInPrompt";
 import { getSessionToken } from "@/lib/auth";
 import { hasPersistedAuth } from "@/lib/auth/sessionRestore";
 import { getBuiltinAcademyCourse } from "@/lib/gigalearn/academy/courseCatalog";
+import { techModeShowsImmediateFeedback } from "@/lib/gigalearn/academy/techBanks/immediateFeedback";
 import {
   getTechCourseMeta,
   techPracticeHref,
@@ -37,11 +39,25 @@ import { useMutation, useQuery } from "convex/react";
 import { Check, Clock3, Play, X } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+
+type LearnFeedback = {
+  correct: boolean;
+  explanation: string;
+  correctIndex: number | null;
+  pendingReview?: boolean;
+  /** Matched provisional key — never drives verified praise rewards. */
+  provisionalMatch?: boolean;
+  optionExplanations?: string[];
+};
 
 const MODES: { id: TechPracticeMode; label: string; hint: string }[] = [
   { id: "learn", label: "Learn", hint: "One question · explain after submit" },
-  { id: "practice_test", label: "Practice test", hint: "Score after you finish" },
+  {
+    id: "practice_test",
+    label: "Practice test",
+    hint: "Feedback after each answer · score summary at finish",
+  },
   { id: "timed", label: "Timed", hint: "Server deadline · auto-submit" },
   { id: "topic", label: "Topic", hint: "Pick a topic below" },
   { id: "random", label: "Random", hint: "Shuffled approved set" },
@@ -53,8 +69,7 @@ function TechHubInner() {
   const params = useSearchParams();
   const courseSlug = (params.get("course") || "").trim().toLowerCase();
   const isExamCourse = isExamPracticeCourseSlug(courseSlug);
-  // Default to learn so explanations appear after each answer; timed via ?mode=timed.
-  const initialMode = (params.get("mode") || "learn").trim() as TechPracticeMode;
+  const initialMode = (params.get("mode") || (isExamCourse ? "timed" : "learn")).trim() as TechPracticeMode;
   const urlCount = Number(params.get("count") || "");
   const urlQType = (params.get("qtype") || "").trim().toLowerCase();
   const initialQuestionType: TechQuestionType | "" =
@@ -89,6 +104,7 @@ function TechHubInner() {
     subscriptionActive: chatCredits?.subscriptionActive,
     isPremium: chatCredits?.isPremium,
     hasPurchasedCredits: chatCredits?.hasPurchasedCredits,
+    examPracticePremiumExpiresAt: chatCredits?.examPracticePremiumExpiresAt,
   });
 
   const countChoices = useMemo(() => {
@@ -135,13 +151,14 @@ function TechHubInner() {
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [reward, setReward] = useState<string | null>(null);
   const [streak, setStreak] = useState(0);
-  const [learnFeedback, setLearnFeedback] = useState<{
-    correct: boolean;
-    explanation: string;
-    correctIndex: number | null;
-    pendingReview?: boolean;
-    optionExplanations?: string[];
-  } | null>(null);
+  const [learnFeedback, setLearnFeedback] = useState<LearnFeedback | null>(null);
+  /** Persist feedback per question so Previous/Next does not lose notes. */
+  const [feedbackByQuestion, setFeedbackByQuestion] = useState<
+    Record<string, LearnFeedback>
+  >({});
+  /** Client praise once per questionId (server scoring remains finalize-once). */
+  const rewardedQuestionIdsRef = useRef<Set<string>>(new Set());
+  const immediateFeedback = techModeShowsImmediateFeedback(mode);
   const [endsAt, setEndsAt] = useState<number | null>(null);
   const [serverSkew, setServerSkew] = useState(0);
   const [showIncorrectOnly, setShowIncorrectOnly] = useState(false);
@@ -162,6 +179,9 @@ function TechHubInner() {
       questionText: string;
       options: string[];
       optionExplanations?: string[];
+      provisional?: boolean;
+      provisionalMatch?: boolean;
+      scored?: boolean;
     }>;
   }>(null);
 
@@ -184,6 +204,10 @@ function TechHubInner() {
             score: r.score ?? 0,
             maxScore: r.maxScore ?? 0,
             percent: r.percent,
+            rewardXp: r.rewardXp,
+            rewardLabel: r.rewardLabel,
+            totalXp: r.totalXp,
+            sessionsCompleted: r.sessionsCompleted,
             results: r.results ?? [],
           });
         })
@@ -273,8 +297,11 @@ function TechHubInner() {
       );
       setIndex(0);
       setAnswers({});
+      setFeedbackByQuestion({});
+      setLearnFeedback(null);
       setReward(null);
       setStreak(0);
+      rewardedQuestionIdsRef.current = new Set();
       setEndsAt(started.endsAt);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not start practice.");
@@ -287,8 +314,8 @@ function TechHubInner() {
 
   async function onSubmitAnswer(selectedIndex: number) {
     if (!sessionToken || !sessionId || !current) return;
-    // Learn mode: one reveal + one reward pulse per question (no resubmit farming).
-    if (mode === "learn" && learnFeedback != null) return;
+    // Immediate-feedback modes: one reveal + one praise pulse per question.
+    if (immediateFeedback && feedbackByQuestion[current.questionId] != null) return;
     setBusy(true);
     setError(null);
     try {
@@ -313,19 +340,29 @@ function TechHubInner() {
         return;
       }
       if (res.feedback) {
-        setLearnFeedback(res.feedback);
-        if (res.feedback.correct) {
-          const nextStreak = streak + 1;
-          setStreak(nextStreak);
-          setReward(
-            rewardForCorrectAnswer({
-              streak: nextStreak,
-              seed: index + nextStreak,
-            })
-          );
-        } else {
-          setStreak(0);
-          setReward(rewardForIncorrectAnswer({ seed: index }));
+        const fb = res.feedback as LearnFeedback;
+        setLearnFeedback(fb);
+        setFeedbackByQuestion((prev) => ({ ...prev, [current.questionId]: fb }));
+        const alreadyRewarded = rewardedQuestionIdsRef.current.has(current.questionId);
+        if (!alreadyRewarded) {
+          rewardedQuestionIdsRef.current.add(current.questionId);
+          // Unverified / provisional keys never grant correctness-dependent praise.
+          if (fb.pendingReview) {
+            setStreak(0);
+            setReward(null);
+          } else if (fb.correct) {
+            const nextStreak = streak + 1;
+            setStreak(nextStreak);
+            setReward(
+              rewardForCorrectAnswer({
+                streak: nextStreak,
+                seed: index + nextStreak,
+              })
+            );
+          } else {
+            setStreak(0);
+            setReward(rewardForIncorrectAnswer({ seed: index }));
+          }
         }
       }
     } catch (e) {
@@ -333,6 +370,13 @@ function TechHubInner() {
     } finally {
       setBusy(false);
     }
+  }
+
+  function goToQuestion(nextIndex: number) {
+    const q = localQuestions[nextIndex];
+    setIndex(nextIndex);
+    setReward(null);
+    setLearnFeedback(q ? feedbackByQuestion[q.questionId] ?? null : null);
   }
 
   async function onFinish() {
@@ -364,10 +408,12 @@ function TechHubInner() {
       (results.percent != null ? rewardForSessionScore(results.percent) : null);
     const shareKind = courseSlug.includes("bece")
       ? ("bece" as const)
-      : courseSlug.includes("teacher-promotion") || courseSlug.startsWith("exam-ad") || courseSlug.includes("director")
+      : courseSlug.includes("teacher-promotion") ||
+          courseSlug.startsWith("exam-ad") ||
+          courseSlug.includes("director")
         ? ("teacher_promotion" as const)
         : null;
-    const incorrect = results.results.filter((r) => !r.correct);
+    const incorrect = results.results.filter((r) => !r.correct && !r.provisional);
     const reviewRows = showIncorrectOnly ? incorrect : results.results;
     return (
       <AcademyChrome active="course" title={`${course.title} · Results`}>
@@ -388,10 +434,9 @@ function TechHubInner() {
                 }`
               : "No verified answer keys in this session — provisional items were not scored."}
           </p>
-
           <div className="grid gap-2 rounded-xl border border-emerald-200 bg-emerald-50/80 p-3 text-sm text-emerald-950 sm:grid-cols-2">
             <p>
-              Questions attempted: <strong>{results.maxScore}</strong>
+              Questions attempted: <strong>{results.results.length}</strong>
             </p>
             <p>
               Correct answers: <strong>{results.score}</strong>
@@ -401,7 +446,7 @@ function TechHubInner() {
               Reward earned:{" "}
               <strong>{results.rewardXp != null ? `${results.rewardXp} practice XP` : "—"}</strong>
               <span className="block text-xs font-normal text-emerald-800">
-                Non-monetary learning XP (not wallet credits)
+                Non-monetary learning XP (not wallet credits). Provisional items do not earn XP.
               </span>
             </p>
             <p>
@@ -414,63 +459,33 @@ function TechHubInner() {
               </strong>
             </p>
           </div>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <Button
-              type="button"
-              variant="secondary"
-              className="min-h-11"
-              disabled={incorrect.length === 0}
-              onClick={() => setShowIncorrectOnly((v) => !v)}
-              data-testid="review-incorrect"
-            >
-              {showIncorrectOnly
-                ? "Show all answers"
-                : `Review incorrect (${incorrect.length})`}
-            </Button>
-            <Button
-              type="button"
-              className="min-h-11"
-              onClick={() => {
-                setResults(null);
-                setSessionId(null);
-                setLocalQuestions([]);
-                setReward(null);
-                setStreak(0);
-                setShowIncorrectOnly(false);
-              }}
-            >
-              Continue practising
-            </Button>
-            {courseSlug.startsWith("exam-ad") ||
-            courseSlug.includes("director") ||
-            courseSlug.includes("teacher-promotion") ? (
-              <ButtonLink
-                href="/gigalearn/exam/promotion/"
-                variant="secondary"
-                className="min-h-11"
-              >
-                All promotion ranks
-              </ButtonLink>
-            ) : null}
-            {shareKind ? (
-              <ExamPracticeShareButton
-                kind={shareKind}
-                label="Share this practice"
-                className="sm:min-w-[12rem]"
-              />
-            ) : null}
-          </div>
           <ul className="space-y-3">
             {reviewRows.map((r, i) => (
               <li key={r.questionId} className="rounded-xl border border-slate-200 p-3 text-sm">
                 <p className="font-semibold text-slate-900">
                   {i + 1}. {r.questionText}
                 </p>
-                <p className={r.correct ? "mt-1 text-emerald-700" : "mt-1 text-rose-700"}>
-                  {r.correct ? "Correct" : "Incorrect"}
-                  {r.correctIndex >= 0
+                <p
+                  className={
+                    r.provisional
+                      ? "mt-1 text-amber-800"
+                      : r.correct
+                        ? "mt-1 text-emerald-700"
+                        : "mt-1 text-rose-700"
+                  }
+                >
+                  {r.provisional
+                    ? r.provisionalMatch
+                      ? "Answer under review · matched provisional key"
+                      : "Answer under review · provisional key differs"
+                    : r.correct
+                      ? "Correct"
+                      : "Incorrect"}
+                  {!r.provisional && r.correctIndex >= 0
                     ? ` · Answer: ${r.options[r.correctIndex] ?? "—"}`
-                    : " · Key under review"}
+                    : r.provisional && r.correctIndex >= 0
+                      ? ` · Provisional key: ${r.options[r.correctIndex] ?? "—"}`
+                      : ""}
                 </p>
                 <p className="mt-1 text-slate-600">{r.explanation}</p>
                 {r.optionExplanations && r.optionExplanations.length === r.options.length ? (
@@ -500,6 +515,61 @@ function TechHubInner() {
               </li>
             ))}
           </ul>
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+            <Button
+              type="button"
+              variant="secondary"
+              className="min-h-11"
+              disabled={incorrect.length === 0}
+              onClick={() => setShowIncorrectOnly((v) => !v)}
+              data-testid="review-incorrect"
+            >
+              {showIncorrectOnly
+                ? "Show all answers"
+                : `Review incorrect (${incorrect.length})`}
+            </Button>
+            <Button
+              type="button"
+              className="min-h-11"
+              onClick={() => {
+                setResults(null);
+                setSessionId(null);
+                setLocalQuestions([]);
+                setReward(null);
+                setStreak(0);
+                setShowIncorrectOnly(false);
+                setFeedbackByQuestion({});
+                rewardedQuestionIdsRef.current = new Set();
+              }}
+            >
+              Continue practising
+            </Button>
+            {courseSlug.startsWith("exam-ad") ||
+            courseSlug.includes("director") ||
+            courseSlug.includes("teacher-promotion") ? (
+              <ButtonLink
+                href="/gigalearn/exam/promotion/"
+                variant="secondary"
+                className="min-h-11"
+              >
+                Choose another rank
+              </ButtonLink>
+            ) : null}
+            {shareKind ? (
+              <ExamPracticeShareButton
+                kind={shareKind}
+                label="Share this practice"
+                className="sm:min-w-[12rem]"
+              />
+            ) : null}
+            <ButtonLink
+              href={`/gigalearn/academy/course/?slug=${encodeURIComponent(courseSlug)}`}
+              variant="secondary"
+              className="min-h-11"
+            >
+              Back to course
+            </ButtonLink>
+          </div>
         </article>
       </AcademyChrome>
     );
@@ -507,7 +577,8 @@ function TechHubInner() {
 
   if (sessionId && current) {
     const selected = answers[current.questionId];
-    const revealed = mode === "learn" && learnFeedback != null;
+    const activeFeedback = learnFeedback ?? feedbackByQuestion[current.questionId] ?? null;
+    const revealed = immediateFeedback && activeFeedback != null;
     const isTrueFalse =
       current.questionType === "true_false" ||
       (current.options.length === 2 &&
@@ -586,17 +657,30 @@ function TechHubInner() {
               >
                 {current.options.map((opt, optIndex) => {
                   const isSelected = selected === optIndex;
-                  const isCorrect = revealed && learnFeedback?.correctIndex === optIndex;
-                  const isWrong = revealed && isSelected && !learnFeedback?.correct;
+                  const pending = Boolean(activeFeedback?.pendingReview);
+                  const isVerifiedCorrect =
+                    revealed &&
+                    !pending &&
+                    activeFeedback?.correct &&
+                    activeFeedback.correctIndex === optIndex;
+                  const isVerifiedWrong =
+                    revealed &&
+                    !pending &&
+                    isSelected &&
+                    !activeFeedback?.correct;
+                  const isProvisionalKey =
+                    revealed &&
+                    pending &&
+                    activeFeedback?.correctIndex === optIndex;
                   const label = isTrueFalse ? opt.toUpperCase() : opt;
                   return (
                     <li key={optIndex}>
                       <button
                         type="button"
                         aria-pressed={isSelected}
-                        disabled={busy || (mode === "learn" && revealed)}
+                        disabled={busy || (immediateFeedback && revealed)}
                         onClick={() => {
-                          if (mode === "learn") {
+                          if (immediateFeedback) {
                             if (!revealed) void onSubmitAnswer(optIndex);
                           } else {
                             if (selected === optIndex) return;
@@ -609,14 +693,15 @@ function TechHubInner() {
                         }}
                         className={cn(
                           isTrueFalse ? "exam-session-tf" : "exam-session-option",
-                          isCorrect &&
+                          isVerifiedCorrect &&
                             (isTrueFalse
                               ? "exam-session-tf--correct"
                               : "exam-session-option--correct"),
-                          isWrong &&
+                          isVerifiedWrong &&
                             (isTrueFalse
                               ? "exam-session-tf--wrong"
                               : "exam-session-option--wrong"),
+                          isProvisionalKey && "exam-session-option--provisional",
                           !revealed &&
                             isSelected &&
                             (isTrueFalse
@@ -634,49 +719,67 @@ function TechHubInner() {
                             <span className="exam-session-option-text">{opt}</span>
                           </>
                         )}
-                        {isCorrect ? (
+                        {isVerifiedCorrect ? (
                           <Check className="exam-session-icon-ok" aria-hidden />
                         ) : null}
-                        {isWrong ? <X className="exam-session-icon-bad" aria-hidden /> : null}
+                        {isVerifiedWrong ? (
+                          <X className="exam-session-icon-bad" aria-hidden />
+                        ) : null}
                       </button>
                     </li>
                   );
                 })}
               </ul>
+              {revealed && activeFeedback?.pendingReview ? (
+                <p
+                  className="exam-session-review-banner"
+                  role="status"
+                  data-testid="exam-answer-under-review"
+                >
+                  Answer under review — provisional key only (not human-verified).
+                </p>
+              ) : null}
               {revealed && reward ? (
                 <p className="exam-session-reward" role="status" data-testid="exam-reward">
                   {reward}
                 </p>
               ) : null}
-              {revealed && learnFeedback ? (
+              {revealed && activeFeedback ? (
                 <div className="exam-session-explain" role="status">
                   <p>
                     <span className="exam-session-explain-label">
-                      {learnFeedback.pendingReview
-                        ? "Review note: "
-                        : learnFeedback.correct
+                      {activeFeedback.pendingReview
+                        ? "Answer under review — "
+                        : activeFeedback.correct
                           ? "Correct — "
                           : "Incorrect — "}
                     </span>
-                    {learnFeedback.explanation}
+                    {activeFeedback.explanation}
                   </p>
-                  {learnFeedback.optionExplanations &&
-                  learnFeedback.optionExplanations.length === current.options.length ? (
+                  {activeFeedback.optionExplanations &&
+                  activeFeedback.optionExplanations.length === current.options.length ? (
                     <ul className="exam-session-option-notes mt-3 space-y-2">
                       {current.options.map((opt, oi) => {
-                        const note = learnFeedback.optionExplanations?.[oi] ?? "";
-                        const isKey = learnFeedback.correctIndex === oi;
+                        const note = activeFeedback.optionExplanations?.[oi] ?? "";
+                        const isKey = activeFeedback.correctIndex === oi;
+                        const pending = Boolean(activeFeedback.pendingReview);
                         return (
                           <li
                             key={`${current.questionId}-note-${oi}`}
                             className={cn(
                               "rounded-lg border px-3 py-2 text-sm leading-snug",
-                              isKey
-                                ? "border-emerald-200 bg-emerald-50 text-emerald-950"
-                                : "border-slate-200 bg-slate-50 text-slate-700"
+                              isKey && pending
+                                ? "border-amber-200 bg-amber-50 text-amber-950"
+                                : isKey
+                                  ? "border-emerald-200 bg-emerald-50 text-emerald-950"
+                                  : "border-slate-200 bg-slate-50 text-slate-700"
                             )}
                             data-testid={
-                              isKey ? "exam-option-note-correct" : "exam-option-note"
+                              isKey
+                                ? pending
+                                  ? "exam-option-note-provisional"
+                                  : "exam-option-note-correct"
+                                : "exam-option-note"
                             }
                           >
                             <span className="font-semibold">
@@ -701,11 +804,7 @@ function TechHubInner() {
               type="button"
               className="exam-session-btn-secondary"
               disabled={index === 0}
-              onClick={() => {
-                setIndex((i) => Math.max(0, i - 1));
-                setLearnFeedback(null);
-                setReward(null);
-              }}
+              onClick={() => goToQuestion(Math.max(0, index - 1))}
             >
               ← Previous
             </button>
@@ -713,12 +812,10 @@ function TechHubInner() {
               <button
                 type="button"
                 className="exam-session-btn-primary"
-                disabled={mode === "learn" && !revealed}
-                onClick={() => {
-                  setIndex((i) => i + 1);
-                  setLearnFeedback(null);
-                  setReward(null);
-                }}
+                disabled={immediateFeedback && !revealed}
+                onClick={() =>
+                  goToQuestion(Math.min(localQuestions.length - 1, index + 1))
+                }
               >
                 Next →
               </button>
@@ -726,7 +823,7 @@ function TechHubInner() {
               <button
                 type="button"
                 className="exam-session-btn-primary"
-                disabled={busy || (mode === "learn" && !revealed)}
+                disabled={busy || (immediateFeedback && !revealed)}
                 onClick={() => void onFinish()}
               >
                 Finish &amp; review
@@ -894,6 +991,9 @@ function TechHubInner() {
                 balance alone does not unlock larger packs. Correct answers earn praise like
                 Excellent and Superb.
               </p>
+            ) : null}
+            {isExamCourse && !premiumAccess ? (
+              <PremiumPracticeNudge variant="locked" />
             ) : null}
             {error ? <p className="text-sm text-rose-700">{error}</p> : null}
             <Button
