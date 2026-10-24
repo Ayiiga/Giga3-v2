@@ -1,6 +1,8 @@
 "use client";
 
 import { ExamPracticeShareButton } from "@/components/gigalearn/exam/ExamPracticeShareButton";
+import { FoundingMembersOfferCard } from "@/components/gigalearn/exam/FoundingMembersOfferCard";
+import { PremiumPracticeNudge } from "@/components/gigalearn/exam/PremiumPracticeNudge";
 import { LearningProgressRing } from "@/components/gigalearn/ui/LearningProgressRing";
 import { ButtonLink } from "@/components/ui/Button";
 import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
@@ -330,24 +332,29 @@ function TeacherPromotionCentreCard() {
         <div className="exam-ghana-stripe" aria-hidden />
         <div className="space-y-2 p-4 sm:p-5">
           <p className="text-[11px] font-bold uppercase tracking-wide text-[#FACC15]">Welcome</p>
+          <p className="text-sm font-semibold text-[#FACC15]">
+            {PROMOTION_FREE_SET_META.welcomeMessage ??
+              "Welcome to General Teacher Promotion Practice"}
+          </p>
           <h2 id="teacher-promotion-heading" className="text-xl font-bold sm:text-2xl">
-            Ghana Teacher Promotion Practice
+            {PROMOTION_FREE_SET_META.centreHeading ??
+              "General Teacher Promotion Practice"}
           </h2>
           {signedIn ? (
             <p className="text-sm font-semibold text-[#FACC15]">Hello, {name}</p>
           ) : null}
           <p className="text-sm text-white/90">
             {signedIn
-              ? `Your free ${EXAM_PRACTICE_FREE_QUESTION_COUNT}-question practice is ready.`
-              : "Independent practice for Ghana Education Service promotion-exam preparation."}
+              ? `Your general ${EXAM_PRACTICE_FREE_QUESTION_COUNT}-question practice is ready.`
+              : "Independent general practice for Ghana Education Service promotion-exam preparation — no specific rank selected."}
           </p>
           <p className="text-xs text-white/75">
-            Promotion Exam Preparation Practice · GigaLearn on {siteConfig.name}
+            General Teacher Promotion Practice · GigaLearn on {siteConfig.name}
           </p>
         </div>
       </div>
 
-      <article className="exam-landing-card">
+      <article className="exam-landing-card" data-testid="general-promotion-free-practice">
         <span className="exam-landing-pill">{PROMOTION_FREE_SET_META.freeLabel}</span>
         <div className="mt-3 flex items-start gap-3">
           <div
@@ -361,24 +368,30 @@ function TeacherPromotionCentreCard() {
             <p className="mt-1 text-sm text-slate-600">{PROMOTION_FREE_SET_META.subtitle}</p>
           </div>
         </div>
-        <Link
-          href={EXAM_PRACTICE_DESTINATIONS.promotionRankSelect}
-          className="exam-landing-cta mt-4"
-          data-testid="teacher-promotion-choose-rank"
-        >
-          <Play className="h-4 w-4 fill-current" aria-hidden />
-          Choose rank · Start Free Practice
-        </Link>
+        <div className="mt-3">
+          <PremiumPracticeNudge variant="prestart" />
+        </div>
         <Link
           href={EXAM_PRACTICE_DESTINATIONS.promotionFreePractice}
-          className="exam-landing-cta exam-landing-cta--ghost mt-2"
+          className="exam-landing-cta mt-4"
+          aria-label={
+            PROMOTION_FREE_SET_META.startCta ?? "Start General Practice"
+          }
         >
-          Free orientation ({EXAM_PRACTICE_FREE_QUESTION_COUNT} mixed questions)
+          <Play className="h-4 w-4 fill-current" aria-hidden />
+          {PROMOTION_FREE_SET_META.startCta ?? "Start General Practice"}
+        </Link>
+        <Link
+          href={EXAM_PRACTICE_DESTINATIONS.promotionRankSelect}
+          className="exam-landing-cta exam-landing-cta--ghost mt-2"
+          data-testid="teacher-promotion-choose-rank"
+        >
+          Choose rank · Start Free Practice
         </Link>
         <div className="mt-2">
           <ExamPracticeShareButton
             kind="teacher_promotion"
-            label="Share Teacher Promotion practice"
+            label="Share general Teacher Promotion practice"
           />
         </div>
         <p className="mt-2 text-xs text-slate-500">{PROMOTION_FREE_SET_META.provenanceNote}</p>
@@ -387,42 +400,47 @@ function TeacherPromotionCentreCard() {
       {TEACHER_PROMOTION_BANK_SUMMARY.available ? (
         <article className="exam-landing-card" data-testid="teacher-promotion-bank-ready">
           <span className="exam-landing-pill">
-            Five ranks · {PROMOTION_RANK_BANKS_TOTAL.published} distinct practice items
+            {TEACHER_PROMOTION_BANK_SUMMARY.approvedCount} approved ·{" "}
+            {TEACHER_PROMOTION_BANK_SUMMARY.pendingCount} provisional
           </span>
           <h3 className="mt-3 text-base font-bold text-[#14532D]">
-            Rank banks (AD II → Director I)
+            GES Teachers Promotion aptitude bank
           </h3>
           <p className="mt-1 text-sm text-slate-600">
-            Free learn-mode practice with explanations after each answer. Choose your promotion rank
-            first — not a mixed general course list. Original practice items awaiting verification;
-            not an official GES examination paper.
+            Interactive practice from the imported promotion objective set. Provisional items are
+            labelled in learn mode — not claimed as an official GES examination paper.
           </p>
           <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
             <Link
-              href={EXAM_PRACTICE_DESTINATIONS.promotionRankSelect}
+              href={EXAM_PRACTICE_DESTINATIONS.teacherPromotionPractice}
               className="exam-landing-cta"
-              data-testid="teacher-promotion-bank-choose-rank"
             >
               <Play className="h-4 w-4 fill-current" aria-hidden />
-              Choose rank · Start Free Practice
+              Open promotion practice
             </Link>
             <Link
-              href={EXAM_PRACTICE_DESTINATIONS.promotionRankSelect}
+              href={EXAM_PRACTICE_DESTINATIONS.teacherPromotionLearn}
               className="exam-landing-cta exam-landing-cta--ghost"
             >
-              Learn mode by rank
+              Learn mode
             </Link>
             <Link
-              href={EXAM_PRACTICE_DESTINATIONS.promotionRankSelect}
+              href={EXAM_PRACTICE_DESTINATIONS.teacherPromotionPracticeFull}
               className="exam-landing-cta exam-landing-cta--ghost"
             >
-              Timed / full pack by rank
+              Full pack (up to {EXAM_PRACTICE_PREMIUM_QUESTION_COUNT})
+            </Link>
+            <Link
+              href={EXAM_PRACTICE_DESTINATIONS.teacherPromotionCourse}
+              className="exam-landing-cta exam-landing-cta--ghost"
+            >
+              Enrol / course page
             </Link>
           </div>
           <p className="mt-2 text-xs text-slate-500">
-            Free sessions use {EXAM_PRACTICE_FREE_QUESTION_COUNT} questions per rank.{" "}
+            Free sessions use {EXAM_PRACTICE_FREE_QUESTION_COUNT} questions.{" "}
             {EXAM_PRACTICE_PAID_UNLOCK_COPY} unlocks up to {EXAM_PRACTICE_PREMIUM_QUESTION_COUNT} from
-            each rank bank. {AD2_STUDY_GUIDE_SUMMARY.note}
+            the imported bank. {AD2_STUDY_GUIDE_SUMMARY.note}
           </p>
         </article>
       ) : null}
@@ -442,6 +460,8 @@ function TeacherPromotionCentreCard() {
           <p className="text-sm text-slate-600">Scores and improvement from your real practice.</p>
         </div>
       </Link>
+
+      <FoundingMembersOfferCard />
 
       <article className="exam-landing-card exam-landing-card--gold">
         <span className="exam-landing-ribbon" aria-hidden>
@@ -951,11 +971,7 @@ export function ExamPracticeCentre() {
             labels, timed practice, and real performance only.
           </p>
           <div className="flex flex-col gap-2 pt-1 sm:flex-row sm:flex-wrap">
-            <Link
-              href={EXAM_PRACTICE_DESTINATIONS.promotionRankSelect}
-              className="exam-landing-cta sm:w-auto sm:px-5"
-              data-testid="teacher-promotion-primary-cta"
-            >
+            <Link href="#teacher-promotion-centre" className="exam-landing-cta sm:w-auto sm:px-5">
               Teacher Promotion
             </Link>
             <Link

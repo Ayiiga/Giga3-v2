@@ -136,8 +136,10 @@ describe("promotion bank quality gate", () => {
       },
       optionPermutations: perms,
     });
-    expect(graded.score).toBe(2);
-    expect(graded.maxScore).toBe(2);
+    // Rank banks are pending_review — match provisional keys but do not verify-score.
+    expect(graded.score).toBe(0);
+    expect(graded.maxScore).toBe(0);
+    expect(graded.results.every((r) => r.provisionalMatch)).toBe(true);
   });
 
   it("keeps free selection clamped and excludes premium-only stems", () => {

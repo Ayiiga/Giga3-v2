@@ -90,6 +90,22 @@ describe("hasExamPracticePremiumAccess entitlement matrix", () => {
     ).toBe(false);
   });
 
+  it("allows Founding Members scoped premium while unexpired", () => {
+    const now = Date.now();
+    expect(
+      hasExamPracticePremiumAccess({
+        examPracticePremiumExpiresAt: now + 60_000,
+        now,
+      })
+    ).toBe(true);
+    expect(
+      hasExamPracticePremiumAccess({
+        examPracticePremiumExpiresAt: now - 1,
+        now,
+      })
+    ).toBe(false);
+  });
+
   it("denies expired subscription without credit-pack purchase", () => {
     expect(
       hasExamPracticePremiumAccess({

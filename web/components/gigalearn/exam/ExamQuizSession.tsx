@@ -1,8 +1,12 @@
 "use client";
 
 import { ExamPracticeShareButton } from "@/components/gigalearn/exam/ExamPracticeShareButton";
+import { PremiumPracticeNudge } from "@/components/gigalearn/exam/PremiumPracticeNudge";
+import { PremiumUpgradeModal } from "@/components/gigalearn/exam/PremiumUpgradeModal";
 import { Button } from "@/components/ui/Button";
+import { getSessionToken } from "@/lib/auth";
 import { recordLocalExamPracticeResult } from "@/lib/gigalearn/examPractice/localProgress";
+import { isPremiumUpgradeModalSuppressed } from "@/lib/gigalearn/examPractice/premiumUpgradeDismiss";
 import {
   rewardForCorrectAnswer,
   rewardForSessionScore,
@@ -11,6 +15,8 @@ import type { ExamPracticeQuestion, ExamPracticeSetMeta } from "@/lib/gigalearn/
 import { optionFeedbackNotes } from "@/lib/gigalearn/examPractice/optionFeedback";
 import { optionIds, scoreQuiz, type QuizAnswerMap } from "@/lib/gigalearn/examPractice/quizEngine";
 import { cn } from "@/lib/utils";
+import { api } from "convex/_generated/api";
+import { useMutation } from "convex/react";
 import { Check, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -29,6 +35,8 @@ type Props = {
   exitHref: string;
   /** Visual theme: teacher green or bece violet shell */
   theme?: "teacher" | "bece";
+  /** Teacher free-trial upgrade modal + nudges (not used for BECE). */
+  enablePremiumUpgrade?: boolean;
   initialAnswers?: QuizAnswerMap;
   initialIndex?: number;
   initialSecondsLeft?: number;
@@ -43,6 +51,7 @@ export function ExamQuizSession({
   questions,
   exitHref,
   theme = "teacher",
+  enablePremiumUpgrade = false,
   initialAnswers = {},
   initialIndex = 0,
   initialSecondsLeft,
@@ -59,9 +68,13 @@ export function ExamQuizSession({
   const [finished, setFinished] = useState(initialFinished);
   const [reward, setReward] = useState<string | null>(null);
   const [streak, setStreak] = useState(initialStreak);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
   const recordedRef = useRef(false);
+  const upgradePromptedRef = useRef(false);
+  const completedEventRef = useRef(false);
   const onDraftChangeRef = useRef(onDraftChange);
   onDraftChangeRef.current = onDraftChange;
+  const recordEvent = useMutation(api.foundingMembersOffer.recordOfferEvent);
 
   // When parent rebuilds a shuffled set (Practise again), resync local state.
   const questionFingerprint = questions.map((q) => `${q.id}:${q.correct}:${q.options.A}`).join("|");
@@ -73,6 +86,9 @@ export function ExamQuizSession({
     setStreak(initialStreak);
     setReward(null);
     recordedRef.current = false;
+    upgradePromptedRef.current = false;
+    completedEventRef.current = false;
+    setUpgradeOpen(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fingerprint captures shuffle identity
   }, [questionFingerprint]);
 
@@ -119,6 +135,20 @@ export function ExamQuizSession({
     });
   }, [finished, meta.category, meta.id, score.correct, score.percent, score.total]);
 
+  useEffect(() => {
+    if (!finished || !enablePremiumUpgrade || completedEventRef.current) return;
+    completedEventRef.current = true;
+    void recordEvent({
+      eventType: "free_practice_completed",
+      sessionToken: getSessionToken() ?? undefined,
+      meta: `${meta.id}:${score.percent}`,
+    }).catch(() => undefined);
+    if (!upgradePromptedRef.current && !isPremiumUpgradeModalSuppressed(meta.id)) {
+      upgradePromptedRef.current = true;
+      setUpgradeOpen(true);
+    }
+  }, [finished, enablePremiumUpgrade, meta.id, recordEvent, score.percent]);
+
   const mm = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
   const ss = String(secondsLeft % 60).padStart(2, "0");
   const progressPct = questions.length
@@ -128,7 +158,7 @@ export function ExamQuizSession({
   const bannerTitle =
     theme === "bece"
       ? "BECE Preparation Practice"
-      : "Promotion Exam Preparation Practice";
+      : meta.centreHeading ?? "General Teacher Promotion Practice";
 
   if (!current || finished) {
     const sessionPraise = rewardForSessionScore(score.percent);
@@ -161,6 +191,12 @@ export function ExamQuizSession({
                 <dd>{score.answered}</dd>
               </div>
             </dl>
+            {enablePremiumUpgrade ? (
+              <PremiumPracticeNudge
+                variant="results"
+                onOpenUpgrade={() => setUpgradeOpen(true)}
+              />
+            ) : null}
             <div className="exam-session-actions">
               <Button
                 type="button"
@@ -177,6 +213,9 @@ export function ExamQuizSession({
                   setReward(null);
                   setStreak(0);
                   recordedRef.current = false;
+                  upgradePromptedRef.current = false;
+                  completedEventRef.current = false;
+                  setUpgradeOpen(false);
                 }}
               >
                 Practise again
@@ -191,6 +230,15 @@ export function ExamQuizSession({
             </div>
           </article>
         </div>
+        {enablePremiumUpgrade ? (
+          <PremiumUpgradeModal
+            open={upgradeOpen}
+            setId={meta.id}
+            score={score}
+            onClose={() => setUpgradeOpen(false)}
+            onViewResults={() => setUpgradeOpen(false)}
+          />
+        ) : null}
       </div>
     );
   }
@@ -227,6 +275,9 @@ export function ExamQuizSession({
       </div>
 
       <div className="exam-session-body">
+        {enablePremiumUpgrade && index === 0 && !revealed ? (
+          <PremiumPracticeNudge variant="insession" />
+        ) : null}
         <article className="exam-session-card exam-session-card--pad">
           <div className="exam-session-chips">
             {current.audience ? (

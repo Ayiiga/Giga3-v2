@@ -38,8 +38,8 @@ export type TechBankQuestion = {
   explanation: string;
   /**
    * Parallel to `options` — concise why-correct / why-incorrect notes shown
-   * after submission (learn mode) or in end-of-session review. Never shown
-   * before the learner submits when exam rules withhold feedback.
+   * after submission (learn + practice_test) or in end-of-session review.
+   * Never shown before the learner submits when timed exam rules withhold feedback.
    */
   optionExplanations?: string[];
   difficulty: TechDifficulty;

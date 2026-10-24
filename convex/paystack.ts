@@ -34,6 +34,10 @@ import {
 import { withRetries } from "./mediaUtils";
 import { getCreatorTipTier } from "./gigaSocialEconomy";
 import { extractReusableAuthorization } from "./subscriptionRenewalLogic";
+import {
+  FOUNDING_MEMBERS_PRODUCT_ID,
+  getFoundingMembersProduct,
+} from "./foundingMembersOffer";
 
 const PAYSTACK_BASE = "https://api.paystack.co";
 
@@ -190,6 +194,10 @@ function getProduct(productId: string) {
     };
   }
 
+  if (productId === FOUNDING_MEMBERS_PRODUCT_ID) {
+    return getFoundingMembersProduct();
+  }
+
   throw new Error("Unknown product");
 }
 
@@ -296,7 +304,8 @@ export const createPendingPayment = internalMutation({
       v.literal("video_credits"),
       v.literal("marketplace"),
       v.literal("creator_gift"),
-      v.literal("boost_campaign")
+      v.literal("boost_campaign"),
+      v.literal("exam_founding_premium")
     ),
     amountGhs: v.number(),
     planId: v.optional(
@@ -492,6 +501,15 @@ export const fulfillPayment = internalMutation({
         budgetGhs: record.amountGhs,
         durationDays: record.boostDurationDays,
       });
+    } else if (record.type === "exam_founding_premium") {
+      await ctx.runMutation(
+        internal.foundingMembersOffer.fulfillFoundingMembersPurchase,
+        {
+          userId: record.userId,
+          paymentReference: record.reference,
+          amountGhs: record.amountGhs,
+        }
+      );
     }
 
     return { alreadyFulfilled: false as const };
@@ -513,6 +531,12 @@ export const markPaymentFailed = internalMutation({
       status: "failed",
       paystackResponse: args.paystackResponse,
     });
+    if (record.type === "exam_founding_premium") {
+      await ctx.runMutation(
+        internal.foundingMembersOffer.releaseReservationByReference,
+        { paymentReference: args.reference, reason: "failed" }
+      );
+    }
     return { updated: true as const };
   },
 });
@@ -544,6 +568,14 @@ export const initializePayment = action({
     const frontend = process.env.FRONTEND_URL ?? "https://www.giga3ai.com";
     const mode = getPaystackMode();
 
+    // Founding Members: reserve a server-side seat before calling Paystack.
+    if (catalog.type === "exam_founding_premium") {
+      await ctx.runMutation(internal.foundingMembersOffer.reserveSlotForCheckout, {
+        userId,
+        paymentReference: reference,
+      });
+    }
+
     await ctx.runMutation(internal.paystack.createPendingPayment, {
       userId,
       reference,
@@ -556,42 +588,55 @@ export const initializePayment = action({
       videoPlanId: "videoPlanId" in catalog ? catalog.videoPlanId : undefined,
     });
 
-    const init = await paystackPost("/transaction/initialize", {
-      email,
-      amount: toPesewas(catalog.amountGhs),
-      currency: "GHS",
-      reference,
-      channels: sanitizePaystackChannels(args.channels),
-      callback_url: `${frontend}/payment/success/?reference=${encodeURIComponent(reference)}`,
-      metadata: {
-        userId,
-        productId: args.productId,
-        paystack_mode: mode,
-        custom_fields: [
-          { display_name: "Product", variable_name: "product", value: catalog.label },
-          {
-            display_name: "Amount (GHS)",
-            variable_name: "amount_ghs",
-            value: String(catalog.amountGhs),
-          },
-        ],
-      },
-    });
+    try {
+      const init = await paystackPost("/transaction/initialize", {
+        email,
+        amount: toPesewas(catalog.amountGhs),
+        currency: "GHS",
+        reference,
+        channels: sanitizePaystackChannels(args.channels),
+        callback_url: `${frontend}/payment/success/?reference=${encodeURIComponent(reference)}`,
+        metadata: {
+          userId,
+          productId: args.productId,
+          paystack_mode: mode,
+          custom_fields: [
+            { display_name: "Product", variable_name: "product", value: catalog.label },
+            {
+              display_name: "Amount (GHS)",
+              variable_name: "amount_ghs",
+              value: String(catalog.amountGhs),
+            },
+          ],
+        },
+      });
 
-    const authorizationUrl = init.data?.authorization_url as string | undefined;
-    const accessCode = init.data?.access_code as string | undefined;
-    if (!authorizationUrl?.trim()) {
-      throw new Error("Paystack did not return a checkout URL. Please try again.");
+      const authorizationUrl = init.data?.authorization_url as string | undefined;
+      const accessCode = init.data?.access_code as string | undefined;
+      if (!authorizationUrl?.trim()) {
+        throw new Error("Paystack did not return a checkout URL. Please try again.");
+      }
+
+      return {
+        authorizationUrl,
+        accessCode: accessCode?.trim() ?? "",
+        reference,
+        amountGhs: catalog.amountGhs,
+        label: catalog.label,
+        mode,
+      };
+    } catch (err) {
+      if (catalog.type === "exam_founding_premium") {
+        // markPaymentFailed also releases the Founding Members reservation.
+        await ctx.runMutation(internal.paystack.markPaymentFailed, {
+          reference,
+          paystackResponse: JSON.stringify({
+            error: err instanceof Error ? err.message : "initialize_failed",
+          }),
+        });
+      }
+      throw err;
     }
-
-    return {
-      authorizationUrl,
-      accessCode: accessCode?.trim() ?? "",
-      reference,
-      amountGhs: catalog.amountGhs,
-      label: catalog.label,
-      mode,
-    };
   },
 });
 

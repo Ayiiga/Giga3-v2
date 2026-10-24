@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * Drop sitemap entries that were not exported to web/out (static build).
+ * Drop sitemap entries that were not exported to web/out (static build),
+ * or that were exported as noindex (e.g. E2E marketplace fixtures).
  * Prebuild sitemaps can list Convex profiles/posts that fail SSG — seo:audit fails deploy.
  */
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
@@ -11,10 +12,25 @@ const __dirname = resolve(fileURLToPath(import.meta.url), "..");
 const outDir = resolve(__dirname, "../out");
 const SITE = "https://www.giga3ai.com";
 
-function routeHasBuiltPage(route) {
-  if (route === "/") return existsSync(join(outDir, "index.html"));
+function builtHtmlPath(route) {
+  if (route === "/") return join(outDir, "index.html");
   const trimmed = route.replace(/^\//, "").replace(/\/$/, "");
-  return existsSync(join(outDir, trimmed, "index.html"));
+  return join(outDir, trimmed, "index.html");
+}
+
+function routeHasBuiltPage(route) {
+  return existsSync(builtHtmlPath(route));
+}
+
+function routeIsNoindex(route) {
+  const htmlPath = builtHtmlPath(route);
+  if (!existsSync(htmlPath)) return false;
+  const html = readFileSync(htmlPath, "utf8");
+  const robots = [
+    ...html.matchAll(/name=["']robots["'][^>]*content=["']([^"']+)/gi),
+    ...html.matchAll(/content=["']([^"']+)["'][^>]*name=["']robots/gi),
+  ].map((m) => m[1].toLowerCase());
+  return robots.some((value) => value.includes("noindex"));
 }
 
 function filterUrlset(filePath) {
@@ -34,12 +50,17 @@ function filterUrlset(filePath) {
       continue;
     }
     const route = loc.slice(SITE.length) || "/";
-    if (routeHasBuiltPage(route)) {
-      kept.push(match[0]);
-    } else {
+    if (!routeHasBuiltPage(route)) {
       dropped += 1;
       console.log(`filter-sitemap-built-pages: dropped ${route} (no static export)`);
+      continue;
     }
+    if (routeIsNoindex(route)) {
+      dropped += 1;
+      console.log(`filter-sitemap-built-pages: dropped ${route} (noindex)`);
+      continue;
+    }
+    kept.push(match[0]);
   }
 
   if (!dropped) return 0;

@@ -27,6 +27,36 @@ describe("Teacher Promotion free practice bank", () => {
     }
   });
 
+  it("labels the free set as general practice with no specific promotion rank", () => {
+    expect(PROMOTION_FREE_SET_META.centreHeading).toBe(
+      "General Teacher Promotion Practice"
+    );
+    expect(PROMOTION_FREE_SET_META.title).toBe(
+      "General Teacher Promotion Practice — Free 50 Questions"
+    );
+    expect(PROMOTION_FREE_SET_META.subtitle).toMatch(
+      /50 general teacher promotion preparation questions/i
+    );
+    expect(PROMOTION_FREE_SET_META.startCta).toBe("Start General Practice");
+    expect(PROMOTION_FREE_SET_META.welcomeMessage).toBe(
+      "Welcome to General Teacher Promotion Practice"
+    );
+    expect(PROMOTION_FREE_SET_META.freeLabel).toMatch(
+      /no specific promotion rank selected/i
+    );
+    expect(PROMOTION_FREE_SET_META.provenanceNote).toBe(
+      "GigaLearn orientation practice — not an official Ghana Education Service examination paper."
+    );
+    // Must not imply a rank assignment.
+    const blob = [
+      PROMOTION_FREE_SET_META.title,
+      PROMOTION_FREE_SET_META.centreHeading,
+      PROMOTION_FREE_SET_META.welcomeMessage,
+      PROMOTION_FREE_SET_META.freeLabel,
+    ].join(" ");
+    expect(blob).not.toMatch(/Assistant Director|Deputy Director|Director I{1,2}\b/i);
+  });
+
   it("scores all-correct and mixed answers without inventing totals", () => {
     const qs = getPromotionFreeQuestions();
     const allCorrect = Object.fromEntries(qs.map((q) => [q.id, q.correct]));
@@ -55,8 +85,10 @@ describe("Exam Practice quiz UI wiring", () => {
     expect(ui).toContain("promotionRankSelect");
     expect(ui).toContain("Choose rank · Start Free Practice");
     expect(ui).toContain("promotionFreePractice");
+    expect(ui).toContain("general-promotion-free-practice");
     expect(ui).toContain("exam-ghana-stripe");
     expect(ui).toContain("Paystack");
+    expect(ui).not.toContain("Start Free {EXAM_PRACTICE_FREE_QUESTION_COUNT} Questions");
     expect(ui.toLowerCase()).not.toContain("0248");
     expect(ui.toLowerCase()).not.toContain("copy momo");
     expect(ui.toLowerCase()).not.toContain("whatsapp sir");

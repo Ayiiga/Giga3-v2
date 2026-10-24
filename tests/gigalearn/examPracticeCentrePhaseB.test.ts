@@ -76,8 +76,10 @@ describe("Exam Practice Centre Phase B", () => {
     expect(ui).toContain("BECE Mock Examination Centre");
     expect(ui).toContain('data-testid="bece-practice-ready"');
     expect(ui).toContain("BECE_AWAITING_MATERIALS_MESSAGE");
-    expect(ui).toContain("Ghana Teacher Promotion Practice");
+    expect(ui).toContain("PROMOTION_FREE_SET_META.centreHeading");
+    expect(ui).toContain("General Teacher Promotion Practice");
     expect(ui).toContain('data-testid="teacher-promotion-centre"');
+    expect(ui).toContain('data-testid="general-promotion-free-practice"');
     expect(ui).toContain('data-testid="teacher-promotion-bank-ready"');
     expect(ui).toContain('data-testid="promotion-rank-banks"');
     expect(ui).toContain("PROMOTION_RANK_BANK_SUMMARIES");

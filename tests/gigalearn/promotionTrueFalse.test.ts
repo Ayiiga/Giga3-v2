@@ -73,20 +73,23 @@ describe("promotion True/False bank import", () => {
 });
 
 describe("promotion True/False scoring", () => {
-  it("grades TRUE and FALSE answer keys for correct and incorrect selections", () => {
+  it("grades TRUE and FALSE provisional keys without verified score credit", () => {
     const tfs = getTechBankQuestions("exam-ad-ii", { questionType: "true_false" });
     const trueKey = tfs.find((q) => q.correctIndex === 0)!;
     const falseKey = tfs.find((q) => q.correctIndex === 1)!;
     expect(trueKey).toBeTruthy();
     expect(falseKey).toBeTruthy();
+    expect(trueKey.reviewStatus).toBe("pending_review");
 
     const trueCorrect = gradeTechAnswers({
       courseSlug: "exam-ad-ii",
       questionIds: [trueKey.questionId],
       answers: { [trueKey.questionId]: 0 },
     });
-    expect(trueCorrect.score).toBe(1);
-    expect(trueCorrect.results[0]?.correct).toBe(true);
+    expect(trueCorrect.score).toBe(0);
+    expect(trueCorrect.maxScore).toBe(0);
+    expect(trueCorrect.results[0]?.correct).toBe(false);
+    expect(trueCorrect.results[0]?.provisionalMatch).toBe(true);
 
     const trueWrong = gradeTechAnswers({
       courseSlug: "exam-ad-ii",
@@ -94,24 +97,25 @@ describe("promotion True/False scoring", () => {
       answers: { [trueKey.questionId]: 1 },
     });
     expect(trueWrong.score).toBe(0);
-    expect(trueWrong.results[0]?.correct).toBe(false);
+    expect(trueWrong.results[0]?.provisionalMatch).toBe(false);
 
     const falseCorrect = gradeTechAnswers({
       courseSlug: "exam-ad-ii",
       questionIds: [falseKey.questionId],
       answers: { [falseKey.questionId]: 1 },
     });
-    expect(falseCorrect.score).toBe(1);
+    expect(falseCorrect.results[0]?.provisionalMatch).toBe(true);
+    expect(falseCorrect.score).toBe(0);
 
     const falseWrong = gradeTechAnswers({
       courseSlug: "exam-ad-ii",
       questionIds: [falseKey.questionId],
       answers: { [falseKey.questionId]: 0 },
     });
-    expect(falseWrong.score).toBe(0);
+    expect(falseWrong.results[0]?.provisionalMatch).toBe(false);
   });
 
-  it("treats unanswered True/False items as incorrect without inventing a selection", () => {
+  it("treats unanswered True/False items as unscored provisional without inventing a selection", () => {
     const q = getTechBankQuestions("exam-ad-ii", { questionType: "true_false" })[0]!;
     const graded = gradeTechAnswers({
       courseSlug: "exam-ad-ii",
@@ -120,10 +124,11 @@ describe("promotion True/False scoring", () => {
     });
     expect(graded.score).toBe(0);
     expect(graded.results[0]?.selectedIndex).toBeNull();
-    expect(graded.maxScore).toBe(1);
+    expect(graded.maxScore).toBe(0);
+    expect(graded.results[0]?.provisional).toBe(true);
   });
 
-  it("does not award duplicate credit when the same answer is graded twice", () => {
+  it("does not award verified credit when the same provisional answer is graded twice", () => {
     const q = getTechBankQuestions("exam-ad-ii", { questionType: "true_false" })[0]!;
     const answers = { [q.questionId]: q.correctIndex };
     const once = gradeTechAnswers({
@@ -136,9 +141,11 @@ describe("promotion True/False scoring", () => {
       questionIds: [q.questionId],
       answers,
     });
-    expect(once.score).toBe(1);
-    expect(twice.score).toBe(1);
-    expect(twice.maxScore).toBe(1);
+    expect(once.score).toBe(0);
+    expect(twice.score).toBe(0);
+    expect(twice.maxScore).toBe(0);
+    expect(once.results[0]?.provisionalMatch).toBe(true);
+    expect(twice.results[0]?.provisionalMatch).toBe(true);
   });
 
   it("restores identity permutations for True/False (no shuffle)", () => {
@@ -165,7 +172,8 @@ describe("promotion True/False scoring", () => {
         answers: { [q.questionId]: q.correctIndex },
         optionPermutations: perms,
       });
-      expect(graded.score).toBe(1);
+      expect(graded.score).toBe(0);
+      expect(graded.results[0]?.provisionalMatch).toBe(true);
     }
   });
 
@@ -200,7 +208,8 @@ describe("promotion True/False scoring", () => {
       },
       optionPermutations: perms,
     });
-    expect(graded.score).toBe(2);
+    expect(graded.score).toBe(0);
+    expect(graded.results.every((r) => r.provisionalMatch)).toBe(true);
   });
 });
 

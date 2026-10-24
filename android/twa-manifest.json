@@ -20,8 +20,8 @@
     "path": "./android.keystore",
     "alias": "android"
   },
-  "appVersionName": "1.0.2",
-  "appVersionCode": 3,
+  "appVersionName": "1.0.4",
+  "appVersionCode": 5,
   "shortcuts": [
     {
       "name": "Chat",
@@ -78,5 +78,5 @@
     "standalone",
     "window-controls-overlay"
   ],
-  "appVersion": "1.0.2"
+  "appVersion": "1.0.4"
 }

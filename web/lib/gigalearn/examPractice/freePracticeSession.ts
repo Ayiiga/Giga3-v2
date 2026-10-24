@@ -17,6 +17,8 @@ export type FreePracticeDraft = {
   index: number;
   secondsLeft: number;
   finished: boolean;
+  /** False until the learner leaves the pre-start premium messaging screen. */
+  started: boolean;
   streak: number;
   updatedAt: number;
 };
@@ -64,6 +66,7 @@ export function buildShuffledFreePractice(
     index: 0,
     secondsLeft: Math.max(1, durationMinutes) * 60,
     finished: false,
+    started: false,
     streak: 0,
     updatedAt: Date.now(),
   };
@@ -95,8 +98,17 @@ export function loadFreePracticeDraft(setId: string): FreePracticeDraft | null {
       if (selected && !isOptionId(selected)) return null;
       if (!q.options[q.correct]?.trim()) return null;
     }
+    // Mid-session drafts without `started` were created before the pre-start screen —
+    // treat in-progress / finished drafts as already started.
+    const inferredStarted =
+      typeof draft.started === "boolean"
+        ? draft.started
+        : draft.finished ||
+          draft.index > 0 ||
+          Object.keys(draft.answers).length > 0;
     return {
       ...draft,
+      started: inferredStarted,
       streak: typeof draft.streak === "number" ? draft.streak : 0,
       answers: { ...draft.answers },
       questions: draft.questions.map((q) => ({

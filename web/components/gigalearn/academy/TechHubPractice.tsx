@@ -381,6 +381,14 @@ function TechHubInner() {
               {sessionPraise}
             </p>
           ) : null}
+          <p className="text-sm text-slate-600">
+            {results.maxScore > 0
+              ? `Verified score ${results.score}/${results.maxScore}${
+                  results.percent != null ? ` · ${results.percent}%` : ""
+                }`
+              : "No verified answer keys in this session — provisional items were not scored."}
+          </p>
+
           <div className="grid gap-2 rounded-xl border border-emerald-200 bg-emerald-50/80 p-3 text-sm text-emerald-950 sm:grid-cols-2">
             <p>
               Questions attempted: <strong>{results.maxScore}</strong>

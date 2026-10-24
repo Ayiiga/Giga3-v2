@@ -2,6 +2,7 @@ import { ProductSeoHeader } from "@/components/seo/ProductSeoHeader";
 import { MarketplaceProductJsonLd } from "@/components/seo/DynamicPublicJsonLd";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { fetchMarketplaceListingIds, fetchMarketplaceSeoBundle } from "@/lib/seo/convexBuildFetch";
+import { isExcludedMarketplaceSeoListing } from "@/lib/seo/marketplaceProductSchema";
 import { marketplaceItemPath } from "@/lib/seo/publicPaths";
 import { clampSeoDescription, clampSeoTitle } from "@/lib/seo/seoText";
 import { publicMetadata } from "@/lib/seo/publicMetadata";
@@ -43,6 +44,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     });
   }
 
+  const excluded = isExcludedMarketplaceSeoListing({
+    title: bundle.listing.title,
+    creatorName: bundle.creator?.displayName,
+    creatorHandle: bundle.creator?.handle,
+  });
+  const indexable = bundle.indexable !== false && !excluded;
+
   const creatorLabel = bundle.creator?.displayName
     ? ` by ${bundle.creator.displayName}`
     : "";
@@ -54,6 +62,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     description: clampSeoDescription(bundle.description, ref),
     image: bundle.listing.coverImageUrl,
     imageAlt: bundle.listing.title,
+    index: indexable,
   });
 }
 
@@ -70,6 +79,14 @@ export default async function MarketplaceItemDetailPage({ params }: PageProps) {
     );
   }
 
+  const excluded = isExcludedMarketplaceSeoListing({
+    title: bundle.listing.title,
+    creatorName: bundle.creator?.displayName,
+    creatorHandle: bundle.creator?.handle,
+  });
+  const indexable = bundle.indexable !== false && !excluded;
+  const reviews = (bundle.reviews ?? []).filter((r) => r.rating >= 1 && r.rating <= 5);
+
   const creatorLine = bundle.creator
     ? `Sold by ${bundle.creator.displayName}${bundle.creator.verified ? " (verified)" : ""}.`
     : "Sold by a Giga3 Marketplace creator.";
@@ -83,17 +100,20 @@ export default async function MarketplaceItemDetailPage({ params }: PageProps) {
           { name: bundle.listing.title, path: marketplaceItemPath(params.listingId) },
         ]}
       />
-      <MarketplaceProductJsonLd
-        listingId={params.listingId}
-        title={bundle.listing.title}
-        description={bundle.description}
-        priceGhs={bundle.listing.priceGhs}
-        category={bundle.listing.category}
-        imageUrl={bundle.listing.coverImageUrl}
-        creatorName={bundle.creator?.displayName}
-        reviewCount={bundle.reviewCount}
-        ratingValue={bundle.ratingValue}
-      />
+      {indexable ? (
+        <MarketplaceProductJsonLd
+          listingId={params.listingId}
+          title={bundle.listing.title}
+          description={bundle.description}
+          priceGhs={bundle.listing.priceGhs}
+          category={bundle.listing.category}
+          imageUrl={bundle.listing.coverImageUrl}
+          creatorName={bundle.creator?.displayName}
+          reviews={reviews}
+          reviewCount={bundle.reviewCount}
+          ratingValue={bundle.ratingValue}
+        />
+      ) : null}
       <ProductSeoHeader
         compact
         collapsible
@@ -106,6 +126,41 @@ export default async function MarketplaceItemDetailPage({ params }: PageProps) {
         coverImageAlt={`${bundle.listing.title} cover`}
         showProductNav={false}
       />
+      {reviews.length > 0 ? (
+        <section className="mx-auto max-w-3xl px-4 pb-6" aria-label="Customer reviews">
+          <h2 className="text-lg font-semibold text-foreground">Reviews</h2>
+          <p className="mt-1 text-sm text-muted">
+            {bundle.ratingValue != null
+              ? `${bundle.ratingValue} out of 5 from ${bundle.reviewCount} verified purchaser${
+                  bundle.reviewCount === 1 ? "" : "s"
+                }.`
+              : `${bundle.reviewCount} verified purchaser review${bundle.reviewCount === 1 ? "" : "s"}.`}
+          </p>
+          <ul className="mt-3 space-y-3">
+            {reviews.map((review, index) => (
+              <li key={`${review.createdAt}-${index}`} className="rounded-xl border border-border p-4">
+                <p className="font-medium text-foreground" aria-label={`${review.rating} out of 5 stars`}>
+                  {"★".repeat(review.rating)}
+                  {"☆".repeat(Math.max(0, 5 - review.rating))}
+                </p>
+                <time
+                  className="mt-1 block text-xs text-muted"
+                  dateTime={new Date(review.createdAt).toISOString()}
+                >
+                  {new Date(review.createdAt).toLocaleDateString("en-GB", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </time>
+                {review.comment?.trim() ? (
+                  <p className="mt-2 text-sm text-muted">{review.comment.trim()}</p>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
       <MarketplaceItemDetailShell listingId={params.listingId} />
     </>
   );

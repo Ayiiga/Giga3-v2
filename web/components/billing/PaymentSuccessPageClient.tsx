@@ -25,6 +25,9 @@ function successMessage(res: VerifyResult, isMarketplace: boolean): string {
   if (res.type === "marketplace" || isMarketplace) {
     return "Purchase confirmed. Your download is ready in My purchases.";
   }
+  if (res.type === "exam_founding_premium") {
+    return "Founding Members payment verified. Teacher Promotion premium is active on your account.";
+  }
   if (res.type === "credits") {
     return `Payment confirmed${
       res.creditsGranted ? ` — ${res.creditsGranted} credits added` : ""

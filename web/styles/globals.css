@@ -1258,6 +1258,23 @@ button:focus-visible {
   color: #7f1d1d;
 }
 
+.exam-session-option--provisional {
+  border-color: #fcd34d;
+  background: #fffbeb;
+  color: #78350f;
+}
+
+.exam-session-review-banner {
+  margin: 0.75rem 0 0;
+  border-radius: 0.85rem;
+  border: 1px solid #fcd34d;
+  background: #fffbeb;
+  padding: 0.65rem 0.9rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #92400e;
+}
+
 .exam-session-explain {
   border-radius: 0.85rem;
   background: #f1f5f9;
@@ -1547,6 +1564,265 @@ button:focus-visible {
 .exam-session-progress {
   margin: 0.3rem auto 0;
   max-width: 10rem;
+}
+
+/* Premium upgrade — Giga3 violet / white (Teacher Promotion conversion) */
+.premium-nudge {
+  border-radius: 1rem;
+  border: 1px solid #ddd6fe;
+  background: linear-gradient(180deg, #f5f3ff 0%, #ffffff 70%);
+  padding: 0.85rem 1rem;
+  color: #1e1b4b;
+}
+
+.premium-nudge--hero {
+  border-color: #c4b5fd;
+  box-shadow: 0 8px 24px color-mix(in srgb, #5b21b6 10%, transparent);
+}
+
+.premium-nudge--inline {
+  margin: 0 0.85rem 0.65rem;
+}
+
+.premium-nudge--locked,
+.premium-nudge--results {
+  margin-top: 0.5rem;
+}
+
+.premium-nudge-eyebrow {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #5b21b6;
+}
+
+.premium-nudge-body {
+  margin: 0.35rem 0 0;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: #334155;
+}
+
+.premium-nudge-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-top: 0.75rem;
+}
+
+.premium-nudge-btn {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.85rem;
+  padding: 0.5rem 0.9rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  background: #5b21b6;
+  color: #ffffff;
+  border: 1px solid #5b21b6;
+}
+
+.premium-nudge-btn--ghost {
+  background: #ffffff;
+  color: #5b21b6;
+  border-color: #c4b5fd;
+}
+
+.premium-upgrade-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0.75rem;
+  background: color-mix(in srgb, #0f172a 55%, transparent);
+}
+
+@media (min-width: 640px) {
+  .premium-upgrade-overlay {
+    align-items: center;
+  }
+}
+
+.premium-upgrade-modal {
+  position: relative;
+  width: min(100%, 28rem);
+  max-height: min(92vh, 44rem);
+  overflow: auto;
+  border-radius: 1.25rem 1.25rem 0.85rem 0.85rem;
+  background: #ffffff;
+  padding: 1.15rem 1.1rem 1.25rem;
+  box-shadow: 0 24px 60px color-mix(in srgb, #4c1d95 28%, transparent);
+}
+
+.premium-upgrade-close {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.55rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  border: none;
+  background: #f5f3ff;
+  color: #5b21b6;
+  font-size: 1.35rem;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.premium-upgrade-kicker {
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #5b21b6;
+}
+
+.premium-upgrade-title {
+  margin: 0.35rem 0 0;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #1e1b4b;
+  line-height: 1.25;
+  padding-right: 1.5rem;
+}
+
+.premium-upgrade-score {
+  margin: 0.45rem 0 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #5b21b6;
+}
+
+.premium-upgrade-lead {
+  margin: 0.45rem 0 0;
+  font-size: 0.9rem;
+  color: #475569;
+  line-height: 1.45;
+}
+
+.premium-upgrade-option {
+  margin-top: 0.85rem;
+  border-radius: 1rem;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  padding: 0.85rem;
+}
+
+.premium-upgrade-option--founding {
+  border-color: #c4b5fd;
+  background: linear-gradient(180deg, #f5f3ff 0%, #ffffff 80%);
+}
+
+.premium-upgrade-option-label {
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #5b21b6;
+}
+
+.premium-upgrade-option-price {
+  margin: 0.25rem 0 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #1e1b4b;
+}
+
+.premium-upgrade-option-price span {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.premium-upgrade-option-copy {
+  margin: 0.4rem 0 0;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: #475569;
+}
+
+.premium-upgrade-bullets {
+  margin: 0.45rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.75rem;
+  color: #4c1d95;
+  line-height: 1.4;
+}
+
+.premium-upgrade-cta {
+  display: inline-flex;
+  width: 100%;
+  min-height: 2.75rem;
+  margin-top: 0.65rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.85rem;
+  padding: 0.55rem 0.85rem;
+  font-size: 0.875rem;
+  font-weight: 800;
+  background: #5b21b6;
+  color: #ffffff;
+  border: 1px solid #5b21b6;
+  text-align: center;
+}
+
+.premium-upgrade-cta:disabled {
+  opacity: 0.5;
+}
+
+.premium-upgrade-cta--secondary {
+  background: #4c1d95;
+  border-color: #4c1d95;
+}
+
+.premium-upgrade-cta--ghost {
+  background: #ffffff;
+  color: #5b21b6;
+  border-color: #c4b5fd;
+}
+
+.premium-upgrade-soldout {
+  margin: 0.5rem 0 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #991b1b;
+}
+
+.premium-upgrade-note {
+  margin: 0.5rem 0 0;
+  font-size: 0.75rem;
+  color: #92400e;
+  background: #fffbeb;
+  border-radius: 0.65rem;
+  padding: 0.45rem 0.55rem;
+}
+
+.premium-upgrade-footer-note {
+  margin: 0.85rem 0 0;
+  font-size: 0.7rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.premium-upgrade-error {
+  margin: 0.55rem 0 0;
+  font-size: 0.8rem;
+  color: #b91c1c;
+}
+
+.premium-upgrade-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
 }
 
 .exam-landing-banner {
