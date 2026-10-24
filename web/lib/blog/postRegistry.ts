@@ -122,7 +122,7 @@ export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
     slug: "ai-tools-for-ghanaian-students-2026",
     title: "10 AI Tools Every Ghanaian Student Should Know in 2026",
     description:
-      "Ten AI tool categories for Ghanaian students — tutoring, research, writing, maths, languages, notes, presentations, images and revision — with academic integrity guidance.",
+      "Ten AI study categories for Ghanaian students — tutoring, research, writing, maths, notes and revision — with academic integrity guidance.",
     excerpt:
       "A student-focused checklist of AI study categories for JHS, SHS and university learners in Ghana — how to use each responsibly in 2026.",
     category: "AI Tools",

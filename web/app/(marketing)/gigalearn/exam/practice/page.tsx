@@ -18,7 +18,8 @@ const ExamPracticeSessionRoot = dynamic(
 
 export const metadata = publicMetadata({
   path: "/gigalearn/exam/practice",
-  title: "General Teacher Promotion Practice | GigaLearn Exam Practice",
+  // Keep ≤70 chars including the "| Giga3 AI" suffix from publicMetadata.
+  title: "Teacher Promotion Practice | Giga3 AI",
   description:
     "Timed general 50-question Teacher Promotion orientation practice on GigaLearn — no specific promotion rank. Not an official GES examination paper.",
 });

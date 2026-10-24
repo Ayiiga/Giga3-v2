@@ -1,4 +1,5 @@
 import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { ProductSeoHeader } from "@/components/seo/ProductSeoHeader";
 import { publicMetadata } from "@/lib/seo/publicMetadata";
 import dynamic from "next/dynamic";
@@ -26,6 +27,22 @@ export const metadata = publicMetadata({
 export default function GigaLearnAcademyVerifyPage() {
   return (
     <>
+      <JsonLd
+        webPage={{
+          path: "/gigalearn/academy/verify",
+          name: "Verify GigaLearn Academy Certificate",
+          description:
+            "Confirm whether a GigaLearn Academy certificate is authentic, valid, or revoked.",
+        }}
+      />
+      <JsonLd
+        breadcrumbs={[
+          { name: "Giga3 AI", path: "/" },
+          { name: "GigaLearn", path: "/gigalearn" },
+          { name: "Academy", path: "/gigalearn/academy" },
+          { name: "Verify certificate", path: "/gigalearn/academy/verify" },
+        ]}
+      />
       <ProductSeoHeader
         compact
         title="Verify GigaLearn Academy certificate"
