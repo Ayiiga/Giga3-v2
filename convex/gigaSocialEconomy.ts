@@ -9,12 +9,20 @@ import {
   hasValidMonetizationConsent,
   validateWithdrawalAmountGhs,
 } from "./gigaSocialMonetizationConsent";
+import {
+  computeVerifiedCashEarningsGhs,
+  sumPaystackGiftEarningsGhs,
+} from "./gigaSocialEarningsMath";
 
 export {
   CREATOR_MONETIZATION_POLICY_VERSION,
   hasValidMonetizationConsent,
   validateWithdrawalAmountGhs,
 } from "./gigaSocialMonetizationConsent";
+export {
+  computeVerifiedCashEarningsGhs,
+  sumPaystackGiftEarningsGhs,
+} from "./gigaSocialEarningsMath";
 
 /** Paystack tip tiers in GHS (MoMo / card / bank). */
 export const CREATOR_TIP_CATALOG = [
@@ -398,6 +406,7 @@ export const getCreatorDashboard = query({
       .order("desc")
       .take(200);
     const giftEarningsGhs = gifts.reduce((sum, g) => sum + g.amountGhs, 0);
+    const paystackGiftEarningsGhs = sumPaystackGiftEarningsGhs(gifts);
 
     const affiliateEvents = await ctx.db
       .query("socialAffiliateEvents")
@@ -457,9 +466,21 @@ export const getCreatorDashboard = query({
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .first();
     const payoutBalanceGhs = creatorProfile?.payoutBalanceGhs ?? 0;
-    const marketplaceEarningsGhs = creatorProfile?.totalEarningsGhs ?? 0;
-    const verifiedCashEarningsGhs = giftEarningsGhs + marketplaceEarningsGhs;
-    // Legacy field name kept for UI compat — excludes unfunded content estimates.
+
+    // Marketplace sales only — do NOT use totalEarningsGhs (also includes tip credits).
+    const marketplacePurchases = await ctx.db
+      .query("marketplacePurchases")
+      .withIndex("by_creator", (q) => q.eq("creatorId", userId))
+      .collect();
+    const marketplaceEarningsGhs = marketplacePurchases.reduce(
+      (sum, p) => sum + (p.creatorEarningsGhs ?? 0),
+      0
+    );
+    const verifiedCashEarningsGhs = computeVerifiedCashEarningsGhs({
+      paystackGiftEarningsGhs,
+      marketplacePurchaseEarningsGhs: marketplaceEarningsGhs,
+    });
+    // Legacy field: verified cash + affiliate tracking (affiliate is not withdrawable cash).
     const estimatedEarningsGhs = verifiedCashEarningsGhs + affiliateEarningsGhs;
     const pendingPayouts = await ctx.db
       .query("creatorPayouts")
@@ -494,6 +515,7 @@ export const getCreatorDashboard = query({
       badges: gamification.badges,
       estimatedEarningsGhs,
       verifiedCashEarningsGhs,
+      paystackGiftEarningsGhs,
       unfundedContentBonusEstimateGhs,
       contentEarningsGhs,
       marketplaceEarningsGhs,
@@ -617,6 +639,59 @@ export const getGiftsHub = query({
   },
 });
 
+async function ensureCreatorPayoutProfile(
+  ctx: { db: import("./_generated/server").MutationCtx["db"] },
+  creatorId: string,
+  now: number
+) {
+  const existing = await ctx.db
+    .query("creatorProfiles")
+    .withIndex("by_user", (q) => q.eq("userId", creatorId))
+    .first();
+  if (existing) return existing;
+
+  const socialProfile = await ctx.db
+    .query("socialProfiles")
+    .withIndex("by_user", (q) => q.eq("userId", creatorId))
+    .first();
+  if (!socialProfile) return null;
+
+  const handleBase = (socialProfile.handle || "creator")
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, "-")
+    .slice(0, 20);
+  const handle = `${handleBase}-t${Math.random().toString(36).slice(2, 8)}`.slice(0, 32);
+  const profileId = await ctx.db.insert("creatorProfiles", {
+    userId: creatorId,
+    displayName: socialProfile.displayName || "Creator",
+    handle,
+    bio: socialProfile.bio,
+    avatarUrl: socialProfile.avatarUrl,
+    verified: false,
+    verificationStatus: "none",
+    totalSales: 0,
+    totalEarningsGhs: 0,
+    payoutBalanceGhs: 0,
+    createdAt: now,
+    updatedAt: now,
+  });
+  return await ctx.db.get(profileId);
+}
+
+async function creditPaystackTipToPayoutBalance(
+  ctx: { db: import("./_generated/server").MutationCtx["db"] },
+  args: { creatorId: string; creatorAmountGhs: number; now: number }
+) {
+  const creatorProfile = await ensureCreatorPayoutProfile(ctx, args.creatorId, args.now);
+  if (!creatorProfile) return false;
+  await ctx.db.patch(creatorProfile._id, {
+    payoutBalanceGhs: creatorProfile.payoutBalanceGhs + args.creatorAmountGhs,
+    totalEarningsGhs: creatorProfile.totalEarningsGhs + args.creatorAmountGhs,
+    updatedAt: args.now,
+  });
+  return true;
+}
+
 /** Record a tip after successful Paystack charge (idempotent by payment reference). */
 export const fulfillCreatorGiftInternal = internalMutation({
   args: {
@@ -633,13 +708,27 @@ export const fulfillCreatorGiftInternal = internalMutation({
       .query("socialCreatorGifts")
       .withIndex("by_payment_reference", (q) => q.eq("paymentReference", args.reference))
       .first();
-    if (existing) return { giftId: existing._id, alreadyFulfilled: true as const };
 
     const settings = await loadEconomySettings(ctx);
     const share = settings.giftCreatorSharePercent / 100;
     const creatorAmountGhs = Math.round(args.amountGhs * share * 100) / 100;
-
     const now = Date.now();
+
+    if (existing) {
+      // Idempotent path: never double-credit; backfill balance only if never credited.
+      if (!existing.creditedToPayoutAt) {
+        const credited = await creditPaystackTipToPayoutBalance(ctx, {
+          creatorId: existing.creatorId,
+          creatorAmountGhs: existing.amountGhs,
+          now,
+        });
+        if (credited) {
+          await ctx.db.patch(existing._id, { creditedToPayoutAt: now });
+        }
+      }
+      return { giftId: existing._id, alreadyFulfilled: true as const, creatorAmountGhs: existing.amountGhs };
+    }
+
     const giftId = await ctx.db.insert("socialCreatorGifts", {
       creatorId: args.creatorId,
       senderId: args.senderId,
@@ -652,43 +741,13 @@ export const fulfillCreatorGiftInternal = internalMutation({
       createdAt: now,
     });
 
-    // Credit verified Paystack tip share into the single payout balance (marketplace source of truth).
-    const socialProfile = await ctx.db
-      .query("socialProfiles")
-      .withIndex("by_user", (q) => q.eq("userId", args.creatorId))
-      .first();
-    let creatorProfile = await ctx.db
-      .query("creatorProfiles")
-      .withIndex("by_user", (q) => q.eq("userId", args.creatorId))
-      .first();
-    if (!creatorProfile && socialProfile) {
-      const handleBase = (socialProfile.handle || "creator")
-        .toLowerCase()
-        .replace(/[^a-z0-9_-]+/g, "-")
-        .slice(0, 24);
-      const handle = `${handleBase}-tip`.slice(0, 32);
-      const profileId = await ctx.db.insert("creatorProfiles", {
-        userId: args.creatorId,
-        displayName: socialProfile.displayName || "Creator",
-        handle,
-        bio: socialProfile.bio,
-        avatarUrl: socialProfile.avatarUrl,
-        verified: false,
-        verificationStatus: "none",
-        totalSales: 0,
-        totalEarningsGhs: 0,
-        payoutBalanceGhs: 0,
-        createdAt: now,
-        updatedAt: now,
-      });
-      creatorProfile = await ctx.db.get(profileId);
-    }
-    if (creatorProfile) {
-      await ctx.db.patch(creatorProfile._id, {
-        payoutBalanceGhs: creatorProfile.payoutBalanceGhs + creatorAmountGhs,
-        totalEarningsGhs: creatorProfile.totalEarningsGhs + creatorAmountGhs,
-        updatedAt: now,
-      });
+    const credited = await creditPaystackTipToPayoutBalance(ctx, {
+      creatorId: args.creatorId,
+      creatorAmountGhs,
+      now,
+    });
+    if (credited) {
+      await ctx.db.patch(giftId, { creditedToPayoutAt: now });
     }
 
     return { giftId, alreadyFulfilled: false as const, creatorAmountGhs };
@@ -1079,6 +1138,9 @@ export const submitMonetizationApplication = mutation({
       .withIndex("by_creator", (q) => q.eq("creatorId", userId))
       .order("desc")
       .first();
+    if (existing?.status === "suspended" || existing?.suspendedAt) {
+      throw new Error("Monetisation is suspended. Contact support before re-applying.");
+    }
     if (
       existing &&
       (existing.status === "submitted" ||

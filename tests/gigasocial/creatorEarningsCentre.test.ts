@@ -17,6 +17,10 @@ import {
   REWARD_CATALOGUE,
 } from "../../web/lib/gigasocial/creatorEarnings/rewardCatalogue";
 import { MIN_FANS_FOR_MONETIZATION } from "../../web/lib/gigasocial/creatorEconomy";
+import {
+  computeVerifiedCashEarningsGhs,
+  sumPaystackGiftEarningsGhs,
+} from "../../convex/gigaSocialEarningsMath";
 
 const root = resolve(__dirname, "../..");
 
@@ -35,8 +39,16 @@ describe("creator earnings centre — pure rules", () => {
     expect(
       deriveMonetizationStatus({ fanEligible: true, accepted: false })
     ).toBe("eligible_to_apply");
+    // Consent + fans alone is NOT "approved" — requires application.status === approved.
     expect(
       deriveMonetizationStatus({ fanEligible: true, accepted: true })
+    ).toBe("eligible_to_apply");
+    expect(
+      deriveMonetizationStatus({
+        fanEligible: true,
+        accepted: true,
+        application: { status: "approved" },
+      })
     ).toBe("monetization_approved");
     expect(
       deriveMonetizationStatus({
@@ -52,6 +64,48 @@ describe("creator earnings centre — pure rules", () => {
         application: { status: "rejected" },
       })
     ).toBe("monetization_rejected");
+    expect(
+      deriveMonetizationStatus({
+        fanEligible: true,
+        accepted: true,
+        application: { status: "suspended" },
+      })
+    ).toBe("temporarily_suspended");
+  });
+
+  it("does not double-count tips inside verified cash math", () => {
+    const paystackOnly = sumPaystackGiftEarningsGhs([
+      { amountGhs: 8, paymentReference: "ref_a" },
+      { amountGhs: 2, paymentReference: null },
+      { amountGhs: 5, paymentReference: "ref_b" },
+    ]);
+    expect(paystackOnly).toBe(13);
+    // Tips + marketplace purchases — never tips + totalEarningsGhs (which also includes tips).
+    expect(
+      computeVerifiedCashEarningsGhs({
+        paystackGiftEarningsGhs: 13,
+        marketplacePurchaseEarningsGhs: 40,
+      })
+    ).toBe(53);
+  });
+
+  it("requires provider reference before admin marks payout paid", () => {
+    const admin = readFileSync(
+      resolve(root, "convex/adminMarketplace.ts"),
+      "utf8"
+    );
+    expect(admin).toContain(
+      "Provider confirmation reference is required before marking a payout as paid"
+    );
+  });
+
+  it("blocks suspended creators from re-submitting applications", () => {
+    const economy = readFileSync(
+      resolve(root, "convex/gigaSocialEconomy.ts"),
+      "utf8"
+    );
+    expect(economy).toContain("Monetisation is suspended");
+    expect(economy).toContain("creditedToPayoutAt");
   });
 
   it("builds an eligibility checklist without inventing private fraud signals", () => {
@@ -106,7 +160,9 @@ describe("creator earnings centre — pure rules", () => {
     const economy = readFileSync(resolve(root, "convex/gigaSocialEconomy.ts"), "utf8");
     expect(economy).toContain("unfundedContentBonusEstimateGhs");
     expect(economy).toContain("verifiedCashEarningsGhs");
-    expect(economy).toContain("payoutBalanceGhs: creatorProfile.payoutBalanceGhs + creatorAmountGhs");
+    expect(economy).toContain("creditPaystackTipToPayoutBalance");
+    expect(economy).toContain("computeVerifiedCashEarningsGhs");
+    expect(economy).toContain("marketplacePurchases");
     expect(economy).toContain("submitMonetizationApplication");
     expect(economy).toContain("automatedTransfer: false");
   });
@@ -130,7 +186,10 @@ describe("creator earnings centre — pure rules", () => {
     expect(panel).toContain("GigaSocialEarningsCentre");
     expect(panel).toContain('"earnings"');
     expect(page).toContain("/gigasocial/?tab=creator&creatorTab=earnings");
-    expect(page).toContain("<h1");
+    // Single SSR H1 comes from ProductSeoHeader (avoid dual-H1 SEO failure).
+    expect(page).toContain("ProductSeoHeader");
+    expect(page).toContain('title="Creator Earnings Centre"');
+    expect(page).not.toMatch(/<main[\s\S]*?<h1/);
   });
 
   it("documents Phase 0 research and rejects fake ad revenue claims", () => {

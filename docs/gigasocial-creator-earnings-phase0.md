@@ -31,6 +31,8 @@ Access date for all URLs below: **2026-10-24** (Africa/Accra).
 - Product brief (2026-10-24): preserve **500-fan** monetisation unlock.
 - Code previously used **5** fans (with in-memory clamp that forced remote values ≥100 down to 5).
 - This initiative restores **`MIN_FANS_FOR_MONETIZATION = 500`**, keeps **`MIN_FANS_FOR_WITHDRAWAL = 50`** as a secondary check (always satisfied once monetisation fans are met), and removes the ≥100 clamp.
+- **Money gate today:** withdrawals require current-policy consent + withdrawal fan check + balance (not application `approved`). Application/appeal is the review queue UI; admin approve tooling is not yet wired into `assertWithdrawalEligibility`. Documented intentional until Stage D/E.
+- **Convex deploy required** before production use: new table `socialMonetizationApplications` and optional field `socialCreatorGifts.creditedToPayoutAt`.
 
 ## Official research notes
 

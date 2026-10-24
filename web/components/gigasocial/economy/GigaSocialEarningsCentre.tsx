@@ -293,7 +293,7 @@ export const GigaSocialEarningsCentre = memo(function GigaSocialEarningsCentre({
               <MoneyTile
                 label="Verified cash earnings"
                 value={formatGhs(verified)}
-                hint="Tips (Paystack share) + Marketplace sales"
+                hint="Paystack tip share + Marketplace sales only (not credit gifts, not estimates)"
               />
               <MoneyTile
                 label="Available for withdrawal"

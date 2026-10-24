@@ -97,9 +97,9 @@ export function deriveMonetizationStatus(args: {
   if (appStatus === "submitted") {
     return "application_submitted";
   }
-  if (appStatus === "approved" || (args.accepted && args.fanEligible)) {
-    // Accepted terms under current policy with fans still met → approved path.
-    if (args.accepted && args.fanEligible) return "monetization_approved";
+  // Only an approved application is "Monetisation approved" — consent + fans alone is not enough.
+  if (appStatus === "approved") {
+    return "monetization_approved";
   }
   if (args.fanEligible) {
     return "eligible_to_apply";

@@ -1323,6 +1323,8 @@ export default defineSchema({
     streamId: v.optional(v.id("socialLiveStreams")),
     /** Paystack reference when tip was paid via MoMo/card/etc. */
     paymentReference: v.optional(v.string()),
+    /** Set when Paystack tip share was credited to creatorProfiles.payoutBalanceGhs. */
+    creditedToPayoutAt: v.optional(v.number()),
     createdAt: v.number(),
   })
     .index("by_creator_created", ["creatorId", "createdAt"])

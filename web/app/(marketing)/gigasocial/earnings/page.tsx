@@ -30,10 +30,7 @@ export default function GigaSocialEarningsPage() {
       />
       <main className="gigasocial-page-shell marketing-stable w-full px-3 pb-10 pt-4 sm:px-6">
         <Container className="!px-0">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-            Creator Earnings Centre
-          </h1>
-          <p className="mt-3 max-w-2xl text-sm text-muted sm:text-base">
+          <p className="mt-1 max-w-2xl text-sm text-muted sm:text-base">
             Eligible creators can review monetisation status, verified earnings, reward catalogues,
             and an optional GH₵100,000 annual goal planner. Figures are never invented. Advertising
             revenue share and unfunded cash prizes stay unavailable until real programmes launch.
