@@ -1,9 +1,8 @@
 "use client";
 
-import { generatedBookCoverDataUrl } from "@/lib/marketplace/generatedBookCover";
 import { cn } from "@/lib/utils";
 import { BookOpen, FileText, LayoutTemplate, Sparkles } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 type ProductCoverProps = {
   src?: string | null;
@@ -15,27 +14,32 @@ type ProductCoverProps = {
   aspectClassName?: string;
   /**
    * object-cover crops to fill; object-contain preserves the full image
-   * (letterboxed on the branded surface). Default cover for cards.
+   * (letterboxed on the branded surface). Default cover for cards; books use contain.
    */
   fit?: "cover" | "contain";
 };
 
-function fallbackIcon(category?: string) {
-  const c = (category ?? "").toLowerCase();
+function fallbackIcon(category?: string, productType?: string | null) {
+  const c = `${category ?? ""} ${productType ?? ""}`.toLowerCase();
   if (c.includes("prompt") || c.includes("ai")) return Sparkles;
   if (c.includes("design") || c.includes("template")) return LayoutTemplate;
   if (c.includes("software") || c.includes("developer") || c.includes("code")) return FileText;
   return BookOpen;
 }
 
-function fallbackTone(category?: string): string {
-  const c = (category ?? "").toLowerCase();
+function fallbackTone(category?: string, productType?: string | null): string {
+  const c = `${category ?? ""} ${productType ?? ""}`.toLowerCase();
   if (c.includes("prompt") || c.includes("ai")) return "from-violet-700 to-slate-900";
   if (c.includes("design") || c.includes("template")) return "from-violet-800 to-fuchsia-950";
   if (c.includes("software") || c.includes("developer")) return "from-indigo-800 to-slate-900";
   if (c.includes("course") || c.includes("training")) return "from-violet-700 to-stone-900";
   if (c.includes("creator")) return "from-violet-800 to-emerald-950";
-  if (c.includes("education") || c.includes("ebook") || c.includes("book")) {
+  if (
+    c.includes("education") ||
+    c.includes("ebook") ||
+    c.includes("book") ||
+    c.includes("productivity")
+  ) {
     return "from-emerald-800 to-slate-900";
   }
   return "from-violet-800 to-indigo-950";
@@ -59,16 +63,18 @@ export function isBookLikeProduct(opts?: {
 function CoverFallback({
   title,
   category,
+  productType,
   className,
   aspectClassName,
 }: {
   title: string;
   category?: string;
+  productType?: string | null;
   className?: string;
   aspectClassName: string;
 }) {
-  const Icon = fallbackIcon(category);
-  const tone = fallbackTone(category);
+  const Icon = fallbackIcon(category, productType);
+  const tone = fallbackTone(category, productType);
   return (
     <div
       className={cn(
@@ -80,6 +86,7 @@ function CoverFallback({
       role="img"
       aria-label={`${title} cover placeholder`}
       data-cover-state="fallback"
+      data-testid="product-cover-fallback"
     >
       <Icon className="mb-2 h-7 w-7 opacity-90" aria-hidden />
       <span className="line-clamp-3 text-xs font-semibold leading-snug">{title}</span>
@@ -94,8 +101,9 @@ function CoverFallback({
 
 /**
  * Consistent marketplace cover with branded fallback (no fabricated product art).
- * Root cause of blank cards: persisted Convex signed storage URLs expire — callers
- * must resolve fresh URLs via coverStorageId. This component still fails over cleanly.
+ * Root cause of blank/teal cards: persisted Convex signed storage URLs expire —
+ * callers must resolve fresh URLs via coverStorageId (see resolveListingCoverUrl).
+ * This component never substitutes a generated cover for a valid author image.
  */
 export function ProductCover({
   src,
@@ -108,45 +116,38 @@ export function ProductCover({
 }: ProductCoverProps) {
   const [broken, setBroken] = useState(false);
   const bookLike = isBookLikeProduct({ category, productType });
-  const generatedCover = useMemo(
-    () =>
-      bookLike
-        ? generatedBookCoverDataUrl({ title, category, productType })
-        : null,
-    [bookLike, title, category, productType]
-  );
 
   useEffect(() => {
     setBroken(false);
   }, [src]);
 
-  const displaySrc = !src || broken ? generatedCover : src;
+  const trimmed = typeof src === "string" ? src.trim() : "";
+  const displaySrc = trimmed && !broken ? trimmed : null;
 
   if (!displaySrc) {
     return (
       <CoverFallback
         title={title}
         category={category}
+        productType={productType}
         className={className}
         aspectClassName={aspectClassName}
       />
     );
   }
 
-  const isGenerated = !src || broken;
-  const imageFit =
-    isGenerated ? "cover" : fit === "contain" || bookLike ? "contain" : "cover";
+  const imageFit = fit === "contain" || bookLike ? "contain" : "cover";
 
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-xl border border-border/70",
-        isGenerated ? "bg-emerald-950" : "bg-zinc-50 dark:bg-zinc-900/40",
+        "relative overflow-hidden rounded-xl border border-border/70 bg-zinc-50 dark:bg-zinc-900/40",
         aspectClassName,
         className
       )}
-      data-cover-state={isGenerated ? "generated" : "image"}
+      data-cover-state="image"
       data-testid="product-cover-image"
+      data-listing-title={title}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
@@ -154,14 +155,13 @@ export function ProductCover({
         alt={`${title} cover`}
         loading="lazy"
         decoding="async"
-        referrerPolicy="no-referrer"
         className={cn(
           "absolute inset-0 h-full w-full",
           imageFit === "contain" ? "object-contain p-1" : "object-cover"
         )}
         onError={() => {
-          if (src && !broken) {
-            console.info("[marketplace-cover] image failed", { title, src });
+          if (trimmed && !broken) {
+            console.info("[marketplace-cover] image failed", { title, src: trimmed });
             setBroken(true);
           }
         }}

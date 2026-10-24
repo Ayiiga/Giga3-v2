@@ -28,13 +28,14 @@ describe("generated book cover page", () => {
     expect(decodeURIComponent(url)).toContain("Sample Ebook");
   });
 
-  it("ProductCover uses generated covers for book-like products without src", () => {
+  it("ProductCover uses branded fallback (not generated SVG) when cover is missing", () => {
     const cover = readFileSync(
       resolve(__dirname, "../../web/components/marketplace/ProductCover.tsx"),
       "utf8"
     );
-    expect(cover).toContain("generatedBookCoverDataUrl");
-    expect(cover).toContain('data-cover-state={isGenerated ? "generated" : "image"}');
+    expect(cover).not.toContain("generatedBookCoverDataUrl");
+    expect(cover).toContain('data-cover-state="fallback"');
+    expect(cover).toContain('data-cover-state="image"');
     expect(cover).toContain("productType");
   });
 });

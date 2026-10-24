@@ -258,6 +258,16 @@ function MarketplaceSellInner() {
     setMessage(result.message);
   }
 
+  async function uploadCover(listingId: Id<"marketplaceListings">, file: File) {
+    setError(null);
+    try {
+      const result = await uploadViaIntent(listingId, file, "cover_image");
+      setMessage(result.message || "Cover image updated.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not upload cover.");
+    }
+  }
+
   function beginEdit(listing: NonNullable<typeof listings>[number]) {
     setEditingId(listing._id);
     setEditTitle(listing.title);
@@ -919,11 +929,35 @@ function MarketplaceSellInner() {
                           onChange={(e) => {
                             const file = e.target.files?.[0];
                             if (file) void uploadFile(listing._id, file);
+                            e.target.value = "";
+                          }}
+                        />
+                      </label>
+                      <label className="cursor-pointer rounded-xl border px-4 py-2 text-sm">
+                        Upload cover
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,image/*"
+                          className="hidden"
+                          disabled={verificationStatus !== "approved"}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) void uploadCover(listing._id, file);
+                            e.target.value = "";
                           }}
                         />
                       </label>
                     </div>
                   </div>
+                  {listing.coverImageUrl ? (
+                    <p className="mt-2 text-xs text-emerald-700 dark:text-emerald-300">
+                      Cover image on file — shown on Market cards and the product page.
+                    </p>
+                  ) : (
+                    <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">
+                      No cover image yet — upload a JPG/PNG so the Market card shows your cover.
+                    </p>
+                  )}
                   {editingId === listing._id ? (
                     <div className="mt-4 grid gap-3 border-t border-border pt-4">
                       <input

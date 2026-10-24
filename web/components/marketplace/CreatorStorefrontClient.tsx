@@ -142,7 +142,12 @@ function CreatorStorefrontInner() {
                   src={item.coverImageUrl}
                   title={item.title}
                   category={item.category}
+                  productType={
+                    item.productType ? String(item.productType) : null
+                  }
                   className="w-full"
+                  aspectClassName="aspect-[3/4]"
+                  fit="contain"
                 />
                 <h3 className="mt-2 line-clamp-2 text-sm font-semibold">{item.title}</h3>
                 <p className="mt-1 line-clamp-2 text-xs text-muted">{item.description}</p>

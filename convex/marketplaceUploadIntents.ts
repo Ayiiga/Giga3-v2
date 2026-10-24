@@ -143,11 +143,11 @@ export const completeListingUpload = mutation({
       };
     }
 
-    // Persist storage id (durable). Signed getUrl() values expire — do not rely on them alone.
+    // Persist storage id (durable). Fresh display URLs are resolved at read time —
+    // never overwrite a durable CDN coverImageUrl with an ephemeral signed link.
     const coverUrl = await ctx.storage.getUrl(args.storageId);
     await ctx.db.patch(intent.listingId, {
       coverStorageId: args.storageId,
-      coverImageUrl: coverUrl ?? listing.coverImageUrl,
       updatedAt: now,
     });
     await ctx.db.patch(args.intentId, { status: "approved", updatedAt: now });
