@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   extractConvexStorageIdFromUrl,
@@ -148,6 +150,25 @@ describe("marketplace cover URL resolution", () => {
           "https://perfect-lark-521.convex.cloud/api/storage/x?token=1",
       })
     ).toBe(true);
+  });
+
+  it("wires read-time cover intent recovery into public listing resolvers", () => {
+    const views = readFileSync(
+      resolve(__dirname, "../../convex/marketplaceViews.ts"),
+      "utf8"
+    );
+    const marketplace = readFileSync(
+      resolve(__dirname, "../../convex/marketplace.ts"),
+      "utf8"
+    );
+    const cover = readFileSync(
+      resolve(__dirname, "../../convex/marketplaceCover.ts"),
+      "utf8"
+    );
+    expect(cover).toContain("coverIntentStorageIdForListing");
+    expect(views).toContain("coverIntentStorageId");
+    expect(marketplace).toContain("coverIntentStorageIdForListing");
+    expect(marketplace).toContain("toPublicListingResolved(ctx.storage, listing,");
   });
 
   it("strips coverStorageId from public listings", () => {

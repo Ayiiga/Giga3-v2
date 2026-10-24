@@ -2,6 +2,7 @@ import { query } from "./_generated/server";
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { isListingFileApproved } from "./marketplaceListingHelpers";
+import { coverIntentStorageIdForListing } from "./marketplaceCover";
 import {
   toPublicCreatorProfile,
   toPublicListingResolved,
@@ -114,7 +115,11 @@ export const getMarketplaceSeoBundle = query({
       .order("desc")
       .take(50);
 
-    const publicListing = await toPublicListingResolved(ctx.storage, listing);
+    const publicListing = await toPublicListingResolved(ctx.storage, listing, {
+      coverIntentStorageId: listing.coverStorageId
+        ? undefined
+        : await coverIntentStorageIdForListing(ctx, listing._id),
+    });
     const ratingValues = reviews.map((r) => r.rating).filter((n) => n >= 1 && n <= 5);
     const reviewCount = ratingValues.length;
     const ratingValue =

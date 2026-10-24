@@ -10,7 +10,11 @@ import {
   marketplaceReportReasonValidator,
 } from "./schema";
 import { marketplaceUploadsEnabled } from "./marketplaceUploadPolicy";
-import { hasDurableCover, isEphemeralConvexStorageUrl } from "./marketplaceCover";
+import {
+  coverIntentStorageIdForListing,
+  hasDurableCover,
+  isEphemeralConvexStorageUrl,
+} from "./marketplaceCover";
 import {
   isListingFileApproved,
   sanitizePublicHttpUrl,
@@ -139,10 +143,17 @@ export const searchListings = query({
     const page = purchasable.slice(offset, offset + cap);
 
     return await Promise.all(
-      page.map(async (listing) => ({
-        ...(await toPublicListingResolved(ctx.storage, listing)),
-        creator: creators.get(listing.creatorId) ?? null,
-      }))
+      page.map(async (listing) => {
+        const coverIntentStorageId = listing.coverStorageId
+          ? undefined
+          : await coverIntentStorageIdForListing(ctx, listing._id);
+        return {
+          ...(await toPublicListingResolved(ctx.storage, listing, {
+            coverIntentStorageId,
+          })),
+          creator: creators.get(listing.creatorId) ?? null,
+        };
+      })
     );
   },
 });
@@ -161,8 +172,13 @@ export const getListing = query({
       .withIndex("by_listing", (q) => q.eq("listingId", args.listingId))
       .order("desc")
       .take(20);
+    const coverIntentStorageId = listing.coverStorageId
+      ? undefined
+      : await coverIntentStorageIdForListing(ctx, listing._id);
     return {
-      listing: await toPublicListingResolved(ctx.storage, listing),
+      listing: await toPublicListingResolved(ctx.storage, listing, {
+        coverIntentStorageId,
+      }),
       creator: creator ? toPublicCreatorProfile(creator) : null,
       reviews: reviews.map(toPublicReview),
     };
@@ -178,7 +194,14 @@ export const getMyListings = query({
       .withIndex("by_creator", (q) => q.eq("creatorId", email))
       .order("desc")
       .take(100);
-    return await Promise.all(rows.map((row) => toCreatorListingResolved(ctx.storage, row)));
+    return await Promise.all(
+      rows.map(async (row) => {
+        const coverIntentStorageId = row.coverStorageId
+          ? undefined
+          : await coverIntentStorageIdForListing(ctx, row._id);
+        return toCreatorListingResolved(ctx.storage, row, { coverIntentStorageId });
+      })
+    );
   },
 });
 
@@ -221,7 +244,14 @@ export const listPublishedByHandle = query({
         publishedRows,
         cap,
         isListingFileApproved
-      ).map((listing) => toPublicListingResolved(ctx.storage, listing))
+      ).map(async (listing) => {
+        const coverIntentStorageId = listing.coverStorageId
+          ? undefined
+          : await coverIntentStorageIdForListing(ctx, listing._id);
+        return toPublicListingResolved(ctx.storage, listing, {
+          coverIntentStorageId,
+        });
+      })
     );
 
     return {
@@ -750,7 +780,11 @@ export const getMyPurchases = query({
           paymentReference: purchase.paymentReference,
         },
         // Never expose private storage IDs or seller email on the buyer library.
-        listing: await toPublicListingResolved(ctx.storage, listing),
+        listing: await toPublicListingResolved(ctx.storage, listing, {
+          coverIntentStorageId: listing.coverStorageId
+            ? undefined
+            : await coverIntentStorageIdForListing(ctx, listing._id),
+        }),
         /** Expiring Convex storage URL when the buyer owns a file-backed listing. */
         downloadUrl,
         fileName: listing.fileName ?? "download",
