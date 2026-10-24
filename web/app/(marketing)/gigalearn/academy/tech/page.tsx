@@ -1,4 +1,5 @@
 import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { ProductSeoHeader } from "@/components/seo/ProductSeoHeader";
 import { publicMetadata } from "@/lib/seo/publicMetadata";
 import dynamic from "next/dynamic";
@@ -26,6 +27,22 @@ export const metadata = publicMetadata({
 export default function GigaLearnAcademyTechHubPage() {
   return (
     <>
+      <JsonLd
+        webPage={{
+          path: "/gigalearn/academy/tech",
+          name: "Technology Learning Hub",
+          description:
+            "Interactive technology practice for AI, web/PWA, mobile, robotics, and digital technologies inside GigaLearn Academy.",
+        }}
+      />
+      <JsonLd
+        breadcrumbs={[
+          { name: "Giga3 AI", path: "/" },
+          { name: "GigaLearn", path: "/gigalearn" },
+          { name: "Academy", path: "/gigalearn/academy" },
+          { name: "Technology Learning Hub", path: "/gigalearn/academy/tech" },
+        ]}
+      />
       <ProductSeoHeader
         compact
         title="Technology Learning Hub"

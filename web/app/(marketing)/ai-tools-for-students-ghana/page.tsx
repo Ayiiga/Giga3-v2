@@ -26,7 +26,7 @@ const PREMIUM = SUBSCRIPTION_PLANS.premium;
 export const metadata = publicMetadata({
   path: PATH,
   title: "Best AI Tools for Students in Ghana 2026 | Giga3 AI",
-  description: `Student-focused AI tool comparison for Ghana in 2026 — study, research, coding and exam prep with Giga3 AI, ChatGPT, Gemini and more. GHS ${BASIC.priceGhs} ${BASIC.label} and up via Paystack.`,
+  description: `Compare AI study tools for Ghana in 2026 — Giga3 AI, ChatGPT, Gemini and more for research, coding and exams. From GHS ${BASIC.priceGhs}/${BASIC.label} via Paystack.`,
 });
 
 const PRICING_ROWS = [
