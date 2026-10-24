@@ -17,11 +17,13 @@ import { GigaSocialGiftsHub } from "@/components/gigasocial/economy/GigaSocialGi
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
-import { Award, Sparkles } from "lucide-react";
+import { Award, Flag, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { memo, useEffect, useMemo, useState } from "react";
 import type { SocialPostTypeId } from "@/lib/gigasocial/sections";
+import { GigaSocialReportDialog } from "@/components/gigasocial/trust/GigaSocialReportDialog";
+import { Button } from "@/components/ui/Button";
 
 type ProfileTab = "posts" | "photos" | "videos" | "ai" | "liked" | "gifts";
 
@@ -44,6 +46,8 @@ export const GigaSocialPublicProfileClient = memo(function GigaSocialPublicProfi
   const [tab, setTab] = useState<ProfileTab>("posts");
   const [fanCount, setFanCount] = useState<number | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportStatus, setReportStatus] = useState<string | null>(null);
   const requireAuth = () => setAuthOpen(true);
 
   const data = useQuery(api.gigaSocial.getProfileByHandle, {
@@ -208,6 +212,25 @@ export const GigaSocialPublicProfileClient = memo(function GigaSocialPublicProfi
               <Sparkles className="h-3.5 w-3.5" aria-hidden />
               Marketplace
             </Link>
+            {!isOwnProfile && profile.userId ? (
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-border px-3 text-xs font-medium text-muted"
+                onClick={() => {
+                  if (!sessionToken) {
+                    requireAuth();
+                    return;
+                  }
+                  setReportStatus(null);
+                  setReportOpen(true);
+                }}
+              >
+                <Flag className="h-3.5 w-3.5" aria-hidden />
+                Report profile
+              </Button>
+            ) : null}
             {getGigaSocialFeatures().enableDirectMessages &&
             myUserId &&
             profile.userId !== myUserId ? (
@@ -219,6 +242,11 @@ export const GigaSocialPublicProfileClient = memo(function GigaSocialPublicProfi
               </Link>
             ) : null}
           </div>
+          {reportStatus ? (
+            <p className="mt-3 text-xs text-emerald-800" role="status">
+              {reportStatus}
+            </p>
+          ) : null}
         </div>
       </div>
 
@@ -318,6 +346,18 @@ export const GigaSocialPublicProfileClient = memo(function GigaSocialPublicProfi
           variant="modal"
           nextPath={buildGigaSocialProfileUrl(handle)}
           onDismiss={() => setAuthOpen(false)}
+        />
+      ) : null}
+
+      {!isOwnProfile && profile.userId ? (
+        <GigaSocialReportDialog
+          open={reportOpen}
+          sessionToken={sessionToken}
+          target={{ targetType: "profile", profileUserId: profile.userId }}
+          title="Report profile"
+          onClose={() => setReportOpen(false)}
+          onRequireAuth={requireAuth}
+          onSubmitted={(message) => setReportStatus(message)}
         />
       ) : null}
     </div>
