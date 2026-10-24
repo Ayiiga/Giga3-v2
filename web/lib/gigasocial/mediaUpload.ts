@@ -27,10 +27,15 @@ import {
   SOCIAL_MAX_VIDEO_DURATION_SEC,
   SOCIAL_MAX_VIDEO_MB,
   SOCIAL_VIDEO_BUCKETS,
-  SOCIAL_VIDEO_MIME_TYPES,
+  resolveVideoContentType,
   type SocialPostMediaItemInput,
   type SocialUploadProgress,
 } from "@/lib/gigasocial/constants";
+import {
+  isUsableVideoDuration,
+  readSocialVideoDuration,
+  type ReadVideoDurationOptions,
+} from "@/lib/gigasocial/videoDuration";
 
 const ACCESS_TOKEN_KEY = "giga3_supabase_access_token";
 
@@ -105,7 +110,7 @@ export function getAudioDuration(file: File): Promise<number> {
 }
 
 function validateVideoFile(file: File): void {
-  if (!SOCIAL_VIDEO_MIME_TYPES.has(file.type)) {
+  if (!resolveVideoContentType(file)) {
     throw new Error("Unsupported video type. Use MP4, MOV, or WebM.");
   }
   if (file.size > SOCIAL_MAX_VIDEO_BYTES) {
@@ -118,56 +123,56 @@ export function isSocialVideoOverSizeLimit(file: Pick<File, "size">): boolean {
   return file.size > SOCIAL_MAX_VIDEO_BYTES;
 }
 
-export function getVideoDuration(file: File): Promise<number> {
-  return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file);
-    const video = document.createElement("video");
-    video.preload = "metadata";
-    const finish = (duration: number) => {
-      URL.revokeObjectURL(url);
-      resolve(duration);
-    };
-    video.onloadedmetadata = () => {
-      // Some browsers report Infinity until a seek forces duration.
-      if (!Number.isFinite(video.duration) || video.duration === Infinity) {
-        const onTimeUpdate = () => {
-          video.removeEventListener("timeupdate", onTimeUpdate);
-          video.currentTime = 0;
-          finish(Number.isFinite(video.duration) ? video.duration : 0);
-        };
-        video.addEventListener("timeupdate", onTimeUpdate);
-        try {
-          video.currentTime = 1e101;
-        } catch {
-          finish(0);
-        }
-        return;
-      }
-      finish(video.duration);
-    };
-    video.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error("Could not read video duration."));
-    };
-    video.src = url;
-  });
+/**
+ * Read duration for a local video. Android-safe wrapper around readSocialVideoDuration.
+ * Prefer passing `{ signal }` when the user may replace the selection mid-probe.
+ */
+export function getVideoDuration(
+  file: File,
+  options?: ReadVideoDurationOptions
+): Promise<number> {
+  return readSocialVideoDuration(file, options);
 }
+
+export { isUsableVideoDuration, readSocialVideoDuration };
 
 export async function generateVideoThumbnail(file: File): Promise<string | undefined> {
   const url = URL.createObjectURL(file);
   try {
     const video = document.createElement("video");
-    video.preload = "metadata";
+    video.preload = "auto";
     video.muted = true;
+    video.defaultMuted = true;
     video.playsInline = true;
+    video.setAttribute("playsinline", "true");
     await new Promise<void>((resolve, reject) => {
-      video.onloadeddata = () => resolve();
-      video.onerror = () => reject(new Error("Could not load video for thumbnail."));
+      const timer = window.setTimeout(
+        () => reject(new Error("Could not load video for thumbnail.")),
+        10000
+      );
+      video.onloadeddata = () => {
+        window.clearTimeout(timer);
+        resolve();
+      };
+      video.onerror = () => {
+        window.clearTimeout(timer);
+        reject(new Error("Could not load video for thumbnail."));
+      };
       video.src = url;
+      try {
+        video.load();
+      } catch {
+        /* ignore */
+      }
     });
-    video.currentTime = Math.min(1, Math.max(0, (video.duration || 1) * 0.1));
+    const probe = isUsableVideoDuration(video.duration) ? video.duration : 1;
+    video.currentTime = Math.min(1, Math.max(0.05, probe * 0.1));
     await new Promise<void>((resolve) => {
-      video.onseeked = () => resolve();
+      const timer = window.setTimeout(() => resolve(), 2000);
+      video.onseeked = () => {
+        window.clearTimeout(timer);
+        resolve();
+      };
     });
     const canvas = document.createElement("canvas");
     canvas.width = video.videoWidth || 640;
@@ -364,7 +369,9 @@ async function uploadViaPrepared(
   const contentType =
     args.kind === "audio"
       ? assertSupportedAudioFile(args.file)
-      : args.file.type || "application/octet-stream";
+      : args.kind === "video"
+        ? resolveVideoContentType(args.file) ?? "video/mp4"
+        : args.file.type || "application/octet-stream";
   const prepared = await deps.prepareUpload({
     sessionToken: deps.sessionToken,
     fileName: args.file.name,
@@ -506,13 +513,13 @@ export async function uploadSocialVideo(
   }
 ): Promise<SocialPostMediaItemInput> {
   validateVideoFile(file);
-  const durationSec = await getVideoDuration(file);
+  const durationSec = await getVideoDuration(file, { signal: options?.signal });
   if (durationSec > SOCIAL_MAX_VIDEO_DURATION_SEC) {
     throw new Error(
       `Videos must be ${SOCIAL_MAX_VIDEO_DURATION_SEC} seconds or shorter. This video is ${Math.ceil(durationSec)} seconds.`
     );
   }
-  if (durationSec <= 0) {
+  if (!isUsableVideoDuration(durationSec)) {
     throw new Error("Could not verify video duration. Try another file.");
   }
 
@@ -534,6 +541,8 @@ export async function uploadSocialVideo(
 
   let videoResult: SocialPostMediaItemInput | null = null;
 
+  const videoContentType = resolveVideoContentType(file) ?? "video/mp4";
+
   if (client && supabaseUid) {
     const objectPath = buildUserStoragePath(supabaseUid, file.name);
     const bucket = SOCIAL_VIDEO_BUCKETS[0];
@@ -541,7 +550,7 @@ export async function uploadSocialVideo(
       bucket,
       objectPath,
       body: file,
-      contentType: file.type,
+      contentType: videoContentType,
     });
     if (directUrl) {
       options?.onProgress?.({ loaded: 1, total: 1, percent: 100 });

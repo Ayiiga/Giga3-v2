@@ -32,5 +32,11 @@ describe("classifyMediaFiles", () => {
     const { UNIFIED_MEDIA_ACCEPT } = await import("../../web/lib/gigasocial/mediaComposer");
     expect(UNIFIED_MEDIA_ACCEPT).toContain("image/jpeg");
     expect(UNIFIED_MEDIA_ACCEPT).toContain("video/mp4");
+    expect(UNIFIED_MEDIA_ACCEPT).toContain(".mp4");
+  });
+
+  it("classifies Android gallery videos with empty MIME via extension", () => {
+    const file = new File(["x"], "VID_android.mp4", { type: "" });
+    expect(classifyMediaFiles([file]).kind).toBe("single-video");
   });
 });
