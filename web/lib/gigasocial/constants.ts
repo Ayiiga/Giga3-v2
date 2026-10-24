@@ -36,6 +36,49 @@ export const SOCIAL_VIDEO_MIME_TYPES = new Set([
   "video/quicktime",
 ]);
 
+/** Android / gallery aliases that should map to a supported container. */
+const SOCIAL_VIDEO_MIME_ALIASES: Record<string, string> = {
+  "video/x-m4v": "video/mp4",
+  "video/m4v": "video/mp4",
+  "application/mp4": "video/mp4",
+  "video/3gpp": "video/mp4",
+  "video/3gpp2": "video/mp4",
+  "video/avi": "video/mp4",
+  "video/x-msvideo": "video/mp4",
+};
+
+const SOCIAL_VIDEO_EXT_TO_MIME: Record<string, string> = {
+  mp4: "video/mp4",
+  m4v: "video/mp4",
+  mov: "video/quicktime",
+  qt: "video/quicktime",
+  webm: "video/webm",
+  "3gp": "video/mp4",
+  "3g2": "video/mp4",
+};
+
+/**
+ * Resolve a supported video MIME type from browser metadata or file extension.
+ * Android gallery picks often return an empty `file.type`.
+ */
+export function resolveVideoContentType(file: Pick<File, "name" | "type">): string | null {
+  const raw = file.type?.toLowerCase().split(";")[0]?.trim() ?? "";
+  if (raw) {
+    if (SOCIAL_VIDEO_MIME_TYPES.has(raw)) return raw;
+    const alias = SOCIAL_VIDEO_MIME_ALIASES[raw];
+    if (alias) return alias;
+  }
+  const ext = file.name.split(".").pop()?.toLowerCase();
+  if (!ext) return null;
+  return SOCIAL_VIDEO_EXT_TO_MIME[ext] ?? null;
+}
+
+/** True when the file looks like a video by MIME or extension. */
+export function isLikelySocialVideoFile(file: Pick<File, "name" | "type">): boolean {
+  if (file.type?.toLowerCase().startsWith("video/")) return true;
+  return Boolean(resolveVideoContentType(file));
+}
+
 export const SOCIAL_AUDIO_MIME_TYPES = new Set([
   "audio/mpeg",
   "audio/mp4",
