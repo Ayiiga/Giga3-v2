@@ -135,7 +135,7 @@ function NominateInner() {
         </label>
         {!selfApplication ? (
           <label className="block text-sm">
-            <span className="font-medium">Nominee GigaSocial handle (optional)</span>
+            <span className="font-medium">Nominee GigaSocial handle (required)</span>
             <input
               className="mt-1 w-full rounded-xl border border-border px-3 py-2"
               value={handle}

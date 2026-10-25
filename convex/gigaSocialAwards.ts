@@ -16,6 +16,7 @@ import {
   publicVoteComponent,
   type ScoreWeights,
 } from "./gigaSocialAwardsMath";
+import { assertCanRespondToNomination } from "./gigaSocialAwardsPolicy";
 
 const OPERATOR_DISCLOSURE =
   "GigaSocial Awards is operated by Giga3 AI. It is not government-endorsed unless a documented endorsement is published.";
@@ -104,10 +105,6 @@ function parseLinks(json: string): string[] {
   } catch {
     return [];
   }
-}
-
-function randomToken(): string {
-  return `${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}`.slice(0, 24);
 }
 
 async function writeAudit(
@@ -304,7 +301,6 @@ export const listPublicCandidates = query({
       .map((c) => ({
         candidateId: c._id,
         displayCode: c.displayCode,
-        shareToken: c.shareToken,
         displayName: c.displayName,
         handle: c.handle ?? null,
         avatarUrl: c.avatarUrl ?? null,
@@ -445,14 +441,23 @@ export const submitNomination = mutation({
       }
     } else {
       status = "awaiting_consent";
-      if (args.nomineeHandle?.trim()) {
-        const handle = args.nomineeHandle.trim().replace(/^@/, "").toLowerCase();
-        const profile = await ctx.db
-          .query("socialProfiles")
-          .withIndex("by_handle", (q) => q.eq("handle", handle))
-          .first();
-        if (profile) nomineeUserId = profile.userId;
+      const handle = args.nomineeHandle?.trim().replace(/^@/, "").toLowerCase();
+      if (!handle) {
+        throw new Error(
+          "Nominee GigaSocial handle is required so the nominee can consent."
+        );
       }
+      const profile = await ctx.db
+        .query("socialProfiles")
+        .withIndex("by_handle", (q) => q.eq("handle", handle))
+        .first();
+      if (!profile) {
+        throw new Error("No GigaSocial profile found for that handle.");
+      }
+      if (profile.userId === userId) {
+        throw new Error("Use self-application to nominate yourself.");
+      }
+      nomineeUserId = profile.userId;
     }
 
     const nominationId = await ctx.db.insert("awardsNominations", {
@@ -507,9 +512,10 @@ export const respondToNomination = mutation({
     const userId = await requireSession(args.sessionToken, ctx);
     const nomination = await ctx.db.get(args.nominationId);
     if (!nomination) throw new Error("Nomination not found.");
-    if (nomination.nomineeUserId && nomination.nomineeUserId !== userId) {
-      throw new Error("Only the nominee can respond.");
-    }
+    assertCanRespondToNomination({
+      actorUserId: userId,
+      nomineeUserId: nomination.nomineeUserId,
+    });
     if (nomination.status !== "awaiting_consent") {
       throw new Error("This nomination is not awaiting consent.");
     }

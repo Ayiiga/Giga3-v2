@@ -3,14 +3,21 @@ import { resolve } from "path";
 import { describe, expect, it } from "vitest";
 import {
   assertWeightsSane,
+  averageRubricScore,
   combineWeightedScore,
   compareCandidatesForRanking,
   DEFAULT_GENERAL_WEIGHTS,
   formatDisplayCode,
+  normalizeComponentScore,
   packageInfluencesCompetition,
   publicVoteComponent,
 } from "../../convex/gigaSocialAwardsMath";
 import { assertPackageOrderSafe } from "../../convex/gigaSocialAwardsAdmin";
+import {
+  assertCanRespondToNomination,
+  parseAndClampRubricScores,
+  seasonStatusLocksFormula,
+} from "../../convex/gigaSocialAwardsPolicy";
 import {
   AWARDS_PATHS,
   PACKAGE_DISCLAIMER,
@@ -46,6 +53,45 @@ describe("gigaSocialAwards — scoring and safety", () => {
     expect(peoples).toBe(70);
   });
 
+  it("handles zero votes, missing scores, ties, and invalid weights", () => {
+    expect(publicVoteComponent({ candidateVotes: 0, maxVotesInCategory: 0 })).toBe(0);
+    expect(averageRubricScore([])).toBe(0);
+    expect(averageRubricScore([Number.NaN, 120, -5])).toBe(50);
+    expect(normalizeComponentScore(Number.POSITIVE_INFINITY)).toBe(0);
+    expect(
+      combineWeightedScore({
+        weights: {
+          publicVoteWeight: 0,
+          judgingWeight: 0,
+          assessmentWeight: 0,
+          peoplesChoice: false,
+        },
+        publicVote: 90,
+        judging: 90,
+        assessment: 90,
+      })
+    ).toBe(0);
+    expect(() =>
+      assertWeightsSane({
+        publicVoteWeight: -1,
+        judgingWeight: 40,
+        assessmentWeight: 20,
+        peoplesChoice: false,
+      })
+    ).toThrow(/non-negative/i);
+
+    const tiedA = {
+      finalScore: 80,
+      publicVotes: 10,
+      judging: 50,
+      publishedAt: 100,
+      displayCode: "GSA-2026-00002",
+    };
+    const tiedB = { ...tiedA, displayCode: "GSA-2026-00001", publishedAt: 200 };
+    // Same score/votes/judging → earlier publishedAt wins (a before b).
+    expect(compareCandidatesForRanking(tiedA, tiedB)).toBeLessThan(0);
+  });
+
   it("normalises public vote share against the category max", () => {
     expect(
       publicVoteComponent({ candidateVotes: 25, maxVotesInCategory: 50 })
@@ -70,6 +116,34 @@ describe("gigaSocialAwards — scoring and safety", () => {
     expect(() =>
       assertPackageOrderSafe({ influencesVotes: true })
     ).toThrow(/never influence/i);
+  });
+
+  it("blocks nomination consent hijack when nominee is unlinked", () => {
+    expect(() =>
+      assertCanRespondToNomination({ actorUserId: "attacker@x.com", nomineeUserId: null })
+    ).toThrow(/not linked/i);
+    expect(() =>
+      assertCanRespondToNomination({
+        actorUserId: "attacker@x.com",
+        nomineeUserId: "real@x.com",
+      })
+    ).toThrow(/Only the nominee/i);
+    expect(() =>
+      assertCanRespondToNomination({
+        actorUserId: "real@x.com",
+        nomineeUserId: "real@x.com",
+      })
+    ).not.toThrow();
+  });
+
+  it("clamps rubric scores and locks formulas after voting opens", () => {
+    expect(JSON.parse(parseAndClampRubricScores(JSON.stringify({ quality: 150, impact: -2 })))).toEqual(
+      { quality: 100, impact: 0 }
+    );
+    expect(() => parseAndClampRubricScores("{}")).toThrow(/at least one/i);
+    expect(seasonStatusLocksFormula("voting_open")).toBe(true);
+    expect(seasonStatusLocksFormula("judging")).toBe(true);
+    expect(seasonStatusLocksFormula("nominations_open")).toBe(false);
   });
 
   it("keeps tip and package disclaimers and share path helpers", () => {
@@ -98,10 +172,18 @@ describe("gigaSocialAwards — scoring and safety", () => {
     expect(awards).toContain("submitNomination");
     expect(awards).toContain("requireSession");
     expect(awards).toContain("You cannot vote for yourself");
+    expect(awards).toContain("assertCanRespondToNomination");
+    expect(awards).toContain("Nominee GigaSocial handle is required");
+    expect(awards).not.toMatch(/shareToken:\s*c\.shareToken/);
     expect(admin).toContain("ensureAdminAccess");
     expect(admin).toContain("formulaLockedAt");
+    expect(admin).toContain("seasonStatusLocksFormula");
+    expect(admin).toContain("submitAssessmentScore");
     expect(admin).toContain("Cannot advertise a prize that is not funded");
     expect(admin).toContain("promoPaymentsEnabled");
+    // No checkout / order fulfilment path yet — schema only until payments are enabled.
+    expect(admin).not.toContain("awardsPromoOrders");
+    expect(awards).not.toContain("awardsPromoOrders");
     expect(schema).toContain("awardsSeasons");
     expect(schema).toContain("awardsVotes");
     expect(schema).toContain("influencesCompetition: v.literal(false)");

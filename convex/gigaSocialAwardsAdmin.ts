@@ -13,6 +13,11 @@ import {
   writeAudit,
 } from "./gigaSocialAwards";
 import { assertWeightsSane } from "./gigaSocialAwardsMath";
+import {
+  parseAndClampRubricScores,
+  seasonStatusLocksFormula,
+  secureRandomToken,
+} from "./gigaSocialAwardsPolicy";
 
 function now() {
   return Date.now();
@@ -34,7 +39,7 @@ async function nextDisplaySequence(
 }
 
 function randomShareToken(): string {
-  return `st_${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`.slice(0, 28);
+  return secureRandomToken("st_", 26);
 }
 
 /** Create a draft season with default categories + free/paid package catalogue. */
@@ -151,7 +156,7 @@ export const setSeasonStatus = mutation({
     if (!season) throw new Error("Season not found.");
 
     const t = now();
-    if (args.status === "voting_open") {
+    if (seasonStatusLocksFormula(args.status)) {
       const cats = await ctx.db
         .query("awardsCategories")
         .withIndex("by_season", (q) => q.eq("seasonId", season._id))
@@ -199,7 +204,8 @@ export const updateCategoryFormula = mutation({
     if (!args.confirm) throw new Error("Set confirm=true to change scoring formula.");
     const cat = await ctx.db.get(args.categoryId);
     if (!cat) throw new Error("Category not found.");
-    if (cat.formulaLockedAt) {
+    const season = await ctx.db.get(cat.seasonId);
+    if (cat.formulaLockedAt || (season && seasonStatusLocksFormula(season.status))) {
       throw new Error(
         "Scoring formula is locked after voting opened. Create an audited exception process before changing."
       );
@@ -617,15 +623,7 @@ export const submitJudgeScore = mutation({
     await ensureAdminAccess(args);
     const candidate = await ctx.db.get(args.candidateId);
     if (!candidate) throw new Error("Candidate not found.");
-    let parsed: Record<string, number>;
-    try {
-      parsed = JSON.parse(args.scoresJson) as Record<string, number>;
-    } catch {
-      throw new Error("scoresJson must be a JSON object.");
-    }
-    if (!parsed || typeof parsed !== "object") {
-      throw new Error("scoresJson must be a JSON object.");
-    }
+    const scoresJson = parseAndClampRubricScores(args.scoresJson);
     const t = now();
     const existing = await ctx.db
       .query("awardsJudgeScores")
@@ -633,7 +631,6 @@ export const submitJudgeScore = mutation({
         q.eq("candidateId", candidate._id).eq("judgeUserId", args.judgeUserId.trim())
       )
       .first();
-    const scoresJson = JSON.stringify(parsed);
     if (existing) {
       await ctx.db.patch(existing._id, {
         scoresJson,
@@ -657,6 +654,56 @@ export const submitJudgeScore = mutation({
       actor: "admin",
       action: "judge_score_submitted",
       entityType: "awardsJudgeScores",
+      entityId: scoreId,
+    });
+    return { ok: true as const, scoreId };
+  },
+});
+
+export const submitAssessmentScore = mutation({
+  args: {
+    ...adminCredentialArgs,
+    candidateId: v.id("awardsCandidates"),
+    assessorUserId: v.string(),
+    scoresJson: v.string(),
+    notes: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await ensureAdminAccess(args);
+    const candidate = await ctx.db.get(args.candidateId);
+    if (!candidate) throw new Error("Candidate not found.");
+    const scoresJson = parseAndClampRubricScores(args.scoresJson);
+    const t = now();
+    const assessorUserId = args.assessorUserId.trim();
+    if (!assessorUserId) throw new Error("assessorUserId is required.");
+    const rows = await ctx.db
+      .query("awardsAssessmentScores")
+      .withIndex("by_candidate", (q) => q.eq("candidateId", candidate._id))
+      .collect();
+    const existing = rows.find((r) => r.assessorUserId === assessorUserId) ?? null;
+    if (existing) {
+      await ctx.db.patch(existing._id, {
+        scoresJson,
+        notes: args.notes?.trim().slice(0, 1000),
+        updatedAt: t,
+      });
+      return { ok: true as const, scoreId: existing._id };
+    }
+    const scoreId = await ctx.db.insert("awardsAssessmentScores", {
+      seasonId: candidate.seasonId,
+      categoryId: candidate.categoryId,
+      candidateId: candidate._id,
+      assessorUserId,
+      scoresJson,
+      notes: args.notes?.trim().slice(0, 1000),
+      submittedAt: t,
+      updatedAt: t,
+    });
+    await writeAudit(ctx, {
+      seasonId: candidate.seasonId,
+      actor: "admin",
+      action: "assessment_score_submitted",
+      entityType: "awardsAssessmentScores",
       entityId: scoreId,
     });
     return { ok: true as const, scoreId };
