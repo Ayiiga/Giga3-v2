@@ -54,30 +54,31 @@ A non-production template is kept at:
 
 **Do not copy the template to `web/public/` until the fingerprint is real.**
 
-## Status (2026-10-21)
+## Status (2026-10-25)
 
-Production check: `https://www.giga3ai.com/.well-known/assetlinks.json` → **404**.  
-Upload-key SHA-256 is filled in `assetlinks.prepared.json`; Play App Signing SHA-256 still `PASTE_*`.  
-**TWA domain verification is not complete.** Final checklist: `final-play-readiness-2026-10-21.md`.
+Production file: `web/public/.well-known/assetlinks.json`  
+Play App Signing SHA-256 (owner-provided from Play Console **App signing key certificate**):
+
+`EA:16:5F:35:4B:91:92:16:00:97:14:1A:88:54:DC:19:DF:45:AA:5B:55:FC:FE:71:BB:31:DE:A5:32:98:B5:09`
+
+Upload-key SHA-256 (optional second entry for upload-signed sideloads):
+
+`69:2B:C8:C3:2A:58:2E:7C:02:B6:7A:98:9E:D4:1B:88:37:2C:BD:0A:50:05:0B:F0:6A:08:6B:5F:CB:C4:6F:97`
+
+Console path (current UI): **Protected with Play → Play Store protection → Manage Play app signing**.
 
 ### Which SHA-256 to use
 
 | Certificate | Where you get it | When it matters |
 |-------------|------------------|-----------------|
-| **Play App Signing key** | Play Console → Setup → App signing → *App signing key certificate* | **Required** for Play-installed builds (users get this cert) |
+| **Play App Signing key** | Play Console → Protected with Play → Manage Play app signing → *App signing key certificate* | **Required** for Play-installed builds (users get this cert) |
 | **Upload key** | Same page → *Upload key certificate*, or `keytool -list -v` on `upload-keystore.jks` | Signs the AAB you upload; may also be listed in assetlinks if you sideload upload-signed APKs |
 | **Android debug key** | `~/.android/debug.keystore` | Debug APK sideloads only — never treat as production |
 
-Prepared JSON: `docs/google-play/assetlinks.prepared.json`
-
-- Slot 1: `PASTE_PLAY_APP_SIGNING_CERT_SHA256_HERE` — replace with Play Console **App signing key certificate** SHA-256 after first upload / App Signing enrollment.
-- Slot 2: upload-key SHA-256 from the local `upload-keystore.jks` (filled 2026-10-21) — useful for upload-signed sideloads; **not** a substitute for the Play App Signing cert on Play-installed builds.
+Prepared JSON mirrors production: `docs/google-play/assetlinks.prepared.json`
 
 For local debug installs only, the Android debug keystore SHA-256 observed in this Cloud Agent was:
 
 `2B:BE:F1:14:2A:BB:36:DA:70:19:AE:F7:CC:97:7E:53:4C:F6:60:54:80:10:F3:10:36:F2:97:70:38:52:A6:FE`
 
-Do **not** publish the debug fingerprint as the production Play App Signing certificate.  
-Do **not** copy `assetlinks.prepared.json` to `web/public/` until the Play App Signing `PASTE_*` token is replaced with a real fingerprint.
-
-Owner action list: `docs/google-play/next-owner-actions.md`
+Do **not** publish the debug fingerprint as the production Play App Signing certificate.

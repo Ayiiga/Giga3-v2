@@ -1,0 +1,15 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.giga3ai.app",
+      "sha256_cert_fingerprints": [
+        "EA:16:5F:35:4B:91:92:16:00:97:14:1A:88:54:DC:19:DF:45:AA:5B:55:FC:FE:71:BB:31:DE:A5:32:98:B5:09",
+        "69:2B:C8:C3:2A:58:2E:7C:02:B6:7A:98:9E:D4:1B:88:37:2C:BD:0A:50:05:0B:F0:6A:08:6B:5F:CB:C4:6F:97"
+      ]
+    }
+  }
+]
