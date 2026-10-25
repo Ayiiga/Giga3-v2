@@ -2,7 +2,7 @@
  * Giga3 AI PWA service worker — Cloudflare Pages static export.
  * Bump CACHE_VERSION on every deploy that changes JS/CSS.
  */
-const CACHE_VERSION = "giga3-v72";
+const CACHE_VERSION = "giga3-v73";
 const OFFLINE_URL = "/offline.html";
 const NETWORK_TIMEOUT_MS = 15000;
 
@@ -96,7 +96,14 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches
       .keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE_VERSION).map((k) => caches.delete(k))))
+      .then((keys) =>
+        Promise.all(
+          keys
+            // Retire prior Giga3 generations only — never wipe third-party caches (e.g. OneSignal).
+            .filter((k) => k.startsWith("giga3-") && k !== CACHE_VERSION)
+            .map((k) => caches.delete(k))
+        )
+      )
       .then(() => self.clients.claim())
   );
 });
