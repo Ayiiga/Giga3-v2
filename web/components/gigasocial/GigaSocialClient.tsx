@@ -467,8 +467,16 @@ function GigaSocialContent() {
 
 function resolveCreatorTab(
   raw: string | null
-): "earnings" | "dashboard" | "wallet" | "gifts" | "affiliate" | "boost" {
-  const allowed = ["earnings", "dashboard", "wallet", "gifts", "affiliate", "boost"] as const;
+): "earnings" | "awards" | "dashboard" | "wallet" | "gifts" | "affiliate" | "boost" {
+  const allowed = [
+    "earnings",
+    "awards",
+    "dashboard",
+    "wallet",
+    "gifts",
+    "affiliate",
+    "boost",
+  ] as const;
   if (raw && (allowed as readonly string[]).includes(raw)) {
     return raw as (typeof allowed)[number];
   }
