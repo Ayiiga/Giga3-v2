@@ -103,9 +103,12 @@ export const GigaSocialCreatorDashboard = memo(function GigaSocialCreatorDashboa
             </p>
           </div>
           <div className="text-right">
-            <p className="text-xs text-muted">Estimated earnings</p>
+            <p className="text-xs text-muted">Verified + tracked</p>
             <p className="text-xl font-bold text-foreground">
               {formatGhs(dashboard.estimatedEarningsGhs)}
+            </p>
+            <p className="mt-0.5 text-[11px] text-muted">
+              Withdrawable {formatGhs(dashboard.payoutBalanceGhs ?? 0)}
             </p>
           </div>
         </div>
@@ -228,14 +231,18 @@ export const GigaSocialCreatorDashboard = memo(function GigaSocialCreatorDashboa
             ))}
           </ul>
           <p className="mt-2 text-[11px] text-muted">
-            Views, likes, comments, shares, and watch time influence estimated content rewards where
-            configured. Fake engagement does not qualify.
+            Views and engagement help growth insights. Unfunded content estimates are not withdrawable
+            cash. Fake engagement does not qualify.
           </p>
         </section>
       ) : null}
 
       <div className="gigasocial-creator-stat-grid">
-        <Stat icon={TrendingUp} label="Content" value={formatGhs(dashboard.contentEarningsGhs)} />
+        <Stat
+          icon={TrendingUp}
+          label="Content (estimate)"
+          value={formatGhs(dashboard.contentEarningsGhs)}
+        />
         <Stat icon={Gift} label="Gifts" value={formatGhs(dashboard.giftEarningsGhs)} />
         <Stat icon={Users} label="Affiliate" value={formatGhs(dashboard.affiliateEarningsGhs)} />
         <Stat icon={BarChart3} label="Ad spend" value={formatGhs(dashboard.adSpendGhs)} />

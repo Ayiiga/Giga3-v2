@@ -94,12 +94,13 @@ export const GigaSocialCreatorWallet = memo(function GigaSocialCreatorWallet({
             </p>
           </div>
           <div className="text-right">
-            <p className="text-xs text-muted">Estimated earnings</p>
+            <p className="text-xs text-muted">Verified + tracked</p>
             <p className="text-2xl font-bold text-foreground">
               {formatGhs(dashboard.estimatedEarningsGhs)}
             </p>
             <p className="mt-1 text-xs text-muted">
-              Withdrawable: {formatGhs(dashboard.payoutBalanceGhs ?? 0)}
+              Withdrawable: {formatGhs(dashboard.payoutBalanceGhs ?? 0)} (pending until Paystack
+              Transfer confirmation)
             </p>
           </div>
         </div>

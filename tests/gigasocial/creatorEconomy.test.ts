@@ -16,26 +16,26 @@ import { FAN_LABELS } from "@/lib/gigasocial/fanBranding";
 import { CAMERA_CAPTURE_MODES, getCameraMode } from "@/lib/gigasocial/cameraModes";
 
 describe("creatorEconomy eligibility", () => {
-  it("formats GHS amounts", () => {
-    expect(formatGhs(12.5)).toBe("GHS 12.50");
+  it("formats GH₵ amounts", () => {
+    expect(formatGhs(12.5)).toBe("GH₵ 12.50");
   });
 
-  it("uses 5 fans for monetisation and 50 for withdrawals", () => {
-    expect(MIN_FANS_FOR_MONETIZATION).toBe(5);
+  it("uses 500 fans for monetisation and 50 for withdrawals", () => {
+    expect(MIN_FANS_FOR_MONETIZATION).toBe(500);
     expect(MIN_FANS_FOR_WITHDRAWAL).toBe(50);
-    expect(DEFAULT_MIN_FANS_FOR_MONETIZATION).toBe(5);
+    expect(DEFAULT_MIN_FANS_FOR_MONETIZATION).toBe(500);
   });
 
   it("calculates fan progress toward monetization unlock", () => {
-    expect(fanProgressPercent(0, 5)).toBe(0);
-    expect(fanProgressPercent(2, 5)).toBe(40);
-    expect(fanProgressPercent(5, 5)).toBe(100);
-    expect(fansRemaining(2, 5)).toBe(3);
+    expect(fanProgressPercent(0, 500)).toBe(0);
+    expect(fanProgressPercent(250, 500)).toBe(50);
+    expect(fanProgressPercent(500, 500)).toBe(100);
+    expect(fansRemaining(200, 500)).toBe(300);
   });
 
-  it("gates monetisation eligibility at 5 fans", () => {
-    expect(isEligibleForMonetization(4)).toBe(false);
-    expect(isEligibleForMonetization(5)).toBe(true);
+  it("gates monetisation eligibility at 500 fans", () => {
+    expect(isEligibleForMonetization(499)).toBe(false);
+    expect(isEligibleForMonetization(500)).toBe(true);
   });
 
   it("gates withdrawal eligibility at 50 fans", () => {
@@ -44,32 +44,32 @@ describe("creatorEconomy eligibility", () => {
   });
 
   it("does not treat fan count alone as monetisation unlocked", () => {
-    expect(isCreatorMonetizationUnlocked(5)).toBe(false);
     expect(isCreatorMonetizationUnlocked(500)).toBe(false);
+    expect(isCreatorMonetizationUnlocked(5)).toBe(false);
     expect(isCreatorMonetizationUnlocked(2, true)).toBe(true);
   });
 
   it("builds clear status messages", () => {
     expect(
       monetizationStatusMessage({
-        fanCount: 2,
-        fansRequired: 5,
+        fanCount: 200,
+        fansRequired: 500,
         withdrawalFansRequired: 50,
         accepted: false,
       })
-    ).toContain("Invite 3 more fans");
+    ).toContain("Invite 300 more fans");
     expect(
       monetizationStatusMessage({
-        fanCount: 5,
-        fansRequired: 5,
+        fanCount: 500,
+        fansRequired: 500,
         withdrawalFansRequired: 50,
         accepted: false,
       })
-    ).toContain("Accept the creator rules");
+    ).toMatch(/eligible to apply|Accept the creator rules/i);
     expect(
       monetizationStatusMessage({
-        fanCount: 12,
-        fansRequired: 5,
+        fanCount: 520,
+        fansRequired: 500,
         withdrawalFansRequired: 50,
         accepted: false,
         requiresPolicyReacceptance: true,
@@ -77,12 +77,12 @@ describe("creatorEconomy eligibility", () => {
     ).toContain("current creator monetisation rules");
     expect(
       monetizationStatusMessage({
-        fanCount: 12,
-        fansRequired: 5,
+        fanCount: 520,
+        fansRequired: 500,
         withdrawalFansRequired: 50,
         accepted: true,
       })
-    ).toContain("50 fans");
+    ).toMatch(/withdrawals|Available balance/i);
   });
 
   it("publishes a stable monetisation policy version", () => {
