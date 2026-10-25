@@ -213,7 +213,7 @@ export function toPublicPost(
     hashtags: post.hashtags,
     mentions: post.mentions,
     visibility: post.visibility,
-    viewCount: post.viewCount,
+    viewCount: post.viewCount ?? 0,
     postType: post.postType,
     communitySlug: post.communitySlug,
     likeCount: post.likeCount,
