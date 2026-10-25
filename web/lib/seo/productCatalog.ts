@@ -121,6 +121,14 @@ export const PRODUCT_CATALOG: readonly ProductEntry[] = [
     group: "share",
   },
   {
+    href: "/gigasocial/awards/",
+    name: "GigaSocial Awards",
+    tagline: "Creator recognition for Ghana & Africa",
+    description:
+      "GigaSocial Awards offers free nominations, free voting, optional promotional packages, and sponsor-funded prizes — packages never buy votes.",
+    group: "share",
+  },
+  {
     href: "/marketplace",
     name: "Marketplace",
     tagline: "Digital products, paid in GHS",

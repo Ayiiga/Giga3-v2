@@ -1,3 +1,4 @@
+import { AwardsHomeBanner } from "@/components/gigasocial/awards/AwardsHomeBanner";
 import { Contact } from "@/components/sections/Contact";
 import { Features } from "@/components/sections/Features";
 import { Hero } from "@/components/sections/Hero";
@@ -42,6 +43,7 @@ export default function HomePage() {
   return (
     <>
       <SiteStructuredData offers={HOME_OFFERS} homeDescription={HOME_DESCRIPTION} />
+      <AwardsHomeBanner />
       <Hero />
       <TrendIntelligenceSection />
       <Features />

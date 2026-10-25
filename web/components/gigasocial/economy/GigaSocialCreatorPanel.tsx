@@ -1,5 +1,6 @@
 "use client";
 
+import { GigaSocialAwardsCentre } from "@/components/gigasocial/awards/GigaSocialAwardsCentre";
 import { GigaSocialAffiliatePanel } from "@/components/gigasocial/economy/GigaSocialAffiliatePanel";
 import { GigaSocialBoostPanel } from "@/components/gigasocial/economy/GigaSocialBoostPanel";
 import { GigaSocialCreatorDashboard } from "@/components/gigasocial/economy/GigaSocialCreatorDashboard";
@@ -10,7 +11,14 @@ import { useGigaSocialFeatures } from "@/lib/gigasocial/featureFlags";
 import { cn } from "@/lib/utils";
 import { memo, useEffect, useMemo, useState } from "react";
 
-type CreatorTab = "earnings" | "dashboard" | "wallet" | "gifts" | "affiliate" | "boost";
+type CreatorTab =
+  | "earnings"
+  | "awards"
+  | "dashboard"
+  | "wallet"
+  | "gifts"
+  | "affiliate"
+  | "boost";
 
 export const GigaSocialCreatorPanel = memo(function GigaSocialCreatorPanel({
   sessionToken,
@@ -29,6 +37,7 @@ export const GigaSocialCreatorPanel = memo(function GigaSocialCreatorPanel({
   const tabs = useMemo(() => {
     const items: { id: CreatorTab; label: string }[] = [
       { id: "earnings", label: "Earnings" },
+      { id: "awards", label: "Awards" },
       { id: "dashboard", label: "Dashboard" },
     ];
     if (features.enableCreatorWallet) {
@@ -63,6 +72,7 @@ export const GigaSocialCreatorPanel = memo(function GigaSocialCreatorPanel({
       </nav>
 
       {tab === "earnings" ? <GigaSocialEarningsCentre sessionToken={sessionToken} /> : null}
+      {tab === "awards" ? <GigaSocialAwardsCentre sessionToken={sessionToken} /> : null}
       {tab === "dashboard" ? (
         <GigaSocialCreatorDashboard
           sessionToken={sessionToken}

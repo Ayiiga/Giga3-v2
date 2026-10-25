@@ -5,6 +5,7 @@ export const BLOG_CATEGORIES = [
   { name: "BECE & WASSCE", slug: "bece-wassce" },
   { name: "AI Tools", slug: "ai-tools" },
   { name: "Creators", slug: "creators" },
+  { name: "GigaSocial Awards", slug: "gigasocial-awards" },
   { name: "Business", slug: "business" },
   { name: "Technology", slug: "technology" },
   { name: "Digital Literacy", slug: "digital-literacy" },
