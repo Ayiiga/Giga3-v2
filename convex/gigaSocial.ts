@@ -1690,8 +1690,9 @@ export const recordPostView = mutation({
   },
   handler: async (ctx, args) => {
     const post = await ctx.db.get(args.postId);
+    // Count impressions for any non-deleted post (public + followers-only).
+    // Visibility is enforced by feed/profile queries; viewers who can see it may count.
     if (!post || post.deletedAt) return { ok: false };
-    if (post.visibility === "followers") return { ok: false };
 
     const viewCount = (post.viewCount ?? 0) + 1;
     await ctx.db.patch(args.postId, { viewCount, updatedAt: Date.now() });

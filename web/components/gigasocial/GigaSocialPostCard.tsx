@@ -38,6 +38,7 @@ import { GigaSocialBoostDialog } from "@/components/gigasocial/economy/GigaSocia
 import { GigaSocialTipButton } from "@/components/gigasocial/economy/GigaSocialTipButton";
 import { GigaSocialReportDialog } from "@/components/gigasocial/trust/GigaSocialReportDialog";
 import { getUserEmail } from "@/lib/auth";
+import { useRecordGigaSocialPostView } from "@/hooks/useRecordGigaSocialPostView";
 import { useGigaSocialFeatures } from "@/lib/gigasocial/featureFlags";
 import { canShowTemplateButton } from "@/lib/gigasocial/templateVisibility";
 import { triggerHaptic } from "@/lib/gigasocial/haptics";
@@ -105,10 +106,13 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   offlinePlayback = false,
 }: GigaSocialPostCardProps) {
   const features = useGigaSocialFeatures();
+  const { ref: viewRef, recordedViewCount } =
+    useRecordGigaSocialPostView<HTMLArticleElement>(post._id);
   const [liked, setLiked] = useState(Boolean(post.likedByMe));
   const [likeCount, setLikeCount] = useState(post.likeCount);
   const [bookmarked, setBookmarked] = useState(Boolean(post.bookmarkedByMe));
   const [shareCount, setShareCount] = useState(post.shareCount);
+  const [viewCount, setViewCount] = useState(post.viewCount ?? 0);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [editorOpen, setEditorOpen] = useState(false);
   const [boostOpen, setBoostOpen] = useState(false);
@@ -129,6 +133,16 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   useEffect(() => {
     setPinned(Boolean(post.pinnedAt));
   }, [post._id, post.pinnedAt]);
+
+  useEffect(() => {
+    setViewCount(post.viewCount ?? 0);
+  }, [post._id, post.viewCount]);
+
+  useEffect(() => {
+    if (typeof recordedViewCount === "number") {
+      setViewCount(recordedViewCount);
+    }
+  }, [recordedViewCount]);
 
   // Cache viewed visual posts so offline reopen is near-instant.
   useEffect(() => {
@@ -299,6 +313,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
 
   return (
     <article
+      ref={viewRef}
       className={cn(
         "gigasocial-post-card saas-card rounded-2xl border border-border",
         isVisualPost
@@ -580,19 +595,18 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
             }}
           />
         ) : null}
-        {typeof post.viewCount === "number" ? (
-          <span
-            className={cn(
-              "inline-flex items-center gap-1 rounded-full text-muted",
-              isVisualPost
-                ? "min-h-8 px-2 py-1 text-[11px]"
-                : "min-h-9 gap-1.5 px-3 py-1.5 text-xs font-medium"
-            )}
-          >
-            <Eye className={isVisualPost ? "h-3.5 w-3.5" : "h-4 w-4"} aria-hidden />
-            {post.viewCount}
-          </span>
-        ) : null}
+        <span
+          className={cn(
+            "inline-flex items-center gap-1 rounded-full text-muted",
+            isVisualPost
+              ? "min-h-8 px-2 py-1 text-[11px]"
+              : "min-h-9 gap-1.5 px-3 py-1.5 text-xs font-medium"
+          )}
+          aria-label={`${viewCount} views`}
+        >
+          <Eye className={isVisualPost ? "h-3.5 w-3.5" : "h-4 w-4"} aria-hidden />
+          {viewCount}
+        </span>
         {isOwnPost && sessionToken ? (
           <Button
             type="button"
