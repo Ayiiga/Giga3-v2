@@ -2109,4 +2109,252 @@ export default defineSchema({
     .index("by_user_created", ["userId", "createdAt"])
     .index("by_user_status", ["userId", "status"])
     .index("by_expires", ["expiresAt"]),
+
+  // ─── GigaSocial Awards ─────────────────────────────────────────────
+  awardsSeasons: defineTable({
+    slug: v.string(),
+    title: v.string(),
+    year: v.number(),
+    status: v.union(
+      v.literal("draft"),
+      v.literal("nominations_open"),
+      v.literal("voting_open"),
+      v.literal("judging"),
+      v.literal("finalists_published"),
+      v.literal("results_published"),
+      v.literal("archived")
+    ),
+    nominationOpensAt: v.optional(v.number()),
+    nominationClosesAt: v.optional(v.number()),
+    votingOpensAt: v.optional(v.number()),
+    votingClosesAt: v.optional(v.number()),
+    /** When true, Paystack promo package checkout may run (default false). */
+    promoPaymentsEnabled: v.boolean(),
+    /** When true, UI may offer existing creator tip flow (tips ≠ votes). */
+    tipsEnabled: v.boolean(),
+    publicRulesMarkdown: v.optional(v.string()),
+    operatorDisclosure: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_slug", ["slug"])
+    .index("by_status", ["status"])
+    .index("by_year", ["year"]),
+
+  awardsCategories: defineTable({
+    seasonId: v.id("awardsSeasons"),
+    slug: v.string(),
+    name: v.string(),
+    description: v.string(),
+    sortOrder: v.number(),
+    eligibilityJson: v.string(),
+    /** Scoring weights — locked once voting opens for the season. */
+    publicVoteWeight: v.number(),
+    judgingWeight: v.number(),
+    assessmentWeight: v.number(),
+    peoplesChoice: v.boolean(),
+    formulaLockedAt: v.optional(v.number()),
+    assessmentRubricJson: v.optional(v.string()),
+    active: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_season", ["seasonId", "sortOrder"])
+    .index("by_season_slug", ["seasonId", "slug"]),
+
+  awardsNominations: defineTable({
+    seasonId: v.id("awardsSeasons"),
+    categoryId: v.id("awardsCategories"),
+    nominatorUserId: v.string(),
+    nomineeUserId: v.optional(v.string()),
+    nomineeDisplayName: v.string(),
+    nomineeHandle: v.optional(v.string()),
+    nomineeEmail: v.optional(v.string()),
+    biography: v.string(),
+    portfolioLinksJson: v.string(),
+    evidenceJson: v.optional(v.string()),
+    selfApplication: v.boolean(),
+    nomineeConsentAt: v.optional(v.number()),
+    status: v.union(
+      v.literal("draft"),
+      v.literal("submitted"),
+      v.literal("awaiting_consent"),
+      v.literal("under_review"),
+      v.literal("approved"),
+      v.literal("rejected"),
+      v.literal("withdrawn"),
+      v.literal("declined")
+    ),
+    rejectionReason: v.optional(v.string()),
+    editCutoffAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_season_status", ["seasonId", "status"])
+    .index("by_nominator", ["nominatorUserId", "createdAt"])
+    .index("by_nominee", ["nomineeUserId", "createdAt"])
+    .index("by_category", ["categoryId", "createdAt"]),
+
+  awardsCandidates: defineTable({
+    seasonId: v.id("awardsSeasons"),
+    categoryId: v.id("awardsCategories"),
+    nominationId: v.id("awardsNominations"),
+    creatorUserId: v.string(),
+    displayName: v.string(),
+    handle: v.optional(v.string()),
+    biography: v.string(),
+    avatarUrl: v.optional(v.string()),
+    portfolioLinksJson: v.string(),
+    /** Public display code e.g. GSA-2026-00125 — not an auth credential. */
+    displayCode: v.string(),
+    /** Non-guessable token embedded in share URLs. */
+    shareToken: v.string(),
+    status: v.union(
+      v.literal("active"),
+      v.literal("finalist"),
+      v.literal("winner"),
+      v.literal("disqualified"),
+      v.literal("withdrawn")
+    ),
+    verifiedCreator: v.boolean(),
+    disqualificationReason: v.optional(v.string()),
+    publishedAt: v.number(),
+    voteCount: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_display_code", ["displayCode"])
+    .index("by_share_token", ["shareToken"])
+    .index("by_season_category", ["seasonId", "categoryId"])
+    .index("by_creator", ["creatorUserId", "seasonId"])
+    .index("by_status", ["status", "seasonId"]),
+
+  awardsVotes: defineTable({
+    seasonId: v.id("awardsSeasons"),
+    categoryId: v.id("awardsCategories"),
+    candidateId: v.id("awardsCandidates"),
+    voterUserId: v.string(),
+    createdAt: v.number(),
+    ipHash: v.optional(v.string()),
+    userAgentHash: v.optional(v.string()),
+    flagged: v.optional(v.boolean()),
+    flagReason: v.optional(v.string()),
+  })
+    .index("by_voter_category", ["seasonId", "categoryId", "voterUserId"])
+    .index("by_candidate", ["candidateId", "createdAt"])
+    .index("by_season_created", ["seasonId", "createdAt"]),
+
+  awardsJudgeScores: defineTable({
+    seasonId: v.id("awardsSeasons"),
+    categoryId: v.id("awardsCategories"),
+    candidateId: v.id("awardsCandidates"),
+    judgeUserId: v.string(),
+    scoresJson: v.string(),
+    notes: v.optional(v.string()),
+    submittedAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_candidate_judge", ["candidateId", "judgeUserId"])
+    .index("by_category", ["categoryId", "submittedAt"]),
+
+  awardsAssessmentScores: defineTable({
+    seasonId: v.id("awardsSeasons"),
+    categoryId: v.id("awardsCategories"),
+    candidateId: v.id("awardsCandidates"),
+    assessorUserId: v.string(),
+    scoresJson: v.string(),
+    notes: v.optional(v.string()),
+    submittedAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_candidate", ["candidateId"]),
+
+  awardsPromoPackages: defineTable({
+    seasonId: v.id("awardsSeasons"),
+    slug: v.string(),
+    name: v.string(),
+    description: v.string(),
+    priceGhs: v.number(),
+    benefitsJson: v.string(),
+    sortOrder: v.number(),
+    active: v.boolean(),
+    /** Hard rule: packages never grant votes or score changes. */
+    influencesCompetition: v.literal(false),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_season", ["seasonId", "sortOrder"]),
+
+  awardsPromoOrders: defineTable({
+    seasonId: v.id("awardsSeasons"),
+    packageId: v.id("awardsPromoPackages"),
+    buyerUserId: v.string(),
+    candidateId: v.optional(v.id("awardsCandidates")),
+    amountGhs: v.number(),
+    currency: v.literal("GHS"),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("paid"),
+      v.literal("failed"),
+      v.literal("refunded")
+    ),
+    paymentReference: v.optional(v.string()),
+    paidAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_reference", ["paymentReference"])
+    .index("by_buyer", ["buyerUserId", "createdAt"])
+    .index("by_season", ["seasonId", "createdAt"]),
+
+  awardsSponsors: defineTable({
+    seasonId: v.id("awardsSeasons"),
+    name: v.string(),
+    contactEmail: v.optional(v.string()),
+    tierLabel: v.optional(v.string()),
+    amountGhs: v.optional(v.number()),
+    paymentStatus: v.union(
+      v.literal("prospect"),
+      v.literal("contracted"),
+      v.literal("paid"),
+      v.literal("fulfilled"),
+      v.literal("cancelled")
+    ),
+    benefitsJson: v.optional(v.string()),
+    campaignStartsAt: v.optional(v.number()),
+    campaignEndsAt: v.optional(v.number()),
+    publicRecognition: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_season", ["seasonId", "createdAt"]),
+
+  awardsPrizes: defineTable({
+    seasonId: v.id("awardsSeasons"),
+    categoryId: v.optional(v.id("awardsCategories")),
+    title: v.string(),
+    description: v.string(),
+    /** Only advertisable prizes may appear as “confirmed” in public UI. */
+    advertisable: v.boolean(),
+    fundedOrContracted: v.boolean(),
+    sponsorId: v.optional(v.id("awardsSponsors")),
+    fulfilmentStatus: v.union(
+      v.literal("planned"),
+      v.literal("ready"),
+      v.literal("awarded"),
+      v.literal("delivered"),
+      v.literal("cancelled")
+    ),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_season", ["seasonId", "createdAt"]),
+
+  awardsAuditLog: defineTable({
+    seasonId: v.optional(v.id("awardsSeasons")),
+    actor: v.string(),
+    action: v.string(),
+    entityType: v.string(),
+    entityId: v.optional(v.string()),
+    detailJson: v.optional(v.string()),
+    createdAt: v.number(),
+  })
+    .index("by_season_created", ["seasonId", "createdAt"])
+    .index("by_created", ["createdAt"]),
 });
