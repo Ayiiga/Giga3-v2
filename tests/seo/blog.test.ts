@@ -136,7 +136,7 @@ describe("blog routes (source)", () => {
       "utf8"
     );
     expect(categoryPage).toContain("generateStaticParams");
-    expect(BLOG_CATEGORIES).toHaveLength(9);
+    expect(BLOG_CATEGORIES).toHaveLength(10);
   });
 
   it("has not-found handling for invalid slugs", () => {
