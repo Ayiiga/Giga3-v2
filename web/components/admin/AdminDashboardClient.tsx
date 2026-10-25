@@ -10,6 +10,7 @@ import { AdminPhase6OpsPanel } from "@/components/admin/AdminPhase6OpsPanel";
 import { AdminFoundingMembersPanel } from "@/components/admin/AdminFoundingMembersPanel";
 import { AdminPlatformOverview } from "@/components/admin/AdminPlatformOverview";
 import { AdminSecurityHealthPanel } from "@/components/admin/AdminSecurityHealthPanel";
+import { AdminAwardsPanel } from "@/components/admin/AdminAwardsPanel";
 import { AdminSocialEconomyPanel } from "@/components/admin/AdminSocialEconomyPanel";
 import { AdminUsersPanel } from "@/components/admin/AdminUsersPanel";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
@@ -458,6 +459,10 @@ function AdminInner() {
         onNotice={(msg) => setNotice(msg)}
         onError={(msg) => setError(msg || null)}
       />
+
+      {adminCreds.adminSessionToken ? (
+        <AdminAwardsPanel adminSessionToken={adminCreds.adminSessionToken} />
+      ) : null}
     </div>
   );
 }

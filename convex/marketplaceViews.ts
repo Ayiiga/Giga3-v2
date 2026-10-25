@@ -57,13 +57,22 @@ export function toPublicListing(listing: ListingDoc): PublicMarketplaceListing {
   };
 }
 
-/** Public listing with a fresh cover URL (or stable CDN fallback). */
+/**
+ * Public listing with a fresh cover URL (or stable CDN fallback).
+ * Optional `coverIntentStorageId` recovers covers from approved upload intents when
+ * the listing row never received coverStorageId (pre-durable-cover uploads).
+ */
 export async function toPublicListingResolved(
   storage: StorageReader,
-  listing: ListingDoc
+  listing: ListingDoc,
+  opts?: { coverIntentStorageId?: Id<"_storage"> }
 ): Promise<PublicMarketplaceListing> {
   const base = toPublicListing(listing);
-  const coverImageUrl = await resolveListingCoverUrl(storage, listing);
+  let coverImageUrl = await resolveListingCoverUrl(storage, listing);
+  if (!coverImageUrl && opts?.coverIntentStorageId) {
+    const fromIntent = await storage.getUrl(opts.coverIntentStorageId);
+    if (fromIntent) coverImageUrl = fromIntent;
+  }
   return { ...base, coverImageUrl };
 }
 
@@ -91,9 +100,14 @@ export function toPublicCreatorProfile(
 /** Creator-owned listing view — keeps fileStorageId for seller tools; refreshes cover. */
 export async function toCreatorListingResolved(
   storage: StorageReader,
-  listing: ListingDoc
+  listing: ListingDoc,
+  opts?: { coverIntentStorageId?: Id<"_storage"> }
 ) {
-  const coverImageUrl = await resolveListingCoverUrl(storage, listing);
+  let coverImageUrl = await resolveListingCoverUrl(storage, listing);
+  if (!coverImageUrl && opts?.coverIntentStorageId) {
+    const fromIntent = await storage.getUrl(opts.coverIntentStorageId);
+    if (fromIntent) coverImageUrl = fromIntent;
+  }
   return {
     ...listing,
     coverImageUrl,

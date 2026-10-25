@@ -230,8 +230,12 @@ function MarketplaceBrowseInner() {
                         src={item.coverImageUrl}
                         title={item.title}
                         category={item.category}
+                        productType={
+                          item.productType ? String(item.productType) : null
+                        }
                         className="w-full"
                         aspectClassName="aspect-[3/4]"
+                        fit="contain"
                       />
                     </Link>
                     <div className="mt-2 flex min-h-0 flex-1 flex-col gap-1 px-0.5">

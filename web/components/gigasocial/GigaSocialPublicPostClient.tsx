@@ -13,6 +13,10 @@ import { formatCompactCount, formatVideoDuration } from "@/lib/gigasocial/ogMeta
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { formatRelativeTime } from "@/lib/datetime";
 import { siteConfig } from "@/lib/site";
+import {
+  hasRecordedPostView,
+  markPostViewRecorded,
+} from "@/lib/gigasocial/postViewTracking";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
@@ -45,7 +49,12 @@ function PublicPostInner({ initialPostId }: { initialPostId?: string }) {
 
   useEffect(() => {
     if (!post || viewedRef.current || !postId) return;
+    if (hasRecordedPostView(postId)) {
+      viewedRef.current = true;
+      return;
+    }
     viewedRef.current = true;
+    markPostViewRecorded(postId);
     void recordView({ postId: postId as Id<"socialPosts"> });
   }, [post, postId, recordView]);
 

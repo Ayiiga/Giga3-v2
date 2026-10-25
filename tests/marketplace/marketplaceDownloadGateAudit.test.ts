@@ -86,9 +86,11 @@ describe("release audit: getDownloadAccess authorization", () => {
 
 describe("release audit: getMyPurchases download gate", () => {
   it("only attaches downloadUrl when isListingFileApproved", () => {
-    const body = sliceExport(marketplaceSrc, "getMyPurchases", 1600);
+    // Cover intent recovery lengthens the listing projection — keep slice above that.
+    const body = sliceExport(marketplaceSrc, "getMyPurchases", 2400);
     expect(body).toContain("isListingFileApproved(listing)");
     expect(body).toContain("downloadPendingReview");
+    expect(body).toContain("coverIntentStorageIdForListing");
     expect(body).toMatch(
       /if \(listing\.fileStorageId && isListingFileApproved\(listing\)\)[\s\S]*getUrl/
     );

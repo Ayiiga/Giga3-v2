@@ -55,7 +55,7 @@ export const GIGASOCIAL_SECTIONS: GigaSocialSectionDefinition[] = [
   {
     id: "creator",
     label: "Creator",
-    description: "Dashboard, gifts, affiliate, and boost campaigns",
+    description: "Earnings Centre, Awards, gifts, affiliate, and boost campaigns",
     icon: BarChart3,
   },
   {

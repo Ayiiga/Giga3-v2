@@ -9,12 +9,20 @@ import {
   hasValidMonetizationConsent,
   validateWithdrawalAmountGhs,
 } from "./gigaSocialMonetizationConsent";
+import {
+  computeVerifiedCashEarningsGhs,
+  sumPaystackGiftEarningsGhs,
+} from "./gigaSocialEarningsMath";
 
 export {
   CREATOR_MONETIZATION_POLICY_VERSION,
   hasValidMonetizationConsent,
   validateWithdrawalAmountGhs,
 } from "./gigaSocialMonetizationConsent";
+export {
+  computeVerifiedCashEarningsGhs,
+  sumPaystackGiftEarningsGhs,
+} from "./gigaSocialEarningsMath";
 
 /** Paystack tip tiers in GHS (MoMo / card / bank). */
 export const CREATOR_TIP_CATALOG = [
@@ -31,8 +39,11 @@ export function getCreatorTipTier(giftType: string) {
 
 type DbCtx = { db: import("./_generated/server").QueryCtx["db"] };
 
-/** Fans required to accept monetisation terms and start earning. */
-export const MIN_FANS_FOR_MONETIZATION = 5;
+/**
+ * Fans required to accept monetisation terms and start earning.
+ * Product rule (Earnings Centre brief): 500 genuine fans — do not lower without approval.
+ */
+export const MIN_FANS_FOR_MONETIZATION = 500;
 /** Fans required to request a withdrawal (balance/payment checks still apply). */
 export const MIN_FANS_FOR_WITHDRAWAL = 50;
 
@@ -150,9 +161,11 @@ export async function loadEconomySettings(ctx: DbCtx): Promise<EconomySettings> 
     (settings as Record<string, number>)[field] = num;
   }
 
-  // Legacy remote config stored 500 as a combined affiliate/payout gate.
-  // Migrate in-memory to the split 5-fan monetisation / 50-fan withdrawal model.
-  if (settings.minFansForMonetization >= 100) {
+  // Guard against accidental test values that undercut the product 500-fan rule.
+  if (
+    !Number.isFinite(settings.minFansForMonetization) ||
+    settings.minFansForMonetization < MIN_FANS_FOR_MONETIZATION
+  ) {
     settings.minFansForMonetization = MIN_FANS_FOR_MONETIZATION;
   }
   // Missing key, or prior interim default of 20 → current product rule (50).
@@ -255,7 +268,7 @@ export async function getMonetizationEligibility(
 }
 
 /**
- * Marks that the creator has been notified they are eligible (5 fans).
+ * Marks that the creator has been notified they are eligible (fan threshold).
  * Does NOT activate earning — acceptance is required via acceptMonetizationTerms.
  */
 export async function ensureMonetizationUnlock(
@@ -393,6 +406,7 @@ export const getCreatorDashboard = query({
       .order("desc")
       .take(200);
     const giftEarningsGhs = gifts.reduce((sum, g) => sum + g.amountGhs, 0);
+    const paystackGiftEarningsGhs = sumPaystackGiftEarningsGhs(gifts);
 
     const affiliateEvents = await ctx.db
       .query("socialAffiliateEvents")
@@ -417,13 +431,12 @@ export const getCreatorDashboard = query({
     const adSpendGhs = boosts.reduce((sum, b) => sum + b.budgetGhs, 0);
     const adImpressions = boosts.reduce((sum, b) => sum + b.impressions, 0);
 
-    const contentEarningsGhs =
+    // Unfunded illustrative content-bonus math — NEVER withdrawable and never mixed into cash.
+    const unfundedContentBonusEstimateGhs =
       totalViews * settings.viewRewardRateGhs +
       videoWatchMinutes * settings.watchTimeRewardRateGhsPerMin +
       (totalComments + totalShares) * settings.engagementRewardRateGhs;
-
-    const estimatedEarningsGhs =
-      contentEarningsGhs + giftEarningsGhs + affiliateEarningsGhs;
+    const contentEarningsGhs = unfundedContentBonusEstimateGhs;
 
     const topPosts = [...activePosts]
       .sort(
@@ -453,14 +466,38 @@ export const getCreatorDashboard = query({
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .first();
     const payoutBalanceGhs = creatorProfile?.payoutBalanceGhs ?? 0;
+
+    // Marketplace sales only — do NOT use totalEarningsGhs (also includes tip credits).
+    const marketplacePurchases = await ctx.db
+      .query("marketplacePurchases")
+      .withIndex("by_creator", (q) => q.eq("creatorId", userId))
+      .collect();
+    const marketplaceEarningsGhs = marketplacePurchases.reduce(
+      (sum, p) => sum + (p.creatorEarningsGhs ?? 0),
+      0
+    );
+    const verifiedCashEarningsGhs = computeVerifiedCashEarningsGhs({
+      paystackGiftEarningsGhs,
+      marketplacePurchaseEarningsGhs: marketplaceEarningsGhs,
+    });
+    // Legacy field: verified cash + affiliate tracking (affiliate is not withdrawable cash).
+    const estimatedEarningsGhs = verifiedCashEarningsGhs + affiliateEarningsGhs;
     const pendingPayouts = await ctx.db
       .query("creatorPayouts")
       .withIndex("by_creator", (q) => q.eq("creatorId", userId))
       .order("desc")
       .take(20);
 
+    const application = await ctx.db
+      .query("socialMonetizationApplications")
+      .withIndex("by_creator", (q) => q.eq("creatorId", userId))
+      .order("desc")
+      .first();
+
+    const monetizationActive = eligibility.accepted && eligibility.fanEligible;
+
     return {
-      unlocked,
+      unlocked: monetizationActive,
       fanCount,
       supportingCount,
       fansRequired: settings.minFansForMonetization,
@@ -477,12 +514,26 @@ export const getCreatorDashboard = query({
       xp: gamification.xp,
       badges: gamification.badges,
       estimatedEarningsGhs,
+      verifiedCashEarningsGhs,
+      paystackGiftEarningsGhs,
+      unfundedContentBonusEstimateGhs,
       contentEarningsGhs,
+      marketplaceEarningsGhs,
       giftEarningsGhs,
       affiliateEarningsGhs,
       adSpendGhs,
       adImpressions,
       payoutBalanceGhs,
+      application: application
+        ? {
+            status: application.status,
+            submittedAt: application.submittedAt,
+            reviewedAt: application.reviewedAt,
+            rejectionReason: application.rejectionReason,
+            appealSubmittedAt: application.appealSubmittedAt,
+            suspendedAt: application.suspendedAt,
+          }
+        : null,
       recentPayouts: pendingPayouts.map((p) => ({
         payoutId: p._id,
         amountGhs: p.amountGhs,
@@ -588,6 +639,59 @@ export const getGiftsHub = query({
   },
 });
 
+async function ensureCreatorPayoutProfile(
+  ctx: { db: import("./_generated/server").MutationCtx["db"] },
+  creatorId: string,
+  now: number
+) {
+  const existing = await ctx.db
+    .query("creatorProfiles")
+    .withIndex("by_user", (q) => q.eq("userId", creatorId))
+    .first();
+  if (existing) return existing;
+
+  const socialProfile = await ctx.db
+    .query("socialProfiles")
+    .withIndex("by_user", (q) => q.eq("userId", creatorId))
+    .first();
+  if (!socialProfile) return null;
+
+  const handleBase = (socialProfile.handle || "creator")
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, "-")
+    .slice(0, 20);
+  const handle = `${handleBase}-t${Math.random().toString(36).slice(2, 8)}`.slice(0, 32);
+  const profileId = await ctx.db.insert("creatorProfiles", {
+    userId: creatorId,
+    displayName: socialProfile.displayName || "Creator",
+    handle,
+    bio: socialProfile.bio,
+    avatarUrl: socialProfile.avatarUrl,
+    verified: false,
+    verificationStatus: "none",
+    totalSales: 0,
+    totalEarningsGhs: 0,
+    payoutBalanceGhs: 0,
+    createdAt: now,
+    updatedAt: now,
+  });
+  return await ctx.db.get(profileId);
+}
+
+async function creditPaystackTipToPayoutBalance(
+  ctx: { db: import("./_generated/server").MutationCtx["db"] },
+  args: { creatorId: string; creatorAmountGhs: number; now: number }
+) {
+  const creatorProfile = await ensureCreatorPayoutProfile(ctx, args.creatorId, args.now);
+  if (!creatorProfile) return false;
+  await ctx.db.patch(creatorProfile._id, {
+    payoutBalanceGhs: creatorProfile.payoutBalanceGhs + args.creatorAmountGhs,
+    totalEarningsGhs: creatorProfile.totalEarningsGhs + args.creatorAmountGhs,
+    updatedAt: args.now,
+  });
+  return true;
+}
+
 /** Record a tip after successful Paystack charge (idempotent by payment reference). */
 export const fulfillCreatorGiftInternal = internalMutation({
   args: {
@@ -604,11 +708,26 @@ export const fulfillCreatorGiftInternal = internalMutation({
       .query("socialCreatorGifts")
       .withIndex("by_payment_reference", (q) => q.eq("paymentReference", args.reference))
       .first();
-    if (existing) return { giftId: existing._id, alreadyFulfilled: true as const };
 
     const settings = await loadEconomySettings(ctx);
     const share = settings.giftCreatorSharePercent / 100;
     const creatorAmountGhs = Math.round(args.amountGhs * share * 100) / 100;
+    const now = Date.now();
+
+    if (existing) {
+      // Idempotent path: never double-credit; backfill balance only if never credited.
+      if (!existing.creditedToPayoutAt) {
+        const credited = await creditPaystackTipToPayoutBalance(ctx, {
+          creatorId: existing.creatorId,
+          creatorAmountGhs: existing.amountGhs,
+          now,
+        });
+        if (credited) {
+          await ctx.db.patch(existing._id, { creditedToPayoutAt: now });
+        }
+      }
+      return { giftId: existing._id, alreadyFulfilled: true as const, creatorAmountGhs: existing.amountGhs };
+    }
 
     const giftId = await ctx.db.insert("socialCreatorGifts", {
       creatorId: args.creatorId,
@@ -619,8 +738,18 @@ export const fulfillCreatorGiftInternal = internalMutation({
       message: args.message?.trim().slice(0, 200),
       postId: args.postId,
       paymentReference: args.reference,
-      createdAt: Date.now(),
+      createdAt: now,
     });
+
+    const credited = await creditPaystackTipToPayoutBalance(ctx, {
+      creatorId: args.creatorId,
+      creatorAmountGhs,
+      now,
+    });
+    if (credited) {
+      await ctx.db.patch(giftId, { creditedToPayoutAt: now });
+    }
+
     return { giftId, alreadyFulfilled: false as const, creatorAmountGhs };
   },
 });
@@ -960,12 +1089,133 @@ export const requestCreatorWithdrawal = mutation({
       amountGhs: amount,
       status: "pending",
       method: args.method?.slice(0, 80),
-      note: args.note?.slice(0, 300) || "gigasocial_creator_withdrawal",
+      note:
+        args.note?.slice(0, 300) ||
+        "gigasocial_creator_withdrawal_request — awaiting ops/Paystack Transfer confirmation",
       createdAt: now,
       updatedAt: now,
     });
 
-    return { ok: true as const, payoutId, status: "pending" as const, amountGhs: amount };
+    return {
+      ok: true as const,
+      payoutId,
+      status: "pending" as const,
+      amountGhs: amount,
+      automatedTransfer: false as const,
+      message:
+        "Withdrawal requested. It stays pending until an authorised operator confirms a Paystack Transfer (or marks failure). It is not marked paid automatically.",
+    };
+  },
+});
+
+/** Submit monetisation application after fan eligibility + consent. */
+export const submitMonetizationApplication = mutation({
+  args: {
+    sessionToken: v.string(),
+    statement: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken, ctx);
+    const profile = await ctx.db
+      .query("socialProfiles")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .first();
+    if (!profile) throw new Error("GigaSocial profile required.");
+
+    const settings = await loadEconomySettings(ctx);
+    const eligibility = await getMonetizationEligibility(ctx, profile, settings);
+    if (!eligibility.fanEligible) {
+      throw new Error(
+        `Need ${settings.minFansForMonetization} fans before applying. You have ${eligibility.fanCount}.`
+      );
+    }
+    if (!eligibility.accepted) {
+      throw new Error("Accept the creator monetisation rules before submitting an application.");
+    }
+
+    const existing = await ctx.db
+      .query("socialMonetizationApplications")
+      .withIndex("by_creator", (q) => q.eq("creatorId", userId))
+      .order("desc")
+      .first();
+    if (existing?.status === "suspended" || existing?.suspendedAt) {
+      throw new Error("Monetisation is suspended. Contact support before re-applying.");
+    }
+    if (
+      existing &&
+      (existing.status === "submitted" ||
+        existing.status === "under_review" ||
+        existing.status === "approved")
+    ) {
+      throw new Error("An application is already in progress or approved.");
+    }
+
+    const now = Date.now();
+    const applicationId = await ctx.db.insert("socialMonetizationApplications", {
+      creatorId: userId,
+      status: "under_review",
+      policyVersion: CREATOR_MONETIZATION_POLICY_VERSION,
+      fanCountAtSubmit: eligibility.fanCount,
+      statement: args.statement?.trim().slice(0, 1000),
+      submittedAt: now,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    await ctx.db.insert("socialNotifications", {
+      recipientId: userId,
+      type: "creator",
+      message: "Your creator monetisation application is under review.",
+      createdAt: now,
+      read: false,
+    });
+
+    return { ok: true as const, applicationId, status: "under_review" as const };
+  },
+});
+
+/** Creator appeal after rejection — one open appeal at a time. */
+export const submitMonetizationAppeal = mutation({
+  args: {
+    sessionToken: v.string(),
+    statement: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken, ctx);
+    const statement = args.statement.trim().slice(0, 1000);
+    if (statement.length < 20) {
+      throw new Error("Please explain your appeal in at least 20 characters.");
+    }
+
+    const existing = await ctx.db
+      .query("socialMonetizationApplications")
+      .withIndex("by_creator", (q) => q.eq("creatorId", userId))
+      .order("desc")
+      .first();
+    if (!existing || (existing.status !== "rejected" && existing.status !== "appeal_available")) {
+      throw new Error("No rejected application available to appeal.");
+    }
+    if (existing.appealSubmittedAt) {
+      throw new Error("An appeal was already submitted for this decision.");
+    }
+
+    const now = Date.now();
+    await ctx.db.patch(existing._id, {
+      status: "under_review",
+      appealSubmittedAt: now,
+      appealStatement: statement,
+      updatedAt: now,
+    });
+
+    await ctx.db.insert("socialNotifications", {
+      recipientId: userId,
+      type: "creator",
+      message: "Your monetisation appeal was received and is under review.",
+      createdAt: now,
+      read: false,
+    });
+
+    return { ok: true as const, status: "under_review" as const };
   },
 });
 

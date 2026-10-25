@@ -11,8 +11,11 @@ import {
   SOCIAL_MAX_VIDEO_DURATION_MIN,
   SOCIAL_MAX_VIDEO_MB,
   SOCIAL_VIDEO_ACCEPT,
+  isLikelySocialVideoFile,
+  resolveVideoContentType,
   type SocialPostMediaItemInput,
 } from "@/lib/gigasocial/constants";
+import { isUsableVideoDuration } from "@/lib/gigasocial/videoDuration";
 import type { CameraFilterId } from "@/lib/gigasocial/cameraFilters";
 import { prepareAudioForPhotoPost } from "@/lib/gigasocial/audioProcessing";
 import { getCameraFilterCss } from "@/lib/gigasocial/cameraFilters";
@@ -222,6 +225,9 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
     durationSec?: number;
   } | null>(null);
   const uploadAbortRef = useRef<AbortController | null>(null);
+  const videoProbeAbortRef = useRef<AbortController | null>(null);
+  const videoProbeGenerationRef = useRef(0);
+  const [mediaProbeBusy, setMediaProbeBusy] = useState(false);
   const unifiedMediaInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
@@ -590,50 +596,58 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       setError("Remove photos and music before adding a video.");
       return;
     }
-    try {
-      const durationSec = await getVideoDuration(file);
-      if (needsVideoTrim(durationSec)) {
-        clearVideoTrimDraft();
-        setVideoTrimDraft({
-          file,
-          previewUrl: URL.createObjectURL(file),
-          durationSec,
-        });
-        setPostType("video");
-        setError(null);
-        setSuccess(
-          `This video is ${Math.ceil(durationSec)}s. Shorten it in Clip Studio (${VIDEO_CLIP_LENGTH_OPTIONS_SEC.map((sec) => `${sec / 60} min`).join(" / ")}), then post.`
-        );
-        return;
-      }
-      if (!Number.isFinite(durationSec) || durationSec <= 0) {
-        setError(
-          `Could not read this video length. Try another file, or record in-app (max ${SOCIAL_MAX_VIDEO_DURATION_MIN} min).`
-        );
-        return;
-      }
-      if (shouldOfferEpisodeSplit(file.size, durationSec)) {
-        openEpisodeSplitDraft({ file, durationSec, reason: "oversized" });
-        return;
-      }
-      if (isSocialVideoOverSizeLimit(file)) {
-        setError(
-          `Video is too large (maximum ${SOCIAL_MAX_VIDEO_MB} MB). Compress it, or use a clip of at least 45 seconds so we can split it into ${SOCIAL_EPISODE_SPLIT_COUNT} episodes.`
-        );
-        return;
-      }
-      const thumbnailUrl = await generateVideoThumbnail(file);
-      applyPendingVideo({ file, durationSec, thumbnailUrl });
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not read video.");
+    if (!resolveVideoContentType(file)) {
+      setError("Unsupported video type. Use MP4, MOV, or WebM.");
+      return;
     }
-  }, [
-    applyPendingVideo,
-    clearVideoTrimDraft,
-    openEpisodeSplitDraft,
-    pendingAudio,
-    pendingImages.length,
-  ]);
+    if (isSocialVideoOverSizeLimit(file) && file.size > 0) {
+      // Still probe duration — oversized long clips may use episode split.
+    }
+
+    videoProbeAbortRef.current?.abort();
+    const controller = new AbortController();
+    videoProbeAbortRef.current = controller;
+    const generation = videoProbeGenerationRef.current + 1;
+    videoProbeGenerationRef.current = generation;
+    setMediaProbeBusy(true);
+    setError(null);
+    setSuccess("Reading video…");
+
+    try {
+      const durationSec = await getVideoDuration(file, { signal: controller.signal });
+      if (generation !== videoProbeGenerationRef.current) return;
+
+      if (!isUsableVideoDuration(durationSec)) {
+        setError(
+          `Could not read this video length. Try another MP4, or record in-app (max ${SOCIAL_MAX_VIDEO_DURATION_MIN} min).`
+        );
+        setSuccess(null);
+        return;
+      }
+
+      // Pre-edit / pre-publish review before attaching to the composer.
+      setMediaReviewDraft({
+        file,
+        kind: "video",
+        durationSec,
+      });
+      setPostType("video");
+      setError(null);
+      setSuccess(null);
+    } catch (e) {
+      if (generation !== videoProbeGenerationRef.current) return;
+      if (e instanceof DOMException && e.name === "AbortError") return;
+      setError(e instanceof Error ? e.message : "Could not read video.");
+      setSuccess(null);
+    } finally {
+      if (generation === videoProbeGenerationRef.current) {
+        setMediaProbeBusy(false);
+        if (videoProbeAbortRef.current === controller) {
+          videoProbeAbortRef.current = null;
+        }
+      }
+    }
+  }, [pendingAudio, pendingImages.length]);
 
   const handleCameraCapture = useCallback((capture: GigaSocialCameraCapture) => {
     setCameraStudioOpen(false);
@@ -654,9 +668,19 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         setBody((current) => (current.trim() ? current : result.caption));
       }
       if (result.kind === "video") {
-        const measured = await getVideoDuration(result.file);
-        const durationSec =
-          result.durationSec && result.durationSec > 0 ? result.durationSec : measured;
+        let durationSec =
+          result.durationSec && isUsableVideoDuration(result.durationSec)
+            ? result.durationSec
+            : 0;
+        if (!isUsableVideoDuration(durationSec)) {
+          try {
+            durationSec = await getVideoDuration(result.file);
+          } catch (e) {
+            setError(e instanceof Error ? e.message : "Could not read video.");
+            setMediaReviewDraft(null);
+            return;
+          }
+        }
         if (needsVideoTrim(durationSec)) {
           clearVideoTrimDraft();
           setVideoTrimDraft({
@@ -665,6 +689,9 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
             durationSec,
           });
           setPostType("video");
+          setSuccess(
+            `This video is ${Math.ceil(durationSec)}s. Shorten it (${VIDEO_CLIP_LENGTH_OPTIONS_SEC.map((sec) => `${sec / 60} min`).join(" / ")}), then post.`
+          );
         } else if (shouldOfferEpisodeSplit(result.file.size, durationSec)) {
           openEpisodeSplitDraft({
             file: result.file,
@@ -1061,6 +1088,15 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         postType={postType}
         enableAI={enableAIAssistant}
         onClose={() => setMediaReviewDraft(null)}
+        onRemove={() => setMediaReviewDraft(null)}
+        onReplace={() => {
+          setMediaReviewDraft(null);
+          if (mediaReviewDraft.kind === "video") {
+            videoInputRef.current?.click();
+          } else {
+            imageInputRef.current?.click();
+          }
+        }}
         onSkip={(result) => void handleMediaReviewComplete(result)}
       />
     );
@@ -1303,6 +1339,17 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         </p>
       )}
 
+      {mediaProbeBusy ? (
+        <div
+          className="flex items-center gap-2 rounded-xl border border-border bg-muted/10 px-3 py-2 text-xs text-muted"
+          role="status"
+          aria-live="polite"
+        >
+          <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
+          Reading video duration…
+        </div>
+      ) : null}
+
       {uploadPercent !== null && busy ? (
         <div className="space-y-1.5" role="status" aria-live="polite">
           <div className="h-1.5 overflow-hidden rounded-full bg-muted/20">
@@ -1371,7 +1418,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
               event.target.value = "";
               return;
             }
-            if (file.type.startsWith("video/")) {
+            if (isLikelySocialVideoFile(file)) {
               void addVideoFile(file);
             } else if (event.target.files) {
               void addImageFiles(event.target.files);

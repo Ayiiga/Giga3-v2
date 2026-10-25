@@ -1,15 +1,24 @@
 "use client";
 
+import { GigaSocialAwardsCentre } from "@/components/gigasocial/awards/GigaSocialAwardsCentre";
 import { GigaSocialAffiliatePanel } from "@/components/gigasocial/economy/GigaSocialAffiliatePanel";
 import { GigaSocialBoostPanel } from "@/components/gigasocial/economy/GigaSocialBoostPanel";
 import { GigaSocialCreatorDashboard } from "@/components/gigasocial/economy/GigaSocialCreatorDashboard";
 import { GigaSocialCreatorWallet } from "@/components/gigasocial/economy/GigaSocialCreatorWallet";
+import { GigaSocialEarningsCentre } from "@/components/gigasocial/economy/GigaSocialEarningsCentre";
 import { GigaSocialGiftsHub } from "@/components/gigasocial/economy/GigaSocialGiftsHub";
 import { useGigaSocialFeatures } from "@/lib/gigasocial/featureFlags";
 import { cn } from "@/lib/utils";
-import { memo, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 
-type CreatorTab = "dashboard" | "wallet" | "gifts" | "affiliate" | "boost";
+type CreatorTab =
+  | "earnings"
+  | "awards"
+  | "dashboard"
+  | "wallet"
+  | "gifts"
+  | "affiliate"
+  | "boost";
 
 export const GigaSocialCreatorPanel = memo(function GigaSocialCreatorPanel({
   sessionToken,
@@ -19,10 +28,16 @@ export const GigaSocialCreatorPanel = memo(function GigaSocialCreatorPanel({
   initialTab?: CreatorTab;
 }) {
   const features = useGigaSocialFeatures();
-  const [tab, setTab] = useState<CreatorTab>(initialTab ?? "dashboard");
+  const [tab, setTab] = useState<CreatorTab>(initialTab ?? "earnings");
+
+  useEffect(() => {
+    if (initialTab) setTab(initialTab);
+  }, [initialTab]);
 
   const tabs = useMemo(() => {
     const items: { id: CreatorTab; label: string }[] = [
+      { id: "earnings", label: "Earnings" },
+      { id: "awards", label: "Awards" },
       { id: "dashboard", label: "Dashboard" },
     ];
     if (features.enableCreatorWallet) {
@@ -38,10 +53,7 @@ export const GigaSocialCreatorPanel = memo(function GigaSocialCreatorPanel({
 
   return (
     <div className="space-y-4">
-      <nav
-        className="flex flex-wrap gap-1.5 pb-1"
-        aria-label="Creator economy"
-      >
+      <nav className="flex flex-wrap gap-1.5 pb-1" aria-label="Creator economy">
         {tabs.map(({ id, label }) => (
           <button
             key={id}
@@ -50,7 +62,7 @@ export const GigaSocialCreatorPanel = memo(function GigaSocialCreatorPanel({
             className={cn(
               "inline-flex min-h-10 min-w-[5.5rem] flex-1 items-center justify-center rounded-full border px-3 text-sm font-medium sm:flex-none sm:px-4",
               tab === id
-                ? "border-accent/40 bg-accent/10 text-foreground"
+                ? "border-violet-500/50 bg-violet-600 text-white"
                 : "border-border bg-white text-muted"
             )}
           >
@@ -59,6 +71,8 @@ export const GigaSocialCreatorPanel = memo(function GigaSocialCreatorPanel({
         ))}
       </nav>
 
+      {tab === "earnings" ? <GigaSocialEarningsCentre sessionToken={sessionToken} /> : null}
+      {tab === "awards" ? <GigaSocialAwardsCentre sessionToken={sessionToken} /> : null}
       {tab === "dashboard" ? (
         <GigaSocialCreatorDashboard
           sessionToken={sessionToken}

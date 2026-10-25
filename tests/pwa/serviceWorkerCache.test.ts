@@ -3,15 +3,17 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("service worker cache version", () => {
-  it("uses giga3-v67 cache with offline.html fallback", () => {
+  it("uses giga3-v73 cache with offline.html fallback", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
-    expect(sw).toContain('CACHE_VERSION = "giga3-v67"');
+    expect(sw).toContain('CACHE_VERSION = "giga3-v73"');
     expect(sw).toContain('OFFLINE_URL = "/offline.html"');
     expect(sw).toContain("requireInteraction: true");
     expect(sw).toContain("NETWORK_TIMEOUT_MS");
     expect(sw).toContain("fetchWithTimeout");
     expect(sw).toContain("handleStaleChunk");
     expect(sw).toContain('"/api/"');
+    // Activate retires prior Giga3 generations only (never blanket-delete third-party caches).
+    expect(sw).toContain('k.startsWith("giga3-") && k !== CACHE_VERSION');
   });
 
   it("network-first navigation with offline.html fallback", () => {

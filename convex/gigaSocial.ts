@@ -33,8 +33,18 @@ import { assertSocialVideoDuration } from "./gigaSocialMediaPolicy";
 import { consumeSocialWriteRateLimit } from "./socialRateLimit";
 import { assertChildSafetyFeature } from "./childSafety";
 import { ValidationError } from "./securityErrors";
+import {
+  countReportsInWindow,
+  isDuplicateSocialReport,
+  isSelfReport,
+  isSocialReportRateLimited,
+  normalizeSocialReportReason,
+  socialReportTargetKey,
+} from "./socialContentReportPolicy";
 
 const SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC = 15;
+/** Look back far enough to cover rate-limit + dedupe windows without unbounded scans. */
+const SOCIAL_REPORT_LOOKBACK = 40;
 export const MAX_SOCIAL_ACCOUNTS_PER_USER = 3;
 const MAX_PINNED_POSTS_PER_AUTHOR = 3;
 const MAX_PINNED_COMMENTS_PER_POST = 5;
@@ -1680,8 +1690,9 @@ export const recordPostView = mutation({
   },
   handler: async (ctx, args) => {
     const post = await ctx.db.get(args.postId);
+    // Count impressions for any non-deleted post (public + followers-only).
+    // Visibility is enforced by feed/profile queries; viewers who can see it may count.
     if (!post || post.deletedAt) return { ok: false };
-    if (post.visibility === "followers") return { ok: false };
 
     const viewCount = (post.viewCount ?? 0) + 1;
     await ctx.db.patch(args.postId, { viewCount, updatedAt: Date.now() });
@@ -1919,19 +1930,10 @@ export const getFanRelationship = query({
   },
 });
 
-const SOCIAL_REPORT_REASONS = new Set([
-  "spam",
-  "harassment",
-  "sexual_content",
-  "hate",
-  "violence",
-  "child_safety",
-  "other",
-]);
-
 /**
  * Report a post, comment, or profile for moderation review.
  * Does not auto-delete content — queues for human review.
+ * Reporter identity comes from the verified session only.
  */
 export const reportSocialContent = mutation({
   args: {
@@ -1948,26 +1950,94 @@ export const reportSocialContent = mutation({
     details: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const reporterId = await requireSession(args.sessionToken);
-    const reason = args.reason.trim().toLowerCase().slice(0, 40);
-    if (!SOCIAL_REPORT_REASONS.has(reason)) {
+    const reporterId = await requireSession(args.sessionToken, ctx);
+    const reason = normalizeSocialReportReason(args.reason);
+    if (!reason) {
       throw new ValidationError("Choose a valid report reason.");
     }
-    const details = args.details?.trim().slice(0, 2000);
+    const details = args.details?.trim().slice(0, 2000) || undefined;
+    const nowMs = Date.now();
+
+    let targetAuthorId: string | undefined;
+    let profileUserId: string | undefined;
 
     if (args.targetType === "post") {
       if (!args.postId) throw new ValidationError("Post is required.");
       const post = await ctx.db.get(args.postId);
       if (!post || post.deletedAt) throw new ValidationError("Post not found.");
+      targetAuthorId = post.authorId;
     } else if (args.targetType === "comment") {
       if (!args.commentId) throw new ValidationError("Comment is required.");
       const comment = await ctx.db.get(args.commentId);
       if (!comment || comment.deletedAt) {
         throw new ValidationError("Comment not found.");
       }
+      targetAuthorId = comment.authorId;
     } else {
-      const profileUserId = args.profileUserId?.trim().toLowerCase();
+      profileUserId = args.profileUserId?.trim().toLowerCase();
       if (!profileUserId) throw new ValidationError("Profile is required.");
+      targetAuthorId = profileUserId;
+    }
+
+    if (
+      isSelfReport({
+        reporterId,
+        targetAuthorId,
+      })
+    ) {
+      throw new ValidationError("You cannot report your own content.");
+    }
+
+    if (
+      !socialReportTargetKey({
+        targetType: args.targetType,
+        postId: args.postId,
+        commentId: args.commentId,
+        profileUserId,
+      })
+    ) {
+      throw new ValidationError("Report target is required.");
+    }
+
+    const recent = await ctx.db
+      .query("socialContentReports")
+      .withIndex("by_reporter_created", (q) => q.eq("reporterId", reporterId))
+      .order("desc")
+      .take(SOCIAL_REPORT_LOOKBACK);
+
+    if (isSocialReportRateLimited(countReportsInWindow(recent, nowMs))) {
+      throw new ValidationError(
+        "You have submitted too many reports recently. Please try again later."
+      );
+    }
+
+    const duplicate = recent.find((row) =>
+      isDuplicateSocialReport(
+        {
+          targetType: row.targetType,
+          postId: row.postId,
+          commentId: row.commentId,
+          profileUserId: row.profileUserId,
+          reason: row.reason,
+          status: row.status,
+          createdAt: row.createdAt,
+        },
+        {
+          targetType: args.targetType,
+          postId: args.postId,
+          commentId: args.commentId,
+          profileUserId,
+          reason,
+          nowMs,
+        }
+      )
+    );
+    if (duplicate) {
+      return {
+        ok: true as const,
+        reportId: duplicate._id,
+        alreadyReported: true as const,
+      };
     }
 
     const reportId = await ctx.db.insert("socialContentReports", {
@@ -1975,12 +2045,12 @@ export const reportSocialContent = mutation({
       targetType: args.targetType,
       postId: args.postId,
       commentId: args.commentId,
-      profileUserId: args.profileUserId?.trim().toLowerCase(),
+      profileUserId,
       reason,
       details,
       status: "open",
-      createdAt: Date.now(),
+      createdAt: nowMs,
     });
-    return { ok: true as const, reportId };
+    return { ok: true as const, reportId, alreadyReported: false as const };
   },
 });
