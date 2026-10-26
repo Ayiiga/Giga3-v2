@@ -18,12 +18,28 @@ describe("robots and private routes", () => {
     expect(robots).toContain("Disallow: /api/");
     expect(robots).toContain("Disallow: /admin/");
     expect(robots).toContain("Disallow: /chat/");
+    // Login must remain crawlable so Google can observe noindex (not stuck as robots-blocked).
+    expect(robots).toContain("Allow: /chat/login/");
+    expect(robots.indexOf("Disallow: /chat/")).toBeLessThan(robots.indexOf("Allow: /chat/login/"));
     expect(robots).toContain("Disallow: /wallet/");
+    expect(robots).toContain("Disallow: /marketplace/purchases/");
     expect(robots.match(/^Sitemap:/gm)).toHaveLength(1);
     expect(robots).toContain("Sitemap: https://www.giga3ai.com/sitemap.xml");
     expect(robots).not.toContain("sitemap-index.xml");
     expect(robots).not.toContain("Disallow: /blog");
     expect(robots).not.toContain("Disallow: /pricing");
+    expect(robots).not.toContain("Disallow: /gigalearn");
+  });
+
+  it("does not emit crawlable login?next= variants from ProductSignInPrompt", () => {
+    const src = readFileSync(
+      resolve(root, "web/components/seo/ProductSignInPrompt.tsx"),
+      "utf8"
+    );
+    expect(src).toContain('href="/chat/login/"');
+    expect(src).toContain("rememberPostLoginPath");
+    expect(src).not.toMatch(/href=\{?[`'"]\/chat\/login\?next=/);
+    expect(src).toContain('rel="nofollow"');
   });
 
   it("keeps the committed robots.txt aligned with the policy", () => {

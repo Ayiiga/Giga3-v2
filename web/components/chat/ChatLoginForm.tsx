@@ -23,6 +23,10 @@ import { GoogleSignInButton, googleClientId } from "@/components/chat/GoogleSign
 import { SocialAuthButtons } from "@/components/chat/SocialAuthButtons";
 import { PasswordField } from "@/components/chat/PasswordField";
 import { VisionTagline } from "@/components/vision/VisionTagline";
+import {
+  consumeRememberedPostLoginPath,
+  safePostLoginPath,
+} from "@/lib/auth/safePostLoginPath";
 import { siteConfig } from "@/lib/site";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -33,7 +37,7 @@ type AuthMode = "signin" | "signup" | "forgot";
 function ChatLoginFormInner() {
   const router = useRouter();
   const params = useSearchParams();
-  const nextPath = params.get("next") || "/chat";
+  const [nextPath, setNextPath] = useState(() => safePostLoginPath(params.get("next")));
   const [mode, setMode] = useState<AuthMode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -51,6 +55,16 @@ function ChatLoginFormInner() {
   }, [authError]);
 
   useEffect(() => {
+    const fromQuery = params.get("next");
+    if (fromQuery) {
+      setNextPath(safePostLoginPath(fromQuery));
+      return;
+    }
+    const remembered = consumeRememberedPostLoginPath();
+    if (remembered) setNextPath(remembered);
+  }, [params]);
+
+  useEffect(() => {
     if (!authCode) return;
     let cancelled = false;
     setSubmitting(true);
@@ -58,7 +72,7 @@ function ChatLoginFormInner() {
     void exchangeSocialAuthCode(authCode)
       .then(() => {
         if (!cancelled) {
-          router.replace(nextPath.startsWith("/") ? nextPath : "/chat");
+          router.replace(safePostLoginPath(nextPath));
         }
       })
       .catch((err) => {
@@ -77,7 +91,7 @@ function ChatLoginFormInner() {
   useEffect(() => {
     if (authCode) return;
     if (!hasPersistedAuth() && !getUserEmail()) return;
-    router.replace(nextPath.startsWith("/") ? nextPath : "/chat");
+    router.replace(safePostLoginPath(nextPath));
   }, [router, nextPath, authCode]);
 
   if (restoringSession) {
@@ -90,7 +104,7 @@ function ChatLoginFormInner() {
   }
 
   function goNext() {
-    router.push(nextPath.startsWith("/") ? nextPath : "/chat");
+    router.push(safePostLoginPath(nextPath));
   }
 
   async function handleGoogle(idToken: string) {

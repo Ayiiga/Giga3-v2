@@ -3,6 +3,7 @@ Allow: /
 Disallow: /api/
 Disallow: /admin/
 Disallow: /chat/
+Allow: /chat/login/
 Disallow: /wallet/
 Disallow: /credits/
 Disallow: /payment/

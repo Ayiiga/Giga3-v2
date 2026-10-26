@@ -53,6 +53,8 @@ interface ButtonLinkProps {
   className?: string;
   children: ReactNode;
   external?: boolean;
+  rel?: string;
+  onClick?: () => void;
 }
 
 export function ButtonLink({
@@ -62,19 +64,27 @@ export function ButtonLink({
   className,
   children,
   external,
+  rel,
+  onClick,
 }: ButtonLinkProps) {
   const classes = cn(baseStyles, variants[variant], sizes[size], className);
 
   if (external) {
     return (
-      <a href={href} className={classes} target="_blank" rel="noopener noreferrer">
+      <a
+        href={href}
+        className={classes}
+        target="_blank"
+        rel={rel ?? "noopener noreferrer"}
+        onClick={onClick}
+      >
         {children}
       </a>
     );
   }
 
   return (
-    <Link href={normalizeAppPath(href)} className={classes}>
+    <Link href={normalizeAppPath(href)} className={classes} rel={rel} onClick={onClick}>
       {children}
     </Link>
   );
