@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useAction, useMutation, useQuery } from "convex/react";
 import { api } from "convex/_generated/api";
 import { getSessionToken, getUserEmail } from "@/lib/auth";
+import { rememberPostLoginPath } from "@/lib/auth/safePostLoginPath";
 import {
   FOUNDING_MEMBERS_ACCESS_DURATION_LABEL,
   FOUNDING_MEMBERS_MAX_ALLOCATIONS,
@@ -249,8 +250,10 @@ export function PremiumUpgradeModal({
                 </button>
               ) : (
                 <Link
-                  href={`/chat/login/?next=${encodeURIComponent("/gigalearn/exam/practice/")}`}
+                  href="/chat/login/"
+                  rel="nofollow"
                   className="premium-upgrade-cta"
+                  onClick={() => rememberPostLoginPath("/gigalearn/exam/practice/")}
                 >
                   Sign in to unlock — GHS {FOUNDING_MEMBERS_PRICE_GHS}
                 </Link>
@@ -287,8 +290,10 @@ export function PremiumUpgradeModal({
                 </button>
               ) : (
                 <Link
-                  href={`/chat/login/?next=${encodeURIComponent("/subscribe/")}`}
+                  href="/chat/login/"
+                  rel="nofollow"
                   className="premium-upgrade-cta premium-upgrade-cta--secondary"
+                  onClick={() => rememberPostLoginPath("/subscribe/")}
                 >
                   Sign in to subscribe — GHS {basicPrice}/month
                 </Link>

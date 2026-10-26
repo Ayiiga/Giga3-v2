@@ -121,7 +121,7 @@ function GigaLearnContent() {
   }
 
   if (!email) {
-    return <ClientAppHydrationNotice productName="GigaLearn" signInHref="/chat/login?next=/gigalearn" />;
+    return <ClientAppHydrationNotice productName="GigaLearn" signInHref="/chat/login/" />;
   }
 
   const studentSub = resolveStudentSubView(tabParam, getStudioContext().levelId);

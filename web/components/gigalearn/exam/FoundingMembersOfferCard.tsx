@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useAction, useMutation, useQuery } from "convex/react";
 import { api } from "convex/_generated/api";
 import { getSessionToken, getUserEmail } from "@/lib/auth";
+import { rememberPostLoginPath } from "@/lib/auth/safePostLoginPath";
 import {
   FOUNDING_MEMBERS_NOT_INCLUDED,
   FOUNDING_MEMBERS_SCOPE_BULLETS,
@@ -260,9 +261,11 @@ export function FoundingMembersOfferCard() {
           </button>
         ) : (
           <Link
-            href={`/chat/login/?next=${encodeURIComponent("/gigalearn/exam/")}`}
+            href="/chat/login/"
+            rel="nofollow"
             className="exam-landing-cta"
             data-testid="founding-members-sign-in"
+            onClick={() => rememberPostLoginPath("/gigalearn/exam/")}
           >
             Sign in to unlock Premium for GHS {priceGhs}
           </Link>

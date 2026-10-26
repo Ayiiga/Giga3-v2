@@ -56,12 +56,17 @@ export function canonicalLoc(value) {
 }
 
 export function robotsTxt() {
-  const disallows = PRIVATE_PREFIXES.map((prefix) => `Disallow: ${prefix}`).join("\n");
-  return `User-agent: *
-Allow: /
-${disallows}
-Sitemap: ${CANONICAL_ORIGIN}/sitemap.xml
-`;
+  // Keep /chat/ private, but allow /chat/login/ so Google can see the page's
+  // noindex meta (robots.txt blocks prevent Google from observing noindex).
+  const lines = ["User-agent: *", "Allow: /"];
+  for (const prefix of PRIVATE_PREFIXES) {
+    lines.push(`Disallow: ${prefix}`);
+    if (prefix === "/chat/") {
+      lines.push("Allow: /chat/login/");
+    }
+  }
+  lines.push(`Sitemap: ${CANONICAL_ORIGIN}/sitemap.xml`);
+  return `${lines.join("\n")}\n`;
 }
 
 export function sitemapUrlLimit() {

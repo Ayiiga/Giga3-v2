@@ -11,6 +11,11 @@
 
 /chat/*
   Cache-Control: no-store, no-cache, must-revalidate
+  X-Robots-Tag: noindex, nofollow
+
+/chat/login/*
+  Cache-Control: no-store, no-cache, must-revalidate
+  X-Robots-Tag: noindex, nofollow
 
 /gigasocial/*
   Cache-Control: no-store, no-cache, must-revalidate
@@ -27,26 +32,41 @@
 /_next/*
   Cache-Control: public, max-age=31536000, immutable
 
-/chat/login/*
-  Cache-Control: no-store, no-cache, must-revalidate
-
 /payment/*
   Cache-Control: no-store, no-cache, must-revalidate
+  X-Robots-Tag: noindex, nofollow
 
 /wallet/*
   Cache-Control: no-store, no-cache, must-revalidate
+  X-Robots-Tag: noindex, nofollow
 
 /credits/*
   Cache-Control: no-store, no-cache, must-revalidate
+  X-Robots-Tag: noindex, nofollow
 
 /marketplace/sell/*
   Cache-Control: no-store, no-cache, must-revalidate
+  X-Robots-Tag: noindex, nofollow
 
 /marketplace/purchases/*
   Cache-Control: no-store, no-cache, must-revalidate
+  X-Robots-Tag: noindex, nofollow
 
 /workspace/*
   Cache-Control: no-store, no-cache, must-revalidate
+  X-Robots-Tag: noindex, nofollow
+
+/settings/*
+  X-Robots-Tag: noindex, nofollow
+
+/profile/*
+  X-Robots-Tag: noindex, nofollow
+
+/subscribe/*
+  X-Robots-Tag: noindex, nofollow
+
+/admin/*
+  X-Robots-Tag: noindex, nofollow
 
 /admin/*
   Cache-Control: no-store, no-cache, must-revalidate
