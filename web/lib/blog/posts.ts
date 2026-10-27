@@ -27,6 +27,11 @@ import { OneMillionCodersCoursesSkillsCareersBody } from "@/content/blog/one-mil
 import { AiSkillsEveryGhanaianStudent2026Body } from "@/content/blog/ai-skills-every-ghanaian-student-should-learn-2026";
 import { CodingVsAiBeginnersBody } from "@/content/blog/coding-vs-ai-which-skill-beginners-learn-first";
 import { HowToBuildFirstSoftwareProjectBody } from "@/content/blog/how-to-build-first-software-project-beginner-ghana";
+import { DeepaiGuideBody } from "@/content/blog/deepai-guide";
+import { ChatgptZeroZerogptExplainedBody } from "@/content/blog/chatgpt-zero-zerogpt-explained";
+import { PhotoroomAiTutorialBody } from "@/content/blog/photoroom-ai-tutorial";
+import { ClaudeAiLoginGuideBody } from "@/content/blog/claude-ai-login-guide";
+import { GeminiAiLoginGuideBody } from "@/content/blog/gemini-ai-login-guide";
 import type { ComponentType } from "react";
 
 export type BlogArticleBodyProps = {
@@ -62,6 +67,11 @@ const BODY_BY_SLUG: Record<string, { Body: ComponentType<BlogArticleBodyProps>; 
     "ai-skills-every-ghanaian-student-should-learn-2026": AiSkillsEveryGhanaianStudent2026Body,
     "coding-vs-ai-which-skill-beginners-learn-first": CodingVsAiBeginnersBody,
     "how-to-build-first-software-project-beginner-ghana": HowToBuildFirstSoftwareProjectBody,
+    "deepai-guide": DeepaiGuideBody,
+    "chatgpt-zero-zerogpt-explained": ChatgptZeroZerogptExplainedBody,
+    "photoroom-ai-tutorial": PhotoroomAiTutorialBody,
+    "claude-ai-login-guide": ClaudeAiLoginGuideBody,
+    "gemini-ai-login-guide": GeminiAiLoginGuideBody,
   };
 
 function withPath(post: BlogPost, readingTime: string): BlogPostWithPath {
