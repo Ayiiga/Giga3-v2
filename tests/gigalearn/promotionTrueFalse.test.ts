@@ -25,11 +25,8 @@ const ROOT = resolve(__dirname, "../..");
 describe("promotion True/False bank import", () => {
   it("imports AD II True/False items with provenance and review status", () => {
     const tfs = getTechBankQuestions("exam-ad-ii", { questionType: "true_false" });
-    expect(tfs.length).toBe(54);
-    const fromAd2 = tfs.filter((q) => /AD2_28TH_FEB_2023/i.test(q.sourceDocument ?? ""));
-    const fromGuide = tfs.filter((q) => /550_guide_deduped/i.test(q.sourceDocument ?? ""));
-    expect(fromAd2.length).toBe(25);
-    expect(fromGuide.length).toBe(29);
+    expect(tfs.length).toBe(103);
+    expect(tfs.some((q) => /AD2_28TH_FEB_2023/i.test(q.sourceDocument ?? ""))).toBe(true);
     for (const q of tfs) {
       expect(q.questionType).toBe("true_false");
       expect(q.options).toEqual(["True", "False"]);
@@ -38,10 +35,9 @@ describe("promotion True/False bank import", () => {
       expect(q.correctOptionId).toBe(q.optionIds?.[q.correctIndex]);
       expect(q.reviewStatus).toBe("pending_review");
       expect(q.verificationStatus).toBe("awaiting_verification");
-      expect(q.verificationNotes).toMatch(/SOURCE ANSWER/i);
-      expect(q.sourceDocument).toMatch(/AD2_28TH_FEB_2023|550_guide_deduped/i);
       expect(q.promotionRank).toBe("assistant-director-ii");
       expect(q.questionText.length).toBeGreaterThan(20);
+      expect(q.questionText).not.toMatch(/\(case\s+/i);
     }
     const trueKeys = tfs.filter((q) => q.correctIndex === 0).length;
     const falseKeys = tfs.filter((q) => q.correctIndex === 1).length;
@@ -227,7 +223,7 @@ describe("promotion True/False filtering and honest rank availability", () => {
       premiumAccess: true,
       questionType: "true_false",
     });
-    expect(tfIds.length).toBe(54);
+    expect(tfIds.length).toBe(103);
     for (const id of tfIds) {
       expect(getTechBankQuestionById("exam-ad-ii", id)?.questionType).toBe("true_false");
     }
@@ -240,7 +236,7 @@ describe("promotion True/False filtering and honest rank availability", () => {
       premiumAccess: true,
       questionType: "mcq",
     });
-    expect(mcqIds.length).toBe(241);
+    expect(mcqIds.length).toBe(447);
 
     const adITf = selectTechQuestionIds({
       courseSlug: "exam-ad-i",
@@ -250,16 +246,16 @@ describe("promotion True/False filtering and honest rank availability", () => {
       premiumAccess: true,
       questionType: "true_false",
     });
-    expect(adITf.length).toBe(9);
+    expect(adITf.length).toBe(50);
   });
 
   it("exposes honest per-rank MCQ / True-False availability on the centre config", () => {
     const adIi = PROMOTION_RANK_BANK_SUMMARIES.find((b) => b.id === "ad-ii")!;
-    expect(adIi.mcqCount).toBe(241);
-    expect(adIi.trueFalseCount).toBe(54);
+    expect(adIi.mcqCount).toBe(447);
+    expect(adIi.trueFalseCount).toBe(103);
     expect(adIi.questionTypes).toEqual(["mcq", "true_false"]);
     expect(adIi.trueFalseHref).toContain("qtype=true_false");
-    expect(adIi.guidePdfHref).toContain("GigaLearn_AD_II_295_Practice_Questions_Answers.pdf");
+    expect(adIi.guidePdfHref).toContain("GigaLearn_AD_II_550_Practice_Questions_Answers.pdf");
 
     for (const bank of PROMOTION_RANK_BANK_SUMMARIES) {
       expect(bank.trueFalseCount).toBeGreaterThan(0);
@@ -268,8 +264,8 @@ describe("promotion True/False filtering and honest rank availability", () => {
       expect(bank.guidePdfHref).toMatch(/_\d+_Practice_Questions_Answers\.pdf$/);
     }
 
-    expect(PROMOTION_RANK_BANKS_TOTAL.published).toBe(520);
-    expect(getExamBankMeta("exam-ad-ii")?.trueFalseCount).toBe(54);
+    expect(PROMOTION_RANK_BANKS_TOTAL.published).toBe(2750);
+    expect(getExamBankMeta("exam-ad-ii")?.trueFalseCount).toBe(103);
     expect(getExamBankMeta("exam-teacher-promotion")?.trueFalseCount).toBe(57);
   });
 

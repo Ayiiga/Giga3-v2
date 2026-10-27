@@ -167,9 +167,9 @@ const LEGACY_INTERNAL_PATH_REWRITES: Record<string, string> = {
   "/gigalearn/exam-practice": "/gigalearn/exam/",
   "/gigalearn/practice": "/gigalearn/exam/",
   "/gigalearn/exam/free": "/gigalearn/exam/practice/",
-  "/teacher-promotion": "/gigalearn/exam/",
-  "/gigalearn/teacher-promotion": "/gigalearn/exam/",
-  "/gigalearn/promotion": "/gigalearn/exam/",
+  "/teacher-promotion": "/gigalearn/exam/promotion/",
+  "/gigalearn/teacher-promotion": "/gigalearn/exam/promotion/",
+  "/gigalearn/promotion": "/gigalearn/exam/promotion/",
   "/bece": "/gigalearn/exam/",
   "/gigalearn/bece": "/gigalearn/exam/",
 };

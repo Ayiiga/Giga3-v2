@@ -12,7 +12,7 @@ export function examPracticeShareUrl(kind: ExamPracticeShareKind): string {
   if (kind === "bece") {
     return `${base}/gigalearn/exam/?utm_source=share&utm_campaign=bece-practice#bece-centre`;
   }
-  return `${base}/gigalearn/exam/?utm_source=share&utm_campaign=teacher-promotion#teacher-promotion-centre`;
+  return `${base}/gigalearn/exam/promotion/?utm_source=share&utm_campaign=teacher-promotion`;
 }
 
 export function examPracticeShareText(kind: ExamPracticeShareKind): string {

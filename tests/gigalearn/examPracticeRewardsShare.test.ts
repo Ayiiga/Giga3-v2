@@ -99,9 +99,9 @@ describe("Exam practice share links", () => {
   it("builds absolute Teacher Promotion and BECE share URLs with campaign tags", () => {
     const promo = examPracticeShareUrl("teacher_promotion");
     const bece = examPracticeShareUrl("bece");
-    expect(promo).toContain("/gigalearn/exam/");
+    expect(promo).toContain("/gigalearn/exam/promotion/");
     expect(promo).toContain("utm_campaign=teacher-promotion");
-    expect(promo).toContain("#teacher-promotion-centre");
+    expect(promo).not.toContain("#teacher-promotion-centre");
     expect(bece).toContain("utm_campaign=bece-practice");
     expect(bece).toContain("#bece-centre");
     expect(examPracticeShareText("teacher_promotion")).toMatch(/not an official/i);
@@ -122,13 +122,15 @@ describe("Free orientation bank + UI wiring for 50 / share / rewards", () => {
       resolve(ROOT, "web/components/gigalearn/exam/ExamPracticeCentre.tsx"),
       "utf8"
     );
-    expect(centre).toContain("PROMOTION_FREE_SET_META.startCta");
-    expect(centre).toContain("Start free {EXAM_PRACTICE_FREE_QUESTION_COUNT} questions");
+    expect(centre).toMatch(/Start [Ff]ree \{EXAM_PRACTICE_FREE_QUESTION_COUNT\} [Qq]uestions/);
+    expect(centre).toContain("promotionRankSelect");
+    expect(centre).toContain("Choose rank · Start Free Practice");
     expect(centre).toContain("ExamPracticeShareButton");
     expect(centre).toContain('kind="bece"');
     expect(centre).toContain('kind="teacher_promotion"');
     expect(centre).toContain("becePracticeFull");
-    expect(centre).toContain("teacherPromotionPracticeFull");
+    expect(centre).toContain("promotionRankSelect");
+    expect(centre).toContain("teacher-promotion-bank-choose-rank");
 
     const session = readFileSync(
       resolve(ROOT, "web/components/gigalearn/exam/ExamQuizSession.tsx"),

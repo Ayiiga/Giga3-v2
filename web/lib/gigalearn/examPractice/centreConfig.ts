@@ -68,6 +68,11 @@ export const TEACHER_PROMOTION_SOURCE_INVENTORY = [
 /** Verified deep-links only — existing GigaLearn experiences. */
 export const EXAM_PRACTICE_DESTINATIONS = {
   examHome: "/gigalearn/exam/",
+  /**
+   * Primary Teacher Promotion entry — five-rank free-practice selector.
+   * Do not send learners to the general Courses tab or mixed bank first.
+   */
+  promotionRankSelect: "/gigalearn/exam/promotion/",
   /** Timed Teacher Promotion free orientation practice (not an official GES paper). */
   promotionFreePractice: "/gigalearn/exam/practice/",
   /** Imported BECE objective bank (interactive Academy practice). */

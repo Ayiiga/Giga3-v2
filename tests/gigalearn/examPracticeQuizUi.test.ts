@@ -81,7 +81,9 @@ describe("Exam Practice quiz UI wiring", () => {
       resolve(ROOT, "web/components/gigalearn/exam/ExamPracticeCentre.tsx"),
       "utf8"
     );
-    expect(ui).toContain("PROMOTION_FREE_SET_META.startCta");
+    expect(ui).toMatch(/Start [Ff]ree \{EXAM_PRACTICE_FREE_QUESTION_COUNT\} [Qq]uestions/);
+    expect(ui).toContain("promotionRankSelect");
+    expect(ui).toContain("Choose rank · Start Free Practice");
     expect(ui).toContain("promotionFreePractice");
     expect(ui).toContain("general-promotion-free-practice");
     expect(ui).toContain("exam-ghana-stripe");
