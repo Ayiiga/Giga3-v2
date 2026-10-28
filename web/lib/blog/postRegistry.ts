@@ -458,4 +458,123 @@ export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
       "student portfolio project",
     ],
   },
+  {
+    slug: "deepai-guide",
+    title: "DeepAI Explained: How to Use DeepAI for AI Writing and Image Creation",
+    seoTitle: "DeepAI Guide: Writing & Image Creation Explained",
+    description:
+      "What DeepAI is, how to open the official site, verified tools, beginner steps, prompts, free vs Pro notes, privacy tips, and alternatives for Ghanaian users.",
+    excerpt:
+      "A practical DeepAI walkthrough for students and creators — access, tools DeepAI describes publicly, prompts, pricing checks, limits, and safer alternatives.",
+    category: "AI Tools",
+    tags: ["deepai", "ai writing", "ai images", "creators", "students", "ghana"],
+    author: "Ayiiga Benard Issaka",
+    authorType: "Person",
+    publishedAt: "2026-10-27",
+    featuredImage: "/images/blog/deepai-guide.jpg",
+    featuredImageAlt:
+      "Young creator in Ghana drafting ideas on a laptop beside a printed colour sketch",
+    keywords: [
+      "deepai",
+      "deepai guide",
+      "how to use deepai",
+      "deepai image generator",
+      "deepai writing",
+    ],
+  },
+  {
+    slug: "chatgpt-zero-zerogpt-explained",
+    title: "ChatGPT Zero and ZeroGPT Explained: How AI Text Detectors Work",
+    seoTitle: "ChatGPT Zero vs ZeroGPT & GPTZero Explained",
+    description:
+      "Clear up ChatGPT Zero, GPTZero, and ZeroGPT naming. Learn how AI detectors work, how to use official sites, what scores mean, and responsible guidance — no bypass tips.",
+    excerpt:
+      "GPTZero and ZeroGPT are different products. Learn how AI-text detection works, how to read scores, and why a percentage alone cannot prove authorship.",
+    category: "Digital Literacy",
+    tags: ["gptzero", "zerogpt", "ai detector", "academic integrity", "teachers", "students"],
+    author: "Ayiiga Benard Issaka",
+    authorType: "Person",
+    publishedAt: "2026-10-27",
+    featuredImage: "/images/blog/chatgpt-zero-zerogpt-explained.jpg",
+    featuredImageAlt:
+      "Teacher and student in Ghana reviewing a printed essay together at a classroom desk",
+    keywords: [
+      "chatgpt zero",
+      "zerogpt",
+      "gptzero",
+      "ai text detector",
+      "how ai detectors work",
+    ],
+  },
+  {
+    slug: "photoroom-ai-tutorial",
+    title: "Photoroom AI Tutorial: Create Professional Product Photos With Your Phone",
+    seoTitle: "Photoroom Tutorial: Phone Product Photos for Sellers",
+    description:
+      "Step-by-step Photoroom tutorial for Ghanaian sellers — background removal, accurate products, consistent listings, exports, Free vs paid plan notes, and common mistakes.",
+    excerpt:
+      "Turn phone snapshots into cleaner product listings with Photoroom: cutouts, backgrounds, export habits, and a realistic Makola-style selling example.",
+    category: "Creators",
+    tags: ["photoroom", "product photography", "ecommerce", "small business ghana", "background removal"],
+    author: "Ayiiga Benard Issaka",
+    authorType: "Person",
+    publishedAt: "2026-10-27",
+    featuredImage: "/images/blog/photoroom-ai-tutorial.jpg",
+    featuredImageAlt:
+      "Ghanaian seller photographing clothing with a phone beside products on a stall counter",
+    keywords: [
+      "photoroom",
+      "photoroom tutorial",
+      "ai product photos",
+      "background remover phone",
+      "product photography ghana",
+    ],
+  },
+  {
+    slug: "claude-ai-login-guide",
+    title: "Claude AI Login Guide: How to Sign Up and Use Claude in Ghana",
+    seoTitle: "Claude AI Login Guide for Ghana (Sign Up & Use)",
+    description:
+      "How to access Claude in Ghana via official Anthropic channels — sign up, sign in, prompts, Free vs paid plan checks, and login troubleshooting without sharing passwords.",
+    excerpt:
+      "Ghana is on Anthropic’s supported-country list. Learn official Claude login steps, safe verification habits, useful prompts, and how to verify current pricing.",
+    category: "AI Tools",
+    tags: ["claude ai", "claude login", "anthropic", "ghana", "ai chat", "students"],
+    author: "Ayiiga Benard Issaka",
+    authorType: "Person",
+    publishedAt: "2026-10-27",
+    featuredImage: "/images/blog/claude-ai-login-guide.jpg",
+    featuredImageAlt:
+      "University student in Ghana signing into a laptop at a café table with a notebook",
+    keywords: [
+      "claude ai login",
+      "claude ai ghana",
+      "how to sign up for claude",
+      "anthropic claude",
+      "claude ai guide",
+    ],
+  },
+  {
+    slug: "gemini-ai-login-guide",
+    title: "Google Gemini AI Login Guide: How to Sign In and Use Gemini",
+    seoTitle: "Gemini AI Login Guide: Sign In & Start Using Gemini",
+    description:
+      "Official Gemini sign-in with a Google Account, starter prompts for learning and work, age/region caveats, free vs paid plan checks, and troubleshooting from Google’s public docs.",
+    excerpt:
+      "Sign in at gemini.google.com, write clearer prompts, and understand how Gemini features vary by age, region, and Google AI plan — without unverified price claims.",
+    category: "AI Tools",
+    tags: ["gemini", "gemini login", "google ai", "students", "productivity", "ghana"],
+    author: "Giga3 AI Editorial Team",
+    publishedAt: "2026-10-27",
+    featuredImage: "/images/blog/gemini-ai-login-guide.jpg",
+    featuredImageAlt:
+      "Young professional in Accra using a smartphone and laptop together for research",
+    keywords: [
+      "gemini ai login",
+      "google gemini sign in",
+      "how to use gemini",
+      "gemini google account",
+      "gemini guide",
+    ],
+  },
 ];

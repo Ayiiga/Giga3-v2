@@ -233,6 +233,32 @@ const ASSETS = [
     prompt: `${STYLE}. Small student team in Ghana building a first software project around one laptop, pointing at the screen, collaborative energy.`,
     size: "landscape_4_3",
   },
+  // DeepAI / detectors / Photoroom / Claude / Gemini guides (2026-10)
+  {
+    id: "deepai-guide",
+    file: "deepai-guide.jpg",
+    prompt: `${STYLE}. Young Ghanaian creator drafting text on a laptop while reviewing a printed colour sketch on the desk, creative writing and visual ideation mood, Accra apartment afternoon light.`,
+  },
+  {
+    id: "chatgpt-zero-zerogpt-explained",
+    file: "chatgpt-zero-zerogpt-explained.jpg",
+    prompt: `${STYLE}. Ghanaian teacher and student reviewing a printed essay together at a classroom desk, careful discussion of writing integrity, soft daylight, no logos on screens.`,
+  },
+  {
+    id: "photoroom-ai-tutorial",
+    file: "photoroom-ai-tutorial.jpg",
+    prompt: `${STYLE}. Ghanaian small-business seller photographing a clothing item on a phone beside neatly arranged products on a market stall counter, product photography for online selling.`,
+  },
+  {
+    id: "claude-ai-login-guide",
+    file: "claude-ai-login-guide.jpg",
+    prompt: `${STYLE}. University student in Ghana signing into a laptop at a café table with notebook and coffee, calm focused login and study session, blank soft glow on screen.`,
+  },
+  {
+    id: "gemini-ai-login-guide",
+    file: "gemini-ai-login-guide.jpg",
+    prompt: `${STYLE}. Young professional in Accra using a smartphone and laptop side by side for research and brainstorming, Google-ecosystem productivity mood without brand logos.`,
+  },
 ];
 
 function getKey() {
