@@ -24,6 +24,10 @@ import {
   classifyMediaFiles,
   UNIFIED_MEDIA_ACCEPT,
 } from "@/lib/gigasocial/mediaComposer";
+import {
+  resolveInitialMediaPickerIntent,
+  type InitialMediaPickerTarget,
+} from "@/lib/gigasocial/initialMediaPicker";
 import { composePhotoMusicVideo } from "@/lib/gigasocial/photoMusicVideo";
 import { needsVideoTrim, VIDEO_CLIP_LENGTH_OPTIONS_SEC } from "@/lib/gigasocial/videoTrim";
 import {
@@ -202,6 +206,9 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   const [uploadPercent, setUploadPercent] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [initialPickerTarget, setInitialPickerTarget] =
+    useState<InitialMediaPickerTarget | null>(null);
+  const [initialPickerLabel, setInitialPickerLabel] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [studioOpen, setStudioOpen] = useState(false);
   const [previewFilterId, setPreviewFilterId] = useState<CameraFilterId>("none");
@@ -417,21 +424,34 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       queueMicrotask(() => captionRef.current?.focus());
       return;
     }
+    const initialPickerIntent = resolveInitialMediaPickerIntent(initialAction);
     switch (initialAction) {
       case "video-studio":
       case "media-video":
         setPostType("video");
-        queueMicrotask(() => videoInputRef.current?.click());
+        if (initialPickerIntent) {
+          setInitialPickerTarget(initialPickerIntent.target);
+          setInitialPickerLabel(initialPickerIntent.ctaLabel);
+          setSuccess(initialPickerIntent.notice);
+        }
         break;
       case "photo-studio":
       case "media-photo":
         setPostType("image");
-        queueMicrotask(() => imageInputRef.current?.click());
+        if (initialPickerIntent) {
+          setInitialPickerTarget(initialPickerIntent.target);
+          setInitialPickerLabel(initialPickerIntent.ctaLabel);
+          setSuccess(initialPickerIntent.notice);
+        }
         setStudioOpen(true);
         break;
       case "media-unified":
         setPostType("image");
-        queueMicrotask(() => unifiedMediaInputRef.current?.click());
+        if (initialPickerIntent) {
+          setInitialPickerTarget(initialPickerIntent.target);
+          setInitialPickerLabel(initialPickerIntent.ctaLabel);
+          setSuccess(initialPickerIntent.notice);
+        }
         break;
       case "media-camera":
         setPostType("image");
@@ -446,7 +466,11 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         break;
       case "media-audio":
         setPostType("image");
-        queueMicrotask(() => audioInputRef.current?.click());
+        if (initialPickerIntent) {
+          setInitialPickerTarget(initialPickerIntent.target);
+          setInitialPickerLabel(initialPickerIntent.ctaLabel);
+          setSuccess(initialPickerIntent.notice);
+        }
         break;
       case "text-post":
         setPostType("text");
@@ -796,21 +820,40 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
     [addDroppedFiles]
   );
 
+  const openMediaPicker = useCallback((target: InitialMediaPickerTarget) => {
+    switch (target) {
+      case "unified":
+        unifiedMediaInputRef.current?.click();
+        break;
+      case "image":
+        imageInputRef.current?.click();
+        break;
+      case "video":
+        videoInputRef.current?.click();
+        break;
+      case "audio":
+        audioInputRef.current?.click();
+        break;
+      default:
+        break;
+    }
+  }, []);
+
   const handleCreateAction = useCallback(
     (action: CreateMediaAction) => {
       switch (action) {
         case "media":
-          unifiedMediaInputRef.current?.click();
+          openMediaPicker("unified");
           break;
         case "photo":
           setCameraDefaultMode("photo");
           setCameraStudioOpen(true);
           break;
         case "photos":
-          imageInputRef.current?.click();
+          openMediaPicker("image");
           break;
         case "video":
-          videoInputRef.current?.click();
+          openMediaPicker("video");
           break;
         case "music":
           setSoundLibraryOpen(true);
@@ -822,17 +865,17 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           break;
       }
     },
-    [router]
+    [openMediaPicker, router]
   );
 
   const handleQuickAction = useCallback(
     (action: ComposerQuickActionId) => {
       switch (action) {
         case "photo":
-          imageInputRef.current?.click();
+          openMediaPicker("image");
           break;
         case "video":
-          videoInputRef.current?.click();
+          openMediaPicker("video");
           break;
         case "camera":
           setCameraDefaultMode("photo");
@@ -857,7 +900,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           break;
       }
     },
-    []
+    [openMediaPicker]
   );
 
   const handleDrop = useCallback(
@@ -1444,6 +1487,21 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           canAddMusic={pendingImages.length > 0 && !pendingVideo}
           onAction={handleCreateAction}
         />
+        {initialPickerTarget && initialPickerLabel ? (
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={disabled || busy}
+            onClick={() => {
+              openMediaPicker(initialPickerTarget);
+              setInitialPickerTarget(null);
+              setInitialPickerLabel(null);
+            }}
+          >
+            {initialPickerLabel}
+          </Button>
+        ) : null}
         <Button
           type="button"
           size="sm"
