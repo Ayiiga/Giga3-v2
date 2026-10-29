@@ -135,6 +135,17 @@ describe("readSocialVideoDuration", () => {
     await expect(promise).resolves.toBe(13);
   });
 
+  it("accepts duration discovered via durationchange", async () => {
+    const file = new File([new Uint8Array([1])], "dc.mp4", { type: "video/mp4" });
+    const duration = await readSocialVideoDuration(file, {
+      createVideoElement: () => mockVideo({ duration: 17, event: "durationchange" }),
+      createObjectURL: () => "blob:mock-dc",
+      revokeObjectURL: vi.fn(),
+      retries: 1,
+    });
+    expect(duration).toBe(17);
+  });
+
   it("aborts when a newer selection cancels the probe", async () => {
     const file = new File([new Uint8Array([0])], "a.mp4", { type: "video/mp4" });
     const controller = new AbortController();
@@ -199,9 +210,25 @@ describe("composer wiring for duration probe", () => {
     expect(composer).toContain("setMediaReviewDraft");
     expect(composer).toContain("Reading video duration");
     expect(composer).toContain("resolveVideoContentType");
+    expect(composer).toContain("readInputFilesAndReset");
+    expect(composer).toContain("event.currentTarget");
+    expect(composer).toContain("videoProbeAbortRef.current?.abort()");
+    expect(composer).toContain("videoProbeGenerationRef.current");
     expect(composer).not.toMatch(
       /addVideoFile[\s\S]{0,400}finish\(Number\.isFinite\(video\.duration\) \? video\.duration : 0\)/
     );
+  });
+
+  it("captures picker files before resetting input value", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { resolve } = await import("node:path");
+    const composer = readFileSync(
+      resolve(__dirname, "../../web/components/gigasocial/GigaSocialComposer.tsx"),
+      "utf8"
+    );
+    expect(composer).toContain("const files = input.files ? Array.from(input.files) : []");
+    expect(composer).toContain("input.value = \"\"");
+    expect(composer).not.toContain("void handleUnifiedMediaPick(event.target.files)");
   });
 
   it("media review supports replace/remove and continue-to-post", async () => {

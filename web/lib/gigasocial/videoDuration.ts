@@ -22,33 +22,6 @@ export function isUsableVideoDuration(duration: number): boolean {
   return Number.isFinite(duration) && duration > 0 && duration !== Infinity;
 }
 
-function waitForEvent(
-  target: EventTarget,
-  eventName: string,
-  signal?: AbortSignal
-): Promise<Event> {
-  return new Promise((resolve, reject) => {
-    if (signal?.aborted) {
-      reject(new DOMException("Aborted", "AbortError"));
-      return;
-    }
-    const onEvent = (event: Event) => {
-      cleanup();
-      resolve(event);
-    };
-    const onAbort = () => {
-      cleanup();
-      reject(new DOMException("Aborted", "AbortError"));
-    };
-    const cleanup = () => {
-      target.removeEventListener(eventName, onEvent);
-      signal?.removeEventListener("abort", onAbort);
-    };
-    target.addEventListener(eventName, onEvent, { once: true });
-    signal?.addEventListener("abort", onAbort, { once: true });
-  });
-}
-
 async function probeOnce(
   file: File,
   options: ReadVideoDurationOptions,
@@ -81,107 +54,99 @@ async function probeOnce(
   (video as HTMLVideoElement & { disableRemotePlayback?: boolean }).disableRemotePlayback =
     true;
 
-  let settled = false;
-  const cleanup = () => {
-    video.onloadedmetadata = null;
-    video.onloadeddata = null;
-    video.ondurationchange = null;
-    video.onerror = null;
-    video.removeAttribute("src");
-    try {
-      video.load();
-    } catch {
-      /* ignore */
-    }
-    revokeObjectURL(url);
-  };
+  return await new Promise<number>((resolve, reject) => {
+    let finished = false;
+    let seekAttempted = false;
+    let timeoutId: number | undefined;
 
-  const readDuration = (): number | null => {
-    const duration = video.duration;
-    return isUsableVideoDuration(duration) ? duration : null;
-  };
-
-  let timeoutId: number | undefined;
-  try {
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      timeoutId = window.setTimeout(() => {
-        reject(new Error("Timed out reading video duration."));
-      }, timeoutMs);
-      signal?.addEventListener(
-        "abort",
-        () => {
-          if (timeoutId != null) window.clearTimeout(timeoutId);
-          reject(new DOMException("Aborted", "AbortError"));
-        },
-        { once: true }
-      );
-    });
-
-    const metadataPromise = (async () => {
-      video.src = url;
+    const finish = (result: { duration?: number; error?: Error | DOMException }) => {
+      if (finished) return;
+      finished = true;
+      if (timeoutId != null) window.clearTimeout(timeoutId);
+      signal?.removeEventListener("abort", onAbort);
+      video.removeEventListener("loadedmetadata", onDurationLikeEvent);
+      video.removeEventListener("loadeddata", onDurationLikeEvent);
+      video.removeEventListener("durationchange", onDurationLikeEvent);
+      video.removeEventListener("timeupdate", onDurationLikeEvent);
+      video.removeEventListener("seeked", onDurationLikeEvent);
+      video.removeEventListener("error", onErrorEvent);
+      video.removeAttribute("src");
       try {
         video.load();
       } catch {
-        /* some engines throw if already loading */
+        /* ignore */
       }
+      revokeObjectURL(url);
+      if (result.error) {
+        reject(result.error);
+        return;
+      }
+      resolve(result.duration!);
+    };
 
-      await Promise.race([
-        waitForEvent(video, "loadedmetadata", signal),
-        waitForEvent(video, "durationchange", signal),
-        waitForEvent(video, "loadeddata", signal),
-        waitForEvent(video, "error", signal).then(() => {
-          throw new Error("Could not read video duration.");
-        }),
-      ]);
+    const readDuration = (): number | null => {
+      const direct = video.duration;
+      if (isUsableVideoDuration(direct)) return direct;
+      const seekableEnd =
+        video.seekable && video.seekable.length > 0
+          ? video.seekable.end(video.seekable.length - 1)
+          : NaN;
+      if (isUsableVideoDuration(seekableEnd)) return seekableEnd;
+      return null;
+    };
 
-      let duration = readDuration();
-      if (duration != null) return duration;
+    const onAbort = () => finish({ error: new DOMException("Aborted", "AbortError") });
+    const onErrorEvent = () => finish({ error: new Error("Could not read video duration.") });
 
-      // Chrome/WebKit sometimes report Infinity until a seek forces the true length.
+    const onDurationLikeEvent = (event: Event) => {
+      const duration = readDuration();
+      if (duration != null) {
+        finish({ duration });
+        return;
+      }
+      if (Number.isFinite(video.duration) && video.duration <= 0) {
+        finish({ error: new Error("Could not read video duration.") });
+        return;
+      }
+      if (event.type === "loadeddata" && Number.isNaN(video.duration)) {
+        finish({ error: new Error("Could not read video duration.") });
+        return;
+      }
+      if (seekAttempted) return;
+      // Some Android WebViews expose Infinity until forced seek.
       if (video.duration === Infinity || !Number.isFinite(video.duration)) {
-        const seekableEnd =
-          video.seekable && video.seekable.length > 0
-            ? video.seekable.end(video.seekable.length - 1)
-            : NaN;
-        if (isUsableVideoDuration(seekableEnd)) {
-          return seekableEnd;
-        }
-
-        const seekTarget = Number.isFinite(seekableEnd) && seekableEnd > 0 ? seekableEnd : 1e101;
+        seekAttempted = true;
         try {
-          const seeked = waitForEvent(video, "timeupdate", signal);
-          video.currentTime = seekTarget;
-          await Promise.race([
-            seeked,
-            waitForEvent(video, "seeked", signal),
-            new Promise<void>((resolve) => window.setTimeout(resolve, 1200)),
-          ]);
-        } catch {
-          /* seek may fail on Android — fall through */
-        }
-        try {
-          video.currentTime = 0;
+          video.currentTime = 1e101;
         } catch {
           /* ignore */
         }
-        duration = readDuration();
-        if (duration != null) return duration;
-        if (isUsableVideoDuration(seekableEnd)) return seekableEnd;
       }
+    };
 
-      throw new Error("Could not read video duration.");
-    })();
+    timeoutId = window.setTimeout(() => {
+      finish({ error: new Error("Timed out reading video duration.") });
+    }, timeoutMs);
 
-    const duration = await Promise.race([metadataPromise, timeoutPromise]);
-    settled = true;
-    if (timeoutId != null) window.clearTimeout(timeoutId);
-    cleanup();
-    return duration;
-  } catch (error) {
-    if (timeoutId != null) window.clearTimeout(timeoutId);
-    if (!settled) cleanup();
-    throw error;
-  }
+    if (signal?.aborted) {
+      finish({ error: new DOMException("Aborted", "AbortError") });
+      return;
+    }
+    signal?.addEventListener("abort", onAbort, { once: true });
+    video.addEventListener("loadedmetadata", onDurationLikeEvent);
+    video.addEventListener("loadeddata", onDurationLikeEvent);
+    video.addEventListener("durationchange", onDurationLikeEvent);
+    video.addEventListener("timeupdate", onDurationLikeEvent);
+    video.addEventListener("seeked", onDurationLikeEvent);
+    video.addEventListener("error", onErrorEvent, { once: true });
+
+    video.src = url;
+    try {
+      video.load();
+    } catch {
+      /* some engines throw if already loading */
+    }
+  });
 }
 
 /**
