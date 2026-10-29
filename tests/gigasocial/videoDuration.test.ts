@@ -146,6 +146,77 @@ describe("readSocialVideoDuration", () => {
     expect(duration).toBe(17);
   });
 
+  it("keeps probing after recoverable seek error and accepts later finite duration", async () => {
+    const listeners = new Map<string, Set<EventListener>>();
+    let currentTimeValue = 0;
+    const video = {
+      preload: "metadata",
+      muted: false,
+      defaultMuted: false,
+      playsInline: false,
+      duration: Infinity,
+      seekable: { length: 0 },
+      src: "",
+      onloadedmetadata: null as ((ev: Event) => void) | null,
+      onloadeddata: null as ((ev: Event) => void) | null,
+      ondurationchange: null as ((ev: Event) => void) | null,
+      onerror: null as ((ev: Event) => void) | null,
+      setAttribute: vi.fn(),
+      removeAttribute: vi.fn(),
+      load: vi.fn(),
+      addEventListener(type: string, listener: EventListener) {
+        if (!listeners.has(type)) listeners.set(type, new Set());
+        listeners.get(type)!.add(listener);
+      },
+      removeEventListener(type: string, listener: EventListener) {
+        listeners.get(type)?.delete(listener);
+      },
+      dispatch(type: string) {
+        const event = new Event(type);
+        listeners.get(type)?.forEach((listener) => listener(event));
+        const handlerName = `on${type}` as keyof typeof video;
+        const handler = video[handlerName];
+        if (typeof handler === "function") {
+          (handler as (ev: Event) => void)(event);
+        }
+      },
+    };
+    Object.defineProperty(video, "currentTime", {
+      get() {
+        return currentTimeValue;
+      },
+      set(value: number) {
+        currentTimeValue = value;
+        if (value === 1e101) {
+          queueMicrotask(() => {
+            video.dispatch("error");
+            queueMicrotask(() => {
+              video.duration = 23;
+              video.dispatch("durationchange");
+            });
+          });
+        }
+      },
+      configurable: true,
+    });
+
+    queueMicrotask(() => {
+      video.dispatch("loadedmetadata");
+    });
+
+    const file = new File([new Uint8Array([1])], "seek-error.mp4", {
+      type: "video/mp4",
+    });
+    const duration = await readSocialVideoDuration(file, {
+      createVideoElement: () => video as unknown as HTMLVideoElement,
+      createObjectURL: () => "blob:mock-seek-error",
+      revokeObjectURL: vi.fn(),
+      retries: 1,
+      timeoutMs: 2000,
+    });
+    expect(duration).toBe(23);
+  });
+
   it("aborts when a newer selection cancels the probe", async () => {
     const file = new File([new Uint8Array([0])], "a.mp4", { type: "video/mp4" });
     const controller = new AbortController();
@@ -226,8 +297,11 @@ describe("composer wiring for duration probe", () => {
       resolve(__dirname, "../../web/components/gigasocial/GigaSocialComposer.tsx"),
       "utf8"
     );
-    expect(composer).toContain("const files = input.files ? Array.from(input.files) : []");
-    expect(composer).toContain("input.value = \"\"");
+    const copyIndex = composer.indexOf("const files = input.files ? Array.from(input.files) : []");
+    const resetIndex = composer.indexOf("input.value = \"\"");
+    expect(copyIndex).toBeGreaterThan(-1);
+    expect(resetIndex).toBeGreaterThan(-1);
+    expect(copyIndex).toBeLessThan(resetIndex);
     expect(composer).not.toContain("void handleUnifiedMediaPick(event.target.files)");
   });
 
