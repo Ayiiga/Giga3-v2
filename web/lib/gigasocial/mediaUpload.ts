@@ -16,7 +16,6 @@ import {
   SOCIAL_AVATAR_BUCKETS,
   SOCIAL_AUDIO_BUCKETS,
   SOCIAL_IMAGE_BUCKETS,
-  SOCIAL_IMAGE_MIME_TYPES,
   SOCIAL_MAX_AUDIO_BYTES,
   SOCIAL_MAX_AUDIO_DURATION_SEC,
   SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC,
@@ -27,6 +26,7 @@ import {
   SOCIAL_MAX_VIDEO_DURATION_SEC,
   SOCIAL_MAX_VIDEO_MB,
   SOCIAL_VIDEO_BUCKETS,
+  resolveImageContentType,
   resolveVideoContentType,
   type SocialPostMediaItemInput,
   type SocialUploadProgress,
@@ -77,7 +77,7 @@ function getSupabaseAccessToken(): string | null {
 }
 
 function validateImageFile(file: File): void {
-  if (!SOCIAL_IMAGE_MIME_TYPES.has(file.type)) {
+  if (!resolveImageContentType(file)) {
     throw new Error("Unsupported image type. Use JPG, PNG, or WEBP.");
   }
   if (file.size > SOCIAL_MAX_IMAGE_BYTES) {
@@ -371,7 +371,7 @@ async function uploadViaPrepared(
       ? assertSupportedAudioFile(args.file)
       : args.kind === "video"
         ? resolveVideoContentType(args.file) ?? "video/mp4"
-        : args.file.type || "application/octet-stream";
+        : resolveImageContentType(args.file) ?? "application/octet-stream";
   const prepared = await deps.prepareUpload({
     sessionToken: deps.sessionToken,
     fileName: args.file.name,
@@ -661,7 +661,8 @@ export async function uploadSocialAvatar(
     signal?: AbortSignal;
   }
 ): Promise<string> {
-  if (!SOCIAL_IMAGE_MIME_TYPES.has(file.type)) {
+  const resolvedImageContentType = resolveImageContentType(file);
+  if (!resolvedImageContentType) {
     throw new Error("Unsupported image type. Use JPG, PNG, or WEBP.");
   }
   if (file.size > SOCIAL_MAX_AVATAR_BYTES) {
@@ -695,7 +696,7 @@ export async function uploadSocialAvatar(
   const prepared = await deps.prepareAvatarUpload({
     sessionToken: deps.sessionToken,
     fileName: file.name,
-    contentType: compressed.mimeType,
+    contentType: resolvedImageContentType,
     sizeBytes: compressed.blob.size,
   });
 

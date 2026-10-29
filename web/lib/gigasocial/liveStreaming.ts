@@ -49,6 +49,39 @@ export const LIVE_SCREEN_SHARE_UNSUPPORTED_MESSAGE =
 export const LIVE_SCREEN_SHARE_MOBILE_HINT =
   "On phones, share a screen recording/video from your gallery, or use the rear camera to show a screen.";
 
+/** Friendly copy for live actions (gift/chat/reaction/moderation). */
+export function getLiveActionErrorMessage(error: unknown): string {
+  const raw = error instanceof Error ? error.message : String(error ?? "");
+  if (/cannot gift yourself|cannot tip yourself/i.test(raw)) {
+    return "You cannot send a gift to yourself.";
+  }
+  if (/insufficient credits/i.test(raw)) {
+    return "You do not have enough credits for that gift.";
+  }
+  if (/stream is not live|stream not found|expired/i.test(raw)) {
+    return "This live session is no longer active.";
+  }
+  if (/only the host can moderate/i.test(raw)) {
+    return "Only the host can use moderation tools.";
+  }
+  if (/muted in this stream/i.test(raw)) {
+    return "You are muted in this stream.";
+  }
+  if (/message cannot be empty/i.test(raw)) {
+    return "Type a message before sending.";
+  }
+  if (/message is too long/i.test(raw)) {
+    return "Message is too long for this stream.";
+  }
+  if (/connection lost while action was in flight/i.test(raw)) {
+    return "Connection dropped during the request. Please retry.";
+  }
+  if (/unauthorized|sign in again|session/i.test(raw)) {
+    return "Your session expired. Please sign in again.";
+  }
+  return raw || "Request failed. Please try again.";
+}
+
 /** Map capture failures to host-facing copy (never expose raw "is not a function"). */
 export function getLiveMediaErrorMessage(error: unknown, mode: LiveStreamMode): string {
   if (error instanceof TypeError) {

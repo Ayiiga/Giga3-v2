@@ -39,4 +39,10 @@ describe("classifyMediaFiles", () => {
     const file = new File(["x"], "VID_android.mp4", { type: "" });
     expect(classifyMediaFiles([file]).kind).toBe("single-video");
   });
+
+  it("resolves Android gallery images with empty MIME via extension", async () => {
+    const { resolveImageContentType } = await import("../../web/lib/gigasocial/constants");
+    const file = new File(["x"], "IMG_2026_10_29.JPG", { type: "" });
+    expect(resolveImageContentType(file)).toBe("image/jpeg");
+  });
 });

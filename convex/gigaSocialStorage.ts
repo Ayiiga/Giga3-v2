@@ -34,11 +34,39 @@ const IMAGE_MIME = new Set([
   "image/png",
   "image/webp",
 ]);
+const IMAGE_MIME_ALIASES: Record<string, string> = {
+  "image/jpg": "image/jpeg",
+  "image/pjpeg": "image/jpeg",
+};
+const IMAGE_EXT_TO_MIME: Record<string, string> = {
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  webp: "image/webp",
+};
 const VIDEO_MIME = new Set([
   "video/mp4",
   "video/webm",
   "video/quicktime",
 ]);
+const VIDEO_MIME_ALIASES: Record<string, string> = {
+  "video/x-m4v": "video/mp4",
+  "video/m4v": "video/mp4",
+  "application/mp4": "video/mp4",
+  "video/3gpp": "video/mp4",
+  "video/3gpp2": "video/mp4",
+  "video/avi": "video/mp4",
+  "video/x-msvideo": "video/mp4",
+};
+const VIDEO_EXT_TO_MIME: Record<string, string> = {
+  mp4: "video/mp4",
+  m4v: "video/mp4",
+  mov: "video/quicktime",
+  qt: "video/quicktime",
+  webm: "video/webm",
+  "3gp": "video/mp4",
+  "3g2": "video/mp4",
+};
 
 const MAX_IMAGE_BYTES = 15 * 1024 * 1024;
 /** Keep in sync with web/lib/gigasocial/constants.ts SOCIAL_MAX_VIDEO_BYTES. */
@@ -98,20 +126,39 @@ function normalizeAudioContentType(contentType: string, fileName?: string): stri
 const MAX_AUDIO_BYTES = 15 * 1024 * 1024;
 const SOCIAL_AUDIO_BUCKET = "social-audio";
 
+function normalizeImageContentType(contentType: string, fileName?: string): string {
+  const raw = contentType?.toLowerCase().split(";")[0].trim();
+  if (raw && IMAGE_MIME.has(raw)) return raw;
+  if (raw && IMAGE_MIME_ALIASES[raw]) return IMAGE_MIME_ALIASES[raw];
+  const ext = fileName?.split(".").pop()?.toLowerCase();
+  if (ext && IMAGE_EXT_TO_MIME[ext]) return IMAGE_EXT_TO_MIME[ext];
+  return raw;
+}
+
+function normalizeVideoContentType(contentType: string, fileName?: string): string {
+  const raw = contentType?.toLowerCase().split(";")[0].trim();
+  if (raw && VIDEO_MIME.has(raw)) return raw;
+  if (raw && VIDEO_MIME_ALIASES[raw]) return VIDEO_MIME_ALIASES[raw];
+  const ext = fileName?.split(".").pop()?.toLowerCase();
+  if (ext && VIDEO_EXT_TO_MIME[ext]) return VIDEO_EXT_TO_MIME[ext];
+  return raw;
+}
+
 function validateMimeAndSize(
   contentType: string,
   sizeBytes: number,
   kind: "image" | "video" | "audio",
   fileName?: string
-): void {
+): string {
   if (kind === "image") {
-    if (!IMAGE_MIME.has(contentType)) {
+    const normalized = normalizeImageContentType(contentType, fileName);
+    if (!IMAGE_MIME.has(normalized)) {
       throw new Error("Unsupported image type. Use JPG, PNG, or WEBP.");
     }
     if (sizeBytes > MAX_IMAGE_BYTES) {
       throw new Error("Image is too large. Maximum size is 15 MB.");
     }
-    return;
+    return normalized;
   }
   if (kind === "audio") {
     const normalized = normalizeAudioContentType(contentType, fileName);
@@ -121,13 +168,25 @@ function validateMimeAndSize(
     if (sizeBytes > MAX_AUDIO_BYTES) {
       throw new Error("Audio is too large. Maximum size is 15 MB.");
     }
-    return;
+    return normalized;
   }
-  if (!VIDEO_MIME.has(contentType)) {
+  const normalized = normalizeVideoContentType(contentType, fileName);
+  if (!VIDEO_MIME.has(normalized)) {
     throw new Error("Unsupported video type. Use MP4, MOV, or WebM.");
   }
   if (sizeBytes > MAX_VIDEO_BYTES) {
     throw new Error(`Video is too large. Maximum size is ${MAX_VIDEO_MB} MB.`);
+  }
+  return normalized;
+}
+
+async function fetchWithTimeout(input: string, init: RequestInit, timeoutMs: number): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(input, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
   }
 }
 
@@ -135,7 +194,7 @@ function validateMimeAndSize(
 export const generateUploadUrl = mutation({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    await requireSession(args.sessionToken);
+    await requireSession(args.sessionToken, ctx);
     return await ctx.storage.generateUploadUrl();
   },
 });
@@ -153,9 +212,14 @@ export const prepareMediaUpload = action({
     kind: v.union(v.literal("image"), v.literal("video"), v.literal("audio")),
   },
   handler: async (ctx, args): Promise<PrepareMediaUploadResult> => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const safeName = assertSafeUploadFileName(args.fileName);
-    validateMimeAndSize(args.contentType, args.sizeBytes, args.kind, safeName);
+    const normalizedContentType = validateMimeAndSize(
+      args.contentType,
+      args.sizeBytes,
+      args.kind,
+      safeName
+    );
 
     const bucket =
       args.kind === "image"
@@ -170,7 +234,7 @@ export const prepareMediaUpload = action({
 
     if (baseUrl && serviceKey) {
       try {
-        const signRes = await fetch(
+        const signRes = await fetchWithTimeout(
           `${baseUrl}/storage/v1/object/upload/sign/${bucket}/${objectPath}`,
           {
             method: "POST",
@@ -180,7 +244,8 @@ export const prepareMediaUpload = action({
               "Content-Type": "application/json",
             },
             body: JSON.stringify({ expiresIn: 3600 }),
-          }
+          },
+          8_000
         );
 
         if (signRes.ok) {
@@ -198,7 +263,7 @@ export const prepareMediaUpload = action({
               uploadUrl: signed.url,
               uploadToken: signed.token,
               publicUrl,
-              contentType: args.contentType,
+              contentType: normalizedContentType,
             };
           }
         }
@@ -214,7 +279,7 @@ export const prepareMediaUpload = action({
       provider: "convex" as const,
       uploadUrl: convexUploadUrl,
       objectPath,
-      contentType: args.contentType,
+      contentType: normalizedContentType,
     };
   },
 });
@@ -228,9 +293,14 @@ export const prepareAvatarUpload = action({
     sizeBytes: v.number(),
   },
   handler: async (ctx, args): Promise<PrepareMediaUploadResult> => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const safeName = assertSafeUploadFileName(args.fileName);
-    validateMimeAndSize(args.contentType, args.sizeBytes, "image", safeName);
+    const normalizedContentType = validateMimeAndSize(
+      args.contentType,
+      args.sizeBytes,
+      "image",
+      safeName
+    );
     if (args.sizeBytes > MAX_AVATAR_BYTES) {
       throw new Error("Avatar image is too large. Maximum size is 2 MB.");
     }
@@ -243,7 +313,7 @@ export const prepareAvatarUpload = action({
 
     if (baseUrl && serviceKey) {
       try {
-        const signRes = await fetch(
+        const signRes = await fetchWithTimeout(
           `${baseUrl}/storage/v1/object/upload/sign/${bucket}/${objectPath}`,
           {
             method: "POST",
@@ -253,7 +323,8 @@ export const prepareAvatarUpload = action({
               "Content-Type": "application/json",
             },
             body: JSON.stringify({ expiresIn: 3600 }),
-          }
+          },
+          8_000
         );
 
         if (signRes.ok) {
@@ -270,7 +341,7 @@ export const prepareAvatarUpload = action({
               uploadUrl: signed.url,
               uploadToken: signed.token,
               publicUrl,
-              contentType: args.contentType,
+              contentType: normalizedContentType,
             };
           }
         }
@@ -286,7 +357,7 @@ export const prepareAvatarUpload = action({
       provider: "convex" as const,
       uploadUrl: convexUploadUrl,
       objectPath,
-      contentType: args.contentType,
+      contentType: normalizedContentType,
     };
   },
 });
@@ -298,7 +369,7 @@ export const resolveStorageUrl = mutation({
     storageId: v.id("_storage"),
   },
   handler: async (ctx, args) => {
-    await requireSession(args.sessionToken);
+    await requireSession(args.sessionToken, ctx);
     const url = await ctx.storage.getUrl(args.storageId);
     if (!url) throw new Error("Uploaded file is not available.");
     return { url };

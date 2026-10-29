@@ -423,6 +423,25 @@ export const submitNomination = mutation({
       .filter(Boolean)
       .slice(0, 12);
 
+    // Prevent duplicate active submissions by the same nominator for the same season/category.
+    const existingByNominator = await ctx.db
+      .query("awardsNominations")
+      .withIndex("by_nominator", (q) => q.eq("nominatorUserId", userId))
+      .collect();
+    const hasActiveDuplicate = existingByNominator.some(
+      (row) =>
+        row.seasonId === season._id &&
+        row.categoryId === category._id &&
+        row.status !== "rejected" &&
+        row.status !== "declined" &&
+        row.status !== "withdrawn"
+    );
+    if (hasActiveDuplicate) {
+      throw new Error(
+        "You already have an active nomination in this category for this season."
+      );
+    }
+
     const t = now();
     let nomineeUserId: string | undefined;
     let status: Doc<"awardsNominations">["status"] = "under_review";

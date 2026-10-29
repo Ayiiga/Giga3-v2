@@ -30,6 +30,34 @@ export const SOCIAL_IMAGE_MIME_TYPES = new Set([
   "image/webp",
 ]);
 
+const SOCIAL_IMAGE_MIME_ALIASES: Record<string, string> = {
+  "image/jpg": "image/jpeg",
+  "image/pjpeg": "image/jpeg",
+};
+
+const SOCIAL_IMAGE_EXT_TO_MIME: Record<string, string> = {
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  webp: "image/webp",
+};
+
+/**
+ * Resolve a supported image MIME type from browser metadata or file extension.
+ * Android pickers may return empty or non-standard image MIME values.
+ */
+export function resolveImageContentType(file: Pick<File, "name" | "type">): string | null {
+  const raw = file.type?.toLowerCase().split(";")[0]?.trim() ?? "";
+  if (raw) {
+    if (SOCIAL_IMAGE_MIME_TYPES.has(raw)) return raw;
+    const alias = SOCIAL_IMAGE_MIME_ALIASES[raw];
+    if (alias) return alias;
+  }
+  const ext = file.name.split(".").pop()?.toLowerCase();
+  if (!ext) return null;
+  return SOCIAL_IMAGE_EXT_TO_MIME[ext] ?? null;
+}
+
 export const SOCIAL_VIDEO_MIME_TYPES = new Set([
   "video/mp4",
   "video/webm",

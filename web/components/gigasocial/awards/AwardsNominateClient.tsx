@@ -33,6 +33,15 @@ function NominateInner() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
+  const trimmedDisplayName = displayName.trim();
+  const trimmedBiography = biography.trim();
+  const trimmedHandle = handle.trim().replace(/^@/, "");
+  const canSubmit =
+    season.nominationsOpen &&
+    trimmedDisplayName.length >= 2 &&
+    trimmedBiography.length >= 40 &&
+    (selfApplication || trimmedHandle.length > 0);
+
   if (seasons === undefined) return <LoadingState label="Loading seasons…" />;
   if (!sessionToken) {
     return (
@@ -62,15 +71,19 @@ function NominateInner() {
         seasonSlug: season.slug,
         categorySlug: categorySlug || season.categories[0]?.slug || "",
         selfApplication,
-        nomineeDisplayName: displayName,
-        nomineeHandle: handle || undefined,
-        biography,
+        nomineeDisplayName: trimmedDisplayName,
+        nomineeHandle: trimmedHandle || undefined,
+        biography: trimmedBiography,
         portfolioLinks: links
           .split("\n")
           .map((l) => l.trim())
           .filter(Boolean),
       });
       setNotice(`Submitted — status: ${res.status}.`);
+      setDisplayName("");
+      setHandle("");
+      setBiography("");
+      setLinks("");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not submit nomination.");
     } finally {
@@ -132,6 +145,9 @@ function NominateInner() {
             onChange={(e) => setDisplayName(e.target.value)}
             maxLength={80}
           />
+          {trimmedDisplayName.length > 0 && trimmedDisplayName.length < 2 ? (
+            <span className="mt-1 block text-xs text-amber-700">Use at least 2 characters.</span>
+          ) : null}
         </label>
         {!selfApplication ? (
           <label className="block text-sm">
@@ -142,7 +158,12 @@ function NominateInner() {
               onChange={(e) => setHandle(e.target.value)}
               placeholder="@handle"
             />
-          </label>
+              {trimmedHandle.length === 0 ? (
+                <span className="mt-1 block text-xs text-amber-700">
+                  Handle is required when nominating someone else.
+                </span>
+              ) : null}
+            </label>
         ) : null}
         <label className="block text-sm">
           <span className="font-medium">Biography</span>
@@ -152,6 +173,9 @@ function NominateInner() {
             onChange={(e) => setBiography(e.target.value)}
             maxLength={4000}
           />
+          <span className="mt-1 block text-xs text-muted">
+            {trimmedBiography.length}/4000 · minimum 40 characters
+          </span>
         </label>
         <label className="block text-sm">
           <span className="font-medium">Portfolio links (one per line)</span>
@@ -165,7 +189,7 @@ function NominateInner() {
         {notice ? <p className="text-sm text-emerald-700">{notice}</p> : null}
         <Button
           type="button"
-          disabled={busy || !season.nominationsOpen}
+          disabled={busy || !canSubmit}
           onClick={() => void onSubmit()}
           className="min-h-11"
         >
@@ -215,6 +239,25 @@ function NominateInner() {
                 </div>
               </div>
             ))}
+        </section>
+      ) : null}
+
+      {mine?.length ? (
+        <section className="space-y-2 rounded-2xl border border-border p-4">
+          <h3 className="text-sm font-semibold">Your recent submissions</h3>
+          <div className="space-y-2">
+            {mine.slice(0, 8).map((n) => (
+              <div
+                key={n.nominationId}
+                className="flex items-center justify-between gap-2 rounded-lg border border-border px-3 py-2 text-sm"
+              >
+                <span className="truncate">
+                  {n.displayName} {n.selfApplication ? "(self)" : "(nominated)"}
+                </span>
+                <span className="text-xs text-muted">{n.status.replaceAll("_", " ")}</span>
+              </div>
+            ))}
+          </div>
         </section>
       ) : null}
     </div>
