@@ -96,7 +96,13 @@ async function probeOnce(
     };
 
     const onAbort = () => finish({ error: new DOMException("Aborted", "AbortError") });
-    const onErrorEvent = () => finish({ error: new Error("Could not read video duration.") });
+    const onErrorEvent = () => {
+      // Android WebViews can emit a transient media error during the forced
+      // Infinity-duration seek path. Keep waiting for a finite duration while
+      // timeout protection remains active.
+      if (seekAttempted) return;
+      finish({ error: new Error("Could not read video duration.") });
+    };
 
     const onDurationLikeEvent = (event: Event) => {
       const duration = readDuration();
