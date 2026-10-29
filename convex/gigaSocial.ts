@@ -1232,7 +1232,7 @@ export const createPost = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     await assertChildSafetyFeature(ctx, userId, "social_ugc");
     await consumeSocialWriteRateLimit(ctx, userId, "create_post");
     const body = sanitizeSocialText(args.body, socialBodyMaxLength(args.postType));
@@ -1316,6 +1316,26 @@ export const createPost = mutation({
     const primaryVideo = mediaItems.find((m) => m.type === "video");
     const postType = inferPostTypeFromMedia(mediaItems, args.postType);
     const mediaType = inferMediaType(mediaItems);
+    const visibility = args.visibility ?? "public";
+
+    // Retry-safe duplicate suppression for flaky mobile/TWA connections.
+    const recentPosts = await ctx.db
+      .query("socialPosts")
+      .withIndex("by_author_created", (q) => q.eq("authorId", userId))
+      .order("desc")
+      .take(25);
+    const mediaMetaJson = mediaItems.length ? serializeMediaMeta(mediaItems) : undefined;
+    const duplicatePost = recentPosts.find((post) => {
+      if (Date.now() - post.createdAt > 20_000) return false;
+      if ((post.visibility ?? "public") !== visibility) return false;
+      if ((post.communitySlug ?? undefined) !== (args.communitySlug ?? undefined)) return false;
+      if (post.postType !== postType) return false;
+      if (post.body !== body) return false;
+      return (post.mediaMetaJson ?? undefined) === mediaMetaJson;
+    });
+    if (duplicatePost) {
+      return { postId: duplicatePost._id, duplicate: true as const };
+    }
 
     const postId = await ctx.db.insert("socialPosts", {
       authorId: userId,
@@ -1328,8 +1348,8 @@ export const createPost = mutation({
       videoThumbnailUrl: primaryVideo?.thumbnailUrl,
       hashtags: hashtags.length ? hashtags : undefined,
       mentions: mentions.length ? mentions : undefined,
-      mediaMetaJson: mediaItems.length ? serializeMediaMeta(mediaItems) : undefined,
-      visibility: args.visibility ?? "public",
+      mediaMetaJson,
+      visibility,
       viewCount: 0,
       postType,
       communitySlug: args.communitySlug,
@@ -1360,7 +1380,7 @@ export const createPost = mutation({
     }
 
     // Notify followers of a new post (public posts only, capped for performance)
-    if ((args.visibility ?? "public") === "public") {
+    if (visibility === "public") {
       const followers = await ctx.db
         .query("socialFollows")
         .withIndex("by_following", (q) => q.eq("followingId", userId))

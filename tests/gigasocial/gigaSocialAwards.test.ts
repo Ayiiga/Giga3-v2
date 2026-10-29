@@ -167,6 +167,10 @@ describe("gigaSocialAwards — scoring and safety", () => {
       resolve(root, "web/app/(marketing)/gigasocial/awards/page.tsx"),
       "utf8"
     );
+    const nominate = readFileSync(
+      resolve(root, "web/components/gigasocial/awards/AwardsNominateClient.tsx"),
+      "utf8"
+    );
 
     expect(awards).toContain("castVote");
     expect(awards).toContain("submitNomination");
@@ -192,6 +196,8 @@ describe("gigaSocialAwards — scoring and safety", () => {
     expect(panel).toContain("GigaSocialAwardsCentre");
     expect(page).toContain("AwardsHubClient");
     expect(page).toContain("ProductSeoHeader");
+    expect(nominate).toContain("minimum 40 characters");
+    expect(nominate).toContain("Your recent submissions");
   });
 
   it("documents Phase 0 plan and deploy ordering", () => {
