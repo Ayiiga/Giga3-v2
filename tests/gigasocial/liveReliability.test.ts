@@ -16,6 +16,14 @@ describe("GigaSocial live reliability guards", () => {
     expect(messages).toContain("You cannot send a gift to yourself.");
   });
 
+  it("shows chat sending/retry states and host mute controls", () => {
+    const room = read("web/components/gigasocial/live/GigaSocialLiveRoom.tsx");
+    expect(room).toContain("sending…");
+    expect(room).toContain("Retry");
+    expect(room).toContain("Mute");
+    expect(room).toContain("handleSendChat(retry");
+  });
+
   it("adds duplicate-charge protection for retried live gifts", () => {
     const live = read("convex/gigaSocialLive.ts");
     expect(live).toContain("clientGiftNonce");

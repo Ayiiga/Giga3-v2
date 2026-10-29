@@ -36,6 +36,12 @@ import { Gift, MessageCircle, MonitorUp, Radio, Shield, Type, Users, X } from "l
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
+type PendingChatMessage = {
+  id: string;
+  body: string;
+  status: "sending" | "failed";
+};
+
 export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
   sessionToken,
   streamId,
@@ -76,6 +82,8 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
   const [screenSource, setScreenSource] = useState<ScreenShareSource | null>(null);
   const [awaitingScreenShare, setAwaitingScreenShare] = useState(false);
   const [giftBusyId, setGiftBusyId] = useState<string | null>(null);
+  const [chatPending, setChatPending] = useState<PendingChatMessage[]>([]);
+  const [chatSending, setChatSending] = useState(false);
   const joinedRef = useRef(false);
   const startLiveCalledRef = useRef(false);
   const hostMediaStartedRef = useRef(false);
@@ -286,16 +294,31 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
     );
   }
 
-  async function handleSendChat() {
-    if (!chatBody.trim() || busy) return;
-    setBusy(true);
-    try {
-      await sendChat({ sessionToken, streamId, body: chatBody });
+  async function handleSendChat(retry?: { id: string; body: string }) {
+    const nextBody = (retry?.body ?? chatBody).trim();
+    if (!nextBody || chatSending) return;
+    const pendingId = retry?.id ?? `chat:${Date.now()}:${Math.random().toString(36).slice(2, 10)}`;
+    if (!retry) {
+      setChatPending((prev) => [...prev, { id: pendingId, body: nextBody, status: "sending" }]);
       setChatBody("");
+    } else {
+      setChatPending((prev) =>
+        prev.map((item) => (item.id === retry.id ? { ...item, status: "sending" } : item))
+      );
+    }
+    setChatSending(true);
+    try {
+      await sendChat({ sessionToken, streamId, body: nextBody });
+      setChatPending((prev) => prev.filter((item) => item.id !== pendingId));
     } catch (e) {
+      setChatPending((prev) =>
+        prev.map((item) =>
+          item.id === pendingId ? { ...item, status: "failed" } : item
+        )
+      );
       setMediaError(getLiveActionErrorMessage(e));
     } finally {
-      setBusy(false);
+      setChatSending(false);
     }
   }
 
@@ -658,20 +681,54 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
                     <span className="font-medium text-white">{message.author.displayName}</span>
                     <span className="text-white/70"> {message.body}</span>
                     {isHost ? (
+                      <>
+                        <button
+                          type="button"
+                          className="ml-2 text-xs text-red-300"
+                          onClick={() =>
+                            void moderate({
+                              sessionToken,
+                              streamId,
+                              messageId: message._id,
+                            }).catch((e) => setMediaError(getLiveActionErrorMessage(e)))
+                          }
+                        >
+                          Remove
+                        </button>
+                        {message.author.userId !== stream.host.userId ? (
+                          <button
+                            type="button"
+                            className="ml-2 text-xs text-amber-300"
+                            onClick={() =>
+                              void moderate({
+                                sessionToken,
+                                streamId,
+                                muteUserId: message.author.userId,
+                              }).catch((e) => setMediaError(getLiveActionErrorMessage(e)))
+                            }
+                          >
+                            Mute
+                          </button>
+                        ) : null}
+                      </>
+                    ) : null}
+                  </li>
+                ))}
+                {chatPending.map((pending) => (
+                  <li key={pending.id} className="text-sm">
+                    <span className="font-medium text-white">You</span>
+                    <span className="text-white/70"> {pending.body}</span>
+                    {pending.status === "sending" ? (
+                      <span className="ml-2 text-xs text-violet-200">sending…</span>
+                    ) : (
                       <button
                         type="button"
-                        className="ml-2 text-xs text-red-300"
-                        onClick={() =>
-                          void moderate({
-                            sessionToken,
-                            streamId,
-                            messageId: message._id,
-                          }).catch(() => undefined)
-                        }
+                        className="ml-2 text-xs text-amber-300"
+                        onClick={() => void handleSendChat({ id: pending.id, body: pending.body })}
                       >
-                        Remove
+                        Retry
                       </button>
-                    ) : null}
+                    )}
                   </li>
                 ))}
               </ul>
@@ -688,11 +745,11 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
                   />
                   <Button
                     type="button"
-                    disabled={busy}
+                    disabled={chatSending}
                     onClick={() => void handleSendChat()}
                     className="min-h-10"
                   >
-                    Send
+                    {chatSending ? "Sending…" : "Send"}
                   </Button>
                 </div>
               ) : null}

@@ -76,6 +76,12 @@ export function getLiveMediaErrorMessage(error: unknown, mode: LiveStreamMode): 
       if (/muted in this stream/i.test(raw)) {
         return "You are muted in this stream.";
       }
+      if (/message cannot be empty/i.test(raw)) {
+        return "Type a message before sending.";
+      }
+      if (/message is too long/i.test(raw)) {
+        return "Message is too long for this stream.";
+      }
       if (/connection lost while action was in flight/i.test(raw)) {
         return "Connection dropped during the request. Please retry.";
       }

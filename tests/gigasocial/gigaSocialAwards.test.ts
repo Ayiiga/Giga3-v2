@@ -170,6 +170,7 @@ describe("gigaSocialAwards — scoring and safety", () => {
 
     expect(awards).toContain("castVote");
     expect(awards).toContain("submitNomination");
+    expect(awards).toContain("You already have an active nomination in this category for this season.");
     expect(awards).toContain("requireSession");
     expect(awards).toContain("You cannot vote for yourself");
     expect(awards).toContain("assertCanRespondToNomination");
