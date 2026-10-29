@@ -365,6 +365,7 @@ export const sendLiveGift = mutation({
     streamId: v.id("socialLiveStreams"),
     giftType: v.string(),
     amount: v.number(),
+    clientGiftNonce: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await requireSession(args.sessionToken, ctx);
@@ -384,15 +385,57 @@ export const sendLiveGift = mutation({
 
     const giftType = args.giftType.trim().slice(0, 32);
     const credits = Math.max(1, Math.min(500, Math.floor(args.amount)));
+    const nonce = args.clientGiftNonce?.trim().slice(0, 80);
+    if (nonce && !/^[a-zA-Z0-9:_-]{8,80}$/.test(nonce)) {
+      throw new Error("Invalid gift request.");
+    }
     const share = settings.giftCreatorSharePercent / 100;
     const amountGhs = credits * settings.creditsToGhsRate * share;
+
+    if (nonce) {
+      const recent = await ctx.db
+        .query("creditLogs")
+        .withIndex("by_user_created", (q) => q.eq("userId", userId))
+        .order("desc")
+        .take(100);
+      const duplicate = recent.find((entry) => {
+        if (entry.reference !== `live-gift:${args.streamId}` || !entry.metadata) return false;
+        try {
+          const parsed = JSON.parse(entry.metadata) as { nonce?: string };
+          return parsed.nonce === nonce;
+        } catch {
+          return false;
+        }
+      });
+      if (duplicate) {
+        return { ok: true, amountGhs, duplicate: true };
+      }
+    } else {
+      // No explicit idempotency key from client: suppress accidental retry
+      // duplicates in a short window (same sender+stream+gift+amount).
+      const recentGifts = await ctx.db
+        .query("socialLiveGifts")
+        .withIndex("by_stream_created", (q) => q.eq("streamId", args.streamId))
+        .order("desc")
+        .take(30);
+      const duplicateByFingerprint = recentGifts.find(
+        (gift) =>
+          gift.senderId === userId &&
+          gift.giftType === giftType &&
+          gift.amount === credits &&
+          Date.now() - gift.createdAt < 8_000
+      );
+      if (duplicateByFingerprint) {
+        return { ok: true, amountGhs, duplicate: true };
+      }
+    }
 
     await deductVariableCredits(
       ctx,
       userId,
       credits,
-      `live-gift:${stream.hostId}`,
-      JSON.stringify({ giftType, credits, streamId: args.streamId })
+      `live-gift:${args.streamId}`,
+      JSON.stringify({ giftType, credits, streamId: args.streamId, nonce })
     );
 
     await ctx.db.insert("socialLiveGifts", {

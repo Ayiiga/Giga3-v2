@@ -12,6 +12,7 @@ import type { CameraCaptureModeId } from "@/lib/gigasocial/cameraModes";
 import {
   LIVE_GIFTS,
   LIVE_REACTIONS,
+  getLiveActionErrorMessage,
   LIVE_SCREEN_SHARE_MOBILE_HINT,
   LIVE_VIDEO_CAPTURE_CONSTRAINTS,
   getLiveMediaErrorMessage,
@@ -74,6 +75,7 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
   const [mounted, setMounted] = useState(false);
   const [screenSource, setScreenSource] = useState<ScreenShareSource | null>(null);
   const [awaitingScreenShare, setAwaitingScreenShare] = useState(false);
+  const [giftBusyId, setGiftBusyId] = useState<string | null>(null);
   const joinedRef = useRef(false);
   const startLiveCalledRef = useRef(false);
   const hostMediaStartedRef = useRef(false);
@@ -237,7 +239,7 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
     if (stream.status === "live" && !isHost) {
       joinedRef.current = true;
       void joinLive({ sessionToken, streamId }).catch((e) => {
-        setMediaError(getLiveMediaErrorMessage(e, "camera"));
+        setMediaError(getLiveActionErrorMessage(e));
         joinedRef.current = false;
       });
     }
@@ -247,7 +249,7 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
     if (!isHost || stream?.status !== "scheduled" || startLiveCalledRef.current) return;
     startLiveCalledRef.current = true;
     void startLive({ sessionToken, streamId, mode }).catch((e) => {
-      setMediaError(getLiveMediaErrorMessage(e, "camera"));
+      setMediaError(getLiveActionErrorMessage(e));
       startLiveCalledRef.current = false;
     });
   }, [isHost, mode, sessionToken, startLive, stream?.status, streamId]);
@@ -291,13 +293,35 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
       await sendChat({ sessionToken, streamId, body: chatBody });
       setChatBody("");
     } catch (e) {
-      setMediaError(getLiveMediaErrorMessage(e, "camera"));
+      setMediaError(getLiveActionErrorMessage(e));
     } finally {
       setBusy(false);
     }
   }
 
+  async function handleSendGift(giftId: string, credits: number) {
+    if (isHost || busy || giftBusyId) return;
+    setGiftBusyId(giftId);
+    setMediaError(null);
+    try {
+      await sendGift({
+        sessionToken,
+        streamId,
+        giftType: giftId,
+        amount: credits,
+      });
+    } catch (e) {
+      setMediaError(getLiveActionErrorMessage(e));
+    } finally {
+      setGiftBusyId(null);
+    }
+  }
+
   async function handleEnd() {
+    if (isHost && stream.status === "live") {
+      const confirmed = window.confirm("End this live stream for everyone?");
+      if (!confirmed) return;
+    }
     stopMedia();
     try {
       if (isHost && stream.status === "live") {
@@ -387,22 +411,57 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
           </div>
         ) : (
           <>
-            <video
-              ref={videoRef}
-              playsInline
-              muted={isHost}
-              controls={!isHost}
-              className={cn(
-                "gigasocial-live-video gigasocial-live-video--fullscreen absolute inset-0 h-full w-full bg-black",
-                mode === "screen" ? "object-contain" : "object-cover"
-              )}
-              style={
-                isHost && mode === "video" && previewFilter
-                  ? { filter: previewFilter }
-                  : undefined
-              }
-              aria-label="Live stream preview"
-            />
+            {isHost ? (
+              <video
+                ref={videoRef}
+                playsInline
+                muted
+                controls={false}
+                className={cn(
+                  "gigasocial-live-video gigasocial-live-video--fullscreen absolute inset-0 h-full w-full bg-black",
+                  mode === "screen" ? "object-contain" : "object-cover"
+                )}
+                style={mode === "video" && previewFilter ? { filter: previewFilter } : undefined}
+                aria-label="Live stream preview"
+              />
+            ) : (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-6 text-center text-white">
+                <Radio className="h-10 w-10 text-violet-200" aria-hidden />
+                <p className="text-sm font-medium">Joining live video…</p>
+                <p className="max-w-sm text-xs text-violet-100/90">
+                  Live transport is reconnecting. If playback does not start, tap Retry.
+                </p>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="min-h-9 border-white/40 bg-white/10 text-white"
+                  onClick={() => void joinLive({ sessionToken, streamId })
+                    .then(() => {
+                      setMediaError(null);
+                      joinedRef.current = true;
+                    })
+                    .catch((e) => {
+                      setMediaError(getLiveActionErrorMessage(e));
+                      joinedRef.current = false;
+                    })}
+                >
+                  Retry
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="min-h-9 border-white/30 bg-white/10 text-white"
+                  onClick={() => {
+                    setMediaError(null);
+                    onClose();
+                  }}
+                >
+                  Leave
+                </Button>
+              </div>
+            )}
             {isHost ? (
               <GigaSocialTeleprompter
                 active={showTeleprompter}
@@ -517,7 +576,9 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
               type="button"
               className="min-h-9 rounded-full border border-white/20 bg-white/10 px-3 text-sm"
               onClick={() =>
-                void sendReaction({ sessionToken, streamId, emoji }).catch(() => undefined)
+                void sendReaction({ sessionToken, streamId, emoji }).catch((e) =>
+                  setMediaError(getLiveActionErrorMessage(e))
+                )
               }
             >
               {emoji} {getLiveReactionCount(stream.reactionCounts, emoji)}
@@ -548,7 +609,7 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
                     onClick={() =>
                       void addCoHost({ sessionToken, streamId, coHostHandle })
                         .then(() => setCoHostHandle(""))
-                        .catch((e) => setMediaError(getLiveMediaErrorMessage(e, "camera")))
+                        .catch((e) => setMediaError(getLiveActionErrorMessage(e)))
                     }
                   >
                     <Users className="h-4 w-4" aria-hidden />
@@ -563,27 +624,27 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
                 <Gift className="mr-1 inline h-4 w-4" aria-hidden />
                 Send a gift
               </p>
-              <div className="flex flex-wrap gap-2">
-                {LIVE_GIFTS.map((gift) => (
-                  <Button
-                    key={gift.id}
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    className="min-h-9"
-                    onClick={() =>
-                      void sendGift({
-                        sessionToken,
-                        streamId,
-                        giftType: gift.id,
-                        amount: gift.credits,
-                      }).catch((e) => setMediaError(getLiveMediaErrorMessage(e, "camera")))
-                    }
-                  >
-                    {gift.emoji} {gift.label}
-                  </Button>
-                ))}
-              </div>
+              {isHost ? (
+                <p className="text-xs text-white/70">
+                  Hosts cannot send gifts to themselves. Viewers can send gifts from this panel.
+                </p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {LIVE_GIFTS.map((gift) => (
+                    <Button
+                      key={gift.id}
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={giftBusyId !== null}
+                      className="min-h-9 border-white/40 bg-white/10 text-white hover:bg-white/20 disabled:opacity-60"
+                      onClick={() => void handleSendGift(gift.id, gift.credits)}
+                    >
+                      {gift.emoji} {gift.label} · {gift.credits}
+                    </Button>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="space-y-2 rounded-xl border border-white/15 bg-white/5 p-3 sm:col-span-2">

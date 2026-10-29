@@ -57,6 +57,33 @@ export function getLiveMediaErrorMessage(error: unknown, mode: LiveStreamMode): 
         ? LIVE_SCREEN_SHARE_MOBILE_HINT
         : LIVE_SCREEN_SHARE_UNSUPPORTED_MESSAGE;
     }
+
+    /** Friendly copy for live actions (gift/chat/reaction/moderation). */
+    export function getLiveActionErrorMessage(error: unknown): string {
+      const raw = error instanceof Error ? error.message : String(error ?? "");
+      if (/cannot gift yourself|cannot tip yourself/i.test(raw)) {
+        return "You cannot send a gift to yourself.";
+      }
+      if (/insufficient credits/i.test(raw)) {
+        return "You do not have enough credits for that gift.";
+      }
+      if (/stream is not live|stream not found|expired/i.test(raw)) {
+        return "This live session is no longer active.";
+      }
+      if (/only the host can moderate/i.test(raw)) {
+        return "Only the host can use moderation tools.";
+      }
+      if (/muted in this stream/i.test(raw)) {
+        return "You are muted in this stream.";
+      }
+      if (/connection lost while action was in flight/i.test(raw)) {
+        return "Connection dropped during the request. Please retry.";
+      }
+      if (/unauthorized|sign in again|session/i.test(raw)) {
+        return "Your session expired. Please sign in again.";
+      }
+      return raw || "Request failed. Please try again.";
+    }
     return "Camera or microphone is not supported in this browser.";
   }
   if (error instanceof DOMException) {
