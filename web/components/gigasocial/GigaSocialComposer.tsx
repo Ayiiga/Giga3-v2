@@ -1121,27 +1121,53 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   }
 
   if (mediaReviewDraft) {
+    // File inputs must stay mounted while the review screen is shown so Replace
+    // can open the picker synchronously from the tap (Android Chrome/TWA gesture rule).
     return (
-      <GigaSocialMediaReview
-        open
-        file={mediaReviewDraft.file}
-        kind={mediaReviewDraft.kind}
-        filterId={mediaReviewDraft.filterId}
-        durationSec={mediaReviewDraft.durationSec}
-        postType={postType}
-        enableAI={enableAIAssistant}
-        onClose={() => setMediaReviewDraft(null)}
-        onRemove={() => setMediaReviewDraft(null)}
-        onReplace={() => {
-          setMediaReviewDraft(null);
-          if (mediaReviewDraft.kind === "video") {
-            videoInputRef.current?.click();
-          } else {
-            imageInputRef.current?.click();
-          }
-        }}
-        onSkip={(result) => void handleMediaReviewComplete(result)}
-      />
+      <>
+        <input
+          ref={videoInputRef}
+          type="file"
+          accept={SOCIAL_VIDEO_ACCEPT}
+          className="sr-only"
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            if (file) void addVideoFile(file);
+            event.target.value = "";
+          }}
+        />
+        <input
+          ref={imageInputRef}
+          type="file"
+          accept={SOCIAL_IMAGE_ACCEPT}
+          multiple
+          className="sr-only"
+          onChange={(event) => {
+            setMediaReviewDraft(null);
+            if (event.target.files) void addImageFiles(event.target.files);
+            event.target.value = "";
+          }}
+        />
+        <GigaSocialMediaReview
+          open
+          file={mediaReviewDraft.file}
+          kind={mediaReviewDraft.kind}
+          filterId={mediaReviewDraft.filterId}
+          durationSec={mediaReviewDraft.durationSec}
+          postType={postType}
+          enableAI={enableAIAssistant}
+          onClose={() => setMediaReviewDraft(null)}
+          onRemove={() => setMediaReviewDraft(null)}
+          onReplace={() => {
+            if (mediaReviewDraft.kind === "video") {
+              videoInputRef.current?.click();
+            } else {
+              imageInputRef.current?.click();
+            }
+          }}
+          onSkip={(result) => void handleMediaReviewComplete(result)}
+        />
+      </>
     );
   }
 
