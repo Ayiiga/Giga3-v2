@@ -813,12 +813,19 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   );
 
   const handleUnifiedMediaPick = useCallback(
-    async (files: FileList | null) => {
-      if (!files?.length) return;
+    async (files: File[]) => {
+      if (!files.length) return;
       await addDroppedFiles(files);
     },
     [addDroppedFiles]
   );
+
+  function readInputFilesAndReset(input: HTMLInputElement): File[] {
+    const files = input.files ? Array.from(input.files) : [];
+    // Snapshot before reset: Android/TWA may detach a live FileList after clearing.
+    input.value = "";
+    return files;
+  }
 
   const openMediaPicker = useCallback((target: InitialMediaPickerTarget) => {
     switch (target) {
@@ -1131,9 +1138,8 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           accept={SOCIAL_VIDEO_ACCEPT}
           className="sr-only"
           onChange={(event) => {
-            const file = event.target.files?.[0];
-            if (file) void addVideoFile(file);
-            event.target.value = "";
+            const files = readInputFilesAndReset(event.currentTarget);
+            if (files[0]) void addVideoFile(files[0]);
           }}
         />
         <input
@@ -1143,9 +1149,9 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           multiple
           className="sr-only"
           onChange={(event) => {
+            const files = readInputFilesAndReset(event.currentTarget);
             setMediaReviewDraft(null);
-            if (event.target.files) void addImageFiles(event.target.files);
-            event.target.value = "";
+            if (files.length) void addImageFiles(files);
           }}
         />
         <GigaSocialMediaReview
@@ -1449,8 +1455,8 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           multiple
           className="sr-only"
           onChange={(event) => {
-            void handleUnifiedMediaPick(event.target.files);
-            event.target.value = "";
+            const files = readInputFilesAndReset(event.currentTarget);
+            void handleUnifiedMediaPick(files);
           }}
         />
         <input
@@ -1460,8 +1466,8 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           multiple
           className="sr-only"
           onChange={(event) => {
-            if (event.target.files) void addImageFiles(event.target.files);
-            event.target.value = "";
+            const files = readInputFilesAndReset(event.currentTarget);
+            if (files.length) void addImageFiles(files);
           }}
         />
         <input
@@ -1470,9 +1476,8 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           accept={SOCIAL_VIDEO_ACCEPT}
           className="sr-only"
           onChange={(event) => {
-            const file = event.target.files?.[0];
-            if (file) void addVideoFile(file);
-            event.target.value = "";
+            const files = readInputFilesAndReset(event.currentTarget);
+            if (files[0]) void addVideoFile(files[0]);
           }}
         />
         <input
@@ -1482,17 +1487,14 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           capture="environment"
           className="sr-only"
           onChange={(event) => {
-            const file = event.target.files?.[0];
-            if (!file) {
-              event.target.value = "";
-              return;
-            }
+            const files = readInputFilesAndReset(event.currentTarget);
+            const file = files[0];
+            if (!file) return;
             if (isLikelySocialVideoFile(file)) {
               void addVideoFile(file);
-            } else if (event.target.files) {
-              void addImageFiles(event.target.files);
+            } else {
+              void addImageFiles(files);
             }
-            event.target.value = "";
           }}
         />
         <input
@@ -1501,9 +1503,8 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           accept={SOCIAL_AUDIO_ACCEPT}
           className="sr-only"
           onChange={(event) => {
-            const file = event.target.files?.[0];
-            if (file) void addAudioFile(file);
-            event.target.value = "";
+            const files = readInputFilesAndReset(event.currentTarget);
+            if (files[0]) void addAudioFile(files[0]);
           }}
         />
 
