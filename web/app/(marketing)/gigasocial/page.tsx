@@ -19,7 +19,7 @@ export const metadata = publicMetadata({
   path: "/gigasocial",
   title: "GigaSocial — AI-Powered Community",
   description:
-    "GigaSocial by Giga3 AI is an AI-powered community for creators in Africa to connect, share posts, discover topics, and publish work from GigaEdit and Media Studio.",
+    "GigaSocial by Giga3 AI is a community for creators to connect, share posts, discover topics, and publish directly to their audience.",
 });
 
 export default function GigaSocialPage() {
@@ -34,7 +34,7 @@ export default function GigaSocialPage() {
       <ProductSeoHeader
         compact
         title="GigaSocial"
-        description="Share posts, follow creators, and publish from GigaEdit and Media Studio. Sign in to join."
+        description="Share posts, follow creators, and connect with the Giga3 AI community. Sign in to join."
         showProductNav={false}
       />
       <div className="gigasocial-page-shell gigasocial-stable gigasocial-premium w-full max-w-full px-3 pb-3 pt-4 sm:px-6 sm:pb-6 sm:pt-6">
