@@ -2,6 +2,7 @@ import { Container } from "@/components/ui/Container";
 import { ProductSeoHeader } from "@/components/seo/ProductSeoHeader";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { withChunkRetryLoader } from "@/lib/pwa/dynamicWithChunkRetry";
+import { publicMetadata } from "@/lib/seo/publicMetadata";
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
 
