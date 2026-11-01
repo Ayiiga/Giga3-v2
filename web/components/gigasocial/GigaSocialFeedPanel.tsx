@@ -824,12 +824,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     setCursor(feed.nextCursor ?? undefined);
   }, [feed]);
 
-  // The new standalone Creator Hub is the only create entry point on the feed.
-  useEffect(() => {
-    if (createRequest > 0) {
-      window.dispatchEvent(new CustomEvent("gigasocial:open-create"));
-    }
-  }, [createRequest]);
+  // createRequest is passed directly to the hub so navigation cannot race its mount.
 
   const [hideFeaturedOnMobile, setHideFeaturedOnMobile] = useState(false);
 
@@ -1114,6 +1109,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         <GigaSocialPanelErrorBoundary panelName="Create">
           <GigaCreatorHub
             disabled={!sessionToken}
+            openSignal={createRequest}
             onSelect={(action) => handleGigaCreate({ action })}
           />
         </GigaSocialPanelErrorBoundary>
