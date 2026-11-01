@@ -56,7 +56,7 @@ describe("PrimaryNav UI wiring", () => {
     );
 
     expect(creatorHub).toContain(
-      "bottom-[calc(var(--primary-nav-offset)+var(--primary-nav-height)+1.75rem)]"
+      "bottom-[calc(var(--primary-nav-offset)+1.75rem)]"
     );
     expect(creatorHub).toContain("lg:bottom-0");
     expect(css).toContain("font-size: 0.7rem");
