@@ -26,7 +26,7 @@ import dynamic from "next/dynamic";
 import { ArrowLeft, UsersRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 
 const AUTH_REQUIRED_SECTIONS = new Set<GigaSocialSection>([
   "live",
@@ -130,6 +130,7 @@ function GigaSocialContent() {
   const [unread, setUnread] = useState(0);
   const [authPromptOpen, setAuthPromptOpen] = useState(false);
   const [createRequest, setCreateRequest] = useState(0);
+  const pendingCreateNavigationRef = useRef(false);
   const handleUnread = useCallback((count: number) => setUnread(count), []);
 
   const ensureMyProfile = useMutation(api.gigaSocial.ensureMyProfile);
@@ -147,12 +148,12 @@ function GigaSocialContent() {
   }, [ensureMyProfile, sessionToken]);
 
   useEffect(() => {
-    if (section !== "feed" && createRequest !== 0) setCreateRequest(0);
-  }, [createRequest, section]);
-
-  useEffect(() => {
     const featuresNow = getGigaSocialFeatures();
     const tab = params.get("tab") as GigaSocialSection;
+    if (pendingCreateNavigationRef.current && tab !== "feed") return;
+    if (pendingCreateNavigationRef.current && tab === "feed") {
+      pendingCreateNavigationRef.current = false;
+    }
     if (tab && GIGASOCIAL_SECTIONS.some((s) => s.id === tab)) {
       if (tab === "messages" && !featuresNow.enableDirectMessages) {
         setSection("feed");
@@ -183,6 +184,7 @@ function GigaSocialContent() {
 
   const openSection = (id: GigaSocialSection) => {
     setAuthPromptOpen(false);
+    if (id !== "feed") setCreateRequest(0);
     setSection(id);
     if (id !== "feed") setCommunitySlug(undefined);
     const nextParams = new URLSearchParams(window.location.search);
@@ -197,9 +199,10 @@ function GigaSocialContent() {
     }
     setAuthPromptOpen(false);
     if (section !== "feed") {
+      pendingCreateNavigationRef.current = true;
       openSection("feed");
     }
-    // A state signal survives the feed panel mounting after section navigation.
+    // Keep the request alive until the feed panel consumes it after navigation.
     setCreateRequest((value) => value + 1);
   };
 
