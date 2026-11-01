@@ -13,6 +13,8 @@ concurrency:
 
 jobs:
   build-and-deploy:
+    # workflow_dispatch can target arbitrary refs; enforce main even for manual runs.
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     defaults:
       run:
