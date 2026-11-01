@@ -7,6 +7,7 @@ import {
   socialCaptionMaxLength,
   SOCIAL_IMAGE_ACCEPT,
   SOCIAL_MAX_PHOTOS_PER_POST,
+  SOCIAL_MAX_IMAGE_BYTES,
   SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC,
   SOCIAL_MAX_VIDEO_DURATION_MIN,
   SOCIAL_MAX_VIDEO_MB,
@@ -604,9 +605,12 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         return;
       }
       const selected = list.slice(0, remaining);
-      const prepared = autoBrighten
-        ? await Promise.all(selected.map((file) => brightenSocialPhoto(file)))
-        : selected;
+      // Process one photo at a time to bound bitmap/canvas memory on Android.
+      const prepared: File[] = [];
+      for (const file of selected) {
+        const result = autoBrighten ? await brightenSocialPhoto(file) : file;
+        prepared.push(result.size <= SOCIAL_MAX_IMAGE_BYTES ? result : file);
+      }
       const next = prepared.map((file) => ({
         id: `${file.name}-${file.size}-${Date.now()}-${Math.random()}`,
         file,
