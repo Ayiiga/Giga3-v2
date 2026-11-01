@@ -9,7 +9,7 @@ import {
   recordAppOpen,
   shouldShowAttentionDot,
 } from "@/lib/pwa/attentionDot";
-import { Plus } from "lucide-react";
+import { Clapperboard } from "lucide-react";
 import { memo, useEffect, useMemo, useState } from "react";
 
 /**
@@ -50,7 +50,7 @@ export const GigaSocialContextNav = memo(function GigaSocialContextNav({
   const items = useMemo(() => {
     type NavItem =
       | { kind: "section"; id: GigaSocialSection; label: string }
-      | { kind: "create" };
+      | { kind: "gigaedits" };
 
     const sections = GIGASOCIAL_SECTIONS.filter((item) => {
       if (item.id === "live") return showLive;
@@ -62,15 +62,15 @@ export const GigaSocialContextNav = memo(function GigaSocialContextNav({
       label: item.id === "notifications" ? "Inbox" : item.label,
     }));
 
-    // Keep Create near Discover for thumb reach; insert after Discover when present.
+    // Keep GigaEdits near Discover for thumb reach; insert after Discover when present.
     const discoverIdx = sections.findIndex((s) => s.id === "discover");
     const insertAt = discoverIdx >= 0 ? discoverIdx + 1 : Math.min(2, sections.length);
-    const withCreate: NavItem[] = [
+    const withGigaEdits: NavItem[] = [
       ...sections.slice(0, insertAt),
-      { kind: "create" },
+      { kind: "gigaedits" },
       ...sections.slice(insertAt),
     ];
-    return withCreate;
+    return withGigaEdits;
   }, [showLive, showMessages]);
 
   return (
@@ -80,17 +80,17 @@ export const GigaSocialContextNav = memo(function GigaSocialContextNav({
     >
       <div className="gigasocial-context-nav__scroll">
         {items.map((item) => {
-          if (item.kind === "create") {
+          if (item.kind === "gigaedits") {
             return (
               <button
-                key="create"
+                key="gigaedits"
                 type="button"
                 className="gigasocial-context-nav__create"
-                aria-label="Create post"
+                aria-label="Open GigaEdits editor"
                 onClick={onCreate}
               >
-                <Plus className="h-5 w-5" aria-hidden />
-                <span>Create</span>
+                <Clapperboard className="h-5 w-5" aria-hidden />
+                <span>GigaEdits</span>
               </button>
             );
           }
