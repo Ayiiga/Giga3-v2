@@ -8,6 +8,7 @@ import {
   resolveAudioContentType,
   resolveVideoContentType,
   SOCIAL_IMAGE_MIME_TYPES,
+  resolveImageContentType,
 } from "@/lib/gigasocial/constants";
 
 export type MediaComposerSelection =
@@ -20,11 +21,7 @@ export type MediaComposerSelection =
   | { kind: "unsupported"; reason: string };
 
 function isImageFile(file: File): boolean {
-  const type = file.type?.toLowerCase().split(";")[0]?.trim() ?? "";
-  if (type.startsWith("image/")) return true;
-  if (SOCIAL_IMAGE_MIME_TYPES.has(type)) return true;
-  const ext = file.name.split(".").pop()?.toLowerCase();
-  return Boolean(ext && ["jpg", "jpeg", "png", "webp", "gif"].includes(ext));
+  return Boolean(resolveImageContentType(file));
 }
 
 function isVideoFile(file: File): boolean {
@@ -99,4 +96,4 @@ export function classifyMediaFiles(files: File[]): MediaComposerSelection {
 }
 
 export const UNIFIED_MEDIA_ACCEPT =
-  "image/jpeg,image/png,image/webp,image/gif,video/mp4,video/quicktime,video/webm,video/*,audio/mpeg,audio/mp4,audio/wav,audio/ogg,audio/webm,.mp4,.mov,.webm,.m4v,.3gp";
+  "image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp,video/mp4,video/quicktime,video/webm,video/*,audio/mpeg,audio/mp4,audio/wav,audio/ogg,audio/webm,.mp4,.mov,.webm,.m4v,.3gp";
