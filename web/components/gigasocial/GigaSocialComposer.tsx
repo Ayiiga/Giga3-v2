@@ -202,6 +202,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   const [videoTrimDraft, setVideoTrimDraft] = useState<VideoTrimDraft | null>(null);
   const [episodeSplitDraft, setEpisodeSplitDraft] = useState<EpisodeSplitDraft | null>(null);
   const [pendingAudio, setPendingAudio] = useState<PendingAudio | null>(null);
+  const [audioPreparationCount, setAudioPreparationCount] = useState(0);
   const [soundAttribution, setSoundAttribution] = useState<string | null>(
     () => initialMedia?.soundAttribution ?? null
   );
@@ -511,7 +512,8 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
 
   const hasMedia = pendingImages.length > 0 || Boolean(pendingVideo) || Boolean(pendingAudio);
   const imagePreparationBusy = imagePreparationCount > 0;
-  const canPost = Boolean(body.trim() || hasMedia) && !imagePreparationBusy;
+  const audioPreparationBusy = audioPreparationCount > 0;
+  const canPost = Boolean(body.trim() || hasMedia) && !imagePreparationBusy && !audioPreparationBusy;
 
   const revokePreview = useCallback((previewUrl: string) => {
     if (previewUrl.startsWith("blob:")) {
@@ -792,6 +794,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       setError("Add one or more photos first, then attach music.");
       return;
     }
+    setAudioPreparationCount((count) => count + 1);
     try {
       const prepared = await prepareAudioForPhotoPost(file, SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC);
       setPendingAudio({
@@ -805,6 +808,10 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not read audio.");
+    } finally {
+      if (mountedRef.current) {
+        setAudioPreparationCount((count) => Math.max(0, count - 1));
+      }
     }
   }, [imagePreparationCount, pendingImages.length, pendingVideo]);
 
@@ -1626,7 +1633,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
 
         <Button
           type="button"
-          disabled={disabled || busy || imagePreparationBusy || !canPost}
+          disabled={disabled || busy || imagePreparationBusy || audioPreparationBusy || !canPost}
           onClick={() => void handleSubmit()}
           className="ml-auto min-h-10"
         >
