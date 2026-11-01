@@ -34,7 +34,7 @@ describe("GigaEdit shell resilience", () => {
     expect(errorPage).not.toContain("error.message");
   });
 
-  it("renders one semantic creator-home H1 without duplicate page headings", () => {
+  it("keeps the creator-home hero below the page-level SEO H1", () => {
     const home = readFileSync(resolve(__dirname, "../../web/components/gigaedit/GigaEditHome.tsx"), "utf8");
     expect(home).toMatch(/<h1[\s>]/);
     expect(home).toContain("Make something");
