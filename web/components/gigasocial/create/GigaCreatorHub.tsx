@@ -87,7 +87,6 @@ export const GigaCreatorHub = memo(function GigaCreatorHub({
           onClick={close}
         />
       ) : null}
-      {!open ? (
       <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[69] flex justify-end p-4 pb-[max(1.1rem,env(safe-area-inset-bottom))]">
         <button
           type="button"
@@ -95,18 +94,19 @@ export const GigaCreatorHub = memo(function GigaCreatorHub({
           onClick={() => setOpen((value) => !value)}
           aria-label={open ? "Close creator hub" : "Open creator hub"}
           aria-expanded={open}
+          aria-hidden={open}
+          tabIndex={open ? -1 : 0}
           className={cn(
             "pointer-events-auto relative flex h-14 w-14 items-center justify-center rounded-full text-white shadow-[0_12px_35px_rgba(79,70,229,.42)] transition duration-200 active:scale-95",
             "bg-gradient-to-br from-violet-500 via-indigo-600 to-blue-700 ring-1 ring-white/30",
             disabled && "cursor-not-allowed opacity-50",
-            open && "rotate-45"
+            open && "rotate-45 pointer-events-none opacity-0"
           )}
         >
           <Plus className="h-7 w-7" strokeWidth={2.5} />
           <span className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-400" />
         </button>
       </div>
-      ) : null}
       {open ? (
         <section
           ref={panelRef}
