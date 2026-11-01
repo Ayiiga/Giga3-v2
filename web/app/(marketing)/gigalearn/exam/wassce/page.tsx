@@ -15,7 +15,7 @@ const CORE_SUBJECTS = [
 export default function WassceSubjectPage() {
   const bank = getExamBankMeta("exam-wassce-core");
   const subjects = CORE_SUBJECTS.map((subject) => {
-    const topic = bank?.topics.find((item) => subject.topicIds.includes(item.id));
+    const topic = bank?.topics.find((item) => subject.topicIds.some((id) => id === item.id));
     const available = Boolean(topic && (topic.questionCount ?? 0) > 0);
     return { id: subject.id, label: subject.label, questionCount: topic?.questionCount, available, href: available && topic ? examPracticeHref("exam-wassce-core", { mode: "learn", topic: topic.id }) : undefined };
   });
