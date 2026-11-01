@@ -18,6 +18,10 @@ import adI from "@/lib/gigalearn/examPractice/banks/ad-i.json";
 import deputyDirector from "@/lib/gigalearn/examPractice/banks/deputy-director.json";
 import directorIi from "@/lib/gigalearn/examPractice/banks/director-ii.json";
 import directorI from "@/lib/gigalearn/examPractice/banks/director-i.json";
+import wassceEnglish from "@/lib/gigalearn/examPractice/banks/wassce-english.json";
+import wassceCoreMathematics from "@/lib/gigalearn/examPractice/banks/wassce-core-mathematics.json";
+import wassceIntegratedScience from "@/lib/gigalearn/examPractice/banks/wassce-integrated-science.json";
+import wassceSocialStudies from "@/lib/gigalearn/examPractice/banks/wassce-social-studies.json";
 import {
   EXAM_PRACTICE_FREE_QUESTION_COUNT,
   EXAM_PRACTICE_PREMIUM_QUESTION_COUNT,
@@ -56,6 +60,10 @@ const BANKS: Record<string, BankFile> = {
   [deputyDirector.courseSlug]: deputyDirector as BankFile,
   [directorIi.courseSlug]: directorIi as BankFile,
   [directorI.courseSlug]: directorI as BankFile,
+  [wassceEnglish.courseSlug]: wassceEnglish as BankFile,
+  [wassceCoreMathematics.courseSlug]: wassceCoreMathematics as BankFile,
+  [wassceIntegratedScience.courseSlug]: wassceIntegratedScience as BankFile,
+  [wassceSocialStudies.courseSlug]: wassceSocialStudies as BankFile,
 };
 
 /** Exam Practice banks allow pending_review items with provisional feedback. */
@@ -67,6 +75,10 @@ const INCLUDE_PENDING_SLUGS = new Set([
   "exam-deputy-director",
   "exam-director-ii",
   "exam-director-i",
+  "exam-wassce-english",
+  "exam-wassce-core-mathematics",
+  "exam-wassce-integrated-science",
+  "exam-wassce-social-studies",
 ]);
 
 /**
