@@ -935,24 +935,6 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
             label={t.label}
           />
         ))}
-        {sessionToken && !useGigaCreateFab ? (
-          <button
-            type="button"
-            onClick={() => setComposerOpen((open) => !open)}
-            className={cn(
-              "ml-auto inline-flex h-8 w-8 items-center justify-center rounded-full border border-border bg-white text-muted hover:border-accent/30 hover:bg-accent/5 hover:text-accent",
-              composerOpen && "border-accent/40 bg-accent/10 text-accent"
-            )}
-            aria-label={composerOpen ? "Close new post" : "New post"}
-            aria-expanded={composerOpen}
-          >
-            {composerOpen ? (
-              <X className="h-3.5 w-3.5" aria-hidden />
-            ) : (
-              <SquarePen className="h-3.5 w-3.5" aria-hidden />
-            )}
-          </button>
-        ) : null}
       </div>
 
       {showFeaturedAboveFeed ? (
@@ -986,27 +968,13 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         <GigaSocialFeedHero postCount={posts.length} compact />
       ) : null}
 
-      {!sessionToken ? (
-        <button
-          type="button"
-          onClick={requireAuth}
-          className="gigasocial-guest-composer w-full rounded-[1.125rem] border border-[var(--gs-border,#334155)] bg-[var(--gs-card,#162033)] px-4 py-3 text-left shadow-sm"
-          aria-label="Sign in to share your thoughts"
-        >
-          <p className="text-sm font-semibold text-[var(--gs-text,#fff)]">Share something</p>
-          <p className="mt-1 text-sm text-[var(--gs-muted,#94a3b8)]">
-            Share your thoughts with the world...
-          </p>
-        </button>
-      ) : null}
-
-      {sessionToken && composerOpen && !useGigaCreateFab ? (
+      {sessionToken && false && composerOpen && !useGigaCreateFab ? (
         <GigaSocialPanelErrorBoundary panelName="Create post">
           <GigaSocialComposer {...composerProps} />
         </GigaSocialPanelErrorBoundary>
       ) : null}
 
-      {sessionToken && useGigaCreateFab ? (
+      {sessionToken && false && useGigaCreateFab ? (
         <GigaSocialPanelErrorBoundary panelName="Create post">
           <GigaSocialComposerSheet open={composerOpen} onClose={closeComposer} {...composerProps} />
         </GigaSocialPanelErrorBoundary>
@@ -1020,9 +988,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
             <SocialEmptyState
               icon={MessageCircle}
               title="No posts yet."
-              description="Be the first to share something with the community. Invite friends or create a post to get started."
-              primaryLabel="Create Post"
-              onPrimary={() => openComposer("text-post")}
+              description="Be the first to discover and follow creators in the community."
               secondaryLabel="Invite Friends"
               onSecondary={() => router.push("/gigasocial/?tab=profile")}
             />
