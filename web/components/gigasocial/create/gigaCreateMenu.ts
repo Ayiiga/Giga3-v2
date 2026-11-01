@@ -316,40 +316,40 @@ export function getGigaCreateSections(options?: {
 /** Six-option upload menu for the GigaSocial (+) FAB — feed only. */
 export const GIGA_CREATE_FAB_ITEMS: GigaCreateMenuItem[] = [
   {
+    id: "media-video",
+    label: "Video",
+    emoji: "🎥",
+    description: "Choose a video, preview it, trim, and add a caption",
+  },
+  {
+    id: "media-photo",
+    label: "Photo",
+    emoji: "📸",
+    description: "Choose photos, preview, enhance, and share",
+  },
+  {
+    id: "media-audio",
+    label: "Music",
+    emoji: "🎵",
+    description: "Add a soundtrack to your photo story or slideshow",
+  },
+  {
     id: "media-camera",
     label: "Camera",
     emoji: "📷",
-    description: "Capture photos or videos with pro creator tools",
-  },
-  {
-    id: "media-unified",
-    label: "Photo / Photo with Music",
-    emoji: "🖼️",
-    description: "Select photos, add music, and create a slideshow",
-  },
-  {
-    id: "video-studio",
-    label: "Video",
-    emoji: "🎥",
-    description: "Record or choose a video — trim, filters, and captions",
+    description: "Capture photos or videos with creator tools",
   },
   {
     id: "text-post",
     label: "Post",
     emoji: "📝",
-    description: "Write a post with photos, emojis, and hashtags",
+    description: "Write and publish a text or media post",
   },
   {
     id: "story-content",
     label: "Story",
-    emoji: "📖",
+    emoji: "⭕",
     description: "Share a photo or short video to your Story ring",
-  },
-  {
-    id: "live-content",
-    label: "Go Live",
-    emoji: "📡",
-    description: "Start a live broadcast with title and audience",
   },
 ];
 
