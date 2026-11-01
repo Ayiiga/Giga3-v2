@@ -12,6 +12,7 @@ import {
   SOCIAL_MAX_VIDEO_MB,
   SOCIAL_VIDEO_ACCEPT,
   isLikelySocialVideoFile,
+  resolveImageContentType,
   resolveVideoContentType,
   type SocialPostMediaItemInput,
 } from "@/lib/gigasocial/constants";
@@ -596,9 +597,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         setError("Finish or remove the selected video before adding photos.");
         return;
       }
-      const list = Array.from(files).filter((file) =>
-        ["image/jpeg", "image/png", "image/webp"].includes(file.type.toLowerCase())
-      );
+      const list = Array.from(files).filter((file) => Boolean(resolveImageContentType(file)));
       if (!list.length) {
         setError("Choose JPG, PNG, or WEBP images.");
         return;
