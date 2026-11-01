@@ -1,3 +1,5 @@
+import { resolveImageContentType } from "@/lib/gigasocial/constants";
+
 /**
  * Apply a subtle creator-grade lift before upload.
  *
@@ -18,7 +20,10 @@ export function brightenSocialPhoto(file: File): Promise<File> {
 }
 
 async function enhanceSocialPhoto(file: File): Promise<File> {
-  if (!file.type.startsWith("image/")) return file;
+  // Android gallery providers may return an empty MIME type or image/jpg.
+  // Resolve from the same canonical extension/MIME rules as the composer.
+  const contentType = resolveImageContentType(file);
+  if (!contentType) return file;
 
   let bitmap: ImageBitmap | undefined;
   try {
@@ -32,8 +37,8 @@ async function enhanceSocialPhoto(file: File): Promise<File> {
     const context = canvas.getContext("2d");
     if (!context) return file;
 
-    const preservesAlpha = file.type === "image/png" || file.type === "image/webp";
-    const preferredType = file.type === "image/png" ? "image/png" : preservesAlpha ? "image/webp" : "image/jpeg";
+    const preservesAlpha = contentType === "image/png" || contentType === "image/webp";
+    const preferredType = contentType === "image/png" ? "image/png" : preservesAlpha ? "image/webp" : "image/jpeg";
     context.filter = "brightness(1.07) contrast(1.035) saturate(1.045)";
     context.drawImage(bitmap, 0, 0, width, height);
     bitmap.close();
