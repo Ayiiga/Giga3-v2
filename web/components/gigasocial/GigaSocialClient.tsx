@@ -147,6 +147,10 @@ function GigaSocialContent() {
   }, [ensureMyProfile, sessionToken]);
 
   useEffect(() => {
+    if (section !== "feed" && createRequest !== 0) setCreateRequest(0);
+  }, [createRequest, section]);
+
+  useEffect(() => {
     const featuresNow = getGigaSocialFeatures();
     const tab = params.get("tab") as GigaSocialSection;
     if (tab && GIGASOCIAL_SECTIONS.some((s) => s.id === tab)) {
