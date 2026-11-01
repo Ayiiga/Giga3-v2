@@ -195,6 +195,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   );
   const [templatePolicy, setTemplatePolicy] = useState<GigaTemplatePolicy>("off");
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
+  const reservedImageSlotsRef = useRef(0);
   const [pendingVideo, setPendingVideo] = useState<PendingVideo | null>(null);
   const [videoTrimDraft, setVideoTrimDraft] = useState<VideoTrimDraft | null>(null);
   const [episodeSplitDraft, setEpisodeSplitDraft] = useState<EpisodeSplitDraft | null>(null);
@@ -598,24 +599,34 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         setError("Choose JPG, PNG, or WEBP images.");
         return;
       }
-      const remaining = SOCIAL_MAX_PHOTOS_PER_POST - pendingImages.length;
-      if (remaining <= 0) {
+      const available = Math.max(0, SOCIAL_MAX_PHOTOS_PER_POST - pendingImages.length - reservedImageSlotsRef.current);
+      if (available <= 0) {
         setError(`You can attach up to ${SOCIAL_MAX_PHOTOS_PER_POST} photos.`);
         return;
       }
-      const selected = list.slice(0, remaining);
-      const prepared = autoBrighten
-        ? await Promise.all(selected.map((file) => brightenSocialPhoto(file)))
-        : selected;
-      const next = prepared.map((file) => ({
-        id: `${file.name}-${file.size}-${Date.now()}-${Math.random()}`,
-        file,
-        previewUrl: URL.createObjectURL(file),
-        name: file.name,
-      }));
-      setPendingImages((prev) => [...prev, ...next]);
-      setPostType("image");
-      setError(null);
+      const selected = list.slice(0, available);
+      reservedImageSlotsRef.current += selected.length;
+      try {
+        const prepared: File[] = [];
+        for (const file of selected) prepared.push(autoBrighten ? await brightenSocialPhoto(file) : file);
+        const next = prepared.map((file) => ({
+          id: `${file.name}-${file.size}-${Date.now()}-${Math.random()}`,
+          file,
+          previewUrl: URL.createObjectURL(file),
+          name: file.name,
+        }));
+        setPendingImages((prev) => {
+          const slots = Math.max(0, SOCIAL_MAX_PHOTOS_PER_POST - prev.length);
+          const accepted = next.slice(0, slots);
+          next.slice(slots).forEach((image) => URL.revokeObjectURL(image.previewUrl));
+          if (accepted.length < next.length) setError(`Only ${SOCIAL_MAX_PHOTOS_PER_POST} photos can be attached to one post.`);
+          return [...prev, ...accepted];
+        });
+        setPostType("image");
+        setError(null);
+      } finally {
+        reservedImageSlotsRef.current = Math.max(0, reservedImageSlotsRef.current - selected.length);
+      }
     },
     [pendingImages.length, pendingVideo]
   );
