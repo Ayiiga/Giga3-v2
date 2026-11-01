@@ -779,7 +779,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
     [addImageFiles, applyPendingVideo, clearVideoTrimDraft, imagePreparationCount, openEpisodeSplitDraft, pendingImages.length]
   );
 
-  const addAudioFile = useCallback(async (file: File) => {
+  const addAudioFile = useCallback(async (file: File, imagesPreparedInThisSelection = false) => {
     if (imagePreparationCount > 0 || reservedImageSlotsRef.current > 0) {
       setError("Wait for photo preparation to finish before adding music.");
       return;
@@ -788,7 +788,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       setError("Remove the video before adding music.");
       return;
     }
-    if (!pendingImages.length) {
+    if (!pendingImages.length && !imagesPreparedInThisSelection) {
       setError("Add one or more photos first, then attach music.");
       return;
     }
@@ -826,7 +826,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           break;
         case "slideshow":
           await addImageFiles(selection.images);
-          await addAudioFile(selection.audio);
+          await addAudioFile(selection.audio, true);
           if (!body.trim()) {
             setBody("Photo with music 🎵\n\n");
           }
