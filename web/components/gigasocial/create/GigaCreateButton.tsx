@@ -172,7 +172,7 @@ export const GigaCreateButton = memo(function GigaCreateButton({
             <div className="gigasocial-upload-sheet__fab-row">{fab}</div>
           </div>
         ) : (
-          <div className="pointer-events-auto hidden justify-end p-4 pb-[max(1rem,env(safe-area-inset-bottom))] lg:flex">
+          <div className="pointer-events-auto flex justify-end p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
             {fab}
           </div>
         )}
