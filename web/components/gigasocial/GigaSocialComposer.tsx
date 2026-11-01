@@ -784,7 +784,11 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   const addAudioFile = useCallback(async (file: File, imagesPreparedInThisSelection = false) => {
     // Use the live reservation ref here: this callback may run after awaiting
     // addImageFiles, while its captured React state still reflects the prior render.
-    if (reservedImageSlotsRef.current > 0) {
+    // A slideshow calls this only after its own addImageFiles promise resolves.
+    // Other independent photo batches may still hold reservations; that must not
+    // discard this slideshow's soundtrack. Posting remains disabled until every
+    // photo preparation finishes.
+    if (reservedImageSlotsRef.current > 0 && !imagesPreparedInThisSelection) {
       setError("Wait for photo preparation to finish before adding music.");
       return;
     }
