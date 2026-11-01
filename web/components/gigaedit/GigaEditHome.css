@@ -5,8 +5,8 @@
 .ge-local-pill{display:inline-flex;align-items:center;gap:.4rem;padding:.35rem .6rem;border:1px solid rgba(167,139,250,.2);border-radius:999px;background:rgba(15,23,42,.48);color:#cbd5e1;font-size:.65rem;font-weight:650}
 .ge-local-pill span{width:6px;height:6px;border-radius:50%;background:#34d399;box-shadow:0 0 0 3px rgba(52,211,153,.12)}
 .ge-eyebrow,.ge-kicker{margin:0;color:#a78bfa;font-size:.62rem;font-weight:850;letter-spacing:.17em;text-transform:uppercase}
-.ge-welcome h1{position:relative;z-index:1;max-width:18rem;margin:.45rem 0 .6rem;font-size:clamp(2rem,8vw,2.8rem);font-weight:850;line-height:1.04;letter-spacing:-.065em;color:#fff}
-.ge-welcome h1 span{background:linear-gradient(100deg,#c4b5fd 5%,#f0abfc 52%,#fcd34d 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ge-welcome h2{position:relative;z-index:1;max-width:18rem;margin:.45rem 0 .6rem;font-size:clamp(2rem,8vw,2.8rem);font-weight:850;line-height:1.04;letter-spacing:-.065em;color:#fff}
+.ge-welcome h2 span{background:linear-gradient(100deg,#c4b5fd 5%,#f0abfc 52%,#fcd34d 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
 .ge-welcome__copy{position:relative;z-index:1;max-width:25rem;margin:0;color:#aebbd0;font-size:.86rem;line-height:1.65}
 .ge-welcome__actions{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:.6rem;margin-top:1.15rem}
 .ge-primary-action,.ge-secondary-action{display:inline-flex;min-height:2.8rem;align-items:center;justify-content:center;gap:.5rem;padding:.65rem .9rem;border-radius:.95rem;font-size:.78rem;font-weight:800}
@@ -20,7 +20,7 @@
 .ge-step-label{display:inline-flex;align-items:center;gap:.3rem;color:#c4b5fd;font-size:.65rem;font-weight:750;white-space:nowrap}
 .ge-start-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem}
 .ge-start-card{position:relative;display:flex;min-height:8.2rem;flex-direction:column;align-items:flex-start;gap:.42rem;overflow:hidden;padding:.85rem;border:1px solid rgba(148,163,184,.16);border-radius:1.05rem;background:linear-gradient(145deg,rgba(30,41,59,.96),rgba(15,23,42,.98));text-align:left;transition:border-color .16s ease,background .16s ease}
-.ge-start-card:focus-visible,.ge-primary-action:focus-visible,.ge-secondary-action:focus-visible,.ge-filter-chip:focus-visible,.ge-tool-card button:focus-visible{outline:2px solid #c4b5fd;outline-offset:3px}
+.ge-start-card:focus-visible,.ge-primary-action:focus-visible,.ge-secondary-action:focus-visible,.ge-filter-chip:focus-visible,.ge-tool-card button:focus-visible{outline:2px solid #c4b5fd;outline-offset:-3px}
 .ge-start-card__icon{display:grid;width:2.35rem;height:2.35rem;place-items:center;border:1px solid rgba(196,181,253,.18);border-radius:.8rem;background:rgba(139,92,246,.15);color:#c4b5fd}
 .ge-start-card--blue .ge-start-card__icon{background:rgba(59,130,246,.15);color:#93c5fd}
 .ge-start-card--gold .ge-start-card__icon{background:rgba(251,191,36,.12);color:#fcd34d}
