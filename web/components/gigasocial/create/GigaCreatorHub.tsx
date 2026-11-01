@@ -45,6 +45,12 @@ export const GigaCreatorHub = memo(function GigaCreatorHub({
   const close = useCallback(() => setOpen(false), []);
 
   useEffect(() => setMounted(true), []);
+  // Keep the existing context-navigation Create action connected to the new hub.
+  useEffect(() => {
+    const onOpenCreate = () => setOpen(true);
+    window.addEventListener("gigasocial:open-create", onOpenCreate);
+    return () => window.removeEventListener("gigasocial:open-create", onOpenCreate);
+  }, []);
   useEffect(() => {
     if (!open) return;
     const previous = document.body.style.overflow;
