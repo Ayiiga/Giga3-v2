@@ -37,7 +37,7 @@ function NominateInner() {
   const trimmedBiography = biography.trim();
   const trimmedHandle = handle.trim().replace(/^@/, "");
   const canSubmit =
-    season.nominationsOpen &&
+    Boolean(season?.nominationsOpen) &&
     trimmedDisplayName.length >= 2 &&
     trimmedBiography.length >= 40 &&
     (selfApplication || trimmedHandle.length > 0);
