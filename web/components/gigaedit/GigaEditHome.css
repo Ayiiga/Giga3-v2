@@ -1,0 +1,59 @@
+.ge-creator-home{display:flex;flex-direction:column;gap:1.25rem;padding-bottom:1.5rem;color:var(--ge-text)}
+.ge-welcome{position:relative;isolation:isolate;overflow:hidden;padding:1.35rem 1.15rem 1.25rem;border:1px solid rgba(167,139,250,.24);border-radius:1.55rem;background:radial-gradient(ellipse at 92% 8%,rgba(139,92,246,.32),transparent 42%),radial-gradient(ellipse at 8% 100%,rgba(59,130,246,.16),transparent 45%),linear-gradient(145deg,#17213a 0%,#101827 58%,#15132b 100%);box-shadow:0 18px 45px -28px rgba(0,0,0,.85)}
+.ge-welcome__topline{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:1.55rem}
+.ge-brand-mark{display:inline-flex;align-items:center;gap:.35rem;color:#c4b5fd;font-size:.7rem;font-weight:900;letter-spacing:.16em}
+.ge-local-pill{display:inline-flex;align-items:center;gap:.4rem;padding:.35rem .6rem;border:1px solid rgba(167,139,250,.2);border-radius:999px;background:rgba(15,23,42,.48);color:#cbd5e1;font-size:.65rem;font-weight:650}
+.ge-local-pill span{width:6px;height:6px;border-radius:50%;background:#34d399;box-shadow:0 0 0 3px rgba(52,211,153,.12)}
+.ge-eyebrow,.ge-kicker{margin:0;color:#a78bfa;font-size:.62rem;font-weight:850;letter-spacing:.17em;text-transform:uppercase}
+.ge-welcome h2{position:relative;z-index:1;max-width:18rem;margin:.45rem 0 .6rem;font-size:clamp(2rem,8vw,2.8rem);font-weight:850;line-height:1.04;letter-spacing:-.065em;color:#fff}
+.ge-welcome h2 span{background:linear-gradient(100deg,#c4b5fd 5%,#f0abfc 52%,#fcd34d 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ge-welcome__copy{position:relative;z-index:1;max-width:25rem;margin:0;color:#aebbd0;font-size:.86rem;line-height:1.65}
+.ge-welcome__actions{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:.6rem;margin-top:1.15rem}
+.ge-primary-action,.ge-secondary-action{display:inline-flex;min-height:2.8rem;align-items:center;justify-content:center;gap:.5rem;padding:.65rem .9rem;border-radius:.95rem;font-size:.78rem;font-weight:800}
+.ge-primary-action{color:#160d2c;background:linear-gradient(115deg,#c4b5fd,#a78bfa 58%,#f0abfc);box-shadow:0 8px 22px -12px rgba(167,139,250,.8)}
+.ge-secondary-action{color:#e2e8f0;border:1px solid rgba(203,213,225,.2);background:rgba(15,23,42,.55)}
+.ge-welcome__spark{position:absolute;right:-.5rem;bottom:1.4rem;z-index:-1;color:rgba(196,181,253,.13);transform:rotate(-12deg)}
+.ge-start-section,.ge-toolkit-section{display:flex;flex-direction:column;gap:.85rem}
+.ge-section-heading{display:flex;align-items:center;justify-content:space-between;gap:.75rem}
+.ge-section-heading h2{margin:.22rem 0 0;color:#f8fafc;font-size:1.05rem;font-weight:800;letter-spacing:-.035em}
+.ge-section-subtitle{margin:.25rem 0 0;color:var(--ge-muted);font-size:.7rem}
+.ge-step-label{display:inline-flex;align-items:center;gap:.3rem;color:#c4b5fd;font-size:.65rem;font-weight:750;white-space:nowrap}
+.ge-start-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem}
+.ge-start-card{position:relative;display:flex;min-height:8.2rem;flex-direction:column;align-items:flex-start;gap:.42rem;overflow:hidden;padding:.85rem;border:1px solid rgba(148,163,184,.16);border-radius:1.05rem;background:linear-gradient(145deg,rgba(30,41,59,.96),rgba(15,23,42,.98));text-align:left;transition:border-color .16s ease,background .16s ease}
+.ge-start-card:focus-visible,.ge-primary-action:focus-visible,.ge-secondary-action:focus-visible,.ge-filter-chip:focus-visible,.ge-tool-card button:focus-visible{outline:2px solid #c4b5fd;outline-offset:-3px}
+.ge-start-card__icon{display:grid;width:2.35rem;height:2.35rem;place-items:center;border:1px solid rgba(196,181,253,.18);border-radius:.8rem;background:rgba(139,92,246,.15);color:#c4b5fd}
+.ge-start-card--blue .ge-start-card__icon{background:rgba(59,130,246,.15);color:#93c5fd}
+.ge-start-card--gold .ge-start-card__icon{background:rgba(251,191,36,.12);color:#fcd34d}
+.ge-start-card--pink .ge-start-card__icon{background:rgba(236,72,153,.12);color:#f9a8d4}
+.ge-start-card__title{margin-top:.15rem;color:#f8fafc;font-size:.82rem;font-weight:800}
+.ge-start-card__detail{color:#94a3b8;font-size:.66rem;line-height:1.35}
+.ge-start-card__arrow{position:absolute;right:.7rem;top:.75rem;color:#64748b}
+.ge-projects-panel{padding:1rem;border:1px solid rgba(148,163,184,.16);border-radius:1.2rem;background:linear-gradient(145deg,rgba(22,32,51,.98),rgba(15,23,42,.96))}
+.ge-section-heading--compact{margin-bottom:.8rem}
+.ge-text-link{display:inline-flex;align-items:center;gap:.25rem;color:#c4b5fd;font-size:.7rem;font-weight:750;white-space:nowrap}
+.ge-device-note{display:flex;align-items:center;gap:.65rem;padding:.75rem .85rem;border:1px solid rgba(52,211,153,.17);border-radius:.95rem;background:rgba(16,185,129,.055)}
+.ge-device-note__icon{display:grid;width:2rem;height:2rem;flex:0 0 auto;place-items:center;border-radius:.7rem;background:rgba(52,211,153,.1);color:#6ee7b7}
+.ge-device-note div{display:flex;min-width:0;flex:1;flex-direction:column;gap:.1rem}
+.ge-device-note strong{color:#d1fae5;font-size:.7rem}
+.ge-device-note div span{color:#94a3b8;font-size:.63rem}
+.ge-device-note__status{color:#6ee7b7;font-size:.62rem;font-weight:800}
+.ge-filter-rail{display:flex;gap:.45rem;overflow-x:auto;padding-bottom:.2rem;scrollbar-width:none}
+.ge-filter-rail::-webkit-scrollbar{display:none}
+.ge-filter-chip{min-height:2.2rem;flex:0 0 auto;padding:.45rem .8rem;border:1px solid rgba(148,163,184,.18);border-radius:999px;background:#172033;color:#aab6c9;font-size:.7rem;font-weight:750}
+.ge-filter-chip--active{border-color:rgba(196,181,253,.65);background:linear-gradient(110deg,#8b5cf6,#6d28d9);color:#fff;box-shadow:0 5px 18px -12px rgba(139,92,246,.9)}
+.ge-toolkit-mark{display:grid;width:2.5rem;height:2.5rem;place-items:center;border:1px solid rgba(196,181,253,.18);border-radius:.85rem;background:rgba(139,92,246,.12);color:#c4b5fd}
+.ge-tool-card{position:relative;display:flex;min-height:8.8rem;overflow:hidden;border:1px solid rgba(148,163,184,.16);border-radius:1rem;background:linear-gradient(155deg,rgba(30,41,59,.98),rgba(15,23,42,.98))}
+.ge-tool-card--featured{border-color:rgba(196,181,253,.38);background:radial-gradient(ellipse at 100% 0,rgba(139,92,246,.16),transparent 55%),linear-gradient(155deg,#202844,#111827)}
+.ge-tool-card__main{display:flex;width:100%;flex:1;flex-direction:column;align-items:flex-start;gap:.35rem;padding:.8rem;text-align:left}
+.ge-tool-card__icon{display:grid;width:2rem;height:2rem;place-items:center;border-radius:.7rem;background:rgba(139,92,246,.14);font-size:1.25rem}
+.ge-tool-card__name{color:#f8fafc;font-size:.78rem;font-weight:800}
+.ge-tool-card__description{display:-webkit-box;overflow:hidden;color:#94a3b8;font-size:.64rem;line-height:1.35;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.ge-tool-card__tag{margin-top:auto;padding:.18rem .45rem;border:1px solid rgba(196,181,253,.2);border-radius:999px;background:rgba(139,92,246,.13);color:#c4b5fd;font-size:.55rem;font-weight:850;letter-spacing:.04em;text-transform:uppercase}
+.ge-tool-card__tag--local{border-color:rgba(52,211,153,.2);background:rgba(16,185,129,.08);color:#6ee7b7}
+.ge-tool-card__pin{position:absolute;right:.5rem;top:.5rem;display:grid;width:1.8rem;height:1.8rem;place-items:center;border:1px solid rgba(196,181,253,.22);border-radius:50%;background:#111827;color:#c4b5fd}
+.ge-inspiration{display:flex;align-items:flex-start;gap:.75rem;padding:.95rem;border:1px solid rgba(251,191,36,.16);border-radius:1.05rem;background:linear-gradient(110deg,rgba(251,191,36,.07),rgba(139,92,246,.07))}
+.ge-inspiration__icon{display:grid;width:2.25rem;height:2.25rem;flex:0 0 auto;place-items:center;border-radius:.75rem;background:rgba(251,191,36,.12);color:#fcd34d}
+.ge-inspiration h2{margin:.2rem 0;color:#f8fafc;font-size:.84rem;font-weight:800}
+.ge-inspiration p:last-child{margin:0;color:#94a3b8;font-size:.67rem;line-height:1.45}
+@media(min-width:640px){.ge-welcome{padding:1.7rem}.ge-start-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.ge-start-card{min-height:9rem;padding:1rem}.ge-welcome__spark{right:2rem;bottom:1rem}.ge-creator-home{gap:1.5rem}}
+@media(prefers-reduced-motion:reduce){.ge-start-card{transition:none}}
