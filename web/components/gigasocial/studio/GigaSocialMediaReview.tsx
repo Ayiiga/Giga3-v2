@@ -31,7 +31,7 @@ type GigaSocialMediaReviewProps = {
   durationSec?: number;
   postType: SocialPostTypeId;
   enableAI?: boolean;
-  onSkip: (result: GigaSocialMediaReviewResult) => void;
+  onSkip: (result: GigaSocialMediaReviewResult) => Promise<void> | void;
   onClose: () => void;
   /** Replace selected media (re-open picker). */
   onReplace?: () => void;
@@ -106,7 +106,9 @@ export const GigaSocialMediaReview = memo(function GigaSocialMediaReview({
         if (workingFile.type.startsWith("video/") || kind === "video") {
           thumbnailUrl = await generateVideoThumbnail(workingFile);
         }
-        onSkip({
+        // Keep the review locked until the parent has finished consuming the
+        // selected media. This prevents repeated taps from enqueueing duplicates.
+        await onSkip({
           file: workingFile,
           kind,
           caption: skipCaption ? "" : caption,
