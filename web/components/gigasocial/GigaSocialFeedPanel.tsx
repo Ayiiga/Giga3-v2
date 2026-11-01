@@ -831,8 +831,8 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     setCursor(feed.nextCursor ?? undefined);
   }, [feed]);
 
-  // The floating Create FAB is intentionally disabled while the Android upload flow is being rebuilt.
-  const useGigaCreateFab = false;
+  // The creator FAB is the single entry point for feed publishing.
+  const useGigaCreateFab = true;
 
   useEffect(() => {
     if (useGigaCreateFab) return;
@@ -968,13 +968,13 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         <GigaSocialFeedHero postCount={posts.length} compact />
       ) : null}
 
-      {sessionToken && false && composerOpen && !useGigaCreateFab ? (
+      {sessionToken && composerOpen && !useGigaCreateFab ? (
         <GigaSocialPanelErrorBoundary panelName="Create post">
           <GigaSocialComposer {...composerProps} />
         </GigaSocialPanelErrorBoundary>
       ) : null}
 
-      {sessionToken && false && useGigaCreateFab ? (
+      {sessionToken && useGigaCreateFab && composerOpen ? (
         <GigaSocialPanelErrorBoundary panelName="Create post">
           <GigaSocialComposerSheet open={composerOpen} onClose={closeComposer} {...composerProps} />
         </GigaSocialPanelErrorBoundary>
