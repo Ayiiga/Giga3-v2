@@ -82,7 +82,7 @@ import type { GigaTemplatePolicy } from "@/lib/gigasocial/templateMeta";
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { api } from "convex/_generated/api";
 import { useAction, useMutation } from "convex/react";
-import { Camera, Loader2, Send, X } from "lucide-react";
+import { Camera, Loader2, Send, Video, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useGigaSocialFeatures } from "@/lib/gigasocial/featureFlags";
@@ -1507,6 +1507,29 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           }}
         />
 
+        <label
+          className="relative inline-flex min-h-10 cursor-pointer items-center gap-1.5 overflow-hidden rounded-xl border border-border bg-white px-3 py-2 text-sm font-medium text-foreground hover:bg-accent/5 focus-within:ring-2 focus-within:ring-accent"
+          aria-label="Choose a video from your phone"
+        >
+          <Video className="h-4 w-4" aria-hidden />
+          Upload video
+          <input
+            type="file"
+            accept="video/*,.mp4,.mov,.webm,.m4v,.3gp,.3g2"
+            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+            disabled={disabled || busy}
+            onChange={(event) => {
+              const input = event.currentTarget;
+              const selected = input.files ? Array.from(input.files) : [];
+              input.value = "";
+              if (!selected.length) {
+                setError("Your phone did not return a video file. Please try choosing the video again.");
+                return;
+              }
+              void addVideoFile(selected[0]);
+            }}
+          />
+        </label>
         <GigaSocialCreateMediaMenu
           disabled={disabled}
           busy={busy}
