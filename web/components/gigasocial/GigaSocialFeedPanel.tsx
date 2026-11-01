@@ -1,7 +1,7 @@
 "use client";
 
 import type { GigaCreateLaunch } from "@/components/gigasocial/create/GigaCreateButton";
-import { GigaCreateButton } from "@/components/gigasocial/create/GigaCreateButton";
+import { GigaCreatorHub } from "@/components/gigasocial/create/GigaCreatorHub";
 import type { GigaCreateActionId } from "@/components/gigasocial/create/gigaCreateMenu";
 import type { GigaSocialComposerInitialMedia } from "@/components/gigasocial/GigaSocialComposer";
 import {
@@ -831,8 +831,8 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     setCursor(feed.nextCursor ?? undefined);
   }, [feed]);
 
-  // The floating Create FAB is intentionally disabled while the Android upload flow is being rebuilt.
-  const useGigaCreateFab = false;
+  // New standalone Creator Hub; the feed itself stays free of an inline composer.
+  const useGigaCreateFab = true;
 
   useEffect(() => {
     if (useGigaCreateFab) return;
@@ -1130,12 +1130,9 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
 
       {useGigaCreateFab ? (
         <GigaSocialPanelErrorBoundary panelName="Create">
-          <GigaCreateButton
+          <GigaCreatorHub
             disabled={!sessionToken}
-            enableLive={features.enableGigaLive}
-            enableAIStudio={features.enableAIStudio}
-            onSelect={handleGigaCreate}
-            onOpenAIStudio={() => setAiStudioOpen(true)}
+            onSelect={(action) => handleGigaCreate({ action })}
           />
         </GigaSocialPanelErrorBoundary>
       ) : null}
