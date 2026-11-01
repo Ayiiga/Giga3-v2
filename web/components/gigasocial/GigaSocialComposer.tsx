@@ -592,8 +592,8 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
 
   const addImageFiles = useCallback(
     async (files: FileList | File[], autoBrighten = true) => {
-      if (pendingVideo) {
-        setError("Remove the video before adding photos.");
+      if (pendingVideo || mediaReviewDraft?.kind === "video") {
+        setError("Finish or remove the selected video before adding photos.");
         return;
       }
       const list = Array.from(files).filter((file) => file.type.startsWith("image/"));
@@ -635,8 +635,8 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   );
 
   const addVideoFile = useCallback(async (file: File) => {
-    if (pendingImages.length || pendingAudio) {
-      setError("Remove photos and music before adding a video.");
+    if (pendingImages.length || pendingAudio || reservedImageSlotsRef.current > 0 || imagePreparationCount > 0) {
+      setError("Wait for photo preparation to finish, or remove photos and music before adding a video.");
       return;
     }
     if (!resolveVideoContentType(file)) {
@@ -684,7 +684,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           }
         }
       });
-  }, [pendingAudio, pendingImages.length]);
+  }, [imagePreparationCount, pendingAudio, pendingImages.length]);
 
   const handleCameraCapture = useCallback((capture: GigaSocialCameraCapture) => {
     setCameraStudioOpen(false);
@@ -705,6 +705,11 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         setBody((current) => (current.trim() ? current : result.caption));
       }
       if (result.kind === "video") {
+        if (reservedImageSlotsRef.current > 0 || imagePreparationCount > 0 || pendingImages.length > 0) {
+          setError("Finish or remove photo preparation before adding a video.");
+          setMediaReviewDraft(null);
+          return;
+        }
         let durationSec =
           result.durationSec && isUsableVideoDuration(result.durationSec)
             ? result.durationSec
@@ -757,10 +762,14 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       }
       setMediaReviewDraft(null);
     },
-    [addImageFiles, applyPendingVideo, clearVideoTrimDraft, openEpisodeSplitDraft]
+    [addImageFiles, applyPendingVideo, clearVideoTrimDraft, imagePreparationCount, openEpisodeSplitDraft, pendingImages.length]
   );
 
   const addAudioFile = useCallback(async (file: File) => {
+    if (imagePreparationCount > 0 || reservedImageSlotsRef.current > 0) {
+      setError("Wait for photo preparation to finish before adding music.");
+      return;
+    }
     if (pendingVideo) {
       setError("Remove the video before adding music.");
       return;
@@ -783,7 +792,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not read audio.");
     }
-  }, [pendingImages.length, pendingVideo]);
+  }, [imagePreparationCount, pendingImages.length, pendingVideo]);
 
   const addDroppedFiles = useCallback(
     async (files: FileList | File[]) => {
