@@ -792,7 +792,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
     [addImageFiles, applyPendingVideo, clearVideoTrimDraft, imagePreparationCount, openEpisodeSplitDraft, pendingImages.length]
   );
 
-  const addAudioFile = useCallback(async (file: File, imagesPreparedInThisSelection = false) => {
+  const addAudioFile = useCallback(async (file: File, imagesPreparedInThisSelection = false): Promise<boolean> => {
     // Use the live reservation ref here: this callback may run after awaiting
     // addImageFiles, while its captured React state still reflects the prior render.
     // A slideshow calls this only after its own addImageFiles promise resolves.
@@ -801,15 +801,15 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
     // photo preparation finishes.
     if (reservedImageSlotsRef.current > 0 && !imagesPreparedInThisSelection) {
       setError("Wait for photo preparation to finish before adding music.");
-      return;
+      return false;
     }
     if (pendingVideo) {
       setError("Remove the video before adding music.");
-      return;
+      return false;
     }
     if (!pendingImages.length && !imagesPreparedInThisSelection) {
       setError("Add one or more photos first, then attach music.");
-      return;
+      return false;
     }
     setAudioPreparationCount((count) => count + 1);
     try {
@@ -817,7 +817,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       if (!mountedRef.current) return;
       if (!imagesPreparedInThisSelection && !pendingImagesRef.current.length) {
         setError("Add one or more photos first, then attach music.");
-        return;
+        return false;
       }
       setPendingAudio({
         file: prepared.file,
@@ -828,8 +828,10 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       if (prepared.trimmed) {
         setSuccess(`Music trimmed to ${SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC} seconds for photo posts.`);
       }
+      return true;
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not read audio.");
+      return false;
     } finally {
       if (mountedRef.current) {
         setAudioPreparationCount((count) => Math.max(0, count - 1));
@@ -859,7 +861,8 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
             setError("The selected photos were not added. Free space in the post or wait for other photo uploads, then try again.");
             return;
           }
-          await addAudioFile(selection.audio, true);
+          const soundtrackAdded = await addAudioFile(selection.audio, true);
+          if (!soundtrackAdded) return;
           if (!body.trim()) {
             setBody("Photo with music 🎵\n\n");
           }
