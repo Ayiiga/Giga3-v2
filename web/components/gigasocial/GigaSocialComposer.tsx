@@ -1404,6 +1404,9 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         imageFilterId={previewFilterId}
         compact={compact}
         onRemoveImage={(id) => {
+          // Keep the selected photo set stable while soundtrack preparation is
+          // running; otherwise the completed audio could be orphaned from its photos.
+          if (audioPreparationBusy) return;
           setPendingImages((prev) => {
             const target = prev.find((image) => image.id === id);
             if (target) revokePreview(target.previewUrl);
