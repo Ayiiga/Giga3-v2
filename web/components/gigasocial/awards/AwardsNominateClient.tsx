@@ -43,6 +43,9 @@ function NominateInner() {
     (selfApplication || trimmedHandle.length > 0);
 
   if (seasons === undefined) return <LoadingState label="Loading seasons…" />;
+  if (seasonSlug && season === undefined) {
+    return <LoadingState label="Loading award season…" />;
+  }
   if (!sessionToken) {
     return (
       <p className="text-sm text-muted">
