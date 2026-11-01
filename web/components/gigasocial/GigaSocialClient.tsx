@@ -129,6 +129,7 @@ function GigaSocialContent() {
   const highlightPostId = params.get("highlight")?.trim() || undefined;
   const [unread, setUnread] = useState(0);
   const [authPromptOpen, setAuthPromptOpen] = useState(false);
+  const [createRequest, setCreateRequest] = useState(0);
   const handleUnread = useCallback((count: number) => setUnread(count), []);
 
   const ensureMyProfile = useMutation(api.gigaSocial.ensureMyProfile);
@@ -194,7 +195,8 @@ function GigaSocialContent() {
     if (section !== "feed") {
       openSection("feed");
     }
-    window.dispatchEvent(new CustomEvent("gigasocial:open-create"));
+    // A state signal survives the feed panel mounting after section navigation.
+    setCreateRequest((value) => value + 1);
   };
 
   const isFeedSection = section === "feed";
@@ -318,6 +320,7 @@ function GigaSocialContent() {
                 sessionToken={sessionToken}
                 communitySlug={communitySlug}
                 highlightPostId={highlightPostId}
+                createRequest={createRequest}
                 autoOpenStories={params.get("stories") === "1"}
                 autoOpenStoriesRing={params.get("ring")?.trim() || undefined}
                 onOpenLive={features.enableGigaLive ? () => openSection("live") : undefined}
