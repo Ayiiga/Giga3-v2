@@ -49,9 +49,9 @@ export const GigaCreatorHub = memo(function GigaCreatorHub({
 
   useEffect(() => setMounted(true), []);
   useEffect(() => {
-    if (disabled || openSignal <= lastHandledOpenSignalRef.current) return;
+    if (openSignal <= lastHandledOpenSignalRef.current) return;
     lastHandledOpenSignalRef.current = openSignal;
-    setOpen(true);
+    if (!disabled) setOpen(true);
   }, [disabled, openSignal]);
   const panelRef = useRef<HTMLElement>(null);
   useEffect(() => {
