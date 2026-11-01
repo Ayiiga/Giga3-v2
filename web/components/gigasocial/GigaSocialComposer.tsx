@@ -195,6 +195,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   );
   const [templatePolicy, setTemplatePolicy] = useState<GigaTemplatePolicy>("off");
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
+  const [imagePreparationCount, setImagePreparationCount] = useState(0);
   const reservedImageSlotsRef = useRef(0);
   const [pendingVideo, setPendingVideo] = useState<PendingVideo | null>(null);
   const [videoTrimDraft, setVideoTrimDraft] = useState<VideoTrimDraft | null>(null);
@@ -500,7 +501,8 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   }, [initialAction, initialBody, initialMedia, initialPostType, remixMode, remixSource]);
 
   const hasMedia = pendingImages.length > 0 || Boolean(pendingVideo) || Boolean(pendingAudio);
-  const canPost = Boolean(body.trim() || hasMedia);
+  const imagePreparationBusy = imagePreparationCount > 0;
+  const canPost = Boolean(body.trim() || hasMedia) && !imagePreparationBusy;
 
   const revokePreview = useCallback((previewUrl: string) => {
     if (previewUrl.startsWith("blob:")) {
@@ -606,6 +608,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       }
       const selected = list.slice(0, available);
       reservedImageSlotsRef.current += selected.length;
+      setImagePreparationCount((count) => count + 1);
       try {
         const prepared: File[] = [];
         for (const file of selected) prepared.push(autoBrighten ? await brightenSocialPhoto(file) : file);
@@ -625,6 +628,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         setError(null);
       } finally {
         reservedImageSlotsRef.current = Math.max(0, reservedImageSlotsRef.current - selected.length);
+        setImagePreparationCount((count) => Math.max(0, count - 1));
       }
     },
     [pendingImages.length, pendingVideo]
@@ -998,7 +1002,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   }
 
   async function handleSubmit() {
-    if (busy || disabled || !canPost) return;
+    if (busy || disabled || imagePreparationBusy || !canPost) return;
     if (
       pendingVideo &&
       shouldOfferEpisodeSplit(pendingVideo.file.size, pendingVideo.durationSec)
@@ -1599,7 +1603,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
 
         <Button
           type="button"
-          disabled={disabled || busy || !canPost}
+          disabled={disabled || busy || imagePreparationBusy || !canPost}
           onClick={() => void handleSubmit()}
           className="ml-auto min-h-10"
         >
