@@ -250,7 +250,7 @@ function GigaSocialContent() {
         showMessages={features.enableDirectMessages}
         showLive={features.enableGigaLive}
         onNavigate={openSection}
-        onCreate={() => router.push("/gigaedit/?continue=1")}
+        onOpenGigaEdits={() => router.push("/gigaedit/?continue=1")}
       />
 
       <nav
