@@ -711,26 +711,21 @@ export const GigaSocialPendingMediaPreview = memo(function GigaSocialPendingMedi
     <div className={cn(compact ? "mt-2 space-y-1.5" : "mt-3 space-y-2")}>
       {video ? (
         <div className="relative overflow-hidden rounded-xl border border-border bg-black/5">
-          {video.thumbnailUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={video.thumbnailUrl}
-              alt="Video preview"
-              className={cn("w-full object-contain", videoMax)}
-            />
-          ) : (
-            <video
-              src={video.previewUrl}
-              className={cn("w-full object-contain", videoMax)}
-              muted
-              playsInline
-            />
-          )}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="rounded-full bg-black/50 p-2 text-white">
-              <Play className="h-5 w-5" aria-hidden />
-            </span>
-          </div>
+          <video
+            src={video.previewUrl}
+            poster={video.thumbnailUrl}
+            controls
+            preload="metadata"
+            muted
+            playsInline
+            onError={(event) => {
+              // Keep the original File attached even if this browser cannot
+              // decode the local preview; upload remains available.
+              event.currentTarget.setAttribute("data-preview-error", "true");
+            }}
+            className={cn("w-full bg-black object-contain", videoMax)}
+            aria-label="Selected video preview"
+          />
           <div className="flex items-center justify-between gap-2 px-3 py-1.5 text-xs text-muted">
             <span className="truncate">{video.name}</span>
             <span>{Math.round(video.durationSec)}s</span>
