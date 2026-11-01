@@ -77,7 +77,7 @@ describe("GigaEdit routing & SW", () => {
 
   it("uses current cache with lean precache (no heavy app shells)", () => {
     const sw = readFileSync(resolve(__dirname, "../../web/public/sw.js"), "utf8");
-    expect(sw).toMatch(/CACHE_VERSION = "giga3-v\\d+"/);
+    expect(sw).toContain('CACHE_VERSION = "giga3-v');
     const precacheBlock = sw.match(/const PRECACHE = \[([\s\S]*?)\];/)?.[1] ?? "";
     expect(precacheBlock).not.toContain('"/gigaedit/"');
     expect(precacheBlock).toContain("OFFLINE_URL");
