@@ -45,10 +45,13 @@ export const GigaCreatorHub = memo(function GigaCreatorHub({
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const close = useCallback(() => setOpen(false), []);
+  const lastHandledOpenSignalRef = useRef(0);
 
   useEffect(() => setMounted(true), []);
   useEffect(() => {
-    if (openSignal > 0 && !disabled) setOpen(true);
+    if (disabled || openSignal <= lastHandledOpenSignalRef.current) return;
+    lastHandledOpenSignalRef.current = openSignal;
+    setOpen(true);
   }, [disabled, openSignal]);
   const panelRef = useRef<HTMLElement>(null);
   useEffect(() => {
@@ -87,7 +90,7 @@ export const GigaCreatorHub = memo(function GigaCreatorHub({
           onClick={close}
         />
       ) : null}
-      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[69] flex justify-end p-4 pb-[max(1.1rem,env(safe-area-inset-bottom))]">
+      <div className={cn("pointer-events-none fixed inset-x-0 bottom-0 z-[69] flex justify-end p-4 pb-[max(1.1rem,env(safe-area-inset-bottom))]", disabled && "hidden")}>
         <button
           type="button"
           disabled={disabled}
