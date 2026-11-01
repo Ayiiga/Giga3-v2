@@ -2,9 +2,9 @@ name: Deploy to Cloudflare Pages
 
 on:
   push:
-    # Main publishes production; the Creator Hub branch publishes a Cloudflare
-    # Pages preview under its branch-specific preview URL.
-    branches: [main, new-gigasocial-creator-hub]
+    # Only main may deploy. Feature branches must never receive production
+    # Convex/Supabase build credentials through a Pages preview deployment.
+    branches: [main]
   workflow_dispatch:
 
 concurrency:
@@ -274,7 +274,7 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ env.RESOLVED_CF_ACCOUNT_ID }}
-          DEPLOY_BRANCH: ${{ github.ref_name }}
+          DEPLOY_BRANCH: main
         run: |
           set -euo pipefail
           max_attempts=3
