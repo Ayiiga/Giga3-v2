@@ -245,7 +245,15 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   const audioInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const captionRef = useRef<HTMLTextAreaElement>(null);
+  const mountedRef = useRef(true);
   const router = useRouter();
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const fullscreenFlowActive = Boolean(
     mediaReviewDraft || videoTrimDraft || episodeSplitDraft || cameraStudioOpen
@@ -613,6 +621,9 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       try {
         const prepared: File[] = [];
         for (const file of selected) prepared.push(autoBrighten ? await brightenSocialPhoto(file) : file);
+        // The composer can be dismissed while browser image decoding/encoding is
+        // still running. Do not allocate preview blob URLs for an unmounted sheet.
+        if (!mountedRef.current) return;
         const next = prepared.map((file) => ({
           id: `${file.name}-${file.size}-${Date.now()}-${Math.random()}`,
           file,
@@ -629,7 +640,9 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         setError(null);
       } finally {
         reservedImageSlotsRef.current = Math.max(0, reservedImageSlotsRef.current - selected.length);
-        setImagePreparationCount((count) => Math.max(0, count - 1));
+        if (mountedRef.current) {
+          setImagePreparationCount((count) => Math.max(0, count - 1));
+        }
       }
     },
     [mediaReviewDraft?.kind, pendingImages.length, pendingVideo]
