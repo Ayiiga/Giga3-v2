@@ -13,7 +13,7 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
-import { memo, useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 type CreatorAction = {
@@ -50,17 +50,28 @@ export const GigaCreatorHub = memo(function GigaCreatorHub({
     window.addEventListener("gigasocial:open-create", onOpenCreate);
     return () => window.removeEventListener("gigasocial:open-create", onOpenCreate);
   }, []);
+  const panelRef = useRef<HTMLElement>(null);
   useEffect(() => {
     if (!open) return;
-    const previous = document.body.style.overflow;
+    const previousOverflow = document.body.style.overflow;
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     document.body.style.overflow = "hidden";
+    panelRef.current?.querySelector<HTMLElement>("button:not([disabled])")?.focus();
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") close();
+      if (event.key === "Escape") { event.preventDefault(); close(); return; }
+      if (event.key !== "Tab" || !panelRef.current) return;
+      const items = Array.from(panelRef.current.querySelectorAll<HTMLElement>("button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex=\"-1\"])"));
+      if (!items.length) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
     };
     document.addEventListener("keydown", onKey);
     return () => {
-      document.body.style.overflow = previous;
+      document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", onKey);
+      previousFocus?.focus();
     };
   }, [close, open]);
 
@@ -76,6 +87,7 @@ export const GigaCreatorHub = memo(function GigaCreatorHub({
           onClick={close}
         />
       ) : null}
+      {!open ? (
       <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[69] flex justify-end p-4 pb-[max(1.1rem,env(safe-area-inset-bottom))]">
         <button
           type="button"
@@ -94,14 +106,17 @@ export const GigaCreatorHub = memo(function GigaCreatorHub({
           <span className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-400" />
         </button>
       </div>
+      ) : null}
       {open ? (
         <section
+          ref={panelRef}
+          tabIndex={-1}
           role="dialog"
           aria-modal="true"
           aria-label="GigaSocial Creator Hub"
-          className="gigasocial-stable fixed inset-x-0 bottom-0 z-[70] mx-auto w-full max-w-xl overflow-hidden rounded-t-[2rem] border border-white/10 bg-[#091326] text-white shadow-[0_-20px_80px_rgba(2,6,23,.55)]"
+          className="gigasocial-stable fixed inset-x-0 bottom-0 z-[70] mx-auto max-h-[min(92dvh,760px)] w-full max-w-xl overflow-y-auto overscroll-contain rounded-t-[2rem] border border-white/10 bg-[#091326] text-white shadow-[0_-20px_80px_rgba(2,6,23,.55)]"
         >
-          <div className="px-5 pb-6 pt-3 sm:px-6">
+          <div className="px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-3 sm:px-6">
             <div className="mx-auto mb-4 h-1.5 w-11 rounded-full bg-white/20" />
             <div className="mb-5 flex items-start justify-between gap-3">
               <div>
