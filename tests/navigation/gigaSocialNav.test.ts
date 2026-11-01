@@ -41,7 +41,9 @@ describe("GigaSocial navigation — no duplicate bottom bars", () => {
     expect(contextNav).toContain('item.id === "live"');
     expect(contextNav).toContain('item.id === "messages"');
     expect(contextNav).toContain('item.id === "notifications" ? "Inbox"');
-    expect(contextNav).toContain('kind: "create"');
+    expect(contextNav).toContain('kind: "gigaedits"');
+    expect(contextNav).toContain('<span>GigaEdits</span>');
+    expect(contextNav).toContain("onOpenGigaEdits");
   });
 
   it("reserves padding for global primary nav only", () => {
