@@ -6900,6 +6900,2679 @@
         "free",
         "premium"
       ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q235",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A force of 5 N moves an object through 2 m in the direction of the force. Calculate the work done.",
+      "options": [
+        "10",
+        "15",
+        "8",
+        "7"
+      ],
+      "correctIndex": 0,
+      "explanation": "Work done = force × distance = 5 × 2 = 10 J.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 235,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q236",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A water sample is at 30°C and is warmed by 6°C. What is its final temperature?",
+      "options": [
+        "36",
+        "30",
+        "42",
+        "24"
+      ],
+      "correctIndex": 0,
+      "explanation": "Final temperature = 30 + 6 = 36°C.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 236,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q237",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A landscape-design project includes a circular pond has radius 7 m. Calculate its surface area using π = 3.14.",
+      "options": [
+        "153.86",
+        "43.96",
+        "76.93",
+        "163.86"
+      ],
+      "correctIndex": 0,
+      "explanation": "Area = πr² = 3.14 × 7² = 153.86 m².",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 237,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q238",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A student-led community survey has 50 respondents. 15% select a particular option. How many respondents is this?",
+      "options": [
+        "0.75",
+        "2.75",
+        "0",
+        "5.75"
+      ],
+      "correctIndex": 0,
+      "explanation": "15% of 50 = 15/100 × 50 = 0.75.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 238,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q239",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A refrigerator cools a container from 25°C to 15°C. By how many degrees did the temperature fall?",
+      "options": [
+        "10",
+        "5",
+        "15",
+        "20"
+      ],
+      "correctIndex": 2,
+      "explanation": "Temperature fall = 25 − 15 = 10°C.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 239,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q240",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A renewable-energy project uses a solar-powered lamp uses 6 W for 3 hours. How much energy does it use in Wh?",
+      "options": [
+        "18",
+        "24",
+        "15",
+        "9"
+      ],
+      "correctIndex": 0,
+      "explanation": "Energy = power × time = 6 × 3 = 18 Wh.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 240,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q241",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "During a school investigation, a group measures the mass of a metal block as 10 g and its volume as 1 cm³. Calculate its density.",
+      "options": [
+        "10.0",
+        "11.0",
+        "9.0",
+        "12.0"
+      ],
+      "correctIndex": 0,
+      "explanation": "Density = mass ÷ volume = 10 ÷ 1 = 10 g/cm³.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 241,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q242",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A trolley moves 6 metres in 3 seconds. Find its average speed.",
+      "options": [
+        "2.0",
+        "4.0",
+        "1.0",
+        "6.0"
+      ],
+      "correctIndex": 0,
+      "explanation": "Speed = distance ÷ time = 6 ÷ 3 = 2 m/s.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 242,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q243",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A learner's circuit model has a potential difference of 6 V and a current of 4 A. Calculate the electrical power.",
+      "options": [
+        "24",
+        "30",
+        "20",
+        "48"
+      ],
+      "correctIndex": 0,
+      "explanation": "Power P = VI = 6 × 4 = 24 W.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 243,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q244",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A 150 W appliance operates for 3 hours. Calculate the energy used in watt-hours.",
+      "options": [
+        "450",
+        "600",
+        "447",
+        "153"
+      ],
+      "correctIndex": 0,
+      "explanation": "Energy = power × time = 150 × 3 = 450 Wh.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 244,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q245",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A force of 6 N moves an object through 5 m in the direction of the force. Calculate the work done.",
+      "options": [
+        "30",
+        "36",
+        "25",
+        "11"
+      ],
+      "correctIndex": 0,
+      "explanation": "Work done = force × distance = 6 × 5 = 30 J.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 245,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q246",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A water sample is at 25°C and is warmed by 8°C. What is its final temperature?",
+      "options": [
+        "33",
+        "25",
+        "41",
+        "17"
+      ],
+      "correctIndex": 0,
+      "explanation": "Final temperature = 25 + 8 = 33°C.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 246,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q247",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A landscape-design project includes a circular pond has radius 5 m. Calculate its surface area using π = 3.14.",
+      "options": [
+        "78.5",
+        "31.4",
+        "39.25",
+        "88.5"
+      ],
+      "correctIndex": 0,
+      "explanation": "Area = πr² = 3.14 × 5² = 78.5 m².",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 247,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q248",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A student-led community survey has 20 respondents. 25% select a particular option. How many respondents is this?",
+      "options": [
+        "0.5",
+        "2.5",
+        "0",
+        "5.5"
+      ],
+      "correctIndex": 0,
+      "explanation": "25% of 20 = 25/100 × 20 = 0.5.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 248,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q250",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A renewable-energy project uses a solar-powered lamp uses 8 W for 3 hours. How much energy does it use in Wh?",
+      "options": [
+        "24",
+        "32",
+        "21",
+        "11"
+      ],
+      "correctIndex": 0,
+      "explanation": "Energy = power × time = 8 × 3 = 24 Wh.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 250,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q251",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "During a school investigation, a group measures the mass of a metal block as 10 g and its volume as 1 cm³. Calculate its density.",
+      "options": [
+        "10.0",
+        "11.0",
+        "9.0",
+        "12.0"
+      ],
+      "correctIndex": 0,
+      "explanation": "Density = mass ÷ volume = 10 ÷ 1 = 10 g/cm³.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 251,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q252",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A trolley moves 8 metres in 3 seconds. Find its average speed.",
+      "options": [
+        "2.6666666666666665",
+        "4.666666666666666",
+        "1.6666666666666665",
+        "6.666666666666666"
+      ],
+      "correctIndex": 0,
+      "explanation": "Speed = distance ÷ time = 8 ÷ 3 = 2.66667 m/s.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 252,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q253",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A learner's circuit model has a potential difference of 10 V and a current of 5 A. Calculate the electrical power.",
+      "options": [
+        "50",
+        "60",
+        "45",
+        "100"
+      ],
+      "correctIndex": 0,
+      "explanation": "Power P = VI = 10 × 5 = 50 W.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 253,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q254",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A 400 W appliance operates for 5 hours. Calculate the energy used in watt-hours.",
+      "options": [
+        "2000",
+        "2400",
+        "1995",
+        "405"
+      ],
+      "correctIndex": 0,
+      "explanation": "Energy = power × time = 400 × 5 = 2000 Wh.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 254,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q255",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A force of 3 N moves an object through 4 m in the direction of the force. Calculate the work done.",
+      "options": [
+        "12",
+        "15",
+        "8",
+        "7"
+      ],
+      "correctIndex": 0,
+      "explanation": "Work done = force × distance = 3 × 4 = 12 J.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 255,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q256",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A water sample is at 20°C and is warmed by 5°C. What is its final temperature?",
+      "options": [
+        "25",
+        "20",
+        "30",
+        "15"
+      ],
+      "correctIndex": 0,
+      "explanation": "Final temperature = 20 + 5 = 25°C.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 256,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q257",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A landscape-design project includes a circular pond has radius 4 m. Calculate its surface area using π = 3.14.",
+      "options": [
+        "50.24",
+        "25.12",
+        "60.24",
+        "54.24"
+      ],
+      "correctIndex": 0,
+      "explanation": "Area = πr² = 3.14 × 4² = 50.24 m².",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 257,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q258",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A student-led community survey has 20 respondents. 20% select a particular option. How many respondents is this?",
+      "options": [
+        "0.4",
+        "2.4",
+        "0",
+        "5.4"
+      ],
+      "correctIndex": 0,
+      "explanation": "20% of 20 = 20/100 × 20 = 0.4.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 258,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q259",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A refrigerator cools a container from 25°C to 15°C. By how many degrees did the temperature fall?",
+      "options": [
+        "10",
+        "5",
+        "15",
+        "20"
+      ],
+      "correctIndex": 2,
+      "explanation": "Temperature fall = 25 − 15 = 10°C.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 259,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q260",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A renewable-energy project uses a solar-powered lamp uses 2 W for 3 hours. How much energy does it use in Wh?",
+      "options": [
+        "6",
+        "8",
+        "3",
+        "5"
+      ],
+      "correctIndex": 0,
+      "explanation": "Energy = power × time = 2 × 3 = 6 Wh.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 260,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q261",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "During a school investigation, a group measures the mass of a metal block as 6 g and its volume as 4 cm³. Calculate its density.",
+      "options": [
+        "1.5",
+        "2.5",
+        "0.5",
+        "3.5"
+      ],
+      "correctIndex": 0,
+      "explanation": "Density = mass ÷ volume = 6 ÷ 4 = 1.5 g/cm³.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 261,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q262",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A trolley moves 10 metres in 4 seconds. Find its average speed.",
+      "options": [
+        "2.5",
+        "4.5",
+        "1.5",
+        "6.5"
+      ],
+      "correctIndex": 0,
+      "explanation": "Speed = distance ÷ time = 10 ÷ 4 = 2.5 m/s.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 262,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q263",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A learner's circuit model has a potential difference of 3 V and a current of 1 A. Calculate the electrical power.",
+      "options": [
+        "3",
+        "6",
+        "2",
+        "7"
+      ],
+      "correctIndex": 0,
+      "explanation": "Power P = VI = 3 × 1 = 3 W.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 263,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q264",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A 150 W appliance operates for 2 hours. Calculate the energy used in watt-hours.",
+      "options": [
+        "300",
+        "450",
+        "298",
+        "152"
+      ],
+      "correctIndex": 0,
+      "explanation": "Energy = power × time = 150 × 2 = 300 Wh.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 264,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q265",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A force of 3 N moves an object through 2 m in the direction of the force. Calculate the work done.",
+      "options": [
+        "6",
+        "9",
+        "4",
+        "5"
+      ],
+      "correctIndex": 0,
+      "explanation": "Work done = force × distance = 3 × 2 = 6 J.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 265,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q266",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A water sample is at 30°C and is warmed by 6°C. What is its final temperature?",
+      "options": [
+        "36",
+        "30",
+        "42",
+        "24"
+      ],
+      "correctIndex": 0,
+      "explanation": "Final temperature = 30 + 6 = 36°C.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 266,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q267",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A landscape-design project includes a circular pond has radius 5 m. Calculate its surface area using π = 3.14.",
+      "options": [
+        "78.5",
+        "31.4",
+        "39.25",
+        "88.5"
+      ],
+      "correctIndex": 0,
+      "explanation": "Area = πr² = 3.14 × 5² = 78.5 m².",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 267,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q268",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A student-led community survey has 30 respondents. 10% select a particular option. How many respondents is this?",
+      "options": [
+        "0.3",
+        "2.3",
+        "0",
+        "5.3"
+      ],
+      "correctIndex": 0,
+      "explanation": "10% of 30 = 10/100 × 30 = 0.3.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 268,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q269",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A refrigerator cools a container from 30°C to 20°C. By how many degrees did the temperature fall?",
+      "options": [
+        "10",
+        "5",
+        "15",
+        "20"
+      ],
+      "correctIndex": 3,
+      "explanation": "Temperature fall = 30 − 20 = 10°C.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 269,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q270",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A renewable-energy project uses a solar-powered lamp uses 10 W for 3 hours. How much energy does it use in Wh?",
+      "options": [
+        "30",
+        "40",
+        "27",
+        "13"
+      ],
+      "correctIndex": 0,
+      "explanation": "Energy = power × time = 10 × 3 = 30 Wh.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 270,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q271",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "During a school investigation, a group measures the mass of a metal block as 2 g and its volume as 1 cm³. Calculate its density.",
+      "options": [
+        "2.0",
+        "3.0",
+        "1.0",
+        "4.0"
+      ],
+      "correctIndex": 0,
+      "explanation": "Density = mass ÷ volume = 2 ÷ 1 = 2 g/cm³.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 271,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q272",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A trolley moves 18 metres in 3 seconds. Find its average speed.",
+      "options": [
+        "6.0",
+        "8.0",
+        "5.0",
+        "10.0"
+      ],
+      "correctIndex": 0,
+      "explanation": "Speed = distance ÷ time = 18 ÷ 3 = 6 m/s.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 272,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q273",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A learner's circuit model has a potential difference of 4 V and a current of 5 A. Calculate the electrical power.",
+      "options": [
+        "20",
+        "24",
+        "15",
+        "40"
+      ],
+      "correctIndex": 0,
+      "explanation": "Power P = VI = 4 × 5 = 20 W.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 273,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q274",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A 150 W appliance operates for 2 hours. Calculate the energy used in watt-hours.",
+      "options": [
+        "300",
+        "450",
+        "298",
+        "152"
+      ],
+      "correctIndex": 0,
+      "explanation": "Energy = power × time = 150 × 2 = 300 Wh.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 274,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q275",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A force of 6 N moves an object through 4 m in the direction of the force. Calculate the work done.",
+      "options": [
+        "24",
+        "30",
+        "20",
+        "10"
+      ],
+      "correctIndex": 0,
+      "explanation": "Work done = force × distance = 6 × 4 = 24 J.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 275,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q276",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A water sample is at 35°C and is warmed by 6°C. What is its final temperature?",
+      "options": [
+        "41",
+        "35",
+        "47",
+        "29"
+      ],
+      "correctIndex": 0,
+      "explanation": "Final temperature = 35 + 6 = 41°C.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 276,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q277",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A landscape-design project includes a circular pond has radius 8 m. Calculate its surface area using π = 3.14.",
+      "options": [
+        "200.96",
+        "50.24",
+        "100.48",
+        "210.96"
+      ],
+      "correctIndex": 0,
+      "explanation": "Area = πr² = 3.14 × 8² = 200.96 m².",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 277,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q278",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A student-led community survey has 30 respondents. 25% select a particular option. How many respondents is this?",
+      "options": [
+        "0.75",
+        "2.75",
+        "0",
+        "5.75"
+      ],
+      "correctIndex": 0,
+      "explanation": "25% of 30 = 25/100 × 30 = 0.75.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 278,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q279",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A refrigerator cools a container from 25°C to 15°C. By how many degrees did the temperature fall?",
+      "options": [
+        "10",
+        "5",
+        "15",
+        "20"
+      ],
+      "correctIndex": 2,
+      "explanation": "Temperature fall = 25 − 15 = 10°C.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 279,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q280",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A renewable-energy project uses a solar-powered lamp uses 10 W for 2 hours. How much energy does it use in Wh?",
+      "options": [
+        "20",
+        "30",
+        "18",
+        "12"
+      ],
+      "correctIndex": 0,
+      "explanation": "Energy = power × time = 10 × 2 = 20 Wh.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 280,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q281",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "During a school investigation, a group measures the mass of a metal block as 5 g and its volume as 5 cm³. Calculate its density.",
+      "options": [
+        "1.0",
+        "2.0",
+        "0",
+        "3.0"
+      ],
+      "correctIndex": 0,
+      "explanation": "Density = mass ÷ volume = 5 ÷ 5 = 1 g/cm³.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 281,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q282",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A trolley moves 12 metres in 3 seconds. Find its average speed.",
+      "options": [
+        "4.0",
+        "6.0",
+        "3.0",
+        "8.0"
+      ],
+      "correctIndex": 0,
+      "explanation": "Speed = distance ÷ time = 12 ÷ 3 = 4 m/s.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 282,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q283",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A learner's circuit model has a potential difference of 3 V and a current of 5 A. Calculate the electrical power.",
+      "options": [
+        "15",
+        "18",
+        "10",
+        "30"
+      ],
+      "correctIndex": 0,
+      "explanation": "Power P = VI = 3 × 5 = 15 W.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 283,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q284",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A 200 W appliance operates for 4 hours. Calculate the energy used in watt-hours.",
+      "options": [
+        "800",
+        "1000",
+        "796",
+        "204"
+      ],
+      "correctIndex": 0,
+      "explanation": "Energy = power × time = 200 × 4 = 800 Wh.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 284,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q285",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A force of 10 N moves an object through 6 m in the direction of the force. Calculate the work done.",
+      "options": [
+        "60",
+        "70",
+        "54",
+        "16"
+      ],
+      "correctIndex": 0,
+      "explanation": "Work done = force × distance = 10 × 6 = 60 J.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 285,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q286",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A water sample is at 50°C and is warmed by 2°C. What is its final temperature?",
+      "options": [
+        "52",
+        "50",
+        "54",
+        "48"
+      ],
+      "correctIndex": 0,
+      "explanation": "Final temperature = 50 + 2 = 52°C.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 286,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q287",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A landscape-design project includes a circular pond has radius 7 m. Calculate its surface area using π = 3.14.",
+      "options": [
+        "153.86",
+        "43.96",
+        "76.93",
+        "163.86"
+      ],
+      "correctIndex": 0,
+      "explanation": "Area = πr² = 3.14 × 7² = 153.86 m².",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 287,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q288",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A student-led community survey has 60 respondents. 10% select a particular option. How many respondents is this?",
+      "options": [
+        "0.6",
+        "2.6",
+        "0",
+        "5.6"
+      ],
+      "correctIndex": 0,
+      "explanation": "10% of 60 = 10/100 × 60 = 0.6.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 288,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q290",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A renewable-energy project uses a solar-powered lamp uses 2 W for 2 hours. How much energy does it use in Wh?",
+      "options": [
+        "4",
+        "6",
+        "2",
+        "8"
+      ],
+      "correctIndex": 0,
+      "explanation": "Energy = power × time = 2 × 2 = 4 Wh.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 290,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q291",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "During a school investigation, a group measures the mass of a metal block as 2 g and its volume as 2 cm³. Calculate its density.",
+      "options": [
+        "1.0",
+        "2.0",
+        "0",
+        "3.0"
+      ],
+      "correctIndex": 0,
+      "explanation": "Density = mass ÷ volume = 2 ÷ 2 = 1 g/cm³.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 291,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q292",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A trolley moves 10 metres in 4 seconds. Find its average speed.",
+      "options": [
+        "2.5",
+        "4.5",
+        "1.5",
+        "6.5"
+      ],
+      "correctIndex": 0,
+      "explanation": "Speed = distance ÷ time = 10 ÷ 4 = 2.5 m/s.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 292,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q293",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A learner's circuit model has a potential difference of 4 V and a current of 2 A. Calculate the electrical power.",
+      "options": [
+        "8",
+        "12",
+        "6",
+        "16"
+      ],
+      "correctIndex": 0,
+      "explanation": "Power P = VI = 4 × 2 = 8 W.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 293,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q294",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A 200 W appliance operates for 5 hours. Calculate the energy used in watt-hours.",
+      "options": [
+        "1000",
+        "1200",
+        "995",
+        "205"
+      ],
+      "correctIndex": 0,
+      "explanation": "Energy = power × time = 200 × 5 = 1000 Wh.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 294,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q295",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A force of 10 N moves an object through 2 m in the direction of the force. Calculate the work done.",
+      "options": [
+        "20",
+        "30",
+        "18",
+        "12"
+      ],
+      "correctIndex": 0,
+      "explanation": "Work done = force × distance = 10 × 2 = 20 J.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 295,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q296",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A water sample is at 20°C and is warmed by 2°C. What is its final temperature?",
+      "options": [
+        "22",
+        "20",
+        "24",
+        "18"
+      ],
+      "correctIndex": 0,
+      "explanation": "Final temperature = 20 + 2 = 22°C.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 296,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q297",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A landscape-design project includes a circular pond has radius 7 m. Calculate its surface area using π = 3.14.",
+      "options": [
+        "153.86",
+        "43.96",
+        "76.93",
+        "163.86"
+      ],
+      "correctIndex": 0,
+      "explanation": "Area = πr² = 3.14 × 7² = 153.86 m².",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 297,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q298",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A student-led community survey has 100 respondents. 25% select a particular option. How many respondents is this?",
+      "options": [
+        "2.5",
+        "4.5",
+        "1.5",
+        "7.5"
+      ],
+      "correctIndex": 0,
+      "explanation": "25% of 100 = 25/100 × 100 = 2.5.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 298,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q300",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A renewable-energy project uses a solar-powered lamp uses 6 W for 3 hours. How much energy does it use in Wh?",
+      "options": [
+        "18",
+        "24",
+        "15",
+        "9"
+      ],
+      "correctIndex": 0,
+      "explanation": "Energy = power × time = 6 × 3 = 18 Wh.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 300,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q301",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "During a school investigation, a group measures the mass of a metal block as 5 g and its volume as 1 cm³. Calculate its density.",
+      "options": [
+        "5.0",
+        "6.0",
+        "4.0",
+        "7.0"
+      ],
+      "correctIndex": 0,
+      "explanation": "Density = mass ÷ volume = 5 ÷ 1 = 5 g/cm³.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 301,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q302",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A trolley moves 20 metres in 4 seconds. Find its average speed.",
+      "options": [
+        "5.0",
+        "7.0",
+        "4.0",
+        "9.0"
+      ],
+      "correctIndex": 0,
+      "explanation": "Speed = distance ÷ time = 20 ÷ 4 = 5 m/s.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 302,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q303",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A learner's circuit model has a potential difference of 5 V and a current of 4 A. Calculate the electrical power.",
+      "options": [
+        "20",
+        "25",
+        "16",
+        "40"
+      ],
+      "correctIndex": 0,
+      "explanation": "Power P = VI = 5 × 4 = 20 W.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 303,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q304",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A 150 W appliance operates for 5 hours. Calculate the energy used in watt-hours.",
+      "options": [
+        "750",
+        "900",
+        "745",
+        "155"
+      ],
+      "correctIndex": 0,
+      "explanation": "Energy = power × time = 150 × 5 = 750 Wh.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 304,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q305",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A force of 2 N moves an object through 5 m in the direction of the force. Calculate the work done.",
+      "options": [
+        "10",
+        "12",
+        "5",
+        "7"
+      ],
+      "correctIndex": 0,
+      "explanation": "Work done = force × distance = 2 × 5 = 10 J.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 305,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q306",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A water sample is at 35°C and is warmed by 3°C. What is its final temperature?",
+      "options": [
+        "38",
+        "35",
+        "41",
+        "32"
+      ],
+      "correctIndex": 0,
+      "explanation": "Final temperature = 35 + 3 = 38°C.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 306,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q307",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A landscape-design project includes a circular pond has radius 6 m. Calculate its surface area using π = 3.14.",
+      "options": [
+        "113.04",
+        "37.68",
+        "56.52",
+        "123.04"
+      ],
+      "correctIndex": 0,
+      "explanation": "Area = πr² = 3.14 × 6² = 113.04 m².",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 307,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q308",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A student-led community survey has 40 respondents. 10% select a particular option. How many respondents is this?",
+      "options": [
+        "0.4",
+        "2.4",
+        "0",
+        "5.4"
+      ],
+      "correctIndex": 0,
+      "explanation": "10% of 40 = 10/100 × 40 = 0.4.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 308,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q310",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A renewable-energy project uses a solar-powered lamp uses 8 W for 2 hours. How much energy does it use in Wh?",
+      "options": [
+        "16",
+        "24",
+        "14",
+        "10"
+      ],
+      "correctIndex": 0,
+      "explanation": "Energy = power × time = 8 × 2 = 16 Wh.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 310,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q311",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "During a school investigation, a group measures the mass of a metal block as 10 g and its volume as 4 cm³. Calculate its density.",
+      "options": [
+        "2.5",
+        "3.5",
+        "1.5",
+        "4.5"
+      ],
+      "correctIndex": 0,
+      "explanation": "Density = mass ÷ volume = 10 ÷ 4 = 2.5 g/cm³.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 311,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q312",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A trolley moves 18 metres in 3 seconds. Find its average speed.",
+      "options": [
+        "6.0",
+        "8.0",
+        "5.0",
+        "10.0"
+      ],
+      "correctIndex": 0,
+      "explanation": "Speed = distance ÷ time = 18 ÷ 3 = 6 m/s.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 312,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q313",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A learner's circuit model has a potential difference of 6 V and a current of 1 A. Calculate the electrical power.",
+      "options": [
+        "6",
+        "12",
+        "5",
+        "10"
+      ],
+      "correctIndex": 0,
+      "explanation": "Power P = VI = 6 × 1 = 6 W.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 313,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q314",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A 100 W appliance operates for 3 hours. Calculate the energy used in watt-hours.",
+      "options": [
+        "300",
+        "400",
+        "297",
+        "103"
+      ],
+      "correctIndex": 0,
+      "explanation": "Energy = power × time = 100 × 3 = 300 Wh.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 314,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q315",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A force of 5 N moves an object through 5 m in the direction of the force. Calculate the work done.",
+      "options": [
+        "25",
+        "30",
+        "20",
+        "10"
+      ],
+      "correctIndex": 0,
+      "explanation": "Work done = force × distance = 5 × 5 = 25 J.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 315,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q316",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A water sample is at 40°C and is warmed by 6°C. What is its final temperature?",
+      "options": [
+        "46",
+        "40",
+        "52",
+        "34"
+      ],
+      "correctIndex": 0,
+      "explanation": "Final temperature = 40 + 6 = 46°C.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 316,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q317",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A landscape-design project includes a circular pond has radius 2 m. Calculate its surface area using π = 3.14.",
+      "options": [
+        "12.56",
+        "6.28",
+        "22.56",
+        "16.560000000000002"
+      ],
+      "correctIndex": 0,
+      "explanation": "Area = πr² = 3.14 × 2² = 12.56 m².",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 317,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q318",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A student-led community survey has 30 respondents. 20% select a particular option. How many respondents is this?",
+      "options": [
+        "0.6",
+        "2.6",
+        "0",
+        "5.6"
+      ],
+      "correctIndex": 0,
+      "explanation": "20% of 30 = 20/100 × 30 = 0.6.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 318,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-q320",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A renewable-energy project uses a solar-powered lamp uses 8 W for 3 hours. How much energy does it use in Wh?",
+      "options": [
+        "24",
+        "32",
+        "21",
+        "11"
+      ],
+      "correctIndex": 0,
+      "explanation": "Energy = power × time = 8 × 3 = 24 Wh.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 320,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-integrated-science"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
     }
   ]
 }
