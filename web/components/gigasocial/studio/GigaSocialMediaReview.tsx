@@ -43,7 +43,7 @@ export const GigaSocialMediaReview = memo(function GigaSocialMediaReview({
   open,
   file,
   kind,
-  filterId = "none",
+  filterId = "lark",
   durationSec,
   postType,
   enableAI = false,
