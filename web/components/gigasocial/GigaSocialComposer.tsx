@@ -619,7 +619,6 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           const slots = Math.max(0, SOCIAL_MAX_PHOTOS_PER_POST - prev.length);
           const accepted = next.slice(0, slots);
           next.slice(slots).forEach((image) => URL.revokeObjectURL(image.previewUrl));
-          if (accepted.length < next.length) setError(`Only ${SOCIAL_MAX_PHOTOS_PER_POST} photos can be attached to one post.`);
           return [...prev, ...accepted];
         });
         setPostType("image");
