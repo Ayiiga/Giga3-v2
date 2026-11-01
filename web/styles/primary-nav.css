@@ -111,9 +111,12 @@ html.primary-nav-route.primary-nav-bar-visible {
 
 .primary-nav__label {
   max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow: visible;
+  text-overflow: clip;
   white-space: nowrap;
+  font-size: 0.7rem;
+  line-height: 1.15;
+  font-weight: 700;
 }
 
 @media (max-width: 359px) {

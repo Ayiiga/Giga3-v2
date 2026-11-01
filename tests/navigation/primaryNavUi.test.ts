@@ -45,6 +45,25 @@ describe("PrimaryNav UI wiring", () => {
     expect(css).toContain("var(--primary-nav-offset)");
   });
 
+  it("keeps the GigaSocial create control above the mobile nav and labels readable", () => {
+    const creatorHub = readFileSync(
+      resolve(__dirname, "../../web/components/gigasocial/create/GigaCreatorHub.tsx"),
+      "utf8"
+    );
+    const css = readFileSync(
+      resolve(__dirname, "../../web/styles/primary-nav.css"),
+      "utf8"
+    );
+
+    expect(creatorHub).toContain(
+      "bottom-[calc(var(--primary-nav-offset)+1.75rem)]"
+    );
+    expect(creatorHub).toContain("lg:bottom-0");
+    expect(css).toContain("font-size: 0.7rem");
+    expect(css).toContain("overflow: visible");
+    expect(css).toContain("white-space: nowrap");
+  });
+
   it("keeps PrimaryNav lightweight without heavy product bundle imports", () => {
     const nav = readFileSync(
       resolve(__dirname, "../../web/components/navigation/PrimaryNav.tsx"),
