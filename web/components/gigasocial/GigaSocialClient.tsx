@@ -26,7 +26,7 @@ import dynamic from "next/dynamic";
 import { ArrowLeft, UsersRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 
 const AUTH_REQUIRED_SECTIONS = new Set<GigaSocialSection>([
   "live",
