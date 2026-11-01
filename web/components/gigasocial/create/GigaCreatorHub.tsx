@@ -94,7 +94,7 @@ export const GigaCreatorHub = memo(function GigaCreatorHub({
           onClick={close}
         />
       ) : null}
-      <div className={cn("pointer-events-none fixed inset-x-0 bottom-0 z-[69] flex justify-end p-4 pb-[max(1.1rem,env(safe-area-inset-bottom))]", disabled && "hidden")}>
+      <div className={cn("pointer-events-none fixed inset-x-0 bottom-[calc(var(--primary-nav-offset)+var(--primary-nav-height)+1.75rem)] z-[69] flex justify-end p-4 pb-0 lg:bottom-0 lg:pb-4", disabled && "hidden")}>
         <button
           type="button"
           disabled={disabled}
