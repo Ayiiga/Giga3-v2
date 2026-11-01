@@ -6,7 +6,6 @@ import { GigaSocialMediaStudio } from "@/components/gigasocial/studio/GigaSocial
 import { GigaSocialVideoTrimEditor } from "@/components/gigasocial/studio/GigaSocialVideoTrimEditor";
 import { getCameraFilterCss } from "@/lib/gigasocial/cameraFilters";
 import type { CameraFilterId } from "@/lib/gigasocial/cameraFilters";
-import { generateVideoThumbnail } from "@/lib/gigasocial/mediaUpload";
 import type { SocialPostTypeId } from "@/lib/gigasocial/sections";
 import { needsVideoTrim } from "@/lib/gigasocial/videoTrim";
 import { cn } from "@/lib/utils";
@@ -107,18 +106,15 @@ export const GigaSocialMediaReview = memo(function GigaSocialMediaReview({
       if (finishing) return;
       setFinishing(true);
       try {
-        let thumbnailUrl: string | undefined;
-        if (workingFile.type.startsWith("video/") || kind === "video") {
-          thumbnailUrl = await generateVideoThumbnail(workingFile);
-        }
-        // Keep the review locked until the parent has finished consuming the
-        // selected media. This prevents repeated taps from enqueueing duplicates.
+        // Hand the original File to the composer immediately. Thumbnail decoding
+        // is intentionally not a prerequisite: Android gallery codecs and
+        // data-saving browsers can stall or reject local video frame extraction.
+        // The upload pipeline generates its own optional thumbnail in parallel.
         await onSkip({
           file: workingFile,
           kind,
           caption: skipCaption ? "" : caption,
           filterId: activeFilterId,
-          thumbnailUrl,
           durationSec: workingDuration,
         });
       } finally {
