@@ -24,7 +24,7 @@ export const GigaSocialContextNav = memo(function GigaSocialContextNav({
   showMessages = false,
   showLive = true,
   onNavigate,
-  onCreate,
+  onOpenGigaEdits,
 }: {
   activeSection: GigaSocialSection;
   unread?: number;
@@ -32,7 +32,7 @@ export const GigaSocialContextNav = memo(function GigaSocialContextNav({
   showMessages?: boolean;
   showLive?: boolean;
   onNavigate: (section: GigaSocialSection) => void;
-  onCreate: () => void;
+  onOpenGigaEdits: () => void;
 }) {
   const [attention, setAttention] = useState(() => shouldShowAttentionDot());
 
@@ -87,7 +87,7 @@ export const GigaSocialContextNav = memo(function GigaSocialContextNav({
                 type="button"
                 className="gigasocial-context-nav__create"
                 aria-label="Open GigaEdits editor"
-                onClick={onCreate}
+                onClick={onOpenGigaEdits}
               >
                 <Clapperboard className="h-5 w-5" aria-hidden />
                 <span>GigaEdits</span>
