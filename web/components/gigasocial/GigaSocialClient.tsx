@@ -129,8 +129,6 @@ function GigaSocialContent() {
   const highlightPostId = params.get("highlight")?.trim() || undefined;
   const [unread, setUnread] = useState(0);
   const [authPromptOpen, setAuthPromptOpen] = useState(false);
-  const [createRequest, setCreateRequest] = useState(0);
-  const pendingCreateNavigationRef = useRef(false);
   const handleUnread = useCallback((count: number) => setUnread(count), []);
 
   const ensureMyProfile = useMutation(api.gigaSocial.ensureMyProfile);
@@ -150,10 +148,6 @@ function GigaSocialContent() {
   useEffect(() => {
     const featuresNow = getGigaSocialFeatures();
     const tab = params.get("tab") as GigaSocialSection;
-    if (pendingCreateNavigationRef.current && tab !== "feed") return;
-    if (pendingCreateNavigationRef.current && tab === "feed") {
-      pendingCreateNavigationRef.current = false;
-    }
     if (tab && GIGASOCIAL_SECTIONS.some((s) => s.id === tab)) {
       if (tab === "messages" && !featuresNow.enableDirectMessages) {
         setSection("feed");
@@ -184,26 +178,11 @@ function GigaSocialContent() {
 
   const openSection = (id: GigaSocialSection) => {
     setAuthPromptOpen(false);
-    if (id !== "feed") setCreateRequest(0);
     setSection(id);
     if (id !== "feed") setCommunitySlug(undefined);
     const nextParams = new URLSearchParams(window.location.search);
     nextParams.set("tab", id);
     router.replace(`/gigasocial/?${nextParams.toString()}`, { scroll: false });
-  };
-
-  const handleCreate = () => {
-    if (isGuest) {
-      setAuthPromptOpen(true);
-      return;
-    }
-    setAuthPromptOpen(false);
-    if (section !== "feed") {
-      pendingCreateNavigationRef.current = true;
-      openSection("feed");
-    }
-    // Keep the request alive until the feed panel consumes it after navigation.
-    setCreateRequest((value) => value + 1);
   };
 
   const isFeedSection = section === "feed";
@@ -271,7 +250,7 @@ function GigaSocialContent() {
         showMessages={features.enableDirectMessages}
         showLive={features.enableGigaLive}
         onNavigate={openSection}
-        onCreate={handleCreate}
+        onCreate={() => router.push("/gigaedit/?continue=1")}
       />
 
       <nav
@@ -327,7 +306,6 @@ function GigaSocialContent() {
                 sessionToken={sessionToken}
                 communitySlug={communitySlug}
                 highlightPostId={highlightPostId}
-                createRequest={createRequest}
                 autoOpenStories={params.get("stories") === "1"}
                 autoOpenStoriesRing={params.get("ring")?.trim() || undefined}
                 onOpenLive={features.enableGigaLive ? () => openSection("live") : undefined}
