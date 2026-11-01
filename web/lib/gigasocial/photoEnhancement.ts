@@ -30,7 +30,12 @@ async function enhanceSocialPhoto(file: File): Promise<File> {
 
   let bitmap: ImageBitmap | undefined;
   try {
-    bitmap = await createImageBitmap(file);
+    // Downsample in the decoder before allocating a full-resolution bitmap.
+    // resizeWidth alone preserves the source aspect ratio per the ImageBitmap API.
+    bitmap = await createImageBitmap(file, {
+      resizeWidth: MAX_EDGE,
+      resizeQuality: "high",
+    });
     const scale = Math.min(1, MAX_EDGE / Math.max(bitmap.width, bitmap.height));
     const width = Math.max(1, Math.round(bitmap.width * scale));
     const height = Math.max(1, Math.round(bitmap.height * scale));
