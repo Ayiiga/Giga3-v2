@@ -81,6 +81,7 @@ const DOCUMENT_TEMPLATES: Partial<Record<GigaCreateActionId, { body: string; pos
 export function resolveGigaCreateRoute(action: GigaCreateActionId): GigaCreateRoute {
   switch (action) {
     case "media-unified":
+      return { kind: "compose", action: "media-unified", postType: "image" };
     case "media-photo":
     case "photo-studio":
       return { kind: "compose", action: "photo-studio", postType: "image" };

@@ -6,12 +6,11 @@ import { GigaSocialMediaStudio } from "@/components/gigasocial/studio/GigaSocial
 import { GigaSocialVideoTrimEditor } from "@/components/gigasocial/studio/GigaSocialVideoTrimEditor";
 import { getCameraFilterCss } from "@/lib/gigasocial/cameraFilters";
 import type { CameraFilterId } from "@/lib/gigasocial/cameraFilters";
-import { generateVideoThumbnail } from "@/lib/gigasocial/mediaUpload";
 import type { SocialPostTypeId } from "@/lib/gigasocial/sections";
 import { needsVideoTrim } from "@/lib/gigasocial/videoTrim";
 import { cn } from "@/lib/utils";
 import { Check, Replace, RotateCcw, SkipForward, Trash2 } from "lucide-react";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 export type GigaSocialMediaReviewResult = {
@@ -31,7 +30,7 @@ type GigaSocialMediaReviewProps = {
   durationSec?: number;
   postType: SocialPostTypeId;
   enableAI?: boolean;
-  onSkip: (result: GigaSocialMediaReviewResult) => void;
+  onSkip: (result: GigaSocialMediaReviewResult) => Promise<void> | void;
   onClose: () => void;
   /** Replace selected media (re-open picker). */
   onReplace?: () => void;
@@ -60,6 +59,8 @@ export const GigaSocialMediaReview = memo(function GigaSocialMediaReview({
   const [workingFile, setWorkingFile] = useState(file);
   const [workingDuration, setWorkingDuration] = useState(durationSec);
   const [finishing, setFinishing] = useState(false);
+  const finishingRef = useRef(false);
+  const onCloseRef = useRef(onClose);
   const previewUrl = useMemo(() => URL.createObjectURL(workingFile), [workingFile]);
   const previewFilter = getCameraFilterCss(activeFilterId);
 
@@ -71,6 +72,7 @@ export const GigaSocialMediaReview = memo(function GigaSocialMediaReview({
     setWorkingFile(file);
     setWorkingDuration(durationSec);
     setActiveFilterId(filterId);
+    finishingRef.current = false;
     setFinishing(false);
   }, [durationSec, file, filterId]);
 
@@ -78,43 +80,48 @@ export const GigaSocialMediaReview = memo(function GigaSocialMediaReview({
     return () => URL.revokeObjectURL(previewUrl);
   }, [previewUrl]);
 
-  // Android system back closes review; parent composer caption is preserved.
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  // Keep one history marker for the lifetime of this review. Read callbacks
+  // through refs so parent renders cannot tear down and recreate the marker.
   useEffect(() => {
     if (!open) return;
-    let ignorePop = false;
     const onPopState = () => {
-      if (ignorePop) return;
-      onClose();
+      if (finishingRef.current) {
+        window.history.pushState({ gigasocialMediaReview: true }, "");
+        return;
+      }
+      onCloseRef.current();
     };
     window.history.pushState({ gigasocialMediaReview: true }, "");
     window.addEventListener("popstate", onPopState);
     return () => {
       window.removeEventListener("popstate", onPopState);
-      if (window.history.state?.gigasocialMediaReview) {
-        ignorePop = true;
-        window.history.back();
-      }
+      if (window.history.state?.gigasocialMediaReview) window.history.back();
     };
-  }, [onClose, open]);
+  }, [open]);
 
   const finish = useCallback(
     async (skipCaption = false) => {
-      if (finishing) return;
+      if (finishingRef.current) return;
+      finishingRef.current = true;
       setFinishing(true);
       try {
-        let thumbnailUrl: string | undefined;
-        if (workingFile.type.startsWith("video/") || kind === "video") {
-          thumbnailUrl = await generateVideoThumbnail(workingFile);
-        }
-        onSkip({
+        // Hand the original File to the composer immediately. Thumbnail decoding
+        // is intentionally not a prerequisite: Android gallery codecs and
+        // data-saving browsers can stall or reject local video frame extraction.
+        // The upload pipeline generates its own optional thumbnail in parallel.
+        await onSkip({
           file: workingFile,
           kind,
           caption: skipCaption ? "" : caption,
           filterId: activeFilterId,
-          thumbnailUrl,
           durationSec: workingDuration,
         });
       } finally {
+        finishingRef.current = false;
         setFinishing(false);
       }
     },
@@ -167,7 +174,7 @@ export const GigaSocialMediaReview = memo(function GigaSocialMediaReview({
           />
         )}
         <div className="absolute inset-x-0 top-0 flex items-center justify-between bg-gradient-to-b from-black/70 to-transparent px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] text-white">
-          <button type="button" onClick={onClose} className="text-sm text-white/90">
+          <button type="button" onClick={onClose} disabled={finishing} className="text-sm text-white/90 disabled:opacity-50">
             Back
           </button>
           <div className="text-center">
@@ -191,24 +198,24 @@ export const GigaSocialMediaReview = memo(function GigaSocialMediaReview({
       <div className="max-h-[42vh] space-y-3 overflow-y-auto border-t border-white/10 bg-black/90 px-4 py-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
         <div className="flex flex-wrap gap-2">
           {kind === "image" ? (
-            <Button type="button" size="sm" variant="outline" onClick={() => setStudioOpen((v) => !v)}>
+            <Button type="button" size="sm" variant="outline" disabled={finishing} onClick={() => setStudioOpen((v) => !v)}>
               <RotateCcw className="h-4 w-4" />
               Filters
             </Button>
           ) : null}
           {kind === "video" && workingDuration && needsVideoTrim(workingDuration) ? (
-            <Button type="button" size="sm" variant="outline" onClick={() => setTrimOpen(true)}>
+            <Button type="button" size="sm" variant="outline" disabled={finishing} onClick={() => setTrimOpen(true)}>
               Trim
             </Button>
           ) : null}
           {onReplace ? (
-            <Button type="button" size="sm" variant="outline" onClick={onReplace}>
+            <Button type="button" size="sm" variant="outline" disabled={finishing} onClick={onReplace}>
               <Replace className="h-4 w-4" />
               Replace
             </Button>
           ) : null}
           {onRemove ? (
-            <Button type="button" size="sm" variant="outline" onClick={onRemove}>
+            <Button type="button" size="sm" variant="outline" disabled={finishing} onClick={onRemove}>
               <Trash2 className="h-4 w-4" />
               Remove
             </Button>
@@ -226,6 +233,7 @@ export const GigaSocialMediaReview = memo(function GigaSocialMediaReview({
         <label className="block text-xs text-white/70">
           Caption
           <textarea
+            disabled={finishing}
             value={caption}
             onChange={(event) => setCaption(event.target.value)}
             rows={2}

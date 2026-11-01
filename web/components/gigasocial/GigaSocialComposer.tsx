@@ -12,6 +12,7 @@ import {
   SOCIAL_MAX_VIDEO_MB,
   SOCIAL_VIDEO_ACCEPT,
   isLikelySocialVideoFile,
+  resolveImageContentType,
   resolveVideoContentType,
   type SocialPostMediaItemInput,
 } from "@/lib/gigasocial/constants";
@@ -19,6 +20,7 @@ import { isUsableVideoDuration } from "@/lib/gigasocial/videoDuration";
 import type { CameraFilterId } from "@/lib/gigasocial/cameraFilters";
 import { prepareAudioForPhotoPost } from "@/lib/gigasocial/audioProcessing";
 import { getCameraFilterCss } from "@/lib/gigasocial/cameraFilters";
+import { brightenSocialPhoto } from "@/lib/gigasocial/photoEnhancement";
 import { extractHashtagsFromText, formatCompactHashtags } from "@/lib/gigasocial/hashtags";
 import {
   classifyMediaFiles,
@@ -194,10 +196,16 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   );
   const [templatePolicy, setTemplatePolicy] = useState<GigaTemplatePolicy>("off");
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
+  const pendingImagesRef = useRef<PendingImage[]>([]);
+  pendingImagesRef.current = pendingImages;
+  const enhancementPreviewUrlsRef = useRef(new Set<string>());
+  const [imagePreparationCount, setImagePreparationCount] = useState(0);
+  const reservedImageSlotsRef = useRef(0);
   const [pendingVideo, setPendingVideo] = useState<PendingVideo | null>(null);
   const [videoTrimDraft, setVideoTrimDraft] = useState<VideoTrimDraft | null>(null);
   const [episodeSplitDraft, setEpisodeSplitDraft] = useState<EpisodeSplitDraft | null>(null);
   const [pendingAudio, setPendingAudio] = useState<PendingAudio | null>(null);
+  const [audioPreparationCount, setAudioPreparationCount] = useState(0);
   const [soundAttribution, setSoundAttribution] = useState<string | null>(
     () => initialMedia?.soundAttribution ?? null
   );
@@ -241,7 +249,17 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   const audioInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const captionRef = useRef<HTMLTextAreaElement>(null);
+  const mountedRef = useRef(true);
   const router = useRouter();
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      for (const url of enhancementPreviewUrlsRef.current) URL.revokeObjectURL(url);
+      enhancementPreviewUrlsRef.current.clear();
+    };
+  }, []);
 
   const fullscreenFlowActive = Boolean(
     mediaReviewDraft || videoTrimDraft || episodeSplitDraft || cameraStudioOpen
@@ -498,11 +516,14 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   }, [initialAction, initialBody, initialMedia, initialPostType, remixMode, remixSource]);
 
   const hasMedia = pendingImages.length > 0 || Boolean(pendingVideo) || Boolean(pendingAudio);
-  const canPost = Boolean(body.trim() || hasMedia);
+  const imagePreparationBusy = imagePreparationCount > 0;
+  const audioPreparationBusy = audioPreparationCount > 0;
+  const canPost = Boolean(body.trim() || hasMedia) && !imagePreparationBusy && !audioPreparationBusy;
 
   const revokePreview = useCallback((previewUrl: string) => {
     if (previewUrl.startsWith("blob:")) {
       URL.revokeObjectURL(previewUrl);
+      enhancementPreviewUrlsRef.current.delete(previewUrl);
     }
   }, []);
 
@@ -587,37 +608,62 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   }, [clearEpisodeSplitDraft, clearVideoTrimDraft, pendingImages, pendingVideo, revokePreview]);
 
   const addImageFiles = useCallback(
-    async (files: FileList | File[]) => {
-      if (pendingVideo) {
-        setError("Remove the video before adding photos.");
-        return;
+    async (files: FileList | File[], autoBrighten = true): Promise<boolean> => {
+      if (pendingVideo || mediaReviewDraft?.kind === "video") {
+        setError("Finish or remove the selected video before adding photos.");
+        return false;
       }
-      const list = Array.from(files).filter((file) => file.type.startsWith("image/"));
+      const list = Array.from(files).filter((file) => Boolean(resolveImageContentType(file)));
       if (!list.length) {
         setError("Choose JPG, PNG, or WEBP images.");
-        return;
+        return false;
       }
-      const remaining = SOCIAL_MAX_PHOTOS_PER_POST - pendingImages.length;
-      if (remaining <= 0) {
+      const available = Math.max(0, SOCIAL_MAX_PHOTOS_PER_POST - pendingImages.length - reservedImageSlotsRef.current);
+      if (available <= 0) {
         setError(`You can attach up to ${SOCIAL_MAX_PHOTOS_PER_POST} photos.`);
-        return;
+        return false;
       }
-      const next = list.slice(0, remaining).map((file) => ({
-        id: `${file.name}-${file.size}-${Date.now()}-${Math.random()}`,
-        file,
-        previewUrl: URL.createObjectURL(file),
-        name: file.name,
-      }));
-      setPendingImages((prev) => [...prev, ...next]);
-      setPostType("image");
-      setError(null);
+      const selected = list.slice(0, available);
+      reservedImageSlotsRef.current += selected.length;
+      setImagePreparationCount((count) => count + 1);
+      try {
+        const prepared: File[] = [];
+        for (const file of selected) prepared.push(autoBrighten ? await brightenSocialPhoto(file) : file);
+        // The composer can be dismissed while browser image decoding/encoding is
+        // still running. Do not allocate preview blob URLs for an unmounted sheet.
+        if (!mountedRef.current) return false;
+        const next = prepared.map((file) => {
+          const previewUrl = URL.createObjectURL(file);
+          enhancementPreviewUrlsRef.current.add(previewUrl);
+          return {
+            id: `${file.name}-${file.size}-${Date.now()}-${Math.random()}`,
+            file,
+            previewUrl,
+            name: file.name,
+          };
+        });
+        setPendingImages((prev) => {
+          const slots = Math.max(0, SOCIAL_MAX_PHOTOS_PER_POST - prev.length);
+          const accepted = next.slice(0, slots);
+          next.slice(slots).forEach((image) => revokePreview(image.previewUrl));
+          return [...prev, ...accepted];
+        });
+        setPostType("image");
+        setError(null);
+        return true;
+      } finally {
+        reservedImageSlotsRef.current = Math.max(0, reservedImageSlotsRef.current - selected.length);
+        if (mountedRef.current) {
+          setImagePreparationCount((count) => Math.max(0, count - 1));
+        }
+      }
     },
-    [pendingImages.length, pendingVideo]
+    [mediaReviewDraft?.kind, pendingImages.length, pendingVideo, revokePreview]
   );
 
   const addVideoFile = useCallback(async (file: File) => {
-    if (pendingImages.length || pendingAudio) {
-      setError("Remove photos and music before adding a video.");
+    if (pendingImages.length || pendingAudio || reservedImageSlotsRef.current > 0 || imagePreparationCount > 0) {
+      setError("Wait for photo preparation to finish, or remove photos and music before adding a video.");
       return;
     }
     if (!resolveVideoContentType(file)) {
@@ -665,7 +711,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           }
         }
       });
-  }, [pendingAudio, pendingImages.length]);
+  }, [imagePreparationCount, pendingAudio, pendingImages.length]);
 
   const handleCameraCapture = useCallback((capture: GigaSocialCameraCapture) => {
     setCameraStudioOpen(false);
@@ -686,6 +732,11 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         setBody((current) => (current.trim() ? current : result.caption));
       }
       if (result.kind === "video") {
+        if (reservedImageSlotsRef.current > 0 || imagePreparationCount > 0 || pendingImages.length > 0) {
+          setError("Finish or remove photo preparation before adding a video.");
+          setMediaReviewDraft(null);
+          return;
+        }
         let durationSec =
           result.durationSec && isUsableVideoDuration(result.durationSec)
             ? result.durationSec
@@ -734,23 +785,40 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         }
       } else {
         await addImageFiles([result.file]);
+        setSuccess("Photo added. Automatic enhancement is applied when supported; your original is preserved if it is not.");
       }
       setMediaReviewDraft(null);
     },
-    [addImageFiles, applyPendingVideo, clearVideoTrimDraft, openEpisodeSplitDraft]
+    [addImageFiles, applyPendingVideo, clearVideoTrimDraft, imagePreparationCount, openEpisodeSplitDraft, pendingImages.length]
   );
 
-  const addAudioFile = useCallback(async (file: File) => {
+  const addAudioFile = useCallback(async (file: File, imagesPreparedInThisSelection = false): Promise<boolean> => {
+    // Use the live reservation ref here: this callback may run after awaiting
+    // addImageFiles, while its captured React state still reflects the prior render.
+    // A slideshow calls this only after its own addImageFiles promise resolves.
+    // Other independent photo batches may still hold reservations; that must not
+    // discard this slideshow's soundtrack. Posting remains disabled until every
+    // photo preparation finishes.
+    if (reservedImageSlotsRef.current > 0 && !imagesPreparedInThisSelection) {
+      setError("Wait for photo preparation to finish before adding music.");
+      return false;
+    }
     if (pendingVideo) {
       setError("Remove the video before adding music.");
-      return;
+      return false;
     }
-    if (!pendingImages.length) {
+    if (!pendingImages.length && !imagesPreparedInThisSelection) {
       setError("Add one or more photos first, then attach music.");
-      return;
+      return false;
     }
+    setAudioPreparationCount((count) => count + 1);
     try {
       const prepared = await prepareAudioForPhotoPost(file, SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC);
+      if (!mountedRef.current) return;
+      if (!imagesPreparedInThisSelection && !pendingImagesRef.current.length) {
+        setError("Add one or more photos first, then attach music.");
+        return false;
+      }
       setPendingAudio({
         file: prepared.file,
         name: prepared.file.name,
@@ -760,8 +828,14 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       if (prepared.trimmed) {
         setSuccess(`Music trimmed to ${SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC} seconds for photo posts.`);
       }
+      return true;
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not read audio.");
+      return false;
+    } finally {
+      if (mountedRef.current) {
+        setAudioPreparationCount((count) => Math.max(0, count - 1));
+      }
     }
   }, [pendingImages.length, pendingVideo]);
 
@@ -781,9 +855,14 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         case "single-video":
           await addVideoFile(selection.files[0]);
           break;
-        case "slideshow":
-          await addImageFiles(selection.images);
-          await addAudioFile(selection.audio);
+        case "slideshow": {
+          const acceptedPhotos = await addImageFiles(selection.images);
+          if (!acceptedPhotos) {
+            setError("The selected photos were not added. Free space in the post or wait for other photo uploads, then try again.");
+            return;
+          }
+          const soundtrackAdded = await addAudioFile(selection.audio, true);
+          if (!soundtrackAdded) return;
           if (!body.trim()) {
             setBody("Photo with music 🎵\n\n");
           }
@@ -791,6 +870,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
             `Photo + music will publish as a ${SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC}s video with your soundtrack.`
           );
           break;
+        }
         case "video-with-audio":
           await addVideoFile(selection.video);
           if (selection.audio) {
@@ -982,7 +1062,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   }
 
   async function handleSubmit() {
-    if (busy || disabled || !canPost) return;
+    if (busy || disabled || imagePreparationBusy || audioPreparationBusy || !canPost) return;
     if (
       pendingVideo &&
       shouldOfferEpisodeSplit(pendingVideo.file.size, pendingVideo.durationSec)
@@ -1170,7 +1250,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
               imageInputRef.current?.click();
             }
           }}
-          onSkip={(result) => void handleMediaReviewComplete(result)}
+          onSkip={handleMediaReviewComplete}
         />
       </>
     );
@@ -1354,6 +1434,9 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         imageFilterId={previewFilterId}
         compact={compact}
         onRemoveImage={(id) => {
+          // Keep the selected photo set stable while soundtrack preparation is
+          // running; otherwise the completed audio could be orphaned from its photos.
+          if (audioPreparationBusy) return;
           setPendingImages((prev) => {
             const target = prev.find((image) => image.id === id);
             if (target) revokePreview(target.previewUrl);
@@ -1583,7 +1666,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
 
         <Button
           type="button"
-          disabled={disabled || busy || !canPost}
+          disabled={disabled || busy || imagePreparationBusy || audioPreparationBusy || !canPost}
           onClick={() => void handleSubmit()}
           className="ml-auto min-h-10"
         >

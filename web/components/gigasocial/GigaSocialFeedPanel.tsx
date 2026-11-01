@@ -1,7 +1,7 @@
 "use client";
 
 import type { GigaCreateLaunch } from "@/components/gigasocial/create/GigaCreateButton";
-import { GigaCreateButton } from "@/components/gigasocial/create/GigaCreateButton";
+import { GigaCreatorHub } from "@/components/gigasocial/create/GigaCreatorHub";
 import type { GigaCreateActionId } from "@/components/gigasocial/create/gigaCreateMenu";
 import type { GigaSocialComposerInitialMedia } from "@/components/gigasocial/GigaSocialComposer";
 import {
@@ -90,15 +90,6 @@ const GigaSocialAIStudioHub = dynamic(
   { ssr: false }
 );
 
-const GigaSocialComposer = dynamic(
-  withChunkRetryLoader(() =>
-    import("@/components/gigasocial/GigaSocialComposer").then((m) => ({
-      default: m.GigaSocialComposer,
-    }))
-  ),
-  { ssr: false }
-);
-
 const GigaSocialComposerSheet = dynamic(
   withChunkRetryLoader(() =>
     import("@/components/gigasocial/GigaSocialComposerSheet").then((m) => ({
@@ -112,6 +103,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   sessionToken,
   communitySlug,
   highlightPostId,
+  createRequest = 0,
   onOpenLive,
   autoOpenStories = false,
   autoOpenStoriesRing,
@@ -119,6 +111,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   sessionToken: string | null;
   communitySlug?: string;
   highlightPostId?: string;
+  createRequest?: number;
   onOpenLive?: () => void;
   autoOpenStories?: boolean;
   autoOpenStoriesRing?: string;
@@ -831,17 +824,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     setCursor(feed.nextCursor ?? undefined);
   }, [feed]);
 
-  // The floating Create FAB is intentionally disabled while the Android upload flow is being rebuilt.
-  const useGigaCreateFab = false;
-
-  useEffect(() => {
-    if (useGigaCreateFab) return;
-    function onOpenCreate() {
-      openComposer("text-post");
-    }
-    window.addEventListener("gigasocial:open-create", onOpenCreate);
-    return () => window.removeEventListener("gigasocial:open-create", onOpenCreate);
-  }, [openComposer, useGigaCreateFab]);
+  // createRequest is passed directly to the hub so navigation cannot race its mount.
 
   const [hideFeaturedOnMobile, setHideFeaturedOnMobile] = useState(false);
 
@@ -968,13 +951,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         <GigaSocialFeedHero postCount={posts.length} compact />
       ) : null}
 
-      {sessionToken && false && composerOpen && !useGigaCreateFab ? (
-        <GigaSocialPanelErrorBoundary panelName="Create post">
-          <GigaSocialComposer {...composerProps} />
-        </GigaSocialPanelErrorBoundary>
-      ) : null}
-
-      {sessionToken && false && useGigaCreateFab ? (
+      {sessionToken && composerOpen ? (
         <GigaSocialPanelErrorBoundary panelName="Create post">
           <GigaSocialComposerSheet open={composerOpen} onClose={closeComposer} {...composerProps} />
         </GigaSocialPanelErrorBoundary>
@@ -1128,17 +1105,13 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         </div>
       ) : null}
 
-      {useGigaCreateFab ? (
-        <GigaSocialPanelErrorBoundary panelName="Create">
-          <GigaCreateButton
-            disabled={!sessionToken}
-            enableLive={features.enableGigaLive}
-            enableAIStudio={features.enableAIStudio}
-            onSelect={handleGigaCreate}
-            onOpenAIStudio={() => setAiStudioOpen(true)}
-          />
-        </GigaSocialPanelErrorBoundary>
-      ) : null}
+      <GigaSocialPanelErrorBoundary panelName="Create">
+        <GigaCreatorHub
+          disabled={!sessionToken || composerOpen}
+          openSignal={createRequest}
+          onSelect={(action) => handleGigaCreate({ action })}
+        />
+      </GigaSocialPanelErrorBoundary>
 
       {features.enableAIStudio ? (
         <GigaSocialAIStudioHub

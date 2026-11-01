@@ -107,7 +107,9 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
     !featured &&
     !shouldPlay;
   const ultraSaver = features.enableDataSaver && shouldUseUltraDataSaver(dataSaverMode);
-  const videoSrc = adaptive.url;
+  // An explicit user request to load the video must bypass audio-only and
+  // adaptive data-saver variants, including Android's ultra-saver mode.
+  const videoSrc = forceFullVideo ? primaryMediaUrl : adaptive.url;
   const audioOnlyPlayback =
     !forceFullVideo && (adaptive.audioOnly || (ultraSaver && mediaKind === "video"));
   const videoPreload = videoPreloadForQuality(
@@ -278,7 +280,10 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
       <div className={feedMediaWrapperClass}>
         <button
           type="button"
-          onClick={() => setMediaUnlocked(true)}
+          onClick={() => {
+            setMediaUnlocked(true);
+            if (mediaKind === "video") setForceFullVideo(true);
+          }}
           className={cn(
             "flex w-full flex-col items-center justify-center gap-2 bg-zinc-900 text-white",
             featured ? frameClass : "gigasocial-feed-media-frame min-h-[12rem]"
@@ -710,27 +715,22 @@ export const GigaSocialPendingMediaPreview = memo(function GigaSocialPendingMedi
   return (
     <div className={cn(compact ? "mt-2 space-y-1.5" : "mt-3 space-y-2")}>
       {video ? (
-        <div className="relative overflow-hidden rounded-xl border border-border bg-black/5">
-          {video.thumbnailUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={video.thumbnailUrl}
-              alt="Video preview"
-              className={cn("w-full object-contain", videoMax)}
-            />
-          ) : (
-            <video
-              src={video.previewUrl}
-              className={cn("w-full object-contain", videoMax)}
-              muted
-              playsInline
-            />
-          )}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="rounded-full bg-black/50 p-2 text-white">
-              <Play className="h-5 w-5" aria-hidden />
-            </span>
-          </div>
+        <div className="relative overflow-hidden rounded-xl border border-border bg-black">
+          <video
+            key={video.previewUrl}
+            src={video.previewUrl}
+            poster={video.thumbnailUrl}
+            controls
+            playsInline
+            preload="metadata"
+            muted
+            className={cn("w-full object-contain", videoMax)}
+            aria-label={`Preview ${video.name}`}
+            onError={(event) => {
+              const element = event.currentTarget;
+              element.pause();
+            }}
+          />
           <div className="flex items-center justify-between gap-2 px-3 py-1.5 text-xs text-muted">
             <span className="truncate">{video.name}</span>
             <span>{Math.round(video.durationSec)}s</span>
@@ -738,7 +738,7 @@ export const GigaSocialPendingMediaPreview = memo(function GigaSocialPendingMedi
           <button
             type="button"
             onClick={onRemoveVideo}
-            className="absolute right-2 top-2 rounded-full bg-black/60 px-2 py-1 text-xs text-white"
+            className="absolute right-2 top-2 rounded-full bg-black/70 px-2 py-1 text-xs text-white"
             aria-label="Remove video"
           >
             Remove
