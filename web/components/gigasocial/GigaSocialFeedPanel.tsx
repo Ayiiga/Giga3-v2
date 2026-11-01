@@ -103,7 +103,6 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   sessionToken,
   communitySlug,
   highlightPostId,
-  createRequest = 0,
   onOpenLive,
   autoOpenStories = false,
   autoOpenStoriesRing,
@@ -111,7 +110,6 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   sessionToken: string | null;
   communitySlug?: string;
   highlightPostId?: string;
-  createRequest?: number;
   onOpenLive?: () => void;
   autoOpenStories?: boolean;
   autoOpenStoriesRing?: string;
@@ -1108,7 +1106,6 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
       <GigaSocialPanelErrorBoundary panelName="Create">
         <GigaCreatorHub
           disabled={!sessionToken || composerOpen}
-          openSignal={createRequest}
           onSelect={(action) => handleGigaCreate({ action })}
         />
       </GigaSocialPanelErrorBoundary>
