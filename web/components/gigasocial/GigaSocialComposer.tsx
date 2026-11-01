@@ -19,6 +19,7 @@ import { isUsableVideoDuration } from "@/lib/gigasocial/videoDuration";
 import type { CameraFilterId } from "@/lib/gigasocial/cameraFilters";
 import { prepareAudioForPhotoPost } from "@/lib/gigasocial/audioProcessing";
 import { getCameraFilterCss } from "@/lib/gigasocial/cameraFilters";
+import { brightenSocialPhoto } from "@/lib/gigasocial/photoEnhancement";
 import { extractHashtagsFromText, formatCompactHashtags } from "@/lib/gigasocial/hashtags";
 import {
   classifyMediaFiles,
@@ -587,7 +588,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   }, [clearEpisodeSplitDraft, clearVideoTrimDraft, pendingImages, pendingVideo, revokePreview]);
 
   const addImageFiles = useCallback(
-    async (files: FileList | File[]) => {
+    async (files: FileList | File[], autoBrighten = true) => {
       if (pendingVideo) {
         setError("Remove the video before adding photos.");
         return;
@@ -602,7 +603,11 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         setError(`You can attach up to ${SOCIAL_MAX_PHOTOS_PER_POST} photos.`);
         return;
       }
-      const next = list.slice(0, remaining).map((file) => ({
+      const selected = list.slice(0, remaining);
+      const prepared = autoBrighten
+        ? await Promise.all(selected.map((file) => brightenSocialPhoto(file)))
+        : selected;
+      const next = prepared.map((file) => ({
         id: `${file.name}-${file.size}-${Date.now()}-${Math.random()}`,
         file,
         previewUrl: URL.createObjectURL(file),
@@ -734,6 +739,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         }
       } else {
         await addImageFiles([result.file]);
+        setSuccess("Your photo has been automatically brightened for a cleaner, more polished post.");
       }
       setMediaReviewDraft(null);
     },
