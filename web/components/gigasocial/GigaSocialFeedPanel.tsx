@@ -1105,15 +1105,13 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         </div>
       ) : null}
 
-      {!composerOpen ? (
-        <GigaSocialPanelErrorBoundary panelName="Create">
-          <GigaCreatorHub
-            disabled={!sessionToken}
-            openSignal={createRequest}
-            onSelect={(action) => handleGigaCreate({ action })}
-          />
-        </GigaSocialPanelErrorBoundary>
-      ) : null}
+      <GigaSocialPanelErrorBoundary panelName="Create">
+        <GigaCreatorHub
+          disabled={!sessionToken || composerOpen}
+          openSignal={createRequest}
+          onSelect={(action) => handleGigaCreate({ action })}
+        />
+      </GigaSocialPanelErrorBoundary>
 
       {features.enableAIStudio ? (
         <GigaSocialAIStudioHub
