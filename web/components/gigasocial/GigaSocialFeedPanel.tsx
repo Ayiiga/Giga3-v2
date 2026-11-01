@@ -831,7 +831,8 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     setCursor(feed.nextCursor ?? undefined);
   }, [feed]);
 
-  const useGigaCreateFab = features.enableGigaCreate && Boolean(sessionToken);
+  // The floating Create FAB is intentionally disabled while the Android upload flow is being rebuilt.
+  const useGigaCreateFab = false;
 
   useEffect(() => {
     if (useGigaCreateFab) return;
