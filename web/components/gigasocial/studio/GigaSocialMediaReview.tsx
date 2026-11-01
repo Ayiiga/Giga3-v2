@@ -60,6 +60,7 @@ export const GigaSocialMediaReview = memo(function GigaSocialMediaReview({
   const [workingDuration, setWorkingDuration] = useState(durationSec);
   const [finishing, setFinishing] = useState(false);
   const finishingRef = useRef(false);
+  const onCloseRef = useRef(onClose);
   const previewUrl = useMemo(() => URL.createObjectURL(workingFile), [workingFile]);
   const previewFilter = getCameraFilterCss(activeFilterId);
 
@@ -79,29 +80,28 @@ export const GigaSocialMediaReview = memo(function GigaSocialMediaReview({
     return () => URL.revokeObjectURL(previewUrl);
   }, [previewUrl]);
 
-  // Keep one history marker for the lifetime of this review. The listener
-  // reads finishing from a ref so Continue cannot tear down/re-push the marker
-  // while async photo preparation is still handing the file to the composer.
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  // Keep one history marker for the lifetime of this review. Read callbacks
+  // through refs so parent renders cannot tear down and recreate the marker.
   useEffect(() => {
     if (!open) return;
     const onPopState = () => {
       if (finishingRef.current) {
-        // Continue is consuming the file; keep Android Back inside this flow.
         window.history.pushState({ gigasocialMediaReview: true }, "");
         return;
       }
-      onClose();
+      onCloseRef.current();
     };
     window.history.pushState({ gigasocialMediaReview: true }, "");
     window.addEventListener("popstate", onPopState);
     return () => {
       window.removeEventListener("popstate", onPopState);
-      // Only undo the marker if it is still the active history entry.
-      if (window.history.state?.gigasocialMediaReview) {
-        window.history.back();
-      }
+      if (window.history.state?.gigasocialMediaReview) window.history.back();
     };
-  }, [onClose, open]);
+  }, [open]);
 
   const finish = useCallback(
     async (skipCaption = false) => {
