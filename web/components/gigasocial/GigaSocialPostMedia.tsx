@@ -710,21 +710,21 @@ export const GigaSocialPendingMediaPreview = memo(function GigaSocialPendingMedi
   return (
     <div className={cn(compact ? "mt-2 space-y-1.5" : "mt-3 space-y-2")}>
       {video ? (
-        <div className="relative overflow-hidden rounded-xl border border-border bg-black/5">
+        <div className="relative overflow-hidden rounded-xl border border-border bg-black">
           <video
+            key={video.previewUrl}
             src={video.previewUrl}
             poster={video.thumbnailUrl}
             controls
+            playsInline
             preload="metadata"
             muted
-            playsInline
+            className={cn("w-full object-contain", videoMax)}
+            aria-label={`Preview ${video.name}`}
             onError={(event) => {
-              // Keep the original File attached even if this browser cannot
-              // decode the local preview; upload remains available.
-              event.currentTarget.setAttribute("data-preview-error", "true");
+              const element = event.currentTarget;
+              element.pause();
             }}
-            className={cn("w-full bg-black object-contain", videoMax)}
-            aria-label="Selected video preview"
           />
           <div className="flex items-center justify-between gap-2 px-3 py-1.5 text-xs text-muted">
             <span className="truncate">{video.name}</span>
@@ -733,7 +733,7 @@ export const GigaSocialPendingMediaPreview = memo(function GigaSocialPendingMedi
           <button
             type="button"
             onClick={onRemoveVideo}
-            className="absolute right-2 top-2 rounded-full bg-black/60 px-2 py-1 text-xs text-white"
+            className="absolute right-2 top-2 rounded-full bg-black/70 px-2 py-1 text-xs text-white"
             aria-label="Remove video"
           >
             Remove
