@@ -10,7 +10,7 @@ import type { SocialPostTypeId } from "@/lib/gigasocial/sections";
 import { needsVideoTrim } from "@/lib/gigasocial/videoTrim";
 import { cn } from "@/lib/utils";
 import { Check, Replace, RotateCcw, SkipForward, Trash2 } from "lucide-react";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 export type GigaSocialMediaReviewResult = {
@@ -59,6 +59,7 @@ export const GigaSocialMediaReview = memo(function GigaSocialMediaReview({
   const [workingFile, setWorkingFile] = useState(file);
   const [workingDuration, setWorkingDuration] = useState(durationSec);
   const [finishing, setFinishing] = useState(false);
+  const finishingRef = useRef(false);
   const previewUrl = useMemo(() => URL.createObjectURL(workingFile), [workingFile]);
   const previewFilter = getCameraFilterCss(activeFilterId);
 
@@ -70,6 +71,7 @@ export const GigaSocialMediaReview = memo(function GigaSocialMediaReview({
     setWorkingFile(file);
     setWorkingDuration(durationSec);
     setActiveFilterId(filterId);
+    finishingRef.current = false;
     setFinishing(false);
   }, [durationSec, file, filterId]);
 
@@ -77,14 +79,14 @@ export const GigaSocialMediaReview = memo(function GigaSocialMediaReview({
     return () => URL.revokeObjectURL(previewUrl);
   }, [previewUrl]);
 
-  // Android system back closes review; parent composer caption is preserved.
+  // Keep one history marker for the lifetime of this review. The listener
+  // reads finishing from a ref so Continue cannot tear down/re-push the marker
+  // while async photo preparation is still handing the file to the composer.
   useEffect(() => {
     if (!open) return;
-    let ignorePop = false;
     const onPopState = () => {
-      if (ignorePop) return;
-      if (finishing) {
-        // Keep the review entry active while the parent consumes the selected file.
+      if (finishingRef.current) {
+        // Continue is consuming the file; keep Android Back inside this flow.
         window.history.pushState({ gigasocialMediaReview: true }, "");
         return;
       }
@@ -94,16 +96,17 @@ export const GigaSocialMediaReview = memo(function GigaSocialMediaReview({
     window.addEventListener("popstate", onPopState);
     return () => {
       window.removeEventListener("popstate", onPopState);
+      // Only undo the marker if it is still the active history entry.
       if (window.history.state?.gigasocialMediaReview) {
-        ignorePop = true;
         window.history.back();
       }
     };
-  }, [finishing, onClose, open]);
+  }, [onClose, open]);
 
   const finish = useCallback(
     async (skipCaption = false) => {
-      if (finishing) return;
+      if (finishingRef.current) return;
+      finishingRef.current = true;
       setFinishing(true);
       try {
         // Hand the original File to the composer immediately. Thumbnail decoding
@@ -118,6 +121,7 @@ export const GigaSocialMediaReview = memo(function GigaSocialMediaReview({
           durationSec: workingDuration,
         });
       } finally {
+        finishingRef.current = false;
         setFinishing(false);
       }
     },
