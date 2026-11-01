@@ -19,6 +19,7 @@ import { isUsableVideoDuration } from "@/lib/gigasocial/videoDuration";
 import type { CameraFilterId } from "@/lib/gigasocial/cameraFilters";
 import { prepareAudioForPhotoPost } from "@/lib/gigasocial/audioProcessing";
 import { getCameraFilterCss } from "@/lib/gigasocial/cameraFilters";
+import { applySocialPhotoLook } from "@/lib/gigasocial/photoEnhancement";
 import { extractHashtagsFromText, formatCompactHashtags } from "@/lib/gigasocial/hashtags";
 import {
   classifyMediaFiles,
@@ -733,7 +734,9 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           });
         }
       } else {
-        await addImageFiles([result.file]);
+        const enhancedPhoto = await applySocialPhotoLook(result.file, result.filterId ?? "lark");
+        await addImageFiles([enhancedPhoto]);
+        setSuccess("Photo automatically brightened and enhanced — ready to share.");
       }
       setMediaReviewDraft(null);
     },
