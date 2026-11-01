@@ -782,7 +782,9 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   );
 
   const addAudioFile = useCallback(async (file: File, imagesPreparedInThisSelection = false) => {
-    if (imagePreparationCount > 0 || reservedImageSlotsRef.current > 0) {
+    // Use the live reservation ref here: this callback may run after awaiting
+    // addImageFiles, while its captured React state still reflects the prior render.
+    if (reservedImageSlotsRef.current > 0) {
       setError("Wait for photo preparation to finish before adding music.");
       return;
     }
@@ -813,7 +815,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         setAudioPreparationCount((count) => Math.max(0, count - 1));
       }
     }
-  }, [imagePreparationCount, pendingImages.length, pendingVideo]);
+  }, [pendingImages.length, pendingVideo]);
 
   const addDroppedFiles = useCallback(
     async (files: FileList | File[]) => {
