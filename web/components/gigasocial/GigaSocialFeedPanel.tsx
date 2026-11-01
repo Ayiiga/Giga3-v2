@@ -112,6 +112,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   sessionToken,
   communitySlug,
   highlightPostId,
+  createRequest = 0,
   onOpenLive,
   autoOpenStories = false,
   autoOpenStoriesRing,
@@ -119,6 +120,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   sessionToken: string | null;
   communitySlug?: string;
   highlightPostId?: string;
+  createRequest?: number;
   onOpenLive?: () => void;
   autoOpenStories?: boolean;
   autoOpenStoriesRing?: string;
@@ -831,17 +833,12 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     setCursor(feed.nextCursor ?? undefined);
   }, [feed]);
 
-  // New standalone Creator Hub; the feed itself stays free of an inline composer.
-  const useGigaCreateFab = true;
-
+  // The new standalone Creator Hub is the only create entry point on the feed.
   useEffect(() => {
-    if (useGigaCreateFab) return;
-    function onOpenCreate() {
-      openComposer("text-post");
+    if (createRequest > 0) {
+      window.dispatchEvent(new CustomEvent("gigasocial:open-create"));
     }
-    window.addEventListener("gigasocial:open-create", onOpenCreate);
-    return () => window.removeEventListener("gigasocial:open-create", onOpenCreate);
-  }, [openComposer, useGigaCreateFab]);
+  }, [createRequest]);
 
   const [hideFeaturedOnMobile, setHideFeaturedOnMobile] = useState(false);
 
@@ -968,13 +965,13 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         <GigaSocialFeedHero postCount={posts.length} compact />
       ) : null}
 
-      {sessionToken && composerOpen && !useGigaCreateFab ? (
+      {sessionToken && composerOpen && false ? (
         <GigaSocialPanelErrorBoundary panelName="Create post">
           <GigaSocialComposer {...composerProps} />
         </GigaSocialPanelErrorBoundary>
       ) : null}
 
-      {sessionToken && useGigaCreateFab && composerOpen ? (
+      {sessionToken && composerOpen ? (
         <GigaSocialPanelErrorBoundary panelName="Create post">
           <GigaSocialComposerSheet open={composerOpen} onClose={closeComposer} {...composerProps} />
         </GigaSocialPanelErrorBoundary>
@@ -1128,7 +1125,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         </div>
       ) : null}
 
-      {useGigaCreateFab ? (
+      {true ? (
         <GigaSocialPanelErrorBoundary panelName="Create">
           <GigaCreatorHub
             disabled={!sessionToken}
