@@ -1213,7 +1213,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
               imageInputRef.current?.click();
             }
           }}
-          onSkip={(result) => void handleMediaReviewComplete(result)}
+          onSkip={handleMediaReviewComplete}
         />
       </>
     );
