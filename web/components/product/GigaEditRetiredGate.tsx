@@ -5,7 +5,7 @@ import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNot
 import { Container } from "@/components/ui/Container";
 import { RETIRED_PRODUCTS } from "@/lib/navigation/retiredProducts";
 import dynamic from "next/dynamic";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 const GigaEditPageRoot = dynamic(
@@ -42,12 +42,7 @@ function notice() {
 
 function GigaEditRetiredGateInner() {
   const params = useSearchParams();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted || !hasEditorHandoff(params)) {
+  if (!hasEditorHandoff(params)) {
     return notice();
   }
 
@@ -60,10 +55,10 @@ function GigaEditRetiredGateInner() {
   );
 }
 
-/** Bare /gigaedit shows retirement; deep links preserve local project access. */
+/** Bare /gigaedit keeps legacy messaging; explicit editor entry opens the local studio. */
 export function GigaEditRetiredGate() {
   return (
-    <Suspense fallback={notice()}>
+    <Suspense fallback={<ClientAppHydrationNotice productName="GigaEdits" />}>
       <GigaEditRetiredGateInner />
     </Suspense>
   );

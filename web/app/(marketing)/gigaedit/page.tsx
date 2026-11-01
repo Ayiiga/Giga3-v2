@@ -1,15 +1,12 @@
 import { GigaEditRetiredGate } from "@/components/product/GigaEditRetiredGate";
 import { ProductSeoHeader } from "@/components/seo/ProductSeoHeader";
-import { RETIRED_PRODUCTS } from "@/lib/navigation/retiredProducts";
 import { publicMetadata } from "@/lib/seo/publicMetadata";
-
-const meta = RETIRED_PRODUCTS.find((p) => p.id === "gigaedit")!;
 
 export const metadata = publicMetadata({
   path: "/gigaedit",
-  title: "GigaEdit retired | Giga3 AI",
+  title: "GigaEdits Studio | Giga3 AI",
   description:
-    "GigaEdit is no longer a dedicated Giga3 product. Local drafts on your device are not deleted. Continue with AI Assistant, Academy, and GigaSocial.",
+    "Create and edit videos, photos, scripts, and creator content with GigaEdits on Giga3 AI.",
   index: false,
 });
 
@@ -19,8 +16,8 @@ export default function GigaEditPage() {
       <ProductSeoHeader
         className="sr-only"
         compact
-        title={meta.formerName}
-        description={meta.summary}
+        title="GigaEdits Studio"
+        description="Create and edit videos, photos, scripts, and creator content."
         showProductNav={false}
       />
       <GigaEditRetiredGate />
