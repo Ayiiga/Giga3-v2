@@ -107,7 +107,9 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
     !featured &&
     !shouldPlay;
   const ultraSaver = features.enableDataSaver && shouldUseUltraDataSaver(dataSaverMode);
-  const videoSrc = adaptive.url;
+  // An explicit user request to load the video must bypass audio-only and
+  // adaptive data-saver variants, including Android's ultra-saver mode.
+  const videoSrc = forceFullVideo ? primaryMediaUrl : adaptive.url;
   const audioOnlyPlayback =
     !forceFullVideo && (adaptive.audioOnly || (ultraSaver && mediaKind === "video"));
   const videoPreload = videoPreloadForQuality(
@@ -278,7 +280,10 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
       <div className={feedMediaWrapperClass}>
         <button
           type="button"
-          onClick={() => setMediaUnlocked(true)}
+          onClick={() => {
+            setMediaUnlocked(true);
+            if (mediaKind === "video") setForceFullVideo(true);
+          }}
           className={cn(
             "flex w-full flex-col items-center justify-center gap-2 bg-zinc-900 text-white",
             featured ? frameClass : "gigasocial-feed-media-frame min-h-[12rem]"
