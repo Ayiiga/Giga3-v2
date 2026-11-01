@@ -197,6 +197,8 @@ describe("gigaSocialAwards — scoring and safety", () => {
     expect(page).toContain("AwardsHubClient");
     expect(page).toContain("ProductSeoHeader");
     expect(nominate).toContain("season?.nominationsOpen");
+    expect(nominate).toContain('seasonSlug && season === undefined');
+    expect(nominate).toContain('Loading award season…');
     expect(nominate).toContain("minimum 40 characters");
     expect(nominate).toContain("Your recent submissions");
   });
