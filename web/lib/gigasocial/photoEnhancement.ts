@@ -11,6 +11,9 @@ import { resolveImageContentType } from "@/lib/gigasocial/constants";
  */
 const MAX_EDGE = 2560;
 const MAX_OUTPUT_BYTES = 14 * 1024 * 1024;
+// Avoid decoding unusually large originals into full-resolution pixel buffers on
+// memory-constrained mobile browsers. The original still uploads unchanged.
+const MAX_ENHANCEMENT_INPUT_BYTES = 5 * 1024 * 1024;
 let enhancementQueue: Promise<void> = Promise.resolve();
 
 export function brightenSocialPhoto(file: File): Promise<File> {
@@ -23,7 +26,7 @@ async function enhanceSocialPhoto(file: File): Promise<File> {
   // Android gallery providers may return an empty MIME type or image/jpg.
   // Resolve from the same canonical extension/MIME rules as the composer.
   const contentType = resolveImageContentType(file);
-  if (!contentType) return file;
+  if (!contentType || file.size > MAX_ENHANCEMENT_INPUT_BYTES) return file;
 
   let bitmap: ImageBitmap | undefined;
   try {
