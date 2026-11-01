@@ -160,7 +160,7 @@ export function GigaEditHome({ onOpen }: GigaEditHomeProps) {
         <RecentProjectsGrid limit={4} onOpen={onOpen} onViewAll={() => onOpen("projects")} />
       </section>
 
-      <div className="ge-device-note"><span className="ge-device-note__icon"><Zap size={16} /></span><div><strong>Your work, your device.</strong><span>Drafts auto-save locally on this device.</span></div><span className="ge-device-note__status">Ready</span></div>
+      <div className="ge-device-note"><span className="ge-device-note__icon"><Zap size={16} /></span><div><strong>Your work, your device.</strong><span>Drafts save on this device only. AI Studio uses credits.</span></div><span className="ge-device-note__status">Ready</span></div>
       <OfflineManager compact />
 
       <section className="ge-toolkit-section" aria-labelledby="gigaedit-creator-toolkit">
