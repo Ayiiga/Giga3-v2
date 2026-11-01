@@ -1,0 +1,2384 @@
+{
+  "bankId": "wassce-social-studies",
+  "courseSlug": "exam-wassce-social-studies",
+  "title": "WASSCE Social Studies Practice",
+  "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+  "questions": [
+    {
+      "questionId": "exam-wassce-social-studies-q001",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "During a school project in Kumasi, learners investigate the situation. A community maps flood-prone areas before the rainy season. This is an example of",
+      "options": [
+        "post-disaster blame",
+        "urban sprawl",
+        "resource depletion",
+        "disaster-risk reduction and preparedness"
+      ],
+      "correctIndex": 3,
+      "explanation": "D.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 1,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q002",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "A district planning team receives a report that a business keeps accurate records of sales, costs and stock. This helps it to",
+      "options": [
+        "set national tax rates",
+        "avoid all competition",
+        "make informed management decisions",
+        "control the weather"
+      ],
+      "correctIndex": 2,
+      "explanation": "C.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 2,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q003",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "A local radio discussion raises the concern that a country imports more goods than it exports over a period. This contributes to a",
+      "options": [
+        "trade deficit",
+        "population surplus",
+        "cultural renaissance",
+        "budget surplus automatically"
+      ],
+      "correctIndex": 0,
+      "explanation": "A.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 3,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q004",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "During a community clean-up, volunteers realise that a family discusses rules and responsibilities before sharing household tasks. This encourages",
+      "options": [
+        "resource depletion",
+        "cooperation and shared responsibility",
+        "political patronage",
+        "social fragmentation"
+      ],
+      "correctIndex": 1,
+      "explanation": "B.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 4,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q005",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "An assembly member is asked to explain why A community has limited water during a dry season. Which response is most sustainable?",
+      "options": [
+        "Use water without monitoring",
+        "Allow unrestricted waste",
+        "Pollute the remaining sources",
+        "Prioritise essential use, repair leaks and manage shared supplies"
+      ],
+      "correctIndex": 3,
+      "explanation": "D.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 5,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q006",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "During a school project in Kumasi, learners investigate the situation. A town experiences rapid growth at its edges without roads or drainage. This is a challenge associated with",
+      "options": [
+        "international trade",
+        "unplanned urbanisation",
+        "cultural preservation",
+        "rural depopulation only"
+      ],
+      "correctIndex": 1,
+      "explanation": "B.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 6,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q007",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "A district planning team receives a report that a community's drinking water source is protected by fencing and regular testing. These actions support",
+      "options": [
+        "uncontrolled access and contamination",
+        "trade liberalisation",
+        "soil exhaustion",
+        "water safety and source protection"
+      ],
+      "correctIndex": 3,
+      "explanation": "D.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 7,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q008",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "A local radio discussion raises the concern that a district identifies unemployed young people and consults them before designing training. This improves",
+      "options": [
+        "the secrecy of public budgets",
+        "the relevance of development programmes",
+        "the number of natural resources",
+        "the cost of every service"
+      ],
+      "correctIndex": 1,
+      "explanation": "B.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 8,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q009",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "During a community clean-up, volunteers realise that a district encourages residents to use public transport and walk short distances where safe. This can",
+      "options": [
+        "prevent urban planning",
+        "remove all travel costs",
+        "increase the number of private cars",
+        "reduce congestion and emissions"
+      ],
+      "correctIndex": 3,
+      "explanation": "D.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 9,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q010",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "An assembly member is asked to explain why A farmer adopts drought-tolerant crops but also conserves soil moisture. This is",
+      "options": [
+        "unplanned urban growth",
+        "climate denial",
+        "resource depletion",
+        "climate adaptation"
+      ],
+      "correctIndex": 3,
+      "explanation": "D.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 10,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q011",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "During a school project in Kumasi, learners investigate the situation. A district assembly publishes its budget and invites residents to a public forum. This mainly promotes",
+      "options": [
+        "private ownership of public roads",
+        "cultural assimilation",
+        "one-party rule",
+        "accountability and public participation"
+      ],
+      "correctIndex": 3,
+      "explanation": "D.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 11,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q012",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "A district planning team receives a report that a factory discharges untreated chemicals into farmland. Which principle has been ignored?",
+      "options": [
+        "Separation of powers",
+        "Environmental responsibility and pollution control",
+        "Cultural diffusion",
+        "Universal suffrage"
+      ],
+      "correctIndex": 1,
+      "explanation": "B.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 12,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q013",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "A local radio discussion raises the concern that a community plants trees on degraded land and monitors their survival. The activity supports",
+      "options": [
+        "uncontrolled mining",
+        "desertification",
+        "land restoration",
+        "overgrazing"
+      ],
+      "correctIndex": 2,
+      "explanation": "C.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 13,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q014",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "During a community clean-up, volunteers realise that a household separates plastics from food waste for collection. This practice supports",
+      "options": [
+        "soil sealing",
+        "water pollution",
+        "open burning",
+        "recycling and responsible waste management"
+      ],
+      "correctIndex": 3,
+      "explanation": "D.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 14,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q015",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "An assembly member is asked to explain why A radio station gives candidates equal opportunity to explain their policies. This supports",
+      "options": [
+        "judicial punishment",
+        "cultural uniformity",
+        "informed democratic choice",
+        "electoral intimidation"
+      ],
+      "correctIndex": 2,
+      "explanation": "C.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 15,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q016",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "During a school project in Kumasi, learners investigate the situation. A district assembly transfers some planning decisions to sub-district structures. This reflects",
+      "options": [
+        "international migration",
+        "decentralisation",
+        "privatisation of elections",
+        "centralisation"
+      ],
+      "correctIndex": 1,
+      "explanation": "B.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 16,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q017",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "A district planning team receives a report that a constitution sets limits on the powers of public institutions. This helps to",
+      "options": [
+        "end public accountability",
+        "remove citizens' rights",
+        "make leaders above the law",
+        "prevent arbitrary use of power"
+      ],
+      "correctIndex": 3,
+      "explanation": "D.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 17,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q018",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "A local radio discussion raises the concern that a community records the location of public facilities on a map. This can help planners",
+      "options": [
+        "replace population data entirely",
+        "predict individual behaviour",
+        "identify service gaps and improve access",
+        "determine every resident's political views"
+      ],
+      "correctIndex": 2,
+      "explanation": "C.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 18,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q019",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "During a community clean-up, volunteers realise that a farmer keeps livestock away from a stream used for drinking water. This reduces",
+      "options": [
+        "rainfall variability",
+        "the need for water testing",
+        "faecal contamination risk",
+        "soil fertility everywhere"
+      ],
+      "correctIndex": 2,
+      "explanation": "C.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 19,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q020",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "An assembly member is asked to explain why A community's market traders agree on safe food-handling practices. This contributes to",
+      "options": [
+        "consumer health and food safety",
+        "political patronage",
+        "environmental degradation",
+        "price fixing by definition"
+      ],
+      "correctIndex": 0,
+      "explanation": "A.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 20,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q021",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "During a school project in Kumasi, learners investigate the situation. A citizen pays lawful taxes and asks how public revenue is used. This combines",
+      "options": [
+        "patronage with nepotism",
+        "tax evasion with secrecy",
+        "civic responsibility with accountability",
+        "censorship with exclusion"
+      ],
+      "correctIndex": 2,
+      "explanation": "C.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 21,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q022",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "A district planning team receives a report that a community keeps dumping refuse into a stream used downstream. Which action best addresses the problem at its source?",
+      "options": [
+        "Tell downstream households to boil all their water",
+        "Move the refuse to another river",
+        "Cover the stream with leaves",
+        "Organise source-separated waste collection and enforce safe disposal"
+      ],
+      "correctIndex": 3,
+      "explanation": "D.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 22,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q023",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "A local radio discussion raises the concern that a young person checks the source and date of a viral social-media claim before sharing it. This shows",
+      "options": [
+        "political apathy",
+        "consumer exploitation",
+        "media and information literacy",
+        "cultural isolation"
+      ],
+      "correctIndex": 2,
+      "explanation": "C.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 23,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q024",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "During a community clean-up, volunteers realise that a town protects a historic building while adapting it for community use. This is an example of",
+      "options": [
+        "trade liberalisation",
+        "heritage conservation",
+        "cultural destruction",
+        "soil conservation"
+      ],
+      "correctIndex": 1,
+      "explanation": "B.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 24,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q025",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "An assembly member is asked to explain why Two groups disagree about the use of a community park. A neutral mediator can help them",
+      "options": [
+        "declare one group permanently superior",
+        "avoid listening to either group",
+        "spread rumours about both groups",
+        "identify interests and negotiate an agreement"
+      ],
+      "correctIndex": 3,
+      "explanation": "D.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 25,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q026",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "During a school project in Kumasi, learners investigate the situation. A district builds accessible ramps at public offices. This is intended to",
+      "options": [
+        "increase road congestion",
+        "restrict public participation",
+        "improve access for persons with mobility limitations",
+        "replace all public transport"
+      ],
+      "correctIndex": 2,
+      "explanation": "C.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 26,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q027",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "A district planning team receives a report that a community's elders teach traditional weaving to apprentices while introducing improved designs. This illustrates",
+      "options": [
+        "population ageing only",
+        "complete cultural loss",
+        "political decentralisation",
+        "continuity alongside cultural innovation"
+      ],
+      "correctIndex": 3,
+      "explanation": "D.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 27,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q028",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "A local radio discussion raises the concern that a community relies on charcoal production without replanting trees. The long-term risk includes",
+      "options": [
+        "permanent soil protection",
+        "forest degradation",
+        "automatic increase in biodiversity",
+        "reduced demand for fuel"
+      ],
+      "correctIndex": 1,
+      "explanation": "B.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 28,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q029",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "During a community clean-up, volunteers realise that a young person learns to identify phishing messages before using mobile money. This is",
+      "options": [
+        "digital safety and responsible technology use",
+        "population control",
+        "cultural assimilation",
+        "environmental auditing"
+      ],
+      "correctIndex": 0,
+      "explanation": "A.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 29,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q030",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "An assembly member is asked to explain why A community develops evacuation routes and practises them before floods. This is",
+      "options": [
+        "emergency preparedness",
+        "unplanned settlement",
+        "post-event compensation",
+        "resource extraction"
+      ],
+      "correctIndex": 0,
+      "explanation": "A.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 30,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q031",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "During a school project in Kumasi, learners investigate the situation. A local history project collects oral accounts from older residents and checks them against records. This supports",
+      "options": [
+        "rumour as the only source",
+        "historical understanding and evidence use",
+        "electoral campaigning",
+        "cultural erasure"
+      ],
+      "correctIndex": 1,
+      "explanation": "B.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 31,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q032",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "A district planning team receives a report that a business provides apprenticeships and follows workplace safety rules. This supports",
+      "options": [
+        "unsafe production",
+        "informal discrimination",
+        "child exploitation",
+        "skills development and decent work"
+      ],
+      "correctIndex": 3,
+      "explanation": "D.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 32,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q033",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "A local radio discussion raises the concern that a public institution provides the same service rules to all applicants. This reflects",
+      "options": [
+        "arbitrary power",
+        "discrimination",
+        "fairness and impartiality",
+        "nepotism"
+      ],
+      "correctIndex": 2,
+      "explanation": "C.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 33,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q034",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "During a community clean-up, volunteers realise that a family saves part of its monthly income before spending on non-essential items. The practice demonstrates",
+      "options": [
+        "financial planning",
+        "conspicuous consumption",
+        "price fixing",
+        "dependency"
+      ],
+      "correctIndex": 0,
+      "explanation": "A.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 34,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q035",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "An assembly member is asked to explain why A voter accepts money in exchange for a ballot. This weakens",
+      "options": [
+        "the rule of law",
+        "cultural heritage",
+        "population distribution",
+        "free and fair electoral choice"
+      ],
+      "correctIndex": 3,
+      "explanation": "D.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 35,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q036",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "During a school project in Kumasi, learners investigate the situation. A community's young people learn a trade and receive mentoring. This can contribute to",
+      "options": [
+        "permanent dependency",
+        "lower skill levels",
+        "the end of innovation",
+        "employability and local enterprise"
+      ],
+      "correctIndex": 3,
+      "explanation": "D.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 36,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q037",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "A district planning team receives a report that a community creates a savings group with clear rules and public records. The strongest benefit is",
+      "options": [
+        "the elimination of all financial risk",
+        "guaranteed high profits",
+        "freedom from every tax",
+        "collective financial discipline and access to small funds"
+      ],
+      "correctIndex": 3,
+      "explanation": "D.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 37,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q038",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "A local radio discussion raises the concern that a district invests in feeder roads linking farms to markets. This can",
+      "options": [
+        "make produce impossible to sell",
+        "reduce transport barriers and post-harvest losses",
+        "stop all rural-urban movement",
+        "remove the need for storage"
+      ],
+      "correctIndex": 1,
+      "explanation": "B.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 38,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q039",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "During a community clean-up, volunteers realise that a district gathers data on school attendance by gender and location. The data can reveal",
+      "options": [
+        "the exact income of every household",
+        "the result of future elections",
+        "inequalities in access to education",
+        "the chemical composition of soil"
+      ],
+      "correctIndex": 2,
+      "explanation": "C.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 39,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q040",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "An assembly member is asked to explain why A farmer receives a weather advisory and adjusts planting dates. This is an example of",
+      "options": [
+        "ignoring scientific evidence",
+        "using information to adapt to climate risks",
+        "preventing all rainfall",
+        "increasing vulnerability"
+      ],
+      "correctIndex": 1,
+      "explanation": "B.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 40,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q041",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "During a school project in Kumasi, learners investigate the situation. A district depends on remittances from relatives abroad. A risk of relying heavily on one income source is",
+      "options": [
+        "the end of migration",
+        "guaranteed economic independence",
+        "automatic industrialisation",
+        "vulnerability if transfers decline"
+      ],
+      "correctIndex": 3,
+      "explanation": "D.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 41,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q042",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "A district planning team receives a report that a household buys goods after comparing quality, price and need. This is",
+      "options": [
+        "market manipulation",
+        "planned obsolescence",
+        "responsible consumer behaviour",
+        "impulse buying"
+      ],
+      "correctIndex": 2,
+      "explanation": "C.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 42,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q043",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "A local radio discussion raises the concern that a community group checks whether a promised borehole was completed and works. This is",
+      "options": [
+        "foreign aid conditionality",
+        "population census",
+        "social accountability",
+        "cultural assimilation"
+      ],
+      "correctIndex": 2,
+      "explanation": "C.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 43,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q044",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "During a community clean-up, volunteers realise that a learner uses a reliable census report to support a class presentation. This is an example of",
+      "options": [
+        "evidence-based communication",
+        "plagiarism automatically",
+        "misinformation",
+        "stereotyping"
+      ],
+      "correctIndex": 0,
+      "explanation": "A.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 44,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q045",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "An assembly member is asked to explain why A citizen reports a broken streetlight through the assembly's complaints channel. This is an example of",
+      "options": [
+        "election malpractice",
+        "responsible civic participation",
+        "judicial review",
+        "traditional worship"
+      ],
+      "correctIndex": 1,
+      "explanation": "B.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 45,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q046",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "During a school project in Kumasi, learners investigate the situation. A district depends on one crop for most household income. A fall in its market price causes widespread hardship. The district needs",
+      "options": [
+        "less market information",
+        "greater dependence on the same crop",
+        "economic diversification",
+        "a ban on all small businesses"
+      ],
+      "correctIndex": 2,
+      "explanation": "C.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 46,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q047",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "A district planning team receives a report that a local assembly consults residents before siting a landfill. The consultation helps to",
+      "options": [
+        "identify concerns and improve the decision",
+        "transfer all responsibility to residents",
+        "remove the need for environmental assessment",
+        "guarantee that nobody will object"
+      ],
+      "correctIndex": 0,
+      "explanation": "A.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 47,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q048",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "A local radio discussion raises the concern that a public officer awards a contract to a relative without a fair process. This is an example of",
+      "options": [
+        "decentralisation",
+        "accountability",
+        "cultural exchange",
+        "nepotism and conflict of interest"
+      ],
+      "correctIndex": 3,
+      "explanation": "D.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 48,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q049",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "During a community clean-up, volunteers realise that a community organises a clean-up but leaves rubbish in an open drain. What should be added?",
+      "options": [
+        "Safe collection and final disposal of the waste",
+        "A ban on sweeping",
+        "A new festival",
+        "More posters only"
+      ],
+      "correctIndex": 0,
+      "explanation": "A.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 49,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q050",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "An assembly member is asked to explain why A company advertises a product with claims it cannot support. Consumers are best protected by",
+      "options": [
+        "assuming every advert is factual",
+        "avoiding all locally made goods",
+        "checking evidence and reporting misleading claims",
+        "sharing the advert without question"
+      ],
+      "correctIndex": 2,
+      "explanation": "C.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 50,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q051",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "During a school project in Kumasi, learners investigate the situation. A community agrees that disputes should be handled through established lawful processes. This supports",
+      "options": [
+        "arbitrary detention",
+        "the rule of law",
+        "mob justice",
+        "collective blame"
+      ],
+      "correctIndex": 1,
+      "explanation": "B.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 51,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q052",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "A district planning team receives a report that a school elects class representatives through a fair vote. This gives learners experience in",
+      "options": [
+        "judicial sentencing",
+        "hereditary succession",
+        "representation and democratic participation",
+        "military rule"
+      ],
+      "correctIndex": 2,
+      "explanation": "C.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 52,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q053",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "A local radio discussion raises the concern that a community invites people with different beliefs to plan a shared sanitation project. This builds",
+      "options": [
+        "political polarisation",
+        "religious discrimination",
+        "social cohesion",
+        "ethnocentrism"
+      ],
+      "correctIndex": 2,
+      "explanation": "C.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 53,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q054",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "During a community clean-up, volunteers realise that a town improves street lighting around a market and transport station. One possible benefit is",
+      "options": [
+        "the end of all crime",
+        "improved public safety and accessibility",
+        "automatic population decline",
+        "reduced need for maintenance"
+      ],
+      "correctIndex": 1,
+      "explanation": "B.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 54,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q055",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "An assembly member is asked to explain why A community has both local and migrant residents. A fair development committee should",
+      "options": [
+        "avoid sharing information",
+        "exclude newcomers automatically",
+        "give every decision to one family",
+        "represent affected groups and use transparent criteria"
+      ],
+      "correctIndex": 3,
+      "explanation": "D.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 55,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q056",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "During a school project in Kumasi, learners investigate the situation. A farmer clears vegetation beside a river before planting. What is the most likely long-term effect?",
+      "options": [
+        "Increased soil erosion and siltation",
+        "Permanent increase in soil fertility",
+        "No effect on the river",
+        "Reduced evaporation everywhere"
+      ],
+      "correctIndex": 0,
+      "explanation": "A.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 56,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q057",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "A district planning team receives a report that a local festival teaches children the history and values of their people. It contributes to",
+      "options": [
+        "environmental degradation by definition",
+        "population census",
+        "cultural continuity and identity",
+        "foreign exchange control"
+      ],
+      "correctIndex": 2,
+      "explanation": "C.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 57,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q058",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "A local radio discussion raises the concern that a household uses a covered container for drinking water. The main benefit is",
+      "options": [
+        "reducing contamination",
+        "increasing water salinity",
+        "making water radioactive",
+        "removing all dissolved minerals"
+      ],
+      "correctIndex": 0,
+      "explanation": "A.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 58,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q059",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "During a community clean-up, volunteers realise that a community records births and deaths accurately. These records help planners understand",
+      "options": [
+        "population change",
+        "the number of political parties",
+        "the rainfall on one farm",
+        "the price of imported fuel"
+      ],
+      "correctIndex": 0,
+      "explanation": "A.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 59,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q060",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "An assembly member is asked to explain why A farmer uses crop rotation and compost to maintain soil quality. This is",
+      "options": [
+        "urbanisation",
+        "overfishing",
+        "sustainable agriculture",
+        "slash-and-burn expansion"
+      ],
+      "correctIndex": 2,
+      "explanation": "C.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 60,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q061",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "During a school project in Kumasi, learners investigate the situation. A public health campaign encourages handwashing with soap at key times. This is primarily",
+      "options": [
+        "disease prevention",
+        "foreign policy",
+        "trade protection",
+        "electoral reform"
+      ],
+      "correctIndex": 0,
+      "explanation": "A.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 61,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q062",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "A district planning team receives a report that a local entrepreneur turns agricultural waste into useful products. This demonstrates",
+      "options": [
+        "market isolation",
+        "resource recovery and innovation",
+        "wasteful consumption",
+        "environmental neglect"
+      ],
+      "correctIndex": 1,
+      "explanation": "B.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 62,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q063",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "A local radio discussion raises the concern that a district supports local artisans to improve product quality and reach new markets. This can",
+      "options": [
+        "stop cultural exchange",
+        "eliminate the need for skills",
+        "guarantee monopoly power",
+        "strengthen livelihoods and local value addition"
+      ],
+      "correctIndex": 3,
+      "explanation": "D.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 63,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q064",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "During a community clean-up, volunteers realise that a learner refuses to forward a humiliating image of a classmate. This demonstrates",
+      "options": [
+        "political neutrality",
+        "respect for privacy and digital citizenship",
+        "economic diversification",
+        "censorship of all ideas"
+      ],
+      "correctIndex": 1,
+      "explanation": "B.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 64,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q065",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "An assembly member is asked to explain why A district assembly sets measurable targets and reports progress publicly. This improves",
+      "options": [
+        "monitoring and accountability",
+        "secret decision-making",
+        "uncontrolled spending",
+        "social exclusion"
+      ],
+      "correctIndex": 0,
+      "explanation": "A.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 65,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q066",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "During a school project in Kumasi, learners investigate the situation. A community notices that a new road may affect a forest reserve. Before construction, planners should",
+      "options": [
+        "ignore local concerns",
+        "avoid publishing plans",
+        "clear all trees immediately",
+        "assess environmental and social impacts"
+      ],
+      "correctIndex": 3,
+      "explanation": "D.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 66,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q067",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "A district planning team receives a report that a town's traditional leaders and elected assembly members jointly plan a sanitation campaign. This can combine",
+      "options": [
+        "community legitimacy and local government coordination",
+        "unaccountable rule and secrecy",
+        "cultural conflict only",
+        "private profit and tax evasion"
+      ],
+      "correctIndex": 0,
+      "explanation": "A.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 67,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q068",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "A local radio discussion raises the concern that a town's population grows rapidly but classrooms and clinics remain unchanged. The likely result is",
+      "options": [
+        "a fall in demand for housing",
+        "automatic improvement in service quality",
+        "the disappearance of unemployment",
+        "greater pressure on public services"
+      ],
+      "correctIndex": 3,
+      "explanation": "D.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 68,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q069",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "During a community clean-up, volunteers realise that a school club includes learners with disabilities in planning its activities. This promotes",
+      "options": [
+        "forced migration",
+        "ethnocentrism",
+        "social exclusion",
+        "inclusion and equal participation"
+      ],
+      "correctIndex": 3,
+      "explanation": "D.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 69,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q070",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "An assembly member is asked to explain why A person is accused of an offence. Which principle requires a fair hearing before punishment?",
+      "options": [
+        "Patronage",
+        "Censorship",
+        "Due process",
+        "Collective punishment"
+      ],
+      "correctIndex": 2,
+      "explanation": "C.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 70,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q071",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "During a school project in Kumasi, learners investigate the situation. A learner respects a classmate's language and cultural practices. This demonstrates",
+      "options": [
+        "ethnocentrism",
+        "cultural erasure",
+        "tolerance and respect for diversity",
+        "discrimination"
+      ],
+      "correctIndex": 2,
+      "explanation": "C.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 71,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-q072",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "A district planning team receives a report that a learner compares two news reports and checks the evidence they cite. This is",
+      "options": [
+        "blind obedience",
+        "cultural diffusion",
+        "critical thinking",
+        "stereotyping"
+      ],
+      "correctIndex": 2,
+      "explanation": "C.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "sourceQuestionNumber": 72,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-social-studies"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    }
+  ]
+}
