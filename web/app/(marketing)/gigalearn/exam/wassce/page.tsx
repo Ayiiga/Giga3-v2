@@ -3,21 +3,26 @@ import { publicMetadata } from "@/lib/seo/publicMetadata";
 import { ExamSubjectPicker } from "@/components/gigalearn/exam/ExamSubjectPicker";
 import { getExamBankMeta, examPracticeHref } from "@/lib/gigalearn/examPractice/examBankMeta";
 
-export const metadata = publicMetadata({ path: "/gigalearn/exam/wassce", title: "Choose a WASSCE Core Subject | GigaLearn", description: "Choose one of the four WASSCE core subjects on GigaLearn." });
+export const metadata = publicMetadata({ path: "/gigalearn/exam/wassce", title: "WASSCE Core Subject Practice | GigaLearn", description: "Practise WASSCE English Language, Core Mathematics, Integrated Science and Social Studies." });
 
 const CORE_SUBJECTS = [
-  { id: "english-language", label: "English Language", topicIds: ["english", "english-language"] },
-  { id: "core-mathematics", label: "Core Mathematics", topicIds: ["mathematics", "core-mathematics"] },
-  { id: "integrated-science", label: "Integrated Science", topicIds: ["science", "integrated-science"] },
-  { id: "social-studies", label: "Social Studies", topicIds: ["social-studies", "social_studies"] },
+  { id: "english", label: "English Language", courseSlug: "exam-wassce-english" },
+  { id: "mathematics", label: "Core Mathematics", courseSlug: "exam-wassce-core-mathematics" },
+  { id: "science", label: "Integrated Science", courseSlug: "exam-wassce-integrated-science" },
+  { id: "social-studies", label: "Social Studies", courseSlug: "exam-wassce-social-studies" },
 ] as const;
 
 export default function WassceSubjectPage() {
-  const bank = getExamBankMeta("exam-wassce-core");
   const subjects = CORE_SUBJECTS.map((subject) => {
-    const topic = bank?.topics.find((item) => subject.topicIds.some((id) => id === item.id));
-    const available = Boolean(topic && (topic.questionCount ?? 0) > 0);
-    return { id: subject.id, label: subject.label, questionCount: topic?.questionCount, available, href: available && topic ? examPracticeHref("exam-wassce-core", { mode: "learn", topic: topic.id }) : undefined };
+    const bank = getExamBankMeta(subject.courseSlug);
+    const questionCount = bank?.pendingQuestionCount ?? bank?.approvedQuestionCount ?? 0;
+    return {
+      id: subject.id,
+      label: subject.label,
+      questionCount,
+      available: questionCount > 0,
+      href: questionCount > 0 ? examPracticeHref(subject.courseSlug, { mode: "learn", count: 20 }) : undefined,
+    };
   });
-  return <><ProductSeoHeader compact title="WASSCE Core Subject Selection" description="Choose one of the four core subjects." showProductNav={false} /><div className="marketing-stable gigalearn-stable section-padding pt-4 pb-6"><ExamSubjectPicker title="Choose your WASSCE core subject" description="For now, GigaLearn is focusing on the four core subjects. Each subject will have its own practice session." backHref="/gigalearn/exam/" subjects={subjects} /></div></>;
+  return <><ProductSeoHeader compact title="WASSCE Core Subject Practice" description="Choose a subject and practise one question at a time." showProductNav={false} /><div className="marketing-stable gigalearn-stable section-padding pt-4 pb-6"><ExamSubjectPicker title="Choose your WASSCE core subject" description="Start with a short practice set. You will receive feedback and an explanation after each answer." backHref="/gigalearn/exam/" subjects={subjects} /></div></>;
 }
