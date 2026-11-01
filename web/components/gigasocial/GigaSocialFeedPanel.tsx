@@ -90,15 +90,6 @@ const GigaSocialAIStudioHub = dynamic(
   { ssr: false }
 );
 
-const GigaSocialComposer = dynamic(
-  withChunkRetryLoader(() =>
-    import("@/components/gigasocial/GigaSocialComposer").then((m) => ({
-      default: m.GigaSocialComposer,
-    }))
-  ),
-  { ssr: false }
-);
-
 const GigaSocialComposerSheet = dynamic(
   withChunkRetryLoader(() =>
     import("@/components/gigasocial/GigaSocialComposerSheet").then((m) => ({
@@ -965,12 +956,6 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         <GigaSocialFeedHero postCount={posts.length} compact />
       ) : null}
 
-      {sessionToken && composerOpen && false ? (
-        <GigaSocialPanelErrorBoundary panelName="Create post">
-          <GigaSocialComposer {...composerProps} />
-        </GigaSocialPanelErrorBoundary>
-      ) : null}
-
       {sessionToken && composerOpen ? (
         <GigaSocialPanelErrorBoundary panelName="Create post">
           <GigaSocialComposerSheet open={composerOpen} onClose={closeComposer} {...composerProps} />
@@ -1125,14 +1110,12 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         </div>
       ) : null}
 
-      {true ? (
-        <GigaSocialPanelErrorBoundary panelName="Create">
-          <GigaCreatorHub
-            disabled={!sessionToken}
-            onSelect={(action) => handleGigaCreate({ action })}
-          />
-        </GigaSocialPanelErrorBoundary>
-      ) : null}
+      <GigaSocialPanelErrorBoundary panelName="Create">
+        <GigaCreatorHub
+          disabled={!sessionToken}
+          onSelect={(action) => handleGigaCreate({ action })}
+        />
+      </GigaSocialPanelErrorBoundary>
 
       {features.enableAIStudio ? (
         <GigaSocialAIStudioHub
