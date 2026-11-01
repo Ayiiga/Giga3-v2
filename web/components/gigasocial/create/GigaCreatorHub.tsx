@@ -35,9 +35,11 @@ const ACTIONS: CreatorAction[] = [
 
 export const GigaCreatorHub = memo(function GigaCreatorHub({
   disabled,
+  openSignal = 0,
   onSelect,
 }: {
   disabled?: boolean;
+  openSignal?: number;
   onSelect: (action: GigaCreateActionId) => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -46,10 +48,8 @@ export const GigaCreatorHub = memo(function GigaCreatorHub({
 
   useEffect(() => setMounted(true), []);
   useEffect(() => {
-    const onOpenCreate = () => setOpen(true);
-    window.addEventListener("gigasocial:open-create", onOpenCreate);
-    return () => window.removeEventListener("gigasocial:open-create", onOpenCreate);
-  }, []);
+    if (openSignal > 0 && !disabled) setOpen(true);
+  }, [disabled, openSignal]);
   const panelRef = useRef<HTMLElement>(null);
   useEffect(() => {
     if (!open) return;
