@@ -2,7 +2,9 @@ name: Deploy to Cloudflare Pages
 
 on:
   push:
-    branches: [main]
+    # Main publishes production; the Creator Hub branch publishes a Cloudflare
+    # Pages preview under its branch-specific preview URL.
+    branches: [main, new-gigasocial-creator-hub]
   workflow_dispatch:
 
 concurrency:
