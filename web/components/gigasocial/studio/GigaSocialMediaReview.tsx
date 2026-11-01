@@ -84,6 +84,11 @@ export const GigaSocialMediaReview = memo(function GigaSocialMediaReview({
     let ignorePop = false;
     const onPopState = () => {
       if (ignorePop) return;
+      if (finishing) {
+        // Keep the review entry active while the parent consumes the selected file.
+        window.history.pushState({ gigasocialMediaReview: true }, "");
+        return;
+      }
       onClose();
     };
     window.history.pushState({ gigasocialMediaReview: true }, "");
@@ -95,7 +100,7 @@ export const GigaSocialMediaReview = memo(function GigaSocialMediaReview({
         window.history.back();
       }
     };
-  }, [onClose, open]);
+  }, [finishing, onClose, open]);
 
   const finish = useCallback(
     async (skipCaption = false) => {
@@ -169,7 +174,7 @@ export const GigaSocialMediaReview = memo(function GigaSocialMediaReview({
           />
         )}
         <div className="absolute inset-x-0 top-0 flex items-center justify-between bg-gradient-to-b from-black/70 to-transparent px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] text-white">
-          <button type="button" onClick={onClose} className="text-sm text-white/90">
+          <button type="button" onClick={onClose} disabled={finishing} className="text-sm text-white/90 disabled:opacity-50">
             Back
           </button>
           <div className="text-center">
@@ -193,24 +198,24 @@ export const GigaSocialMediaReview = memo(function GigaSocialMediaReview({
       <div className="max-h-[42vh] space-y-3 overflow-y-auto border-t border-white/10 bg-black/90 px-4 py-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
         <div className="flex flex-wrap gap-2">
           {kind === "image" ? (
-            <Button type="button" size="sm" variant="outline" onClick={() => setStudioOpen((v) => !v)}>
+            <Button type="button" size="sm" variant="outline" disabled={finishing} onClick={() => setStudioOpen((v) => !v)}>
               <RotateCcw className="h-4 w-4" />
               Filters
             </Button>
           ) : null}
           {kind === "video" && workingDuration && needsVideoTrim(workingDuration) ? (
-            <Button type="button" size="sm" variant="outline" onClick={() => setTrimOpen(true)}>
+            <Button type="button" size="sm" variant="outline" disabled={finishing} onClick={() => setTrimOpen(true)}>
               Trim
             </Button>
           ) : null}
           {onReplace ? (
-            <Button type="button" size="sm" variant="outline" onClick={onReplace}>
+            <Button type="button" size="sm" variant="outline" disabled={finishing} onClick={onReplace}>
               <Replace className="h-4 w-4" />
               Replace
             </Button>
           ) : null}
           {onRemove ? (
-            <Button type="button" size="sm" variant="outline" onClick={onRemove}>
+            <Button type="button" size="sm" variant="outline" disabled={finishing} onClick={onRemove}>
               <Trash2 className="h-4 w-4" />
               Remove
             </Button>
@@ -228,6 +233,7 @@ export const GigaSocialMediaReview = memo(function GigaSocialMediaReview({
         <label className="block text-xs text-white/70">
           Caption
           <textarea
+            disabled={finishing}
             value={caption}
             onChange={(event) => setCaption(event.target.value)}
             rows={2}
