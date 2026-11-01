@@ -6735,6 +6735,1194 @@
         "free",
         "premium"
       ]
+    },
+    {
+      "questionId": "exam-wassce-english-q205",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A student says, 'I see your point, but I have a different suggestion.' What is the student's tone?",
+      "options": [
+        "Respectful disagreement",
+        "Anger",
+        "Fear",
+        "Indifference"
+      ],
+      "correctIndex": 0,
+      "explanation": "The student acknowledges the other view before offering another idea.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 205,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-english-q206",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A shopkeeper says, 'The price is fixed; I cannot reduce it.' What does 'fixed' mean here?",
+      "options": [
+        "It will not be changed",
+        "It is not known",
+        "It is temporary",
+        "It is negotiable"
+      ],
+      "correctIndex": 0,
+      "explanation": "A fixed price is not open to bargaining.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 206,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-english-q207",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A nurse tells a patient, 'Take this medicine after meals, not on an empty stomach.' When should it be taken?",
+      "options": [
+        "After eating",
+        "Before breakfast only",
+        "At midnight",
+        "Whenever pain starts"
+      ],
+      "correctIndex": 0,
+      "explanation": "The instruction directly says after meals.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 207,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-english-q208",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A friend says, 'I will get back to you once I have checked the timetable.' What does the friend promise?",
+      "options": [
+        "To respond after checking",
+        "To cancel the meeting",
+        "To send the timetable immediately",
+        "To avoid the discussion"
+      ],
+      "correctIndex": 0,
+      "explanation": "'Get back to you' means contact you again with a response.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 208,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-english-q209",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A speaker says, 'Let us not lose sight of the main issue.' What is the speaker asking listeners to do?",
+      "options": [
+        "Keep the central problem in mind",
+        "Look out of the window",
+        "End the meeting",
+        "Change the topic"
+      ],
+      "correctIndex": 0,
+      "explanation": "The expression means do not forget the main point.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 209,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-english-q210",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A student hears, 'You are expected to be seated ten minutes before the paper begins.' What should the student do?",
+      "options": [
+        "Arrive early and sit down",
+        "Enter after the paper starts",
+        "Wait outside until called",
+        "Leave the examination hall"
+      ],
+      "correctIndex": 0,
+      "explanation": "The instruction requires being seated before the start time.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 210,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-english-q211",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A caller says, 'I can barely hear you; the line keeps breaking.' What is the caller mainly reporting?",
+      "options": [
+        "A poor telephone connection",
+        "A disagreement",
+        "A late appointment",
+        "A wrong address"
+      ],
+      "correctIndex": 0,
+      "explanation": "The words 'barely hear' and 'line keeps breaking' point to a weak connection.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 211,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-english-q212",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A teacher says, 'Please submit the assignment by close of day on Friday.' When is the deadline?",
+      "options": [
+        "Before Friday ends",
+        "On Saturday morning",
+        "At the start of Friday",
+        "Any time next week"
+      ],
+      "correctIndex": 0,
+      "explanation": "'By close of day' means before the working day ends.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 212,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-english-q213",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A passenger asks, 'Does this bus pass through Ejisu?' What information does the passenger need?",
+      "options": [
+        "The route",
+        "The fare refund policy",
+        "The driver's name",
+        "The bus colour"
+      ],
+      "correctIndex": 0,
+      "explanation": "The question asks whether the bus travels through a particular place.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 213,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-english-q214",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A radio presenter says, 'The road is temporarily closed while workers remove a fallen tree.' What should drivers do?",
+      "options": [
+        "Use another route for now",
+        "Drive faster",
+        "Park on the road",
+        "Ignore the warning"
+      ],
+      "correctIndex": 0,
+      "explanation": "A temporary closure requires drivers to avoid that road until it reopens.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 214,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-english-q215",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A student says, 'I see your point, but I have a different suggestion.' What is the student's tone?",
+      "options": [
+        "Respectful disagreement",
+        "Anger",
+        "Fear",
+        "Indifference"
+      ],
+      "correctIndex": 0,
+      "explanation": "The student acknowledges the other view before offering another idea.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 215,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-english-q216",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A shopkeeper says, 'The price is fixed; I cannot reduce it.' What does 'fixed' mean here?",
+      "options": [
+        "It will not be changed",
+        "It is not known",
+        "It is temporary",
+        "It is negotiable"
+      ],
+      "correctIndex": 0,
+      "explanation": "A fixed price is not open to bargaining.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 216,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-english-q217",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A nurse tells a patient, 'Take this medicine after meals, not on an empty stomach.' When should it be taken?",
+      "options": [
+        "After eating",
+        "Before breakfast only",
+        "At midnight",
+        "Whenever pain starts"
+      ],
+      "correctIndex": 0,
+      "explanation": "The instruction directly says after meals.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 217,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-english-q218",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A friend says, 'I will get back to you once I have checked the timetable.' What does the friend promise?",
+      "options": [
+        "To respond after checking",
+        "To cancel the meeting",
+        "To send the timetable immediately",
+        "To avoid the discussion"
+      ],
+      "correctIndex": 0,
+      "explanation": "'Get back to you' means contact you again with a response.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 218,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-english-q219",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A speaker says, 'Let us not lose sight of the main issue.' What is the speaker asking listeners to do?",
+      "options": [
+        "Keep the central problem in mind",
+        "Look out of the window",
+        "End the meeting",
+        "Change the topic"
+      ],
+      "correctIndex": 0,
+      "explanation": "The expression means do not forget the main point.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 219,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-english-q220",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A student hears, 'You are expected to be seated ten minutes before the paper begins.' What should the student do?",
+      "options": [
+        "Arrive early and sit down",
+        "Enter after the paper starts",
+        "Wait outside until called",
+        "Leave the examination hall"
+      ],
+      "correctIndex": 0,
+      "explanation": "The instruction requires being seated before the start time.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 220,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-english-q221",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A caller says, 'I can barely hear you; the line keeps breaking.' What is the caller mainly reporting?",
+      "options": [
+        "A poor telephone connection",
+        "A disagreement",
+        "A late appointment",
+        "A wrong address"
+      ],
+      "correctIndex": 0,
+      "explanation": "The words 'barely hear' and 'line keeps breaking' point to a weak connection.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 221,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-english-q222",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A teacher says, 'Please submit the assignment by close of day on Friday.' When is the deadline?",
+      "options": [
+        "Before Friday ends",
+        "On Saturday morning",
+        "At the start of Friday",
+        "Any time next week"
+      ],
+      "correctIndex": 0,
+      "explanation": "'By close of day' means before the working day ends.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 222,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-english-q223",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A passenger asks, 'Does this bus pass through Ejisu?' What information does the passenger need?",
+      "options": [
+        "The route",
+        "The fare refund policy",
+        "The driver's name",
+        "The bus colour"
+      ],
+      "correctIndex": 0,
+      "explanation": "The question asks whether the bus travels through a particular place.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 223,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-english-q224",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A radio presenter says, 'The road is temporarily closed while workers remove a fallen tree.' What should drivers do?",
+      "options": [
+        "Use another route for now",
+        "Drive faster",
+        "Park on the road",
+        "Ignore the warning"
+      ],
+      "correctIndex": 0,
+      "explanation": "A temporary closure requires drivers to avoid that road until it reopens.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 224,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-english-q225",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A student says, 'I see your point, but I have a different suggestion.' What is the student's tone?",
+      "options": [
+        "Respectful disagreement",
+        "Anger",
+        "Fear",
+        "Indifference"
+      ],
+      "correctIndex": 0,
+      "explanation": "The student acknowledges the other view before offering another idea.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 225,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-english-q226",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A shopkeeper says, 'The price is fixed; I cannot reduce it.' What does 'fixed' mean here?",
+      "options": [
+        "It will not be changed",
+        "It is not known",
+        "It is temporary",
+        "It is negotiable"
+      ],
+      "correctIndex": 0,
+      "explanation": "A fixed price is not open to bargaining.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 226,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-english-q227",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A nurse tells a patient, 'Take this medicine after meals, not on an empty stomach.' When should it be taken?",
+      "options": [
+        "After eating",
+        "Before breakfast only",
+        "At midnight",
+        "Whenever pain starts"
+      ],
+      "correctIndex": 0,
+      "explanation": "The instruction directly says after meals.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 227,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-english-q228",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A friend says, 'I will get back to you once I have checked the timetable.' What does the friend promise?",
+      "options": [
+        "To respond after checking",
+        "To cancel the meeting",
+        "To send the timetable immediately",
+        "To avoid the discussion"
+      ],
+      "correctIndex": 0,
+      "explanation": "'Get back to you' means contact you again with a response.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 228,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-english-q229",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A speaker says, 'Let us not lose sight of the main issue.' What is the speaker asking listeners to do?",
+      "options": [
+        "Keep the central problem in mind",
+        "Look out of the window",
+        "End the meeting",
+        "Change the topic"
+      ],
+      "correctIndex": 0,
+      "explanation": "The expression means do not forget the main point.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 229,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-english-q230",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A student hears, 'You are expected to be seated ten minutes before the paper begins.' What should the student do?",
+      "options": [
+        "Arrive early and sit down",
+        "Enter after the paper starts",
+        "Wait outside until called",
+        "Leave the examination hall"
+      ],
+      "correctIndex": 0,
+      "explanation": "The instruction requires being seated before the start time.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 230,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-english-q231",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A caller says, 'I can barely hear you; the line keeps breaking.' What is the caller mainly reporting?",
+      "options": [
+        "A poor telephone connection",
+        "A disagreement",
+        "A late appointment",
+        "A wrong address"
+      ],
+      "correctIndex": 0,
+      "explanation": "The words 'barely hear' and 'line keeps breaking' point to a weak connection.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 231,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-english-q232",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A teacher says, 'Please submit the assignment by close of day on Friday.' When is the deadline?",
+      "options": [
+        "Before Friday ends",
+        "On Saturday morning",
+        "At the start of Friday",
+        "Any time next week GigaLearn | Original human-centred WASSCE practice Page 17 <PARSED TEXT FOR PAGE: 18 / 26>"
+      ],
+      "correctIndex": 0,
+      "explanation": "'By close of day' means before the working day ends.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 232,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-english-q233",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A passenger asks, 'Does this bus pass through Ejisu?' What information does the passenger need?",
+      "options": [
+        "The route",
+        "The fare refund policy",
+        "The driver's name",
+        "The bus colour"
+      ],
+      "correctIndex": 0,
+      "explanation": "The question asks whether the bus travels through a particular place.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 233,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-english-q234",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A radio presenter says, 'The road is temporarily closed while workers remove a fallen tree.' What should drivers do?",
+      "options": [
+        "Use another route for now",
+        "Drive faster",
+        "Park on the road",
+        "Ignore the warning"
+      ],
+      "correctIndex": 0,
+      "explanation": "A temporary closure requires drivers to avoid that road until it reopens.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 234,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-english-q235",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A student says, 'I see your point, but I have a different suggestion.' What is the student's tone?",
+      "options": [
+        "Respectful disagreement",
+        "Anger",
+        "Fear",
+        "Indifference"
+      ],
+      "correctIndex": 0,
+      "explanation": "The student acknowledges the other view before offering another idea.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 235,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-english-q236",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A shopkeeper says, 'The price is fixed; I cannot reduce it.' What does 'fixed' mean here?",
+      "options": [
+        "It will not be changed",
+        "It is not known",
+        "It is temporary",
+        "It is negotiable"
+      ],
+      "correctIndex": 0,
+      "explanation": "A fixed price is not open to bargaining.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 236,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-english-q237",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A nurse tells a patient, 'Take this medicine after meals, not on an empty stomach.' When should it be taken?",
+      "options": [
+        "After eating",
+        "Before breakfast only",
+        "At midnight",
+        "Whenever pain starts"
+      ],
+      "correctIndex": 0,
+      "explanation": "The instruction directly says after meals.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 237,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-english-q238",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A friend says, 'I will get back to you once I have checked the timetable.' What does the friend promise?",
+      "options": [
+        "To respond after checking",
+        "To cancel the meeting",
+        "To send the timetable immediately",
+        "To avoid the discussion"
+      ],
+      "correctIndex": 0,
+      "explanation": "'Get back to you' means contact you again with a response.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 238,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-english-q239",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A speaker says, 'Let us not lose sight of the main issue.' What is the speaker asking listeners to do?",
+      "options": [
+        "Keep the central problem in mind",
+        "Look out of the window",
+        "End the meeting",
+        "Change the topic"
+      ],
+      "correctIndex": 0,
+      "explanation": "The expression means do not forget the main point.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 239,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
+    },
+    {
+      "questionId": "exam-wassce-english-q240",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "A student hears, 'You are expected to be seated ten minutes before the paper begins.' What should the student do?",
+      "options": [
+        "Arrive early and sit down",
+        "Enter after the paper starts",
+        "Wait outside until called",
+        "Leave the examination hall"
+      ],
+      "correctIndex": 0,
+      "explanation": "The instruction requires being seated before the start time.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "sourceQuestionNumber": 240,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "wassce",
+        "original-practice",
+        "wassce-english"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original practice draft; answer key and curriculum alignment require subject-specialist review.",
+      "publicationStatus": "published_practice",
+      "accessTier": [
+        "free",
+        "premium"
+      ]
     }
   ]
 }
