@@ -193,6 +193,11 @@ function GigaSocialContent() {
     setAuthPromptOpen(false);
     if (section !== "feed") {
       openSection("feed");
+      // Let the feed mount before the Creator Hub receives its open event.
+      window.setTimeout(() => {
+        window.dispatchEvent(new CustomEvent("gigasocial:open-create"));
+      }, 0);
+      return;
     }
     window.dispatchEvent(new CustomEvent("gigasocial:open-create"));
   };
