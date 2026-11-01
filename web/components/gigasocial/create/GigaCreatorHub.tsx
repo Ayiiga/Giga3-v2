@@ -27,7 +27,7 @@ type CreatorAction = {
 const ACTIONS: CreatorAction[] = [
   { id: "media-video", title: "Video", detail: "Upload, preview and polish a clip", icon: Clapperboard, tone: "from-violet-500/20 to-indigo-500/10" },
   { id: "media-photo", title: "Photo", detail: "Create a bright, beautiful post", icon: ImagePlus, tone: "from-pink-500/20 to-rose-500/10" },
-  { id: "media-audio", title: "Music", detail: "Give your photo story a soundtrack", icon: Music2, tone: "from-amber-500/20 to-orange-500/10" },
+  { id: "media-unified", title: "Music", detail: "Give your photo story a soundtrack", icon: Music2, tone: "from-amber-500/20 to-orange-500/10" },
   { id: "media-camera", title: "Camera", detail: "Capture something in the moment", icon: Camera, tone: "from-cyan-500/20 to-sky-500/10" },
   { id: "text-post", title: "Post", detail: "Share an idea, update or announcement", icon: Type, tone: "from-emerald-500/20 to-teal-500/10" },
   { id: "story-content", title: "Story", detail: "Share a moment that lasts 24 hours", icon: Sparkles, tone: "from-fuchsia-500/20 to-purple-500/10" },
