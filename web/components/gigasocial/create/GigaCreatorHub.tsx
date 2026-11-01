@@ -46,6 +46,11 @@ export const GigaCreatorHub = memo(function GigaCreatorHub({
 
   useEffect(() => setMounted(true), []);
   useEffect(() => {
+    const onOpenCreate = () => setOpen(true);
+    window.addEventListener("gigasocial:open-create", onOpenCreate);
+    return () => window.removeEventListener("gigasocial:open-create", onOpenCreate);
+  }, []);
+  useEffect(() => {
     if (!open) return;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -133,8 +138,7 @@ export const GigaCreatorHub = memo(function GigaCreatorHub({
               })}
             </div>
             <div className="mt-4 flex items-center justify-center gap-2 text-[11px] text-slate-500">
-              <Sparkles className="h-3.5 w-3.5 text-violet-300" />
-              Preview • Edit • Publish
+              <Sparkles className="h-3.5 w-3.5 text-violet-300" /> Preview • Edit • Publish
             </div>
           </div>
         </section>
