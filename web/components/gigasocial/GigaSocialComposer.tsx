@@ -694,8 +694,13 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           try {
             durationSec = await getVideoDuration(result.file);
           } catch (e) {
-            setError(e instanceof Error ? e.message : "Could not read video.");
-            setMediaReviewDraft(null);
+            setError(
+              e instanceof Error
+                ? `Could not verify this video's length. The video is still selected; try another file or retry.`
+                : "Could not verify this video's length. The video is still selected; try another file or retry."
+            );
+            // Keep the review open so a metadata read failure never loses the
+            // selected file. Publishing remains blocked until duration validates.
             return;
           }
         }
