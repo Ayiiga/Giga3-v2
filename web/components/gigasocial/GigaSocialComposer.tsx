@@ -1032,7 +1032,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   }
 
   async function handleSubmit() {
-    if (busy || disabled || imagePreparationBusy || !canPost) return;
+    if (busy || disabled || imagePreparationBusy || audioPreparationBusy || !canPost) return;
     if (
       pendingVideo &&
       shouldOfferEpisodeSplit(pendingVideo.file.size, pendingVideo.durationSec)
