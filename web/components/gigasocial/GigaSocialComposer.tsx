@@ -772,7 +772,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         }
       } else {
         await addImageFiles([result.file]);
-        setSuccess("Your photo has been automatically brightened for a cleaner, more polished post.");
+        setSuccess("Photo added. Automatic enhancement is applied when supported; your original is preserved if it is not.");
       }
       setMediaReviewDraft(null);
     },
