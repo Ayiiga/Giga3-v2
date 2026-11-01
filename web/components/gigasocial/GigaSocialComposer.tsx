@@ -633,44 +633,38 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
     videoProbeAbortRef.current = controller;
     const generation = videoProbeGenerationRef.current + 1;
     videoProbeGenerationRef.current = generation;
-    setMediaProbeBusy(true);
+    // Show the selected file immediately. Android's metadata decoder can be slow
+    // or fail for otherwise playable gallery videos, so duration must not gate preview.
+    setMediaReviewDraft({ file, kind: "video" });
+    setPostType("video");
     setError(null);
-    setSuccess("Reading video…");
+    setSuccess(null);
+    setMediaProbeBusy(true);
 
-    try {
-      const durationSec = await getVideoDuration(file, { signal: controller.signal });
-      if (generation !== videoProbeGenerationRef.current) return;
-
-      if (!isUsableVideoDuration(durationSec)) {
-        setError(
-          `Could not read this video length. Try another MP4, or record in-app (max ${SOCIAL_MAX_VIDEO_DURATION_MIN} min).`
-        );
-        setSuccess(null);
-        return;
-      }
-
-      // Pre-edit / pre-publish review before attaching to the composer.
-      setMediaReviewDraft({
-        file,
-        kind: "video",
-        durationSec,
-      });
-      setPostType("video");
-      setError(null);
-      setSuccess(null);
-    } catch (e) {
-      if (generation !== videoProbeGenerationRef.current) return;
-      if (e instanceof DOMException && e.name === "AbortError") return;
-      setError(e instanceof Error ? e.message : "Could not read video.");
-      setSuccess(null);
-    } finally {
-      if (generation === videoProbeGenerationRef.current) {
-        setMediaProbeBusy(false);
-        if (videoProbeAbortRef.current === controller) {
-          videoProbeAbortRef.current = null;
+    void getVideoDuration(file, { signal: controller.signal })
+      .then((durationSec) => {
+        if (generation !== videoProbeGenerationRef.current) return;
+        if (isUsableVideoDuration(durationSec)) {
+          setMediaReviewDraft((current) =>
+            current?.file === file ? { ...current, durationSec } : current
+          );
         }
-      }
-    }
+        // An unreadable duration does not discard the selected file. The review
+        // remains available; publishing retries validation and will not bypass limits.
+      })
+      .catch((e: unknown) => {
+        if (generation !== videoProbeGenerationRef.current) return;
+        if (e instanceof DOMException && e.name === "AbortError") return;
+        // Keep the preview visible; duration is checked again before attachment.
+      })
+      .finally(() => {
+        if (generation === videoProbeGenerationRef.current) {
+          setMediaProbeBusy(false);
+          if (videoProbeAbortRef.current === controller) {
+            videoProbeAbortRef.current = null;
+          }
+        }
+      });
   }, [pendingAudio, pendingImages.length]);
 
   const handleCameraCapture = useCallback((capture: GigaSocialCameraCapture) => {
@@ -700,8 +694,13 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           try {
             durationSec = await getVideoDuration(result.file);
           } catch (e) {
-            setError(e instanceof Error ? e.message : "Could not read video.");
-            setMediaReviewDraft(null);
+            setError(
+              e instanceof Error
+                ? `Could not verify this video's length. The video is still selected; try another file or retry.`
+                : "Could not verify this video's length. The video is still selected; try another file or retry."
+            );
+            // Keep the review open so a metadata read failure never loses the
+            // selected file. Publishing remains blocked until duration validates.
             return;
           }
         }
