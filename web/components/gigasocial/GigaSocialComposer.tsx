@@ -631,7 +631,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         setImagePreparationCount((count) => Math.max(0, count - 1));
       }
     },
-    [pendingImages.length, pendingVideo]
+    [mediaReviewDraft?.kind, pendingImages.length, pendingVideo]
   );
 
   const addVideoFile = useCallback(async (file: File) => {
