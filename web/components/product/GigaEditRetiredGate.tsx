@@ -58,7 +58,7 @@ function GigaEditRetiredGateInner() {
 /** Bare /gigaedit keeps legacy messaging; explicit editor entry opens the local studio. */
 export function GigaEditRetiredGate() {
   return (
-    <Suspense fallback={notice()}>
+    <Suspense fallback={<ClientAppHydrationNotice productName="GigaEdits" />}>
       <GigaEditRetiredGateInner />
     </Suspense>
   );
