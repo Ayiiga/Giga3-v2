@@ -197,6 +197,8 @@ describe("gigaSocialAwards — scoring and safety", () => {
     expect(schema).toContain("by_season_published");
     expect(adminPanel).toContain("Awards announcements & promotions");
     expect(adminPanel).toContain("Publish announcement");
+    expect(adminPanel).toContain("Public season");
+    expect(adminPanel).toContain("announcementSeasons.length > 0");
     expect(hub).toContain("News & announcements");
     expect(admin).toContain("formulaLockedAt");
     expect(admin).toContain("seasonStatusLocksFormula");
