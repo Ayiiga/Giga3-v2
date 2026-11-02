@@ -160,11 +160,11 @@ describe("gigaSocialAwards — scoring and safety", () => {
     const admin = readFileSync(resolve(root, "convex/gigaSocialAwardsAdmin.ts"), "utf8");
     const schema = readFileSync(resolve(root, "convex/schema.ts"), "utf8");
     const panel = readFileSync(
-      resolve(root, "web/components/gigasocial/economy/GigaSocialCreatorPanel.tsx"),
+      resolve(root, "web/components/admin/AdminAwardsPanel.tsx"),
       "utf8"
     );
     const page = readFileSync(
-      resolve(root, "web/app/(marketing)/gigasocial/awards/page.tsx"),
+      resolve(root, "web/components/gigasocial/awards/AwardsHubClient.tsx"),
       "utf8"
     );
     const nominate = readFileSync(
