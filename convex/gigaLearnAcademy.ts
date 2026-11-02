@@ -205,7 +205,6 @@ export const getCourse = query({
   handler: async (ctx, args) => {
     const course = await resolveCourse(ctx, args.slug);
     if (!course) return null;
-    if (!isPublicAcademyCourse({ slug: course.slug, category: course.category })) return null;
     if (course.status !== "published" && course.source === "authored") {
       // Draft/archived authored courses are not public.
       return null;
