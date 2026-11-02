@@ -24,5 +24,5 @@ export default function WassceSubjectPage() {
       href: questionCount > 0 ? examPracticeHref(subject.courseSlug, { mode: "learn" }) : undefined,
     };
   });
-  return <><ProductSeoHeader compact title="WASSCE Core Subject Practice" description="Choose a subject and practise one question at a time." showProductNav={false} /><div className="marketing-stable gigalearn-stable section-padding pt-4 pb-6"><ExamSubjectPicker title="Choose your WASSCE core subject" description="Start with a short practice set. You will receive feedback and an explanation after each answer." backHref="/gigalearn/exam/" subjects={subjects} /></div></>;
+  return <><ProductSeoHeader compact title="WASSCE Core Subject Practice" description="Choose a subject and practise one question at a time." showProductNav={false} /><div className="marketing-stable gigalearn-stable px-4 pt-3 pb-6 sm:px-6"><ExamSubjectPicker title="Choose your WASSCE core subject" description="Start with a short practice set. You will receive feedback and an explanation after each answer." backHref="/gigalearn/exam/" subjects={subjects} /></div></>;
 }
