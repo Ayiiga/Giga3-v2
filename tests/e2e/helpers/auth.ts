@@ -11,8 +11,10 @@ export async function signInViaUi(page: Page, email: string, password: string): 
   await page.goto("/chat/login/");
   await page.getByLabel(/email/i).fill(email);
   await page.getByLabel(/^password$/i).fill(password);
-  await page.getByRole("button", { name: /sign in/i }).click();
-  await page.waitForURL(/\/chat\/?$/, { timeout: 60_000 });
+  // The site header also contains a "Sign in" navigation link. Scope the
+  // submit action to the credential form to avoid Playwright strict-mode ambiguity.
+  await page.locator("form").getByRole("button", { name: "Sign in", exact: true }).click();
+  await page.waitForURL(/\\/chat\\/?$/, { timeout: 60_000 });
 }
 
 export async function installTtsProbe(page: Page): Promise<void> {
