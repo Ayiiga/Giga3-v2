@@ -45,7 +45,7 @@ export function AdminInvitesPanel() {
         invitedBy: "support@giga3ai.com",
       });
       setEmail("");
-      setNotice(`Invite sent to ${email.trim()} via support@giga3ai.com`);
+      setNotice(`Invite sent to ${email.trim()}.`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Invite failed");
     } finally {
@@ -57,7 +57,7 @@ export function AdminInvitesPanel() {
     <section className="rounded-2xl border border-border bg-card p-6">
       <h2 className="text-lg font-semibold">Invite people</h2>
       <p className="mt-1 text-sm text-muted">
-        Send magic-link invites via support@giga3ai.com (Resend). Stats: {data.stats.total}{" "}
+        Send magic-link invitations to testers, creators and administrators. Stats: {data.stats.total}{" "}
         total · {data.stats.accepted} accepted · {data.stats.acceptanceRate}% rate
       </p>
 
@@ -85,7 +85,7 @@ export function AdminInvitesPanel() {
           </select>
         </label>
         <Button type="button" disabled={busy !== null || !email.trim()} onClick={() => void handleInvite()}>
-          Invite via support@giga3ai.com
+          Send invite
         </Button>
       </div>
 
