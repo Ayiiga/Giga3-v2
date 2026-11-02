@@ -126,6 +126,18 @@ describe("blog JSON-LD author type", () => {
   });
 });
 
+describe("shared blog promotion", () => {
+  it("promotes Giga3 AI Chat and GigaSocial Awards on every article layout", () => {
+    const layout = readFileSync(resolve(WEB_ROOT, "components/blog/BlogHeader.tsx"), "utf8");
+    expect(layout).toContain('aria-label="Explore Giga3 AI"');
+    expect(layout).toContain('href="/chat/login/"');
+    expect(layout).toContain("Try Giga3 AI Chat");
+    expect(layout).toContain('href="/gigasocial/awards/"');
+    expect(layout).toContain("Explore GigaSocial Awards");
+    expect(layout).toContain("free nominations and free voting");
+  });
+});
+
 describe("blog routes (source)", () => {
   it("defines static article and category pages", () => {
     const articlePage = readFileSync(
