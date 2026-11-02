@@ -181,6 +181,15 @@ describe("gigaSocialAwards — scoring and safety", () => {
     expect(awards).toContain("Nominee GigaSocial handle is required");
     expect(awards).not.toMatch(/shareToken:\s*c\.shareToken/);
     expect(admin).toContain("ensureAdminAccess");
+    expect(admin).toContain("publishAnnouncement");
+    expect(admin).toContain("awards_announcement_published");
+    expect(admin).toContain("secure HTTPS URL");
+    expect(awards).toContain("listPublicAnnouncements");
+    expect(schema).toContain("awardsAnnouncements");
+    expect(schema).toContain("by_season_published");
+    expect(panel).toContain("Awards announcements & promotions");
+    expect(panel).toContain("Publish announcement");
+    expect(page).toContain("News & announcements");
     expect(admin).toContain("formulaLockedAt");
     expect(admin).toContain("seasonStatusLocksFormula");
     expect(admin).toContain("submitAssessmentScore");
