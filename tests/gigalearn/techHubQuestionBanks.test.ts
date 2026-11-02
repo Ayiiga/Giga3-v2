@@ -13,15 +13,17 @@ import {
   TECH_HUB_COURSE_SLUGS,
 } from "../../web/lib/gigalearn/academy/techBanks/techBankMeta";
 import { getExamBankMeta } from "../../web/lib/gigalearn/examPractice/examBankMeta";
-import { getBuiltinAcademyCourse, listBuiltinAcademyCourses } from "../../web/lib/gigalearn/academy/courseCatalog";
+import { APPROVED_TECHNOLOGY_COURSE_SLUGS, getBuiltinAcademyCourse, listBuiltinAcademyCourses } from "../../web/lib/gigalearn/academy/courseCatalog";
 
 const ROOT = resolve(__dirname, "../..");
 const read = (p: string) => readFileSync(resolve(ROOT, p), "utf8");
 
 describe("Technology Learning Hub question banks", () => {
-  it("publishes five Technology catalogue courses with varied difficulty", () => {
+  it("publishes only the four approved Technology catalogue courses while retaining legacy course data", () => {
     const tech = listBuiltinAcademyCourses().filter((c) => c.category === "Technology");
-    expect(tech.map((c) => c.slug).sort()).toEqual([...TECH_HUB_COURSE_SLUGS].sort());
+    expect(tech.map((c) => c.slug).sort()).toEqual([...APPROVED_TECHNOLOGY_COURSE_SLUGS].sort());
+    expect(tech).toHaveLength(4);
+    expect(getBuiltinAcademyCourse("other-digital-technologies")?.learningObjectives.length).toBeGreaterThan(0);
     const difficulties = new Set(tech.map((c) => c.difficulty));
     expect(difficulties.has("beginner")).toBe(true);
     expect(difficulties.has("intermediate")).toBe(true);

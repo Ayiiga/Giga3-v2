@@ -13,6 +13,7 @@ import {
   filterAcademyCourses,
   getBuiltinAcademyCourse,
   listBuiltinAcademyCourses,
+  isPublicAcademyCourse,
   toAcademyListItem,
 } from "../web/lib/gigalearn/academy/courseCatalog";
 import type {
@@ -180,9 +181,9 @@ export const listPublishedCourses = query({
       .query("gigaLearnAcademyCourses")
       .withIndex("by_status", (q) => q.eq("status", "published"))
       .take(100);
-    const authored = authoredRows.map((row) =>
-      toAcademyListItem(authoredToCourse(row))
-    );
+    const authored = authoredRows
+      .map((row) => toAcademyListItem(authoredToCourse(row)))
+      .filter(isPublicAcademyCourse);
     // Builtin slugs win over authored duplicates.
     const bySlug = new Map<string, AcademyCourseListItem>();
     for (const item of authored) bySlug.set(item.slug, item);

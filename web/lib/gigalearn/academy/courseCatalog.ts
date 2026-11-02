@@ -897,8 +897,22 @@ const BUILTIN_COURSES: AcademyCourse[] = [
   ...WASSCE_PRACTICE_COURSES,
 ];
 
+/** Only the four approved Technology pathways appear in public Academy discovery. */
+export const APPROVED_TECHNOLOGY_COURSE_SLUGS = [
+  "ai-machine-learning",
+  "robotics-intelligent-systems",
+  "mobile-app-development",
+  "website-pwa-development",
+] as const;
+
+const APPROVED_TECHNOLOGY_COURSE_SET = new Set<string>(APPROVED_TECHNOLOGY_COURSE_SLUGS);
+
+export function isPublicAcademyCourse(course: Pick<AcademyCourseListItem, "slug" | "category">): boolean {
+  return course.category !== "Technology" || APPROVED_TECHNOLOGY_COURSE_SET.has(course.slug);
+}
+
 export function listBuiltinAcademyCourses(): AcademyCourse[] {
-  return BUILTIN_COURSES.filter((c) => c.status === "published");
+  return BUILTIN_COURSES.filter((c) => c.status === "published" && isPublicAcademyCourse(c));
 }
 
 export function getBuiltinAcademyCourse(slug: string): AcademyCourse | undefined {
@@ -937,6 +951,7 @@ export function filterAcademyCourses(
 ): AcademyCourseListItem[] {
   const q = opts.query?.trim().toLowerCase() ?? "";
   return courses.filter((c) => {
+    if (!isPublicAcademyCourse(c)) return false;
     if (opts.subject && opts.subject !== "all" && c.subject !== opts.subject) return false;
     if (opts.category && opts.category !== "all" && c.category !== opts.category) return false;
     if (opts.difficulty && opts.difficulty !== "all" && c.difficulty !== opts.difficulty)
