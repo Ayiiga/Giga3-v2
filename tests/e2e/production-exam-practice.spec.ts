@@ -29,88 +29,60 @@ test.describe("Production — Exam Practice public routes", () => {
       expect(html, `${path} must not embed correctIndex`).not.toMatch(/correctIndex/);
       expect(html, `${path} must not embed correctOptionId`).not.toMatch(/correctOptionId/);
 
-      // Free practice should show a stem/options UI once hydrated.
+      // Free practice starts at a pre-start screen before showing questions.
       if (path.includes("/exam/practice")) {
-        await expect(
-          page.getByText(/question|option|practice|time|submit|next/i).first()
-        ).toBeVisible({ timeout: 45_000 });
+        await expect(page.getByTestId("free-practice-prestart")).toBeVisible({
+          timeout: 45_000,
+        });
       }
     });
   }
 
-  test("Exam Centre links to free practice and rank banks", async ({ page }) => {
+  test("Exam Centre links to the current promotion, BECE, and WASSCE centres", async ({ page }) => {
     await page.goto("/gigalearn/exam/", { waitUntil: "domcontentloaded" });
     await page.waitForLoadState("networkidle", { timeout: 45_000 }).catch(() => undefined);
 
-    await expect(
-      page.getByRole("link", { name: /start general practice/i }).first()
-    ).toBeVisible({
-      timeout: 45_000,
-    });
-    await expect(
-      page.getByText(/general practice — no specific promotion rank selected/i).first()
-    ).toBeVisible({ timeout: 30_000 });
-    const generalHref = await page
-      .getByRole("link", { name: /start general practice/i })
-      .first()
-      .getAttribute("href");
-    expect(generalHref || "").toMatch(/\/gigalearn\/exam\/practice\/?/);
-
-    for (const label of [
-      /assistant director ii/i,
-      /assistant director i/i,
-      /deputy director/i,
-      /director ii/i,
-      /director i/i,
-    ]) {
-      await expect(page.getByText(label).first()).toBeVisible({ timeout: 30_000 });
+    const hub = page.getByTestId("exam-practice-hub");
+    await expect(hub).toBeVisible({ timeout: 45_000 });
+    for (const centre of ["promotion", "bece", "wassce"]) {
+      await expect(page.getByTestId(`exam-centre-${centre}`)).toBeVisible();
     }
-
-    // Rank MCQ CTAs must open learn mode (immediate explanations), not timed default.
-    const mcqHrefs = await page
-      .locator('a', { hasText: /MCQ practice/i })
-      .evaluateAll((as) => as.map((a) => (a as HTMLAnchorElement).href));
-    expect(mcqHrefs.length).toBeGreaterThanOrEqual(5);
-    for (const href of mcqHrefs) {
-      expect(href, href).toMatch(/mode=learn/);
-      expect(href).toMatch(/course=exam-(ad-ii|ad-i|deputy-director|director-ii|director-i)/);
-    }
-
-    // Premium Full pack CTAs must also use learn (not practice_test) so 295-item
-    // sessions get immediate correct/incorrect feedback + praise.
-    const fullHrefs = await page
-      .locator('a', { hasText: /Full pack/i })
-      .evaluateAll((as) => as.map((a) => (a as HTMLAnchorElement).href));
-    const rankFull = fullHrefs.filter((h) => /course=exam-(ad-ii|ad-i|deputy-director|director-ii|director-i)/.test(h));
-    expect(rankFull.length).toBeGreaterThanOrEqual(5);
-    for (const href of rankFull) {
-      expect(href, href).toMatch(/mode=learn/);
-      expect(href, href).not.toMatch(/mode=practice_test/);
-    }
+    await expect(page.getByTestId("exam-centre-promotion")).toHaveAttribute(
+      "href",
+      "/gigalearn/exam/promotion/"
+    );
+    await expect(page.getByTestId("exam-centre-bece")).toHaveAttribute(
+      "href",
+      "/gigalearn/exam/bece/"
+    );
+    await expect(page.getByTestId("exam-centre-wassce")).toHaveAttribute(
+      "href",
+      "/gigalearn/exam/wassce/"
+    );
   });
 
-  test("Free practice: option notes, reward on correct, no stale notes after Next", async ({
+  test("Free practice: pre-start, option notes, reward on correct, no stale notes after Next", async ({
     page,
   }) => {
-    await page.addInitScript(() => {
-      localStorage.clear();
-      sessionStorage.clear();
-    });
     await page.goto("/gigalearn/exam/practice/", { waitUntil: "domcontentloaded" });
+    await page.getByTestId("free-practice-begin").click();
     await page.locator("button.exam-session-option").first().waitFor({ timeout: 45_000 });
 
-    // Probe correct letter, then restart clean and select it.
+    const savedDraft = await page.evaluate(() =>
+      sessionStorage.getItem("giga3_exam_practice_free_draft_v1")
+    );
+    if (!savedDraft) throw new Error("Free practice draft was not saved before answering");
     await page.locator("button.exam-session-option").nth(0).click();
     const correctText = await page.locator('[data-testid="exam-option-note-correct"]').innerText();
     const letter = correctText.match(/^([A-D])\./)?.[1];
     expect(letter).toBeTruthy();
     expect(await page.locator('[data-testid="exam-option-note"]').count()).toBeGreaterThanOrEqual(3);
 
-    await page.evaluate(() => {
-      localStorage.clear();
-      sessionStorage.clear();
-    });
-    await page.goto("/gigalearn/exam/practice/", { waitUntil: "domcontentloaded" });
+    await page.evaluate(
+      (draft) => sessionStorage.setItem("giga3_exam_practice_free_draft_v1", draft),
+      savedDraft
+    );
+    await page.reload({ waitUntil: "domcontentloaded" });
     await page.locator("button.exam-session-option").first().waitFor({ timeout: 45_000 });
     const idx = { A: 0, B: 1, C: 2, D: 3 }[letter as "A" | "B" | "C" | "D"] ?? 0;
     await page.locator("button.exam-session-option").nth(idx).click();
