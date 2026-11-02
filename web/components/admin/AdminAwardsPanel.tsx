@@ -16,6 +16,14 @@ export function AdminAwardsPanel({
   const setStatus = useMutation(api.gigaSocialAwardsAdmin.setSeasonStatus);
   const approve = useMutation(api.gigaSocialAwardsAdmin.approveNomination);
   const reject = useMutation(api.gigaSocialAwardsAdmin.rejectNomination);
+  const publishAnnouncement = useMutation(api.gigaSocialAwardsAdmin.publishAnnouncement);
+  const [announcementTitle, setAnnouncementTitle] = useState("");
+  const [announcementBody, setAnnouncementBody] = useState("");
+  const [announcementKind, setAnnouncementKind] = useState<
+    "announcement" | "nominations" | "voting" | "candidate" | "sponsor"
+  >("announcement");
+  const [announcementHref, setAnnouncementHref] = useState("");
+  const [announcementCta, setAnnouncementCta] = useState("Learn more");
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -131,6 +139,105 @@ export function AdminAwardsPanel({
       ) : (
         <p className="text-sm text-muted">No seasons yet.</p>
       )}
+
+      {overview.season && overview.season.status !== "draft" && overview.season.status !== "archived" ? (
+        <div className="space-y-3 rounded-xl border border-violet-200 bg-violet-50/60 p-3">
+          <div>
+            <h3 className="font-semibold text-foreground">Awards announcements & promotions</h3>
+            <p className="mt-1 text-xs text-muted">
+              Publish nomination calls, voting reminders, candidate highlights and sponsor notices
+              to the public Awards page.
+            </p>
+          </div>
+          <label className="block text-sm font-medium">
+            Announcement title
+            <input
+              className="mt-1 min-h-11 w-full rounded-lg border border-border bg-white px-3"
+              maxLength={120}
+              value={announcementTitle}
+              onChange={(event) => setAnnouncementTitle(event.target.value)}
+              placeholder="e.g. GigaSocial Awards nominations are open"
+            />
+          </label>
+          <label className="block text-sm font-medium">
+            Message
+            <textarea
+              className="mt-1 min-h-24 w-full rounded-lg border border-border bg-white p-3"
+              maxLength={1200}
+              value={announcementBody}
+              onChange={(event) => setAnnouncementBody(event.target.value)}
+              placeholder="Tell the community what is happening and what action to take."
+            />
+          </label>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <label className="block text-sm font-medium">
+              Type
+              <select
+                className="mt-1 min-h-11 w-full rounded-lg border border-border bg-white px-3"
+                value={announcementKind}
+                onChange={(event) => setAnnouncementKind(event.target.value as typeof announcementKind)}
+              >
+                <option value="announcement">General announcement</option>
+                <option value="nominations">Nomination campaign</option>
+                <option value="voting">Voting reminder</option>
+                <option value="candidate">Candidate highlight</option>
+                <option value="sponsor">Sponsor / advertisement</option>
+              </select>
+            </label>
+            <label className="block text-sm font-medium">
+              Button label
+              <input
+                className="mt-1 min-h-11 w-full rounded-lg border border-border bg-white px-3"
+                maxLength={50}
+                value={announcementCta}
+                onChange={(event) => setAnnouncementCta(event.target.value)}
+                placeholder="Learn more"
+              />
+            </label>
+          </div>
+          <label className="block text-sm font-medium">
+            Link (optional)
+            <input
+              className="mt-1 min-h-11 w-full rounded-lg border border-border bg-white px-3"
+              maxLength={500}
+              value={announcementHref}
+              onChange={(event) => setAnnouncementHref(event.target.value)}
+              placeholder="/gigasocial/awards/ or https://sponsor.example"
+            />
+          </label>
+          <Button
+            type="button"
+            size="sm"
+            disabled={
+              busy !== null ||
+              announcementTitle.trim().length < 4 ||
+              announcementBody.trim().length < 12
+            }
+            onClick={() =>
+              void run(
+                "announcement",
+                async () => {
+                  await publishAnnouncement({
+                    ...creds,
+                    seasonId: overview.season!.seasonId,
+                    title: announcementTitle,
+                    body: announcementBody,
+                    kind: announcementKind,
+                    href: announcementHref.trim() || undefined,
+                    ctaLabel: announcementCta.trim() || undefined,
+                  });
+                  setAnnouncementTitle("");
+                  setAnnouncementBody("");
+                  setAnnouncementHref("");
+                },
+                "Awards announcement published to the public Awards page."
+              )
+            }
+          >
+            Publish announcement
+          </Button>
+        </div>
+      ) : null}
 
       <div>
         <h3 className="text-sm font-semibold">Nominations queue</h3>
