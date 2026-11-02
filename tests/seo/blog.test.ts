@@ -23,6 +23,15 @@ describe("blog slug aliases for Search Console / title-inferred URLs", () => {
     expect(redirects).toContain(
       "/blog/coding-vs-ai-which-skill-should-beginners-learn-first  /blog/coding-vs-ai-which-skill-beginners-learn-first/  301"
     );
+    expect(redirects).toContain(
+      "/blog/google-gemini-ai-login-guide  /blog/gemini-ai-login-guide/  301"
+    );
+    expect(redirects).toContain(
+      "/blog/google-gemini-ai-login-guide/ /blog/gemini-ai-login-guide/  301"
+    );
+    expect(
+      BLOG_POST_REGISTRY.some((p) => p.slug === "gemini-ai-login-guide")
+    ).toBe(true);
     // Canonical published slug remains without the extra "should" segment.
     expect(
       BLOG_POST_REGISTRY.some((p) => p.slug === "coding-vs-ai-which-skill-beginners-learn-first")
