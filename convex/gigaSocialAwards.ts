@@ -200,6 +200,35 @@ export const listPublicSeasons = query({
   },
 });
 
+/** Public, published Awards communications for a live season. */
+export const listPublicAnnouncements = query({
+  args: { seasonSlug: v.string() },
+  handler: async (ctx, args) => {
+    const season = await ctx.db
+      .query("awardsSeasons")
+      .withIndex("by_slug", (q) => q.eq("slug", args.seasonSlug.trim()))
+      .first();
+    if (!season || season.status === "draft" || season.status === "archived") return [];
+    const rows = await ctx.db
+      .query("awardsAnnouncements")
+      .withIndex("by_season_published", (q) =>
+        q.eq("seasonId", season._id).eq("published", true)
+      )
+      .order("desc")
+      .take(30);
+    return rows.map((row) => ({
+      announcementId: row._id,
+      title: row.title,
+      body: row.body,
+      kind: row.kind,
+      href: row.href ?? null,
+      ctaLabel: row.ctaLabel ?? null,
+      imageUrl: row.imageUrl ?? null,
+      publishedAt: row.publishedAt ?? row.createdAt,
+    }));
+  },
+});
+
 export const getPublicSeason = query({
   args: { slug: v.string() },
   handler: async (ctx, args) => {
