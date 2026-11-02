@@ -232,7 +232,9 @@ export async function executeConversationalReply(
   });
 
   return {
-    content: validated.content,
+    // Return exactly what was persisted. Never bypass the child-safety fallback
+    // on the fast conversational path.
+    content: safeContent,
     chatProviderLabel: getChatProviderLabel(engineResult.providerId),
     usedFallback: engineResult.usedFallback,
     providerId: engineResult.providerId,
