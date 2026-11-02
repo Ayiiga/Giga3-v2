@@ -14,7 +14,7 @@ const sitemapPath = path.join(root, "public/sitemap-blog.xml");
 const origin = "https://www.giga3ai.com";
 
 function fail(message) {
-  console.error(\`verify-blog-static-export: ERROR: \${message}\`);
+  console.error("verify-blog-static-export: ERROR: " + message);
   process.exitCode = 1;
 }
 
@@ -35,7 +35,7 @@ const articleLocs = locs.filter((loc) => {
   try {
     url = new URL(loc);
   } catch {
-    fail(\`sitemap contains an invalid URL: \${loc}\`);
+    fail("sitemap contains an invalid URL: " + loc);
     return false;
   }
   if (url.pathname === "/blog/" || url.pathname.startsWith("/blog/category/")) return false;
@@ -44,9 +44,9 @@ const articleLocs = locs.filter((loc) => {
 
 for (const slug of slugs) {
   const html = path.join(out, "blog", slug, "index.html");
-  if (!existsSync(html)) fail(\`published article has no static export: /blog/\${slug}/ (\${html})\`);
-  const canonical = \`\${origin}/blog/\${slug}/\`;
-  if (!locs.includes(canonical)) fail(\`published article missing from sitemap-blog.xml: \${canonical}\`);
+  if (!existsSync(html)) fail("published article has no static export: /blog/" + slug + "/ (" + html + ")");
+  const canonical = origin + "/blog/" + slug + "/";
+  if (!locs.includes(canonical)) fail("published article missing from sitemap-blog.xml: " + canonical);
 }
 
 const seen = new Set();
@@ -59,21 +59,21 @@ for (const loc of articleLocs) {
   }
   const match = url.pathname.match(/^\/blog\/([^/]+)\/$/);
   if (url.origin !== origin || !match) {
-    fail(\`sitemap contains a non-canonical or malformed article URL: \${loc}\`);
+    fail("sitemap contains a non-canonical or malformed article URL: " + loc);
     continue;
   }
   const slug = match[1];
-  if (seen.has(slug)) fail(\`sitemap contains a duplicate article URL: \${loc}\`);
+  if (seen.has(slug)) fail("sitemap contains a duplicate article URL: " + loc);
   seen.add(slug);
-  if (!slugs.includes(slug)) fail(\`sitemap contains unknown article URL: \${loc}\`);
+  if (!slugs.includes(slug)) fail("sitemap contains unknown article URL: " + loc);
   if (!existsSync(path.join(out, "blog", slug, "index.html"))) {
-    fail(\`sitemap article has no static export: /blog/\${slug}/\`);
+    fail("sitemap article has no static export: /blog/" + slug + "/");
   }
 }
 
 if (seen.size !== slugs.length) {
-  fail(\`sitemap article count \${seen.size} does not match registry count \${slugs.length}\`);
+  fail("sitemap article count " + seen.size + " does not match registry count " + slugs.length);
 }
 
 if (process.exitCode) process.exit(process.exitCode);
-console.log(\`verify-blog-static-export: OK — \${slugs.length} published articles have exported HTML and canonical sitemap entries\`);
+console.log("verify-blog-static-export: OK — " + slugs.length + " published articles have exported HTML and canonical sitemap entries");
