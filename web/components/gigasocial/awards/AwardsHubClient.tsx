@@ -14,6 +14,10 @@ function HubInner() {
     api.gigaSocialAwards.getPublicSeason,
     slug ? { slug } : "skip"
   );
+  const announcements = useQuery(
+    api.gigaSocialAwards.listPublicAnnouncements,
+    slug ? { seasonSlug: slug } : "skip"
+  );
 
   if (seasons === undefined) return <LoadingState label="Loading awards…" />;
 
@@ -52,6 +56,45 @@ function HubInner() {
           </Link>
         </div>
       </section>
+
+      {announcements && announcements.length > 0 ? (
+        <section className="space-y-3" aria-label="Awards announcements">
+          <div>
+            <h3 className="text-lg font-bold text-foreground">News & announcements</h3>
+            <p className="text-xs text-muted">Updates, nomination campaigns, voting reminders and partner messages.</p>
+          </div>
+          <div className="grid gap-3">
+            {announcements.map((item) => (
+              <article
+                key={item.announcementId}
+                className="overflow-hidden rounded-2xl border border-violet-200 bg-gradient-to-br from-violet-50 via-white to-fuchsia-50"
+              >
+                {item.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={item.imageUrl} alt="" className="max-h-52 w-full object-cover" loading="lazy" />
+                ) : null}
+                <div className="space-y-2 p-4">
+                  <span className="inline-flex rounded-full bg-violet-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-violet-800">
+                    {item.kind.replaceAll("_", " ")}
+                  </span>
+                  <h4 className="text-base font-bold text-slate-950">{item.title}</h4>
+                  <p className="whitespace-pre-line text-sm leading-6 text-slate-700">{item.body}</p>
+                  {item.href ? (
+                    <a
+                      href={item.href}
+                      target={item.href.startsWith("https://") ? "_blank" : undefined}
+                      rel={item.href.startsWith("https://") ? "noopener noreferrer" : undefined}
+                      className="inline-flex min-h-10 items-center rounded-lg bg-violet-700 px-4 text-sm font-semibold text-white hover:bg-violet-800"
+                    >
+                      {item.ctaLabel || "Learn more"}
+                    </a>
+                  ) : null}
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <section className="space-y-2">
         <h3 className="text-sm font-semibold">Categories</h3>

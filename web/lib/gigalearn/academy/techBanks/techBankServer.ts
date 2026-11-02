@@ -115,7 +115,14 @@ export function getTechBankQuestions(
   const slug = courseSlug.trim().toLowerCase();
   const bank = BANKS[slug];
   if (!bank) return [];
-  let rows = bank.questions;
+  // Defence in depth: a subject session may only draw questions whose
+  // embedded courseSlug matches the selected course. This prevents a malformed
+  // imported bank from mixing English, Mathematics, or another subject.
+  let rows = bank.questions.filter(
+    (q) =>
+      typeof q.courseSlug === "string" &&
+      q.courseSlug.trim().toLowerCase() === slug
+  );
   // Retired / draft items stay in JSON for recovery but never enter practice pools.
   rows = rows.filter((q) => {
     const pub = q.publicationStatus;
@@ -148,8 +155,12 @@ export function getTechBankQuestionById(
   courseSlug: string,
   questionId: string
 ): TechBankQuestion | undefined {
-  return getTechBankQuestions(courseSlug, { approvedOnly: false }).find(
-    (q) => q.questionId === questionId
+  const slug = courseSlug.trim().toLowerCase();
+  return getTechBankQuestions(slug, { approvedOnly: false }).find(
+    (q) =>
+      typeof q.courseSlug === "string" &&
+      q.courseSlug.trim().toLowerCase() === slug &&
+      q.questionId === questionId
   );
 }
 

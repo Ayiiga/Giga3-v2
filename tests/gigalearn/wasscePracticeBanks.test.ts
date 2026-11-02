@@ -15,6 +15,17 @@ describe("WASSCE four-core-subject practice banks", () => {
     for (const bank of WASSCE_BANKS) expect(loaded).toContain(bank.slug);
   });
 
+  it("keeps every selected WASSCE subject session strictly inside its own bank", () => {
+    for (const selected of WASSCE_BANKS) {
+      const questions = getTechBankQuestions(selected.slug, { approvedOnly: false });
+      expect(questions.length).toBeGreaterThan(0);
+      expect(questions.every((question) => question.courseSlug === selected.slug)).toBe(true);
+      expect(
+        questions.every((question) => question.questionId.startsWith(`${selected.slug}-q`))
+      ).toBe(true);
+    }
+  });
+
   for (const bank of WASSCE_BANKS) {
     it(`makes ${bank.topic} objective practice available with honest review status`, () => {
       const meta = getExamBankMeta(bank.slug);

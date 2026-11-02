@@ -76,15 +76,7 @@ export default function HelpPage() {
                 support@giga3ai.com
               </a>
             </li>
-            <li>
-              <a
-                href="mailto:giga3ai@gmail.com"
-                className="inline-flex items-center gap-2 text-accent underline underline-offset-2"
-              >
-                <Mail className="h-4 w-4" aria-hidden />
-                giga3ai@gmail.com
-              </a>
-            </li>
+       </li>
             <li>
               <StableLink href="/contact/" hard className="text-accent underline underline-offset-2">
                 Contact page

@@ -2368,6 +2368,29 @@ export default defineSchema({
     updatedAt: v.number(),
   }).index("by_season", ["seasonId", "createdAt"]),
 
+  /** Public communication and promotional cards for each Awards season. */
+  awardsAnnouncements: defineTable({
+    seasonId: v.id("awardsSeasons"),
+    title: v.string(),
+    body: v.string(),
+    kind: v.union(
+      v.literal("announcement"),
+      v.literal("nominations"),
+      v.literal("voting"),
+      v.literal("candidate"),
+      v.literal("sponsor")
+    ),
+    href: v.optional(v.string()),
+    ctaLabel: v.optional(v.string()),
+    imageUrl: v.optional(v.string()),
+    published: v.boolean(),
+    publishedAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_season_published", ["seasonId", "published", "publishedAt"])
+    .index("by_published", ["published", "publishedAt"]),
+
   awardsAuditLog: defineTable({
     seasonId: v.optional(v.id("awardsSeasons")),
     actor: v.string(),

@@ -719,6 +719,70 @@ export const submitAssessmentScore = mutation({
   },
 });
 
+/** Publish a public announcement / campaign card for an Awards season. */
+export const publishAnnouncement = mutation({
+  args: {
+    ...adminCredentialArgs,
+    seasonId: v.id("awardsSeasons"),
+    title: v.string(),
+    body: v.string(),
+    kind: v.union(
+      v.literal("announcement"),
+      v.literal("nominations"),
+      v.literal("voting"),
+      v.literal("candidate"),
+      v.literal("sponsor")
+    ),
+    href: v.optional(v.string()),
+    ctaLabel: v.optional(v.string()),
+    imageUrl: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await ensureAdminAccess(args);
+    const season = await ctx.db.get(args.seasonId);
+    if (!season || season.status === "draft" || season.status === "archived") {
+      throw new Error("Only a published, active Awards season can carry public announcements.");
+    }
+    const title = args.title.trim().slice(0, 120);
+    const body = args.body.trim().slice(0, 1200);
+    if (title.length < 4 || body.length < 12) {
+      throw new Error("Add a clear title and a message of at least 12 characters.");
+    }
+    const href = args.href?.trim();
+    if (href && !(href.startsWith("/") && !href.startsWith("//")) &&
+        !/^https:\/\//i.test(href)) {
+      throw new Error("Announcement links must be a local path or secure HTTPS URL.");
+    }
+    const imageUrl = args.imageUrl?.trim();
+    if (imageUrl && !/^https:\/\//i.test(imageUrl)) {
+      throw new Error("Announcement images must use HTTPS.");
+    }
+    const publishedAt = Date.now();
+    const announcementId = await ctx.db.insert("awardsAnnouncements", {
+      seasonId: season._id,
+      title,
+      body,
+      kind: args.kind,
+      href: href?.slice(0, 500),
+      ctaLabel: args.ctaLabel?.trim().slice(0, 50) || undefined,
+      imageUrl: imageUrl?.slice(0, 500),
+      published: true,
+      publishedAt,
+      createdAt: publishedAt,
+      updatedAt: publishedAt,
+    });
+    await writeAudit(ctx, {
+      seasonId: season._id,
+      actor: "admin",
+      action: "awards_announcement_published",
+      entityType: "awardsAnnouncements",
+      entityId: announcementId,
+      detail: { kind: args.kind, title },
+    });
+    return { ok: true as const, announcementId };
+  },
+});
+
 export const getAdminSeasonOverview = query({
   args: {
     ...adminCredentialArgs,

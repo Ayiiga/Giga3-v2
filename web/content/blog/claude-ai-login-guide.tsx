@@ -57,7 +57,7 @@ never share passwords verification codes.
 `.trim();
 
 const AUTHOR_NOTE =
-  "Ayiiga Benard Issaka is the founder of Giga3 AI, a Ghana-focused technology platform exploring practical uses of artificial intelligence, digital learning, and accessible technology. His work focuses on helping students, educators, creators, and entrepreneurs use technology more effectively. Questions about this guide: ayiiga3@gmail.com.";
+  "Ayiiga Benard Issaka is the founder of Giga3 AI, a Ghana-focused technology platform exploring practical uses of artificial intelligence, digital learning, and accessible technology. His work focuses on helping students, educators, creators, and entrepreneurs use technology more effectively. Questions about this guide: support@giga3ai.com.";
 
 function ArticleContent() {
   return (

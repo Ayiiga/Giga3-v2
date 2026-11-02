@@ -163,8 +163,16 @@ describe("gigaSocialAwards — scoring and safety", () => {
       resolve(root, "web/components/gigasocial/economy/GigaSocialCreatorPanel.tsx"),
       "utf8"
     );
+    const adminPanel = readFileSync(
+      resolve(root, "web/components/admin/AdminAwardsPanel.tsx"),
+      "utf8"
+    );
     const page = readFileSync(
       resolve(root, "web/app/(marketing)/gigasocial/awards/page.tsx"),
+      "utf8"
+    );
+    const hub = readFileSync(
+      resolve(root, "web/components/gigasocial/awards/AwardsHubClient.tsx"),
       "utf8"
     );
     const nominate = readFileSync(
@@ -181,6 +189,17 @@ describe("gigaSocialAwards — scoring and safety", () => {
     expect(awards).toContain("Nominee GigaSocial handle is required");
     expect(awards).not.toMatch(/shareToken:\s*c\.shareToken/);
     expect(admin).toContain("ensureAdminAccess");
+    expect(admin).toContain("publishAnnouncement");
+    expect(admin).toContain("awards_announcement_published");
+    expect(admin).toContain("secure HTTPS URL");
+    expect(awards).toContain("listPublicAnnouncements");
+    expect(schema).toContain("awardsAnnouncements");
+    expect(schema).toContain("by_season_published");
+    expect(adminPanel).toContain("Awards announcements & promotions");
+    expect(adminPanel).toContain("Publish announcement");
+    expect(adminPanel).toContain("Public season");
+    expect(adminPanel).toContain("announcementSeasons.length > 0");
+    expect(hub).toContain("News & announcements");
     expect(admin).toContain("formulaLockedAt");
     expect(admin).toContain("seasonStatusLocksFormula");
     expect(admin).toContain("submitAssessmentScore");
