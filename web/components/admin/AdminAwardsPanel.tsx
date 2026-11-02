@@ -148,7 +148,7 @@ export function AdminAwardsPanel({
         <p className="text-sm text-muted">No seasons yet.</p>
       )}
 
-      {overview.season && overview.season.status !== "draft" && overview.season.status !== "archived" ? (
+      {announcementSeasons.length > 0 ? (
         <div className="space-y-3 rounded-xl border border-violet-200 bg-violet-50/60 p-3">
           <div>
             <h3 className="font-semibold text-foreground">Awards announcements & promotions</h3>
