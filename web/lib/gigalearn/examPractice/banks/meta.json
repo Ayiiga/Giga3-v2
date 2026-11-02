@@ -889,6 +889,74 @@
           "questionCount": 1
         }
       ]
+    },
+    {
+      "bankId": "wassce-english",
+      "courseSlug": "exam-wassce-english",
+      "title": "WASSCE English Language Practice",
+      "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
+      "approvedQuestionCount": 0,
+      "pendingQuestionCount": 240,
+      "mcqCount": 240,
+      "trueFalseCount": 0,
+      "topics": [
+        {
+          "id": "wassce-english",
+          "label": "English Language",
+          "questionCount": 240
+        }
+      ]
+    },
+    {
+      "bankId": "wassce-core-mathematics",
+      "courseSlug": "exam-wassce-core-mathematics",
+      "title": "WASSCE Core Mathematics Practice",
+      "sourceDocument": "GigaLearn_SHS_Mathematics_New_Curriculum_400.pdf",
+      "approvedQuestionCount": 0,
+      "pendingQuestionCount": 302,
+      "mcqCount": 302,
+      "trueFalseCount": 0,
+      "topics": [
+        {
+          "id": "wassce-core-mathematics",
+          "label": "Core Mathematics",
+          "questionCount": 302
+        }
+      ]
+    },
+    {
+      "bankId": "wassce-integrated-science",
+      "courseSlug": "exam-wassce-integrated-science",
+      "title": "WASSCE Integrated Science Practice",
+      "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
+      "approvedQuestionCount": 0,
+      "pendingQuestionCount": 290,
+      "mcqCount": 290,
+      "trueFalseCount": 0,
+      "topics": [
+        {
+          "id": "wassce-integrated-science",
+          "label": "Integrated Science",
+          "questionCount": 290
+        }
+      ]
+    },
+    {
+      "bankId": "wassce-social-studies",
+      "courseSlug": "exam-wassce-social-studies",
+      "title": "WASSCE Social Studies Practice",
+      "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
+      "approvedQuestionCount": 0,
+      "pendingQuestionCount": 278,
+      "mcqCount": 278,
+      "trueFalseCount": 0,
+      "topics": [
+        {
+          "id": "wassce-social-studies",
+          "label": "Social Studies",
+          "questionCount": 278
+        }
+      ]
     }
   ]
 }
