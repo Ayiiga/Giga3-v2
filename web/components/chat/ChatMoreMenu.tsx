@@ -164,13 +164,13 @@ export const ChatMoreMenu = memo(function ChatMoreMenu({
             support@giga3ai.com
           </a>
           <a
-            href="mailto:giga3ai@gmail.com"
+            href="mailto:support@giga3ai.com"
             role="menuitem"
             onClick={close}
             className={itemClass}
           >
             <Mail className="h-4 w-4 text-muted" aria-hidden />
-            giga3ai@gmail.com
+            support@giga3ai.com
           </a>
 
           <StableLink
