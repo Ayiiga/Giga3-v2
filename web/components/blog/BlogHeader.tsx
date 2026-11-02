@@ -103,6 +103,37 @@ export function BlogArticleLayout({ post, toc, children, cta }: BlogArticleLayou
 
       {cta}
 
+      <aside
+        aria-label="Explore Giga3 AI"
+        className="mt-12 rounded-2xl border border-violet-200 bg-gradient-to-br from-violet-50 via-white to-indigo-50 p-6 sm:p-7"
+      >
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-violet-700">
+          Keep exploring with Giga3
+        </p>
+        <h2 className="mt-2 text-xl font-bold text-slate-950 sm:text-2xl">
+          Turn what you have read into something you can do.
+        </h2>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-700">
+          Ask Giga3 AI Chat to explain an idea, plan a project or help you think through your next
+          step. And discover the GigaSocial Awards — a space celebrating creators across Ghana and
+          Africa, with free nominations and free voting.
+        </p>
+        <div className="mt-5 flex flex-wrap gap-3">
+          <Link
+            href="/chat/login/"
+            className="inline-flex min-h-11 items-center justify-center rounded-full bg-violet-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-700"
+          >
+            Try Giga3 AI Chat
+          </Link>
+          <Link
+            href="/gigasocial/awards/"
+            className="inline-flex min-h-11 items-center justify-center rounded-full border border-violet-300 bg-white px-5 py-2.5 text-sm font-semibold text-violet-900 transition hover:bg-violet-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-700"
+          >
+            Explore GigaSocial Awards
+          </Link>
+        </div>
+      </aside>
+
       <div className="mt-10">
         <BlogArticleRatingSection slug={post.slug} path={path} />
       </div>
