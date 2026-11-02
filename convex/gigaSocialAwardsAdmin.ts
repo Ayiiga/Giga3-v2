@@ -59,7 +59,16 @@ export const bootstrapSeason = mutation({
       .query("awardsSeasons")
       .withIndex("by_slug", (q) => q.eq("slug", slug))
       .first();
-    if (existing) throw new Error("Season slug already exists.");
+    // Bootstrap is intentionally idempotent: a retry or repeat click must not
+    // create duplicate seasons/categories or surface a scary server error.
+    if (existing) {
+      return {
+        ok: true as const,
+        seasonId: existing._id,
+        slug: existing.slug,
+        alreadyExists: true as const,
+      };
+    }
 
     const t = now();
     const seasonId = await ctx.db.insert("awardsSeasons", {
