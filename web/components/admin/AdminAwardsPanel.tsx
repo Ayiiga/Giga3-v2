@@ -17,6 +17,7 @@ export function AdminAwardsPanel({
   const approve = useMutation(api.gigaSocialAwardsAdmin.approveNomination);
   const reject = useMutation(api.gigaSocialAwardsAdmin.rejectNomination);
   const publishAnnouncement = useMutation(api.gigaSocialAwardsAdmin.publishAnnouncement);
+  const [announcementSeasonId, setAnnouncementSeasonId] = useState("");
   const [announcementTitle, setAnnouncementTitle] = useState("");
   const [announcementBody, setAnnouncementBody] = useState("");
   const [announcementKind, setAnnouncementKind] = useState<
@@ -28,6 +29,13 @@ export function AdminAwardsPanel({
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const year = new Date().getFullYear();
+  const announcementSeasons = (overview?.seasons ?? []).filter(
+    (season) => season.status !== "draft" && season.status !== "archived"
+  );
+  const selectedAnnouncementSeason =
+    announcementSeasons.find((season) => season.seasonId === announcementSeasonId) ??
+    announcementSeasons[0] ??
+    null;
 
   async function run(key: string, fn: () => Promise<unknown>, ok: string) {
     setBusy(key);
@@ -88,7 +96,7 @@ export function AdminAwardsPanel({
                   () =>
                     setStatus({
                       ...creds,
-                      seasonId: overview.season!.seasonId,
+                      seasonId: selectedAnnouncementSeason!.seasonId,
                       status: "nominations_open",
                       confirm: true,
                     }),
@@ -150,6 +158,28 @@ export function AdminAwardsPanel({
             </p>
           </div>
           <label className="block text-sm font-medium">
+            Public season
+            <select
+              className="mt-1 min-h-11 w-full rounded-lg border border-border bg-white px-3"
+              value={selectedAnnouncementSeason?.seasonId ?? ""}
+              onChange={(event) => setAnnouncementSeasonId(event.target.value)}
+              disabled={announcementSeasons.length === 0}
+            >
+              {announcementSeasons.length === 0 ? (
+                <option value="">No published season available</option>
+              ) : (
+                announcementSeasons.map((season) => (
+                  <option key={season.seasonId} value={season.seasonId}>
+                    {season.title} · {season.status.replaceAll("_", " ")}
+                  </option>
+                ))
+              )}
+            </select>
+            <span className="mt-1 block text-xs text-muted">
+              Choose the season currently shown to visitors. Draft and archived seasons cannot receive public announcements.
+            </span>
+          </label>
+          <label className="block text-sm font-medium">
             Announcement title
             <input
               className="mt-1 min-h-11 w-full rounded-lg border border-border bg-white px-3"
@@ -210,6 +240,7 @@ export function AdminAwardsPanel({
             size="sm"
             disabled={
               busy !== null ||
+              !selectedAnnouncementSeason ||
               announcementTitle.trim().length < 4 ||
               announcementBody.trim().length < 12
             }
