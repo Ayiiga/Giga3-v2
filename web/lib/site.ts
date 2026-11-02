@@ -46,7 +46,7 @@ export const siteConfig = {
     github: "https://github.com/Ayiiga/Giga3-v2",
   },
   contact: {
-    email: "hello@giga3ai.com",
+    email: "support@giga3ai.com",
   },
 } as const;
 
