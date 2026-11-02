@@ -62,6 +62,8 @@
 /payment-success.html /payment/success/          301
 
 # Blog slug aliases — title-inferred / Search Console variants → published canonicals.
+/blog/google-gemini-ai-login-guide  /blog/gemini-ai-login-guide/  301
+/blog/google-gemini-ai-login-guide/ /blog/gemini-ai-login-guide/  301
 # The published Phase 2 slug omits "should"; Google LIVE TEST used the title-shaped URL.
 /blog/coding-vs-ai-which-skill-should-beginners-learn-first  /blog/coding-vs-ai-which-skill-beginners-learn-first/  301
 /blog/coding-vs-ai-which-skill-should-beginners-learn-first/ /blog/coding-vs-ai-which-skill-beginners-learn-first/  301
