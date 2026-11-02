@@ -14,7 +14,7 @@ export async function signInViaUi(page: Page, email: string, password: string): 
   // The site header also contains a "Sign in" navigation link. Scope the
   // submit action to the credential form to avoid Playwright strict-mode ambiguity.
   await page.locator("form").getByRole("button", { name: "Sign in", exact: true }).click();
-  await page.waitForURL(/\\/chat\\/?$/, { timeout: 60_000 });
+  await page.waitForURL(/\/chat\/?$/, { timeout: 60_000 });
 }
 
 export async function installTtsProbe(page: Page): Promise<void> {
