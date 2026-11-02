@@ -76,7 +76,6 @@ export default function HelpPage() {
                 support@giga3ai.com
               </a>
             </li>
-       </li>
             <li>
               <StableLink href="/contact/" hard className="text-accent underline underline-offset-2">
                 Contact page
