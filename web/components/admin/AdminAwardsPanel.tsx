@@ -56,7 +56,7 @@ export function AdminAwardsPanel({
         <Button
           type="button"
           size="sm"
-          disabled={busy !== null}
+          disabled={busy !== null || Boolean(overview.season)}
           onClick={() =>
             void run(
               "boot",
@@ -65,7 +65,7 @@ export function AdminAwardsPanel({
             )
           }
         >
-          Bootstrap draft {year}
+          {overview.season ? `Season ${year} already created` : `Bootstrap draft ${year}`}
         </Button>
         {overview.season ? (
           <>
@@ -114,6 +114,13 @@ export function AdminAwardsPanel({
           </>
         ) : null}
       </div>
+
+      {overview.season ? (
+        <p className="text-xs text-muted">
+          This season already exists. You can manage its nomination and voting status below;
+          bootstrapping it again is disabled to prevent duplicates.
+        </p>
+      ) : null}
 
       {overview.season ? (
         <p className="text-sm text-muted">
