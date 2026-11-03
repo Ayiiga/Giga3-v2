@@ -53,6 +53,24 @@ describe("webPageReader", () => {
     expect(page.publishedAt).toBe("2026-04-24T10:00:00Z");
   });
 
+  it("extracts publication dates when meta attributes are in a different order", async () => {
+    (fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      headers: { get: () => "text/html; charset=utf-8" },
+      body: null,
+      text: async () =>
+        '<html><head><title>Sample Page</title><meta content="2026-04-24T10:00:00Z" property="article:published_time"></head><body><p>Public content here.</p></body></html>',
+    });
+
+    const reader = createFetchPageReader();
+    const page = await reader.read("https://example.com/page", {
+      timeoutMs: 5000,
+      maxBytes: 50_000,
+    });
+
+    expect(page.publishedAt).toBe("2026-04-24T10:00:00Z");
+  });
+
   it("does not infer publication dates from URL paths", async () => {
     (fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: true,
