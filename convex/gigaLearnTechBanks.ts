@@ -280,6 +280,8 @@ export const startTechPracticeSession = mutation({
       examPracticePremiumExpiresAt: user?.examPracticePremiumExpiresAt,
     });
     const bankSize = getTechBankQuestions(slug, {
+      approvedOnly: true,
+      includePending: false,
       freeTierOnly: !premiumAccess,
       questionType,
     }).length;
