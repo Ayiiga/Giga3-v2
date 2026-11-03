@@ -282,7 +282,7 @@ export async function runWebResearch(args: {
   };
 }
 
-function dedupeSources(sources: LiveWebSource[]): LiveWebSource[] {
+export function dedupeSources(sources: LiveWebSource[]): LiveWebSource[] {
   const map = new Map<string, LiveWebSource>();
   for (const source of sources) {
     const key = canonicalSourceUri(source.uri);
