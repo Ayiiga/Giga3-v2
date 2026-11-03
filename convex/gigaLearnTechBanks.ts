@@ -540,8 +540,8 @@ export const saveTechPracticeAnswer = mutation({
             pendingReview: true,
             provisionalMatch: matchedKey,
             explanation: matchedKey
-              ? `Answer under review. Your choice matches the provisional key — this is not a human-verified result. ${cleanExplanation}`
-              : `Answer under review. The provisional key differs from your choice — treat this feedback as non-authoritative. ${cleanExplanation}`,
+              ? `Your choice matches the provisional key, but the key has not been human-verified. ${cleanExplanation}`
+              : `The provisional key differs from your choice, but it has not been human-verified. Treat this guidance as non-authoritative. ${cleanExplanation}`,
             correctIndex: displayCorrect,
             optionExplanations: cleanOptionNotes,
           },
