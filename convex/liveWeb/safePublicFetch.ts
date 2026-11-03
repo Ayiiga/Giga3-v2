@@ -38,7 +38,7 @@ export async function fetchPublicDocument(rawUrl:string,options:FetchInit):Promi
       if(redirectStatus(status)){const location=res.headers.get("location");if(!location)throw new BrowseError("blocked_redirect");current=new URL(location,classified.url).toString();continue;}
       if(status<200||status>=300)throw new BrowseError("unavailable");
       const contentType=res.headers.get("content-type")??"";
-      if(contentType.toLowerCase().includes("application/pdf")) return {finalUrl:classified.url.toString(),status,contentType,body:""};
+      if(contentType.toLowerCase().includes("application/pdf")) { await res.body?.cancel().catch(() => undefined); return {finalUrl:classified.url.toString(),status,contentType,body:""}; }
       const body=await readLimited(res,options.maxBytes);return {finalUrl:classified.url.toString(),status,contentType,body};
     }catch(err){if(err instanceof BrowseError)throw err;if(controller.signal.aborted||options.signal?.aborted)throw new BrowseError("timeout");console.error("[browse] fetch failed",logSafeUrl(classified.url.toString()));throw new BrowseError("unavailable");}
     finally{clearTimeout(timer);options.signal?.removeEventListener("abort",onParentAbort);}
