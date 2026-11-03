@@ -27,6 +27,44 @@ function extractTitle(html: string): string {
   return match ? decodeHtmlEntities(match[1].replace(/\s+/g, " ").trim()) : "";
 }
 
+function extractPublicationDate(html: string): string | undefined {
+  // Only accept dates explicitly supplied by page metadata. Never infer dates
+  // from URL paths, filenames, copyright notices, or the current retrieval time.
+  const metaPatterns = [
+    /<meta[^>]+(?:property|name)=["']article:published_time["'][^>]+content=["']([^"']+)["'][^>]*>/i,
+    /<meta[^>]+(?:property|name)=["']datePublished["'][^>]+content=["']([^"']+)["'][^>]*>/i,
+    /<meta[^>]+(?:property|name)=["']pubdate["'][^>]+content=["']([^"']+)["'][^>]*>/i,
+    /<meta[^>]+(?:property|name)=["']date["'][^>]+content=["']([^"']+)["'][^>]*>/i,
+  ];
+  for (const pattern of metaPatterns) {
+    const match = html.match(pattern);
+    const value = match?.[1]?.trim();
+    if (value && Number.isFinite(Date.parse(value))) return value;
+  }
+  const timeMatch = html.match(/<time[^>]+datetime=["']([^"']+)["'][^>]*>/i);
+  const timeValue = timeMatch?.[1]?.trim();
+  if (timeValue && Number.isFinite(Date.parse(timeValue))) return timeValue;
+
+  const jsonLdMatches = html.match(/<script[^>]+type=["']application\/ld\+json["'][^>]*>[\s\S]*?<\/script>/gi) ?? [];
+  for (const block of jsonLdMatches) {
+    const json = block.replace(/^<[\s\S]*?>/i, "").replace(/<\/script>$/i, "");
+    try {
+      const parsed = JSON.parse(json) as { datePublished?: unknown; dateCreated?: unknown; dateModified?: unknown; "@graph"?: unknown[] };
+      const candidates = [parsed.datePublished, parsed.dateCreated, ...(Array.isArray(parsed["@graph"]) ? parsed["@graph"].flatMap((item) => {
+        if (!item || typeof item !== "object") return [];
+        const record = item as Record<string, unknown>;
+        return [record.datePublished, record.dateCreated];
+      }) : [])];
+      for (const candidate of candidates) {
+        if (typeof candidate === "string" && Number.isFinite(Date.parse(candidate))) return candidate;
+      }
+    } catch {
+      // Ignore malformed structured metadata and continue without a date.
+    }
+  }
+  return undefined;
+}
+
 function htmlToText(html: string): string {
   let text = html
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
