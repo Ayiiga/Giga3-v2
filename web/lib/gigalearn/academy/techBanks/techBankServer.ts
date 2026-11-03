@@ -278,7 +278,8 @@ export function selectTechQuestionIds(args: {
   if (args.mode === "revision" && args.revisionQuestionIds?.length) {
     const allowed = new Set(
       getTechBankQuestions(args.courseSlug, {
-        approvedOnly: false,
+        approvedOnly: true,
+        includePending: false,
         freeTierOnly,
         questionType: args.questionType,
       }).map((q) => q.questionId)
@@ -288,8 +289,11 @@ export function selectTechQuestionIds(args: {
     return ids.slice(0, count);
   }
 
+  // Practice sessions only include human-approved answer keys. Pending-review
+  // items remain in the editorial queue and cannot create ambiguous learner feedback.
   let pool = getTechBankQuestions(args.courseSlug, {
     approvedOnly: true,
+    includePending: false,
     topicId: args.mode === "topic" || args.mode === "challenge" ? args.topicId : undefined,
     freeTierOnly,
     questionType: args.questionType,
@@ -304,6 +308,7 @@ export function selectTechQuestionIds(args: {
     if (pool.length < count) {
       pool = getTechBankQuestions(args.courseSlug, {
         approvedOnly: true,
+        includePending: false,
         topicId: args.topicId,
         freeTierOnly,
         questionType: args.questionType,
