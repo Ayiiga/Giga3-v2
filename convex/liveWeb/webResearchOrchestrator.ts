@@ -34,8 +34,8 @@ function canonicalSourceUri(uri: string): string {
   try {
     const url = new URL(uri);
     url.hash = "";
-    url.hostname = url.hostname.toLowerCase().replace(/^www\\./i, "");
-    if (url.pathname.length > 1) url.pathname = url.pathname.replace(/\\/+$/, "");
+    url.hostname = url.hostname.toLowerCase().replace(/^www\./i, "");
+    if (url.pathname.length > 1) url.pathname = url.pathname.replace(/\/+$/, "");
     return url.toString();
   } catch { return uri.trim(); }
 }
