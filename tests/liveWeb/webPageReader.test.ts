@@ -35,6 +35,56 @@ describe("webPageReader", () => {
     expect(page.excerpt.length).toBeGreaterThan(0);
   });
 
+  it("extracts publication dates only from explicit page metadata", async () => {
+    (fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      headers: { get: () => "text/html; charset=utf-8" },
+      body: null,
+      text: async () =>
+        '<html><head><title>Sample Page</title><meta property="article:published_time" content="2026-04-24T10:00:00Z"></head><body><p>Public content here.</p></body></html>',
+    });
+
+    const reader = createFetchPageReader();
+    const page = await reader.read("https://example.com/2023/03/page", {
+      timeoutMs: 5000,
+      maxBytes: 50_000,
+    });
+
+    expect(page.publishedAt).toBe("2026-04-24T10:00:00Z");
+  });
+
+  it("does not infer publication dates from URL paths", async () => {
+    (fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      headers: { get: () => "text/html; charset=utf-8" },
+      body: null,
+      text: async () =>
+        "<html><head><title>Sample Page</title></head><body><p>Public content here.</p></body></html>",
+    });
+
+    const reader = createFetchPageReader();
+    const page = await reader.read("https://example.com/2023/03/page", {
+      timeoutMs: 5000,
+      maxBytes: 50_000,
+    });
+
+    expect(page.publishedAt).toBeUndefined();
+  });
+
+  it("does not claim PDF contents were extracted", async () => {
+    (fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      headers: { get: () => "application/pdf" },
+      body: null,
+      text: async () => "%PDF-1.7",
+    });
+
+    const reader = createFetchPageReader();
+    await expect(
+      reader.read("https://example.com/strategy.pdf", { timeoutMs: 5000, maxBytes: 50_000 })
+    ).rejects.toThrow(/PDF detected.*not extracted/i);
+  });
+
   it("rejects malicious private URLs", async () => {
     const reader = createFetchPageReader();
     await expect(
