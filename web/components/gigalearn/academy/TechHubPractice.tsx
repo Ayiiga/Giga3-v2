@@ -22,7 +22,6 @@ import type {
 import { ACADEMY_SURFACE_CLASS } from "@/lib/gigalearn/academy/visualTheme";
 import {
   EXAM_PRACTICE_FREE_QUESTION_COUNT,
-  EXAM_PRACTICE_PAID_UNLOCK_COPY,
   EXAM_PRACTICE_PREMIUM_QUESTION_COUNT,
   hasExamPracticePremiumAccess,
   isExamPracticeCourseSlug,
@@ -30,6 +29,7 @@ import {
 import {
   rewardForCorrectAnswer,
   rewardForIncorrectAnswer,
+  rewardForPracticeAttempt,
   rewardForSessionScore,
 } from "@/lib/gigalearn/examPractice/rewardCopy";
 import { cn } from "@/lib/utils";
@@ -69,7 +69,7 @@ function TechHubInner() {
   const params = useSearchParams();
   const courseSlug = (params.get("course") || "").trim().toLowerCase();
   const isExamCourse = isExamPracticeCourseSlug(courseSlug);
-  const initialMode = (params.get("mode") || (isExamCourse ? "timed" : "learn")).trim() as TechPracticeMode;
+  const initialMode = (params.get("mode") || (isExamCourse ? "practice_test" : "learn")).trim() as TechPracticeMode;
   const urlCount = Number(params.get("count") || "");
   const urlQType = (params.get("qtype") || "").trim().toLowerCase();
   const initialQuestionType: TechQuestionType | "" =
@@ -348,8 +348,9 @@ function TechHubInner() {
           rewardedQuestionIdsRef.current.add(current.questionId);
           // Unverified / provisional keys never grant correctness-dependent praise.
           if (fb.pendingReview) {
+            // Encourage continued practice without claiming correctness or extending a verified streak.
             setStreak(0);
-            setReward(null);
+            setReward(rewardForPracticeAttempt({ seed: index }));
           } else if (fb.correct) {
             const nextStreak = streak + 1;
             setStreak(nextStreak);
@@ -730,15 +731,6 @@ function TechHubInner() {
                   );
                 })}
               </ul>
-              {revealed && activeFeedback?.pendingReview ? (
-                <p
-                  className="exam-session-review-banner"
-                  role="status"
-                  data-testid="exam-answer-under-review"
-                >
-                  Answer under review — provisional key only (not human-verified).
-                </p>
-              ) : null}
               {revealed && reward ? (
                 <p className="exam-session-reward" role="status" data-testid="exam-reward">
                   {reward}
@@ -749,7 +741,7 @@ function TechHubInner() {
                   <p>
                     <span className="exam-session-explain-label">
                       {activeFeedback.pendingReview
-                        ? "Answer under review — "
+                        ? "Provisional feedback — "
                         : activeFeedback.correct
                           ? "Correct — "
                           : "Incorrect — "}
@@ -897,121 +889,88 @@ function TechHubInner() {
         ) : null}
 
         {!meta.awaitingMaterials ? (
-          <section className={cn(ACADEMY_SURFACE_CLASS.catalogue, "space-y-3 p-4 sm:p-6")}>
-            <h3 className="text-lg font-bold text-[#1E1B4B]">Practice modes</h3>
-            <div className="grid gap-2 sm:grid-cols-2">
-              {MODES.map((m) => (
-                <button
-                  key={m.id}
-                  type="button"
-                  onClick={() => setMode(m.id)}
-                  className={cn(
-                    "rounded-xl border px-3 py-3 text-left text-sm",
-                    mode === m.id
-                      ? "border-violet-500 bg-violet-50"
-                      : "border-slate-200 bg-white"
-                  )}
-                >
-                  <span className="font-semibold">{m.label}</span>
-                  <span className="mt-0.5 block text-xs text-slate-600">{m.hint}</span>
-                </button>
-              ))}
+          <section className={cn(ACADEMY_SURFACE_CLASS.catalogue, "space-y-4 rounded-2xl p-4 sm:p-6")} data-testid="tech-practice-setup">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide text-violet-700">Ready when you are</p>
+              <h3 className="mt-1 text-xl font-extrabold text-[#1E1B4B]">Start your practice test</h3>
+              <p className="mt-1 text-sm text-slate-600">Choose how you want to practise, set your question count, then start.</p>
             </div>
+            <fieldset className="space-y-2">
+              <legend className="text-sm font-semibold text-slate-800">Practice mode</legend>
+              <div className="grid grid-cols-3 gap-2">
+                {([
+                  { id: "practice_test" as const, label: "Practice", hint: "Feedback" },
+                  { id: "timed" as const, label: "Timed", hint: "Exam feel" },
+                  { id: "revision" as const, label: "Revision", hint: "Retry misses" },
+                ]).map((m) => (
+                  <button key={m.id} type="button" onClick={() => setMode(m.id)} aria-pressed={mode === m.id}
+                    className={cn("min-h-[76px] rounded-xl border px-2 py-3 text-center transition",
+                      mode === m.id ? "border-violet-600 bg-violet-50 text-violet-950 ring-1 ring-violet-500" : "border-slate-200 bg-white text-slate-700 hover:border-violet-300")}>
+                    <span className="block text-sm font-bold">{m.label}</span>
+                    <span className="mt-1 block text-[11px] text-slate-500">{m.hint}</span>
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+            <details className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+              <summary className="cursor-pointer py-1 text-sm font-semibold text-slate-700">More practice options</summary>
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                {MODES.filter((m) => ["learn", "topic", "random", "challenge"].includes(m.id)).map((m) => (
+                  <button key={m.id} type="button" onClick={() => setMode(m.id)} aria-pressed={mode === m.id}
+                    className={cn("rounded-lg border px-3 py-2 text-left text-sm",
+                      mode === m.id ? "border-violet-500 bg-violet-50 font-semibold text-violet-950" : "border-slate-200 bg-white text-slate-700")}>
+                    <span className="block font-semibold">{m.label}</span>
+                    <span className="mt-0.5 block text-xs text-slate-500">{m.hint}</span>
+                  </button>
+                ))}
+              </div>
+            </details>
             {(mode === "topic" || mode === "challenge") && (
               <label className="block text-sm">
-                <span className="mb-1 block font-medium">Topic</span>
-                <select
-                  className="min-h-11 w-full rounded-xl border border-slate-200 px-3"
-                  value={topicId}
-                  onChange={(e) => setTopicId(e.target.value)}
-                >
+                <span className="mb-1 block font-medium">Choose a topic</span>
+                <select className="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3" value={topicId} onChange={(e) => setTopicId(e.target.value)}>
                   <option value="">All topics / pick one</option>
-                  {meta.topics.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.label} ({t.questionCount})
-                    </option>
-                  ))}
+                  {meta.topics.map((t) => <option key={t.id} value={t.id}>{t.label} ({t.questionCount})</option>)}
                 </select>
               </label>
             )}
             {isExamCourse ? (
               <fieldset className="space-y-2">
-                <legend className="mb-1 text-sm font-medium">Question type</legend>
+                <legend className="text-sm font-semibold text-slate-800">Question type</legend>
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-                  {(
-                    [
-                      { id: "" as const, label: "Mixed (all available)" },
-                      { id: "mcq" as const, label: "Multiple choice" },
-                      { id: "true_false" as const, label: "True / False" },
-                    ] as const
-                  ).map((opt) => (
-                    <button
-                      key={opt.id || "mixed"}
-                      type="button"
-                      onClick={() => setQuestionType(opt.id)}
-                      className={cn(
-                        "min-h-11 rounded-xl border px-3 py-2 text-left text-sm font-semibold",
-                        questionType === opt.id
-                          ? "border-teal-600 bg-teal-50 text-teal-950"
-                          : "border-slate-200 bg-white text-slate-800"
-                      )}
-                    >
+                  {([
+                    { id: "" as const, label: "Mixed (recommended)" },
+                    { id: "mcq" as const, label: "Multiple choice" },
+                    { id: "true_false" as const, label: "True / False" },
+                  ]).map((opt) => (
+                    <button key={opt.id || "mixed"} type="button" onClick={() => setQuestionType(opt.id)} aria-pressed={questionType === opt.id}
+                      className={cn("min-h-11 rounded-xl border px-3 py-2 text-left text-sm font-semibold",
+                        questionType === opt.id ? "border-teal-600 bg-teal-50 text-teal-950" : "border-slate-200 bg-white text-slate-800")}>
                       {opt.label}
                     </button>
                   ))}
                 </div>
-                <p className="text-xs text-slate-500">
-                  Only formats with published items for this bank will start a session. Empty
-                  True/False or MCQ selections return an honest error instead of an empty test.
-                </p>
+                <p className="text-xs leading-5 text-slate-500">Only question formats with published items in this bank can be selected.</p>
               </fieldset>
             ) : null}
             <label className="block text-sm">
-              <span className="mb-1 block font-medium">Questions this session</span>
-              <select
-                className="min-h-11 w-full rounded-xl border border-slate-200 px-3"
-                value={count}
-                onChange={(e) => setCount(Number(e.target.value))}
-              >
-                {countChoices.map((n) => (
-                  <option key={n} value={n}>
-                    {n}
-                    {isExamCourse && n > EXAM_PRACTICE_FREE_QUESTION_COUNT
-                      ? " (Basic GHS 60+ / pack)"
-                      : ""}
-                  </option>
-                ))}
+              <span className="mb-1 block font-semibold text-slate-800">Number of questions</span>
+              <select className="min-h-12 w-full rounded-xl border border-slate-200 bg-white px-3 text-base" value={count} onChange={(e) => setCount(Number(e.target.value))}>
+                {countChoices.map((n) => <option key={n} value={n}>{n}{isExamCourse && n > EXAM_PRACTICE_FREE_QUESTION_COUNT ? " (Basic GHS 60+ / pack)" : n === EXAM_PRACTICE_FREE_QUESTION_COUNT ? " (Free)" : ""}</option>)}
               </select>
             </label>
             {isExamCourse ? (
-              <p className="text-xs text-slate-500">
-                Free learners get up to {EXAM_PRACTICE_FREE_QUESTION_COUNT} questions.{" "}
-                {EXAM_PRACTICE_PAID_UNLOCK_COPY} unlocks up to{" "}
-                {EXAM_PRACTICE_PREMIUM_QUESTION_COUNT} (capped by bank size). A leftover credit
-                balance alone does not unlock larger packs. Correct answers earn praise like
-                Excellent and Superb.
+              <p className="rounded-xl bg-violet-50 px-3 py-3 text-xs leading-5 text-slate-700">
+                Free practice includes up to {EXAM_PRACTICE_FREE_QUESTION_COUNT} questions. Premium access unlocks up to {EXAM_PRACTICE_PREMIUM_QUESTION_COUNT}, depending on bank size.
               </p>
             ) : null}
-            {isExamCourse && !premiumAccess ? (
-              <PremiumPracticeNudge variant="locked" />
-            ) : null}
-            {error ? <p className="text-sm text-rose-700">{error}</p> : null}
-            <Button
-              type="button"
-              className="min-h-11 w-full"
-              disabled={busy || (mode === "topic" && !topicId)}
-              onClick={() => void onStart()}
-            >
-              <Play className="mr-2 h-4 w-4" aria-hidden />
-              {summary.enrolled ? "Start practice" : "Enrol & start practice"}
+            {isExamCourse && !premiumAccess ? <PremiumPracticeNudge variant="locked" /> : null}
+            {error ? <p className="text-sm text-rose-700" role="alert">{error}</p> : null}
+            <Button type="button" className="min-h-14 w-full rounded-xl text-base font-bold shadow-md" disabled={busy || (mode === "topic" && !topicId)} onClick={() => void onStart()}>
+              <Play className="mr-2 h-5 w-5" aria-hidden />
+              {busy ? "Preparing your test…" : summary.enrolled ? "Start Practice Test" : "Enrol & Start Practice Test"}
             </Button>
-            {mode === "timed" ? (
-              <p className="flex items-start gap-2 text-xs text-slate-500">
-                <Clock3 className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
-                Timed mode uses a server deadline. Changing the device clock cannot extend the
-                attempt.
-              </p>
-            ) : null}
+            {mode === "timed" ? <p className="flex items-start gap-2 text-xs text-slate-500"><Clock3 className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />Timed mode uses a server deadline. Changing the device clock cannot extend the attempt.</p> : null}
           </section>
         ) : null}
 

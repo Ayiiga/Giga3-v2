@@ -17,6 +17,7 @@ import { sanitizePracticeStem } from "../../web/lib/gigalearn/examPractice/sanit
 import {
   rewardForCorrectAnswer,
   rewardForIncorrectAnswer,
+  rewardForPracticeAttempt,
 } from "../../web/lib/gigalearn/examPractice/rewardCopy";
 
 const ROOT = resolve(__dirname, "../..");
@@ -137,7 +138,7 @@ describe("client + server wiring for provisional reward suppression", () => {
     const convex = readFileSync(resolve(ROOT, "convex/gigaLearnTechBanks.ts"), "utf8");
     expect(convex).toContain("pendingReview: true");
     expect(convex).toContain("provisionalMatch");
-    expect(convex).toContain("Answer under review");
+    expect(convex).toContain("provisional key");
     expect(convex).toContain("correct: false");
   });
 
@@ -147,8 +148,9 @@ describe("client + server wiring for provisional reward suppression", () => {
       "utf8"
     );
     expect(ui).toContain("fb.pendingReview");
-    expect(ui).toContain('data-testid="exam-answer-under-review"');
-    expect(ui).toContain("Answer under review");
+    expect(ui).toContain("Provisional feedback —");
+    expect(ui).toContain("rewardForPracticeAttempt");
+    expect(ui).not.toContain('data-testid="exam-answer-under-review"');
     expect(ui).toContain("isVerifiedCorrect");
     expect(ui).toContain("goToQuestion");
     expect(ui).toContain("rewardedQuestionIdsRef");
@@ -166,6 +168,11 @@ describe("client + server wiring for provisional reward suppression", () => {
       "utf8"
     );
     expect(ui).toContain("techModeShowsImmediateFeedback");
+  });
+
+  it("provisional attempts receive encouragement without a correctness claim", () => {
+    expect(rewardForPracticeAttempt({ seed: 0 })).toMatch(/GOOD EFFORT|KEEP GOING|STAY FOCUSED/);
+    expect(rewardForPracticeAttempt({ seed: 1 })).not.toMatch(/correct|excellent|superb/i);
   });
 
   it("established reward copy unchanged for verified answers", () => {

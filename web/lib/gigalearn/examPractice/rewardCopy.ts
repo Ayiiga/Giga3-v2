@@ -44,3 +44,17 @@ export function rewardForSessionScore(percent: number): string | null {
   if (percent >= 40) return "KEEP PRACTISING! — review explanations carefully.";
   return "YOU CAN DO BETTER! — revisit weak topics and try again.";
 }
+
+
+/** Encouragement for an attempted item whose answer key is still awaiting review.
+ * This is not a correctness reward and must not advance a verified-answer streak.
+ */
+export function rewardForPracticeAttempt(args?: { seed?: number }): string {
+  const messages = [
+    "GOOD EFFORT! Your answer is saved — keep learning.",
+    "KEEP GOING! Every question is a chance to improve.",
+    "STAY FOCUSED! Your practice progress is saved.",
+  ] as const;
+  const idx = Math.abs((args?.seed ?? 0) % messages.length);
+  return messages[idx] ?? messages[0];
+}

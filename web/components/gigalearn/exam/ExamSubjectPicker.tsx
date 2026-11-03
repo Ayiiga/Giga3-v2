@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, BookOpen, LockKeyhole, Sparkles } from "lucide-react";
+import { ArrowLeft, BookOpen, LockKeyhole } from "lucide-react";
 
 type Subject = { id: string; label: string; questionCount?: number; href?: string; available?: boolean };
 
@@ -12,18 +12,9 @@ const SUBJECT_STYLES: Record<string, { card: string; icon: string; accent: strin
 
 export function ExamSubjectPicker({ title, description, backHref, subjects }: { title: string; description: string; backHref: string; subjects: Subject[] }) {
   return (
-    <main className="mx-auto w-full max-w-3xl space-y-5 pb-[calc(var(--primary-nav-offset,0px)+1rem)]" data-testid="exam-subject-picker">
+    <main className="mx-auto w-full max-w-3xl space-y-3 pb-[calc(var(--primary-nav-offset,0px)+1rem)]" data-testid="exam-subject-picker" aria-label={title}>
       <Link href={backHref} className="inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-slate-600 hover:text-violet-700"><ArrowLeft className="h-4 w-4" aria-hidden />Back to examinations</Link>
-      <header className="overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-700 via-violet-700 to-fuchsia-700 p-5 text-white shadow-lg sm:p-6">
-        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-white/80"><Sparkles className="h-4 w-4" aria-hidden />GigaLearn · Your practice journey</p>
-        <h2 className="mt-2 text-2xl font-extrabold sm:text-3xl">{title}</h2>
-        <p className="mt-2 max-w-xl text-sm leading-6 text-white/90">{description}</p>
-        <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold">
-          <span className="rounded-full bg-white/15 px-3 py-1.5">One question at a time</span>
-          <span className="rounded-full bg-white/15 px-3 py-1.5">Instant learning feedback</span>
-          <span className="rounded-full bg-white/15 px-3 py-1.5">Short explanations</span>
-        </div>
-      </header>
+      <p className="max-w-2xl px-1 text-sm leading-5 text-slate-600">{description}</p>
       <ul className="grid gap-3 sm:grid-cols-2">
         {subjects.map((subject, index) => {
           const style = SUBJECT_STYLES[subject.id] ?? { card: "border-slate-200 bg-white hover:border-violet-300", icon: "bg-violet-50 text-violet-700", accent: "text-violet-700", mark: "bg-violet-600" };
