@@ -71,6 +71,30 @@ describe("webPageReader", () => {
     expect(page.publishedAt).toBe("2026-04-24T10:00:00Z");
   });
 
+  it("supports spaced itemprop metadata and top-level JSON-LD arrays", async () => {
+    (fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      headers: { get: () => "text/html; charset=utf-8" },
+      body: null,
+      text: async () => '<html><head><meta itemprop = "datePublished" content = "2026-05-01"><script type="application/ld+json">[{"@type":"Article","datePublished":"2026-05-02"}]</script></head><body><p>Public content here.</p></body></html>',
+    });
+    const page = await createFetchPageReader().read("https://example.com/page", { timeoutMs: 5000, maxBytes: 50000 });
+    expect(page.publishedAt).toBe("2026-05-01");
+  });
+
+  it("recognizes oversized PDFs before applying the text response limit", async () => {
+    (fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      status: 200,
+      headers: { get: (name: string) => name === "content-type" ? "application/pdf" : name === "content-length" ? "90000000" : null },
+      body: null,
+      text: vi.fn(async () => "%PDF-1.7"),
+    });
+    await expect(createFetchPageReader().read("https://example.com/large.pdf", { timeoutMs: 5000, maxBytes: 1000 }))
+      .rejects.toThrow(/PDF detected.*not extracted/i);
+    expect((fetch as ReturnType<typeof vi.fn>).mock.results[0].value).toBeDefined();
+  });
+
   it("does not infer publication dates from URL paths", async () => {
     (fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: true,
