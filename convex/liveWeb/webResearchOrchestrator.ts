@@ -192,14 +192,21 @@ export async function runWebResearch(args: {
         text: page.text,
         ...(page.publishedAt ? { publishedAt: page.publishedAt } : {}),
       });
-      sources.push({
+      const existingSourceIndex = sources.findIndex((source) => source.uri === page.uri);
+      const pageSource: LiveWebSource = {
         title: page.title,
         uri: page.uri,
         domain: page.domain,
         excerpt: sanitizeLiveWebSourceExcerpt(page.excerpt),
         accessedAt: page.accessedAt,
         ...(page.publishedAt ? { publishedAt: page.publishedAt, publicationDateSource: "page_metadata" as const } : {}),
-      });
+      };
+      if (existingSourceIndex >= 0) {
+        // Retrieved-page metadata is stronger than search-result metadata.
+        sources[existingSourceIndex] = { ...sources[existingSourceIndex], ...pageSource };
+      } else {
+        sources.push(pageSource);
+      }
       readCount += 1;
     } catch (err) {
       warnings.push(
