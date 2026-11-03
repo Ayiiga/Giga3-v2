@@ -279,9 +279,12 @@ export const startTechPracticeSession = mutation({
       credits: user?.credits ?? 0,
       examPracticePremiumExpiresAt: user?.examPracticePremiumExpiresAt,
     });
+    // Match the selector's exam-bank policy: approved items plus published
+    // pending-review items with explicitly provisional, non-scored feedback.
+    // Do not size the session from approved-only counts; promotion banks are
+    // awaiting human verification and would otherwise appear empty.
     const bankSize = getTechBankQuestions(slug, {
       approvedOnly: true,
-      includePending: false,
       freeTierOnly: !premiumAccess,
       questionType,
     }).length;
