@@ -1822,6 +1822,53 @@ export default defineSchema({
     .index("by_status", ["status", "updatedAt"]),
 
   /**
+   * GigaLearn Technology capstone submissions.
+   * Evidence and rubric snapshots are immutable after submission; official
+   * grades are written only by trusted grading/reviewer server paths.
+   */
+  gigaLearnAcademyCapstones: defineTable({
+    userId: v.string(),
+    courseSlug: v.string(),
+    submissionKey: v.string(),
+    title: v.string(),
+    learnerSummary: v.string(),
+    evidenceDescription: v.string(),
+    artifactStorageId: v.optional(v.id("_storage")),
+    artifactUrl: v.optional(v.string()),
+    rubricVersion: v.string(),
+    rubricSnapshotJson: v.string(),
+    status: v.union(
+      v.literal("draft"),
+      v.literal("submitted"),
+      v.literal("pending_review"),
+      v.literal("graded"),
+      v.literal("approved"),
+      v.literal("rejected"),
+      v.literal("appealed")
+    ),
+    gradingSource: v.optional(v.union(v.literal("ai"), v.literal("instructor"))),
+    criterionScoresJson: v.optional(v.string()),
+    totalScore: v.optional(v.number()),
+    confidence: v.optional(v.number()),
+    gradingFeedback: v.optional(v.string()),
+    reviewReason: v.optional(v.string()),
+    reviewerUserId: v.optional(v.string()),
+    reviewerDecision: v.optional(v.union(v.literal("approve"), v.literal("reject"), v.literal("rescore"))),
+    reviewerNotes: v.optional(v.string()),
+    appealReason: v.optional(v.string()),
+    submittedAt: v.optional(v.number()),
+    gradedAt: v.optional(v.number()),
+    reviewedAt: v.optional(v.number()),
+    appealedAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user_course", ["userId", "courseSlug"])
+    .index("by_user_submission_key", ["userId", "submissionKey"])
+    .index("by_status_updated", ["status", "updatedAt"])
+    .index("by_course_status", ["courseSlug", "status"]),
+
+  /**
    * GigaLearn Academy certificates (Phase 4).
    * Server-issued only — never trust client completion/grade payloads.
    * Soft-revoke only; never hard-delete learner certificate history.
