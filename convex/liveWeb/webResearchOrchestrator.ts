@@ -36,6 +36,7 @@ function sourceFromSearch(row: {
   domain: string;
   snippet?: string;
   publishedAt?: string;
+  publicationDateSource?: "search_metadata" | "page_metadata";
 }): LiveWebSource {
   return {
     title: row.title,
