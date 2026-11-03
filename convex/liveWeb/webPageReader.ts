@@ -28,28 +28,29 @@ function extractTitle(html: string): string {
 }
 
 function extractPublicationDate(html: string): string | undefined {
-  // Only accept dates explicitly supplied by page metadata. Never infer dates
-  // from URL paths, filenames, copyright notices, or the current retrieval time.
-  const metaPatterns = [
-    /<meta[^>]+(?:property|name)=["']article:published_time["'][^>]+content=["']([^"']+)["'][^>]*>/i,
-    /<meta[^>]+(?:property|name)=["']datePublished["'][^>]+content=["']([^"']+)["'][^>]*>/i,
-    /<meta[^>]+(?:property|name)=["']pubdate["'][^>]+content=["']([^"']+)["'][^>]*>/i,
-    /<meta[^>]+(?:property|name)=["']date["'][^>]+content=["']([^"']+)["'][^>]*>/i,
-  ];
-  for (const pattern of metaPatterns) {
-    const match = html.match(pattern);
-    const value = match?.[1]?.trim();
-    if (value && Number.isFinite(Date.parse(value))) return value;
+  // Read explicit metadata attributes independently of their order. Never infer
+  // dates from URL paths, filenames, copyright notices, or retrieval time.
+  const metaTags = html.match(/<meta\\b[^>]*>/gi) ?? [];
+  const wanted = new Set(["article:published_time", "datepublished", "pubdate", "date"]);
+  for (const tag of metaTags) {
+    const attributes = new Map<string, string>();
+    for (const match of tag.matchAll(/([a-zA-Z:-]+)\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s>]+))/g)) {
+      attributes.set(match[1].toLowerCase(), match[2] ?? match[3] ?? match[4] ?? "");
+    }
+    const key = (attributes.get("property") ?? attributes.get("name") ?? "").toLowerCase();
+    const value = attributes.get("content")?.trim();
+    if (wanted.has(key) && value && Number.isFinite(Date.parse(value))) return value;
   }
-  const timeMatch = html.match(/<time[^>]+datetime=["']([^"']+)["'][^>]*>/i);
+
+  const timeMatch = html.match(/<time\\b[^>]*datetime=["']([^"']+)["'][^>]*>/i);
   const timeValue = timeMatch?.[1]?.trim();
   if (timeValue && Number.isFinite(Date.parse(timeValue))) return timeValue;
 
-  const jsonLdMatches = html.match(/<script[^>]+type=["']application\/ld\+json["'][^>]*>[\s\S]*?<\/script>/gi) ?? [];
+  const jsonLdMatches = html.match(/<script[^>]+type=["']application\\/ld\\+json["'][^>]*>[\\s\\S]*?<\\/script>/gi) ?? [];
   for (const block of jsonLdMatches) {
-    const json = block.replace(/^<[\s\S]*?>/i, "").replace(/<\/script>$/i, "");
+    const json = block.replace(/^<[\\s\\S]*?>/i, "").replace(/<\\/script>$/i, "");
     try {
-      const parsed = JSON.parse(json) as { datePublished?: unknown; dateCreated?: unknown; dateModified?: unknown; "@graph"?: unknown[] };
+      const parsed = JSON.parse(json) as { datePublished?: unknown; dateCreated?: unknown; "@graph"?: unknown[] };
       const candidates = [parsed.datePublished, parsed.dateCreated, ...(Array.isArray(parsed["@graph"]) ? parsed["@graph"].flatMap((item) => {
         if (!item || typeof item !== "object") return [];
         const record = item as Record<string, unknown>;
