@@ -279,7 +279,8 @@ export function selectTechQuestionIds(args: {
     const allowed = new Set(
       getTechBankQuestions(args.courseSlug, {
         approvedOnly: true,
-        includePending: false,
+        // Teacher Promotion banks are awaiting editorial verification; keep
+        // them available for practice with explicitly provisional feedback.
         freeTierOnly,
         questionType: args.questionType,
       }).map((q) => q.questionId)
@@ -293,7 +294,8 @@ export function selectTechQuestionIds(args: {
   // items remain in the editorial queue and cannot create ambiguous learner feedback.
   let pool = getTechBankQuestions(args.courseSlug, {
     approvedOnly: true,
-    includePending: false,
+    // Pending-review exam items remain practiceable but are never scored as
+    // verified-correct; gradeTechAnswers marks them provisional.
     topicId: args.mode === "topic" || args.mode === "challenge" ? args.topicId : undefined,
     freeTierOnly,
     questionType: args.questionType,
@@ -308,7 +310,6 @@ export function selectTechQuestionIds(args: {
     if (pool.length < count) {
       pool = getTechBankQuestions(args.courseSlug, {
         approvedOnly: true,
-        includePending: false,
         topicId: args.topicId,
         freeTierOnly,
         questionType: args.questionType,
