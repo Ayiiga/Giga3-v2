@@ -22,7 +22,6 @@ import type {
 import { ACADEMY_SURFACE_CLASS } from "@/lib/gigalearn/academy/visualTheme";
 import {
   EXAM_PRACTICE_FREE_QUESTION_COUNT,
-  EXAM_PRACTICE_PAID_UNLOCK_COPY,
   EXAM_PRACTICE_PREMIUM_QUESTION_COUNT,
   hasExamPracticePremiumAccess,
   isExamPracticeCourseSlug,
@@ -217,7 +216,8 @@ function TechHubInner() {
 
   const [nowTick, setNowTick] = useState(Date.now());
   useEffect(() => {
-    if (!endsAt || results) return;    const id = window.setInterval(() => setNowTick(Date.now()), 1000);
+    if (!endsAt || results) return;
+    const id = window.setInterval(() => setNowTick(Date.now()), 1000);
     return () => window.clearInterval(id);
   }, [endsAt, results]);
 
@@ -436,7 +436,8 @@ function TechHubInner() {
           <div className="grid gap-2 rounded-xl border border-emerald-200 bg-emerald-50/80 p-3 text-sm text-emerald-950 sm:grid-cols-2">
             <p>
               Questions attempted: <strong>{results.results.length}</strong>
-            </p>            <p>
+            </p>
+            <p>
               Correct answers: <strong>{results.score}</strong>
               {results.percent != null ? ` · ${results.percent}%` : ""}
             </p>
@@ -655,7 +656,8 @@ function TechHubInner() {
               >
                 {current.options.map((opt, optIndex) => {
                   const isSelected = selected === optIndex;
-                  const pending = Boolean(activeFeedback?.pendingReview);                  const isVerifiedCorrect =
+                  const pending = Boolean(activeFeedback?.pendingReview);
+                  const isVerifiedCorrect =
                     revealed &&
                     !pending &&
                     activeFeedback?.correct &&
@@ -874,7 +876,8 @@ function TechHubInner() {
             </p>
           ) : (
             <p className="text-xs text-slate-500">
-              Showing {meta.approvedQuestionCount} unique approved questions after extraction and              near-duplicate removal (source claimed 500). Not an official certification exam.
+              Showing {meta.approvedQuestionCount} unique approved questions after extraction and
+              near-duplicate removal (source claimed 500). Not an official certification exam.
             </p>
           )}
         </section>
@@ -899,7 +902,6 @@ function TechHubInner() {
               <h3 className="mt-1 text-xl font-extrabold text-[#1E1B4B]">Start your practice test</h3>
               <p className="mt-1 text-sm text-slate-600">Choose how you want to practise, set your question count, then start.</p>
             </div>
-
             <fieldset className="space-y-2">
               <legend className="text-sm font-semibold text-slate-800">Practice mode</legend>
               <div className="grid grid-cols-3 gap-2">
@@ -908,8 +910,7 @@ function TechHubInner() {
                   { id: "timed" as const, label: "Timed", hint: "Exam feel" },
                   { id: "revision" as const, label: "Revision", hint: "Retry misses" },
                 ]).map((m) => (
-                  <button key={m.id} type="button" onClick={() => setMode(m.id)}
-                    aria-pressed={mode === m.id}
+                  <button key={m.id} type="button" onClick={() => setMode(m.id)} aria-pressed={mode === m.id}
                     className={cn("min-h-[76px] rounded-xl border px-2 py-3 text-center transition",
                       mode === m.id ? "border-violet-600 bg-violet-50 text-violet-950 ring-1 ring-violet-500" : "border-slate-200 bg-white text-slate-700 hover:border-violet-300")}>
                     <span className="block text-sm font-bold">{m.label}</span>
@@ -918,13 +919,11 @@ function TechHubInner() {
                 ))}
               </div>
             </fieldset>
-
             <details className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
               <summary className="cursor-pointer py-1 text-sm font-semibold text-slate-700">More practice options</summary>
               <div className="mt-3 grid grid-cols-2 gap-2">
                 {MODES.filter((m) => ["learn", "topic", "random", "challenge"].includes(m.id)).map((m) => (
-                  <button key={m.id} type="button" onClick={() => setMode(m.id)}
-                    aria-pressed={mode === m.id}
+                  <button key={m.id} type="button" onClick={() => setMode(m.id)} aria-pressed={mode === m.id}
                     className={cn("rounded-lg border px-3 py-2 text-left text-sm",
                       mode === m.id ? "border-violet-500 bg-violet-50 font-semibold text-violet-950" : "border-slate-200 bg-white text-slate-700")}>
                     <span className="block font-semibold">{m.label}</span>
@@ -933,7 +932,6 @@ function TechHubInner() {
                 ))}
               </div>
             </details>
-
             {(mode === "topic" || mode === "challenge") && (
               <label className="block text-sm">
                 <span className="mb-1 block font-medium">Choose a topic</span>
@@ -943,7 +941,6 @@ function TechHubInner() {
                 </select>
               </label>
             )}
-
             {isExamCourse ? (
               <fieldset className="space-y-2">
                 <legend className="text-sm font-semibold text-slate-800">Question type</legend>
@@ -963,14 +960,12 @@ function TechHubInner() {
                 <p className="text-xs leading-5 text-slate-500">Only question formats with published items in this bank can be selected.</p>
               </fieldset>
             ) : null}
-
             <label className="block text-sm">
               <span className="mb-1 block font-semibold text-slate-800">Number of questions</span>
               <select className="min-h-12 w-full rounded-xl border border-slate-200 bg-white px-3 text-base" value={count} onChange={(e) => setCount(Number(e.target.value))}>
                 {countChoices.map((n) => <option key={n} value={n}>{n}{isExamCourse && n > EXAM_PRACTICE_FREE_QUESTION_COUNT ? " (Basic GHS 60+ / pack)" : n === EXAM_PRACTICE_FREE_QUESTION_COUNT ? " (Free)" : ""}</option>)}
               </select>
             </label>
-
             {isExamCourse ? (
               <p className="rounded-xl bg-violet-50 px-3 py-3 text-xs leading-5 text-slate-700">
                 Free practice includes up to {EXAM_PRACTICE_FREE_QUESTION_COUNT} questions. Premium access unlocks up to {EXAM_PRACTICE_PREMIUM_QUESTION_COUNT}, depending on bank size.
