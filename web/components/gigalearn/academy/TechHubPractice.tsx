@@ -29,6 +29,7 @@ import {
 import {
   rewardForCorrectAnswer,
   rewardForIncorrectAnswer,
+  rewardForPracticeAttempt,
   rewardForSessionScore,
 } from "@/lib/gigalearn/examPractice/rewardCopy";
 import { cn } from "@/lib/utils";
@@ -347,8 +348,9 @@ function TechHubInner() {
           rewardedQuestionIdsRef.current.add(current.questionId);
           // Unverified / provisional keys never grant correctness-dependent praise.
           if (fb.pendingReview) {
+            // Encourage continued practice without claiming correctness or extending a verified streak.
             setStreak(0);
-            setReward(null);
+            setReward(rewardForPracticeAttempt({ seed: index }));
           } else if (fb.correct) {
             const nextStreak = streak + 1;
             setStreak(nextStreak);
@@ -729,15 +731,6 @@ function TechHubInner() {
                   );
                 })}
               </ul>
-              {revealed && activeFeedback?.pendingReview ? (
-                <p
-                  className="exam-session-review-banner"
-                  role="status"
-                  data-testid="exam-answer-under-review"
-                >
-                  Answer under review — provisional key only (not human-verified).
-                </p>
-              ) : null}
               {revealed && reward ? (
                 <p className="exam-session-reward" role="status" data-testid="exam-reward">
                   {reward}
@@ -748,7 +741,7 @@ function TechHubInner() {
                   <p>
                     <span className="exam-session-explain-label">
                       {activeFeedback.pendingReview
-                        ? "Answer under review — "
+                        ? "Provisional feedback — "
                         : activeFeedback.correct
                           ? "Correct — "
                           : "Incorrect — "}
