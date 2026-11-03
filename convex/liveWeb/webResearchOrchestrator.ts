@@ -30,6 +30,16 @@ import type {
 
 export type ProgressCallback = (stage: LiveWebProgressStage) => Promise<void>;
 
+function canonicalSourceUri(uri: string): string {
+  try {
+    const url = new URL(uri);
+    url.hash = "";
+    url.hostname = url.hostname.toLowerCase().replace(/^www\\./i, "");
+    if (url.pathname.length > 1) url.pathname = url.pathname.replace(/\\/+$/, "");
+    return url.toString();
+  } catch { return uri.trim(); }
+}
+
 function sourceFromSearch(row: {
   title: string;
   uri: string;
@@ -192,7 +202,8 @@ export async function runWebResearch(args: {
         text: page.text,
         ...(page.publishedAt ? { publishedAt: page.publishedAt } : {}),
       });
-      const existingSourceIndex = sources.findIndex((source) => source.uri === page.uri);
+      const pageKey = canonicalSourceUri(page.uri);
+      const existingSourceIndex = sources.findIndex((source) => canonicalSourceUri(source.uri) === pageKey);
       const pageSource: LiveWebSource = {
         title: page.title,
         uri: page.uri,
@@ -274,7 +285,26 @@ export async function runWebResearch(args: {
 function dedupeSources(sources: LiveWebSource[]): LiveWebSource[] {
   const map = new Map<string, LiveWebSource>();
   for (const source of sources) {
-    if (!map.has(source.uri)) map.set(source.uri, source);
+    const key = canonicalSourceUri(source.uri);
+    const existing = map.get(key);
+    if (!existing) {
+      map.set(key, source);
+      continue;
+    }
+    // Page metadata is independently retrieved and takes precedence over provider metadata.
+    const preferIncoming = source.publicationDateSource === "page_metadata" &&
+      existing.publicationDateSource !== "page_metadata";
+    const preferred = preferIncoming ? source : existing;
+    const fallback = preferIncoming ? existing : source;
+    map.set(key, {
+      ...fallback,
+      ...preferred,
+      ...(preferred.publishedAt
+        ? { publishedAt: preferred.publishedAt, publicationDateSource: preferred.publicationDateSource }
+        : fallback.publishedAt
+          ? { publishedAt: fallback.publishedAt, publicationDateSource: fallback.publicationDateSource }
+          : {}),
+    });
   }
   return [...map.values()].slice(0, 8);
 }
