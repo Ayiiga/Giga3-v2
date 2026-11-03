@@ -10,6 +10,7 @@ import {
   presentOptionExplanations,
   presentTechQuestion,
   buildSessionOptionPermutations,
+  selectTechQuestionIds,
 } from "../../web/lib/gigalearn/academy/techBanks/techBankServer";
 import { optionFeedbackNotes } from "../../web/lib/gigalearn/examPractice/optionFeedback";
 import { getPromotionFreeQuestions } from "../../web/lib/gigalearn/examPractice/promotionOrientationBank";
@@ -37,6 +38,25 @@ function norm(s: string): string {
 }
 
 describe("promotion rank option quality (5 ranks)", () => {
+  it("practice sessions never select pending-review answer keys", () => {
+    for (const courseSlug of RANK_SLUGS) {
+      const ids = selectTechQuestionIds({
+        courseSlug,
+        mode: "practice_test",
+        count: 100,
+        seed: 20261103,
+        premiumAccess: true,
+      });
+      expect(ids.length).toBeGreaterThan(0);
+      for (const id of ids) {
+        const q = getTechBankQuestions(courseSlug, { approvedOnly: false }).find(
+          (row) => row.questionId === id
+        );
+        expect(q?.reviewStatus, `${courseSlug}:${id}`).toBe("approved");
+      }
+    }
+  });
+
   it("has no practice-phrase stem leakage remaining", () => {
     for (const slug of RANK_SLUGS) {
       const bank = getTechBankQuestions(slug, { approvedOnly: false });
