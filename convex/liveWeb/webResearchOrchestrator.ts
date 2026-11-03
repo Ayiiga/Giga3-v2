@@ -43,7 +43,7 @@ function sourceFromSearch(row: {
     domain: row.domain,
     excerpt: sanitizeLiveWebSourceExcerpt(row.snippet),
     accessedAt: Date.now(),
-    ...(row.publishedAt ? { publishedAt: row.publishedAt } : {}),
+    ...(row.publishedAt ? { publishedAt: row.publishedAt, publicationDateSource: row.publicationDateSource ?? "search_metadata" } : {}),
   };
 }
 
@@ -75,7 +75,7 @@ function buildContextBlock(
     for (const [i, source] of searchSnippets.entries()) {
       lines.push(
         `[S${i + 1}] ${source.title} (${source.domain})`,
-        source.excerpt ? `Snippet: ${source.excerpt}` : "",
+        source.publishedAt ? `Publication date (${source.publicationDateSource === "page_metadata" ? "page metadata" : "search metadata; not independently verified"}): ${source.publishedAt}` : "Publication date: not established",\n        source.excerpt ? `Snippet: ${source.excerpt}` : "",
         source.uri
       );
     }
@@ -98,7 +98,7 @@ function buildContextBlock(
     "- Prefer facts from the live web context above over stale training knowledge.",
     "- Compare multiple sources when they disagree.",
     "- If information may be outdated, say so and note when it was accessed.",
-    "- Do not invent URLs or sources.",
+    "- Do not invent URLs or sources.",\n    "- Never infer publication dates from URL paths, filenames, or retrieval dates.",\n    "- Distinguish search-provider date metadata from dates found in retrieved page metadata.",\n    "- A PDF URL is not evidence that the PDF was read; only describe PDF contents when extraction succeeded.",
     "- Clearly distinguish live web facts from general knowledge.",
     "- User-visible answer must be clean: no Confidence/Why/tier/provider diagnostics.",
     NEWS_RESPONSE_FORMAT_GUIDANCE
@@ -194,7 +194,7 @@ export async function runWebResearch(args: {
       });
       readCount += 1;
     } catch (err) {
-      warnings.push("Could not retrieve one webpage. It was not used as a source.");
+      warnings.push(\n        err instanceof Error && err.message.includes("PDF detected")\n          ? "A PDF source was found, but its contents were not extracted. Treat it as an unverified document link, not a page that was read."\n          : "Could not retrieve one webpage. It was not used as a source."\n      );
     }
   }
 
