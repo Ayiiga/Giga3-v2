@@ -105,6 +105,9 @@ export function createFetchPageReader(): WebPageReader {
         });
 
         const contentType = res.contentType;
+        if (contentType.includes("application/pdf")) {
+          throw new Error("PDF detected; its contents were not extracted. PDF text extraction is not enabled.");
+        }
         if (
           !contentType.includes("text/html") &&
           !contentType.includes("text/plain") &&
@@ -129,6 +132,7 @@ export function createFetchPageReader(): WebPageReader {
           text,
           excerpt: buildExcerpt(text),
           accessedAt: Date.now(),
+          ...(extractPublicationDate(html) ? { publishedAt: extractPublicationDate(html) } : {}),
         } satisfies WebPageContent;
       } catch (err) {
         if (controller.signal.aborted || (err instanceof BrowseError && err.code === "timeout")) {
