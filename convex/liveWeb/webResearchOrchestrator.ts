@@ -30,12 +30,23 @@ import type {
 
 export type ProgressCallback = (stage: LiveWebProgressStage) => Promise<void>;
 
+function canonicalSourceUri(uri: string): string {
+  try {
+    const url = new URL(uri);
+    url.hash = "";
+    url.hostname = url.hostname.toLowerCase().replace(/^www\./i, "");
+    if (url.pathname.length > 1) url.pathname = url.pathname.replace(/\/+$/, "");
+    return url.toString();
+  } catch { return uri.trim(); }
+}
+
 function sourceFromSearch(row: {
   title: string;
   uri: string;
   domain: string;
   snippet?: string;
   publishedAt?: string;
+  publicationDateSource?: "search_metadata" | "page_metadata";
 }): LiveWebSource {
   return {
     title: row.title,
@@ -43,13 +54,13 @@ function sourceFromSearch(row: {
     domain: row.domain,
     excerpt: sanitizeLiveWebSourceExcerpt(row.snippet),
     accessedAt: Date.now(),
-    ...(row.publishedAt ? { publishedAt: row.publishedAt } : {}),
+    ...(row.publishedAt ? { publishedAt: row.publishedAt, publicationDateSource: row.publicationDateSource ?? "search_metadata" } : {}),
   };
 }
 
 function buildContextBlock(
   query: string,
-  pages: Array<{ title: string; domain: string; uri: string; text: string }>,
+  pages: Array<{ title: string; domain: string; uri: string; text: string; publishedAt?: string }>,
   searchSnippets: LiveWebSource[],
   capability?: ResearchCapabilityId
 ): string {
@@ -75,6 +86,7 @@ function buildContextBlock(
     for (const [i, source] of searchSnippets.entries()) {
       lines.push(
         `[S${i + 1}] ${source.title} (${source.domain})`,
+        source.publishedAt ? `Publication date (${source.publicationDateSource === "page_metadata" ? "page metadata" : "search metadata; not independently verified"}): ${source.publishedAt}` : "Publication date: not established",
         source.excerpt ? `Snippet: ${source.excerpt}` : "",
         source.uri
       );
@@ -87,6 +99,7 @@ function buildContextBlock(
       lines.push(
         `[P${i + 1}] ${page.title} (${page.domain})`,
         page.uri,
+        page.publishedAt ? `Publication date (page metadata): ${page.publishedAt}` : "Publication date: not established from page metadata",
         redactSensitivePatterns(page.text.slice(0, 4000))
       );
     }
@@ -99,6 +112,9 @@ function buildContextBlock(
     "- Compare multiple sources when they disagree.",
     "- If information may be outdated, say so and note when it was accessed.",
     "- Do not invent URLs or sources.",
+    "- Never infer publication dates from URL paths, filenames, or retrieval dates.",
+    "- Distinguish search-provider date metadata from dates found in retrieved page metadata.",
+    "- A PDF URL is not evidence that the PDF was read; only describe PDF contents when extraction succeeded.",
     "- Clearly distinguish live web facts from general knowledge.",
     "- User-visible answer must be clean: no Confidence/Why/tier/provider diagnostics.",
     NEWS_RESPONSE_FORMAT_GUIDANCE
@@ -127,7 +143,7 @@ export async function runWebResearch(args: {
   const searchProviders = resolveWebSearchProviders();
   const explicitUrls = extractUrlsFromText(args.query);
   const sources: LiveWebSource[] = [];
-  const pages: Array<{ title: string; domain: string; uri: string; text: string }> = [];
+  const pages: Array<{ title: string; domain: string; uri: string; text: string; publishedAt?: string }> = [];
 
   await args.onProgress?.("searching");
 
@@ -184,17 +200,31 @@ export async function runWebResearch(args: {
         domain: page.domain,
         uri: page.uri,
         text: page.text,
+        ...(page.publishedAt ? { publishedAt: page.publishedAt } : {}),
       });
-      sources.push({
+      const pageKey = canonicalSourceUri(page.uri);
+      const existingSourceIndex = sources.findIndex((source) => canonicalSourceUri(source.uri) === pageKey);
+      const pageSource: LiveWebSource = {
         title: page.title,
         uri: page.uri,
         domain: page.domain,
         excerpt: sanitizeLiveWebSourceExcerpt(page.excerpt),
         accessedAt: page.accessedAt,
-      });
+        ...(page.publishedAt ? { publishedAt: page.publishedAt, publicationDateSource: "page_metadata" as const } : {}),
+      };
+      if (existingSourceIndex >= 0) {
+        // Retrieved-page metadata is stronger than search-result metadata.
+        sources[existingSourceIndex] = { ...sources[existingSourceIndex], ...pageSource };
+      } else {
+        sources.push(pageSource);
+      }
       readCount += 1;
     } catch (err) {
-      warnings.push("Could not retrieve one webpage. It was not used as a source.");
+      warnings.push(
+        err instanceof Error && err.message.includes("PDF detected")
+          ? "A PDF source was found, but its contents were not extracted. Treat it as an unverified document link, not a page that was read."
+          : "Could not retrieve one webpage. It was not used as a source."
+      );
     }
   }
 
@@ -252,10 +282,29 @@ export async function runWebResearch(args: {
   };
 }
 
-function dedupeSources(sources: LiveWebSource[]): LiveWebSource[] {
+export function dedupeSources(sources: LiveWebSource[]): LiveWebSource[] {
   const map = new Map<string, LiveWebSource>();
   for (const source of sources) {
-    if (!map.has(source.uri)) map.set(source.uri, source);
+    const key = canonicalSourceUri(source.uri);
+    const existing = map.get(key);
+    if (!existing) {
+      map.set(key, source);
+      continue;
+    }
+    // Page metadata is independently retrieved and takes precedence over provider metadata.
+    const preferIncoming = source.publicationDateSource === "page_metadata" &&
+      existing.publicationDateSource !== "page_metadata";
+    const preferred = preferIncoming ? source : existing;
+    const fallback = preferIncoming ? existing : source;
+    map.set(key, {
+      ...fallback,
+      ...preferred,
+      ...(preferred.publishedAt
+        ? { publishedAt: preferred.publishedAt, publicationDateSource: preferred.publicationDateSource }
+        : fallback.publishedAt
+          ? { publishedAt: fallback.publishedAt, publicationDateSource: fallback.publicationDateSource }
+          : {}),
+    });
   }
   return [...map.values()].slice(0, 8);
 }

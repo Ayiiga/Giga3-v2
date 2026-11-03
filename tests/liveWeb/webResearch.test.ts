@@ -6,7 +6,7 @@ import {
   resolveWebSearchProvider,
   resolveWebSearchProviders,
 } from "../../convex/liveWeb/providers/registry";
-import { newsEvidenceWithGrounding, runWebResearch } from "../../convex/liveWeb/webResearchOrchestrator";
+import { dedupeSources, newsEvidenceWithGrounding, runWebResearch } from "../../convex/liveWeb/webResearchOrchestrator";
 
 function clearSearchEnv() {
   delete process.env.TAVILY_API_KEY;
@@ -330,6 +330,19 @@ describe("runWebResearch", () => {
 
     expect(stages).toContain("searching");
     expect(stages).toContain("preparing_answer");
+  });
+});
+
+describe("Live Web source deduplication", () => {
+  it("keeps retrieved page publication date and provenance over search metadata", () => {
+    const sources = dedupeSources([
+      { title: "Search title", uri: "https://www.example.com/story/#search", domain: "example.com", accessedAt: 1, publishedAt: "2026-01-01", publicationDateSource: "search_metadata" },
+      { title: "Retrieved title", uri: "https://example.com/story", domain: "example.com", accessedAt: 2, publishedAt: "2026-02-01", publicationDateSource: "page_metadata" },
+    ]);
+    expect(sources).toHaveLength(1);
+    expect(sources[0].publishedAt).toBe("2026-02-01");
+    expect(sources[0].publicationDateSource).toBe("page_metadata");
+    expect(sources[0].title).toBe("Retrieved title");
   });
 });
 

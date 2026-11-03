@@ -44,7 +44,7 @@ export function createTavilySearchProvider(apiKey: string): WebSearchProvider {
             uri: row.url,
             snippet: row.content?.trim(),
             domain: domainFromUrl(row.url),
-            ...(publishedAt ? { publishedAt } : {}),
+            ...(publishedAt ? { publishedAt, publicationDateSource: "search_metadata" as const } : {}),
           });
           if (results.length >= options.maxResults) break;
         }
