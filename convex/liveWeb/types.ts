@@ -15,6 +15,7 @@ export type WebSearchResult = {
   snippet?: string;
   domain: string;
   publishedAt?: string;
+  publicationDateSource?: "search_metadata" | "page_metadata";
 };
 
 export type WebPageContent = {
@@ -24,6 +25,7 @@ export type WebPageContent = {
   text: string;
   excerpt: string;
   accessedAt: number;
+  publishedAt?: string;
 };
 
 export type LiveWebSource = {
@@ -33,6 +35,7 @@ export type LiveWebSource = {
   excerpt?: string;
   accessedAt: number;
   publishedAt?: string;
+  publicationDateSource?: "search_metadata" | "page_metadata";
   tier?: 1 | 2 | 3 | 4;
   articleRetrieved?: boolean;
   searchResultOnly?: boolean;
