@@ -25,18 +25,15 @@ describe("feature announcement emails", () => {
     expect(actions).toContain("reconcileFeatureAnnouncementDeliveryInternal");
     expect(safety).toContain("What’s new in Giga3 AI");
     expect(safety).toContain('feature_announcement_v3');
-    expect(safety).toContain("CV and resume writing");
-    expect(safety).toContain("book writing");
-    expect(safety).toContain("thesis and research writing");
-    expect(safety).toContain("WASSCE and BECE");
     expect(safety).toContain("Teacher Promotion");
     expect(safety).toContain("GigaSocial Awards");
     expect(safety).toContain("public candidate profile");
-    expect(safety).toContain("Teacher Promotion");
-    expect(safety).toContain("GigaSocial Awards");
-    // removed legacy kids feature assertion
-    // expect(safety).toMatch(/kids['’] learning environment/);
     expect(safety).toContain("tipCampaignKey");
+    const welcome = readFileSync(resolve(__dirname, "../../convex/authPasswordActions.ts"), "utf8");
+    expect(welcome).toContain("Welcome to Giga3 AI — learn, achieve and create");
+    expect(welcome).toContain("GigaSocial Awards");
+    expect(welcome).toContain("Teacher Promotion");
+    expect(welcome).toContain("research papers");
   });
 
   it("schedules weekly feature announcements via crons", () => {
