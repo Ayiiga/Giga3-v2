@@ -282,6 +282,8 @@ export function selectTechQuestionIds(args: {
         // Teacher Promotion banks are awaiting editorial verification; keep
         // them available for practice with explicitly provisional feedback.
         freeTierOnly,
+        // Keep BECE subject selection even when revising previously missed items.
+        topicId: isExam && args.topicId ? args.topicId : undefined,
         questionType: args.questionType,
       }).map((q) => q.questionId)
     );
@@ -296,7 +298,9 @@ export function selectTechQuestionIds(args: {
     approvedOnly: true,
     // Pending-review exam items remain practiceable but are never scored as
     // verified-correct; gradeTechAnswers marks them provisional.
-    topicId: args.mode === "topic" || args.mode === "challenge" ? args.topicId : undefined,
+    // An explicit topic on an exam course represents the selected subject
+    // and must apply in Practice, Timed, Learn, Random, and Topic modes.
+    topicId: isExam && args.topicId ? args.topicId : args.mode === "topic" || args.mode === "challenge" ? args.topicId : undefined,
     freeTierOnly,
     questionType: args.questionType,
   });
