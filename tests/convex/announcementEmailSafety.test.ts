@@ -495,30 +495,23 @@ describe("eligibility, segmentation, and tip campaign keys", () => {
     expect(digestCopyForSegment("social").ctaPath).toBe("/gigasocial/awards/");
   });
 
-  it("feature_announcement_v3 copy mentions all five requested capabilities in every segment", () => {
+  it("feature_announcement_v3 copy routes users to the requested feature groups", () => {
     expect(DEFAULT_FEATURE_ANNOUNCEMENT_CAMPAIGN).toBe("feature_announcement_v3");
-    const segments = ["learn", "create", "social", "general"] as const;
-    for (const segment of segments) {
-      const copy = announcementCopyForSegment(segment);
-      const blob = [
-        copy.title,
-        copy.lead,
-        copy.subjectLine,
-        ...copy.bullets,
-      ].join("\n");
-      expect(blob, segment).toMatch(/Awards/i);
-      expect(blob, segment).toMatch(/apply|nominate/i);
-      expect(blob, segment).toMatch(/Teacher Promotion/i);
-      expect(blob, segment).toMatch(/WASSCE/);
-      expect(blob, segment).toMatch(/BECE/);
-      expect(blob, segment).toMatch(/writing/i);
-    }
-    expect(announcementCopyForSegment("learn").ctaPath).toBe("/gigalearn/");
-    expect(announcementCopyForSegment("create").ctaPath).toBe("/gigaedit/");
-    expect(announcementCopyForSegment("social").ctaPath).toBe("/gigasocial/");
-    expect(announcementCopyForSegment("learn").lead).toContain("GigaLearn");
-    expect(announcementCopyForSegment("create").bullets.join(" ")).toContain("GigaEdit");
-    expect(announcementCopyForSegment("social").lead).toContain("GigaSocial");
+    const learn = announcementCopyForSegment("learn");
+    const create = announcementCopyForSegment("create");
+    const social = announcementCopyForSegment("social");
+    const general = announcementCopyForSegment("general");
+    expect(learn.ctaPath).toBe("/gigalearn/exam/");
+    expect(learn.lead).toContain("BECE, WASSCE");
+    expect(learn.lead).toContain("Teacher Promotion");
+    expect(create.ctaPath).toBe("/chat/");
+    expect(create.lead).toContain("book");
+    expect(create.bullets.join(" ")).toContain("CV");
+    expect(social.ctaPath).toBe("/gigasocial/awards/");
+    expect(social.lead).toContain("apply or nominate");
+    expect(social.bullets.join(" ")).toContain("free public votes");
+    expect(general.bullets.join(" ")).toContain("Teacher Promotion");
+    expect(general.bullets.join(" ")).toContain("research papers");
   });
 });
 
