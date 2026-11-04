@@ -25,18 +25,41 @@ export const getAdminOverview = query({
       .query("gigaSeoSettings")
       .withIndex("by_key", (q) => q.eq("key", "primary"))
       .unique();
-    const [ideas, plans] = await Promise.all([
-      ctx.db.query("gigaSeoKeywordIdeas").collect(),
-      ctx.db.query("gigaSeoContentPlans").collect(),
+    const [
+      keywordCount,
+      newKeywordCount,
+      contentPlanCount,
+      draftCount,
+      scheduledCount,
+      publishedCount,
+    ] = await Promise.all([
+      ctx.db.query("gigaSeoKeywordIdeas").count(),
+      ctx.db
+        .query("gigaSeoKeywordIdeas")
+        .withIndex("by_status_created", (q) => q.eq("status", "new"))
+        .count(),
+      ctx.db.query("gigaSeoContentPlans").count(),
+      ctx.db
+        .query("gigaSeoContentPlans")
+        .withIndex("by_status_updated", (q) => q.eq("status", "draft"))
+        .count(),
+      ctx.db
+        .query("gigaSeoContentPlans")
+        .withIndex("by_status_updated", (q) => q.eq("status", "scheduled"))
+        .count(),
+      ctx.db
+        .query("gigaSeoContentPlans")
+        .withIndex("by_status_updated", (q) => q.eq("status", "published"))
+        .count(),
     ]);
     return {
       settings: settings ?? DEFAULT_SETTINGS,
-      keywordCount: ideas.length,
-      newKeywordCount: ideas.filter((item) => item.status === "new").length,
-      contentPlanCount: plans.length,
-      draftCount: plans.filter((item) => item.status === "draft").length,
-      scheduledCount: plans.filter((item) => item.status === "scheduled").length,
-      publishedCount: plans.filter((item) => item.status === "published").length,
+      keywordCount,
+      newKeywordCount,
+      contentPlanCount,
+      draftCount,
+      scheduledCount,
+      publishedCount,
     };
   },
 });
