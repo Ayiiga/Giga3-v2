@@ -57,6 +57,10 @@ export function TeachingResourcesLibrary() {
   useEffect(() => { setSessionToken(getSessionToken()); }, []);
   const admin = useQuery(api.adminAuth.isCurrentUserPlatformAdmin, sessionToken ? { sessionToken } : "skip");
   const createResource = useMutation(api.teachingResources.createResource);
+  const listAdmin = useQuery(api.teachingResources.listAdminResources, sessionToken && admin?.isAdmin ? { sessionToken } : "skip");
+  const setResourceStatus = useMutation(api.teachingResources.updateResourceStatus);
+  const createUploadUrl = useMutation(api.teachingResources.createUploadUrl);
+  const attachFile = useMutation(api.teachingResources.attachResourceFile);
   const resources = useQuery(api.teachingResources.listPublished, {
     search: search || undefined, subject: subject === "all" ? undefined : subject,
     levelBand: level === "all" ? undefined : level as "jhs" | "shs",
@@ -143,6 +147,15 @@ export function TeachingResourcesLibrary() {
           <button disabled={busy} className="min-h-11 rounded-lg bg-amber-900 px-4 text-sm font-bold text-white disabled:opacity-50">Save draft resource</button>
         </form>
         {adminMessage && <p role="status" className="mt-3 text-sm text-amber-950">{adminMessage}</p>}
+        <div className="mt-5 border-t border-amber-200 pt-4">
+          <h3 className="font-bold text-amber-950">Resource review queue</h3>
+          {!listAdmin ? <p className="mt-2 text-xs text-amber-900">Loading administration records…</p> : listAdmin.length === 0 ? <p className="mt-2 text-xs text-amber-900">No resource records yet.</p> : <div className="mt-2 space-y-2">{listAdmin.map((r: any) => <div key={r._id} className="rounded-xl border border-amber-200 bg-white p-3">
+            <div className="flex flex-wrap items-center justify-between gap-2"><div><p className="text-sm font-bold text-slate-900">{r.title}</p><p className="text-xs text-slate-500">{r.subject} · {r.status} · {r.access}</p></div><div className="flex flex-wrap gap-1">
+              {(["draft","pending","published","archived"] as const).filter(s => s !== r.status).map(s => <button key={s} disabled={busy} onClick={async () => {setBusy(true);try {await setResourceStatus({sessionToken:sessionToken!,resourceId:r._id,status:s});}catch(e){setAdminMessage(e instanceof Error?e.message:"Status update failed.");}finally{setBusy(false);}}} className="rounded-lg border px-2 py-1 text-[10px] font-bold text-violet-800">{s}</button>)}
+            </div></div>
+            <div className="mt-2 flex flex-wrap gap-2">{(["guide","worksheet","image","diagram"] as const).map(kind => <label key={kind} className="cursor-pointer rounded-lg border border-slate-200 px-2 py-1 text-[10px] font-semibold text-slate-700">{kind} {kind==="guide"?r.hasGuide:kind==="worksheet"?r.hasWorksheet:kind==="image"?r.hasImage:r.hasDiagram ? "✓" : "+"}<input type="file" accept={kind==="guide"||kind==="worksheet"?"application/pdf":kind==="image"?"image/jpeg,image/png,image/webp":"image/png,image/jpeg"} className="hidden" onChange={async e => {const file=e.target.files?.[0];if(!file||!sessionToken)return;setBusy(true);try{const uploadUrl=await createUploadUrl({sessionToken});const response=await fetch(uploadUrl,{method:"POST",headers:{"Content-Type":file.type},body:file});if(!response.ok)throw new Error("File upload failed.");const {storageId}=await response.json();await attachFile({sessionToken,resourceId:r._id,fileKind:kind,storageId});setAdminMessage(`${kind} uploaded for ${r.title}.`);}catch(err){setAdminMessage(err instanceof Error?err.message:"Upload failed.");}finally{setBusy(false);e.target.value="";}}}/></label>)}</div>
+          </div>)}</div>}
+        </div>
       </section>}
       <section className="grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label="Resource filters">
         <label className="text-xs font-semibold text-slate-700">Subject<select value={subject} onChange={e => setSubject(e.target.value)} className="mt-1 min-h-11 w-full rounded-xl border border-slate-200 bg-white px-2 text-sm"><option value="all">All subjects</option>{SUBJECTS.map(s => <option key={s}>{s}</option>)}</select></label>
