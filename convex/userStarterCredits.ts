@@ -27,7 +27,7 @@ export async function grantStarterCreditsIfNeeded(
     userId: email,
     credits: FREE_STARTER_CREDITS,
     action: "starter_grant",
-    reference: "signup",
+    // Scope the idempotency key to the account; a global signup key collides.\n    reference: "signup:" + email.toLowerCase(),
     setBalance: balance === 0,
   });
 
