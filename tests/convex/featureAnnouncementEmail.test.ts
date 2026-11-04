@@ -23,7 +23,7 @@ describe("feature announcement emails", () => {
     expect(actions).toContain('v.literal("smoke")');
     expect(actions).toContain("claimFeatureAnnouncementSendInternal");
     expect(actions).toContain("reconcileFeatureAnnouncementDeliveryInternal");
-    expect(safety).toContain("What’s new in Giga3 AI");
+    expect(safety).toContain("Your next exam success starts with practice");
     expect(safety).toContain('feature_announcement_v3');
     expect(safety).toContain("Teacher Promotion");
     expect(safety).toContain("GigaSocial Awards");
