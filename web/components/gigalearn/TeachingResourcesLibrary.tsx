@@ -57,6 +57,7 @@ export function TeachingResourcesLibrary() {
   useEffect(() => { setSessionToken(getSessionToken()); }, []);
   const admin = useQuery(api.adminAuth.isCurrentUserPlatformAdmin, sessionToken ? { sessionToken } : "skip");
   const createResource = useMutation(api.teachingResources.createResource);
+  const seedStarter = useMutation(api.teachingResources.seedStarterResources);
   const listAdmin = useQuery(api.teachingResources.listAdminResources, sessionToken && admin?.isAdmin ? { sessionToken } : "skip");
   const setResourceStatus = useMutation(api.teachingResources.updateResourceStatus);
   const createUploadUrl = useMutation(api.teachingResources.createUploadUrl);
@@ -108,6 +109,7 @@ export function TeachingResourcesLibrary() {
 
       {admin?.isAdmin && <section className="rounded-2xl border border-amber-300 bg-amber-50 p-4">
         <h2 className="font-extrabold text-amber-950">Administrator · Add a resource</h2>
+        <button type="button" disabled={busy || !sessionToken} onClick={async () => {setBusy(true);try {const result=await seedStarter({sessionToken:sessionToken!});setAdminMessage(result.message);}catch(e){setAdminMessage(e instanceof Error?e.message:"Could not load starter resources.");}finally{setBusy(false);}}} className="mt-3 rounded-lg border border-amber-700 px-3 py-2 text-xs font-bold text-amber-950">Load four starter equipment guides</button>
         <p className="mt-1 text-xs text-amber-900">New records are saved as drafts. Review and publish them only after checking the content and uploaded files.</p>
         <form className="mt-3 grid gap-2 sm:grid-cols-2" onSubmit={async e => {
           e.preventDefault(); if (!sessionToken) return;
