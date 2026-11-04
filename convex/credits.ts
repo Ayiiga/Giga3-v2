@@ -119,6 +119,21 @@ export const grantCreditsInternal = internalMutation({
     const user = await getUserByEmail(ctx, args.userId);
     if (!user) throw new Error("User not found");
 
+    // A payment reference is the idempotency key for externally-triggered grants.
+    // Refuse cross-user/action collisions rather than silently accepting them.
+    if (args.reference) {
+      const prior = await ctx.db
+        .query("creditLogs")
+        .withIndex("by_reference", (q: any) => q.eq("reference", args.reference))
+        .first();
+      if (prior) {
+        if (prior.userId !== args.userId || prior.action !== args.action) {
+          throw new Error("Credit grant reference already belongs to another operation");
+        }
+        return prior.balanceAfter;
+      }
+    }
+
     const balanceAfter = args.setBalance
       ? args.credits
       : (user.credits ?? 0) + args.credits;
