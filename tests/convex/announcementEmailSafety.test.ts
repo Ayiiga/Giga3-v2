@@ -495,8 +495,8 @@ describe("eligibility, segmentation, and tip campaign keys", () => {
     expect(digestCopyForSegment("social").ctaPath).toBe("/gigasocial/awards/");
   });
 
-  it("feature_announcement_v2 copy mentions all five requested capabilities in every segment", () => {
-    expect(DEFAULT_FEATURE_ANNOUNCEMENT_CAMPAIGN).toBe("feature_announcement_v2");
+  it("feature_announcement_v3 copy mentions all five requested capabilities in every segment", () => {
+    expect(DEFAULT_FEATURE_ANNOUNCEMENT_CAMPAIGN).toBe("feature_announcement_v3");
     const segments = ["learn", "create", "social", "general"] as const;
     for (const segment of segments) {
       const copy = announcementCopyForSegment(segment);
@@ -506,14 +506,12 @@ describe("eligibility, segmentation, and tip campaign keys", () => {
         copy.subjectLine,
         ...copy.bullets,
       ].join("\n");
-      expect(blob, segment).toMatch(/CV/i);
-      expect(blob, segment).toMatch(/resume/i);
-      expect(blob, segment).toMatch(/book writing/i);
-      expect(blob, segment).toMatch(/thesis/i);
-      expect(blob, segment).toMatch(/research writing/i);
+      expect(blob, segment).toMatch(/Awards/i);
+      expect(blob, segment).toMatch(/apply|nominate/i);
+      expect(blob, segment).toMatch(/Teacher Promotion/i);
       expect(blob, segment).toMatch(/WASSCE/);
       expect(blob, segment).toMatch(/BECE/);
-      expect(blob, segment).toMatch(/kids’ learning environment|kids' learning environment/i);
+      expect(blob, segment).toMatch(/writing/i);
     }
     expect(announcementCopyForSegment("learn").ctaPath).toBe("/gigalearn/");
     expect(announcementCopyForSegment("create").ctaPath).toBe("/gigaedit/");
