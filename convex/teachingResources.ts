@@ -194,11 +194,17 @@ export const attachResourceFile = mutation({
   handler: async (ctx, args) => {
     const email = await requireSession(args.sessionToken, ctx);
     if (!isPlatformAdminEmail(email)) throw new Error("Administrator access required.");
+    const metadata = await ctx.storage.getMetadata(args.storageId);
+    if (!metadata) throw new Error("Uploaded file was not found.");
+    const allowed = args.fileKind === "guide" || args.fileKind === "worksheet"
+      ? ["application/pdf"]
+      : args.fileKind === "image" ? ["image/jpeg", "image/png", "image/webp"] : ["image/png", "image/jpeg"];
+    if (!allowed.includes(metadata.contentType)) throw new Error("Unsupported file type for this resource attachment.");
     const patch: Record<string, unknown> = { updatedAt: Date.now() };
-    if (args.fileKind === "guide") patch.guideStorageId = args.storageId;
-    if (args.fileKind === "worksheet") patch.worksheetStorageId = args.storageId;
-    if (args.fileKind === "image") patch.imageStorageId = args.storageId;
-    if (args.fileKind === "diagram") patch.diagramStorageId = args.storageId;
+    if (args.fileKind === "guide") { patch.guideStorageId = args.storageId; patch.guideContentType = metadata.contentType; }
+    if (args.fileKind === "worksheet") { patch.worksheetStorageId = args.storageId; patch.worksheetContentType = metadata.contentType; }
+    if (args.fileKind === "image") { patch.imageStorageId = args.storageId; patch.imageContentType = metadata.contentType; }
+    if (args.fileKind === "diagram") { patch.diagramStorageId = args.storageId; patch.diagramContentType = metadata.contentType; }
     await ctx.db.patch(args.resourceId, patch);
     return { ok: true };
   },
@@ -244,7 +250,10 @@ export const consumeDownloadToken = internalMutation({
       : row.fileKind === "image" ? resource.imageStorageId : resource.diagramStorageId;
     if (!storageId) return null;
     await ctx.db.patch(row._id, { consumedAt: Date.now() });
-    return { storageId, title: resource.title, fileKind: row.fileKind };
+    const contentType = row.fileKind === "guide" ? resource.guideContentType
+      : row.fileKind === "worksheet" ? resource.worksheetContentType
+      : row.fileKind === "image" ? resource.imageContentType : resource.diagramContentType;
+    return { storageId, title: resource.title, fileKind: row.fileKind, contentType: contentType ?? "application/octet-stream" };
   },
 });
 
@@ -255,11 +264,11 @@ export const teachingResourceDownload = httpAction(async (ctx, request) => {
   if (!access) return new Response("This download link has expired or access is no longer active.", { status: 403 });
   const blob = await ctx.storage.get(access.storageId);
   if (!blob) return new Response("Resource file not found.", { status: 404 });
-  const ext = access.fileKind === "image" ? "jpg" : access.fileKind === "diagram" ? "png" : "pdf";
+  const ext = access.contentType === "image/png" ? "png" : access.contentType === "image/webp" ? "webp" : access.contentType === "image/jpeg" ? "jpg" : "pdf";
   const filename = `${access.title.replace(/[^a-z0-9-_]+/gi, "-").slice(0, 70)}-${access.fileKind}.${ext}`;
   return new Response(blob, {
     headers: {
-      "Content-Type": access.fileKind === "image" ? "image/jpeg" : access.fileKind === "diagram" ? "image/png" : "application/pdf",
+      "Content-Type": access.contentType,
       "Content-Disposition": `attachment; filename="${filename}"`,
       "Cache-Control": "private, no-store",
       "X-Content-Type-Options": "nosniff",
