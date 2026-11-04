@@ -178,7 +178,7 @@ export const issueDownloadToken = mutation({
       token, resourceId: args.resourceId, userEmail: email, fileKind: args.fileKind,
       expiresAt: now + 90_000, createdAt: now,
     });
-    return { url: `${(process.env.CONVEX_SITE_URL ?? process.env.NEXT_PUBLIC_CONVEX_SITE_URL ?? "https://perfect-lark-521.convex.site").replace(/\\/$/, "")}/teaching-resource-download?token=${token}`, expiresInSeconds: 90 };
+    return { token, expiresInSeconds: 90 };
   },
 });
 
