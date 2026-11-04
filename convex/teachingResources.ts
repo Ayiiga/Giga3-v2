@@ -19,6 +19,25 @@ function parseStringArray(value: string, field: string): string[] {
 }
 
 
+async function hasActiveSubscriptionAccess(ctx: any, email: string, user: any): Promise<boolean> {
+  // The subscriptions table is the billing source of truth. Older accounts may
+  // have a valid active row while denormalized users fields are stale.
+  const subscription = await ctx.db
+    .query("subscriptions")
+    .withIndex("by_user_status", (q: any) => q.eq("userId", email).eq("status", "active"))
+    .order("desc")
+    .first();
+  const now = Date.now();
+  const subscriptionRowActive = Boolean(subscription && subscription.periodEnd > now);
+  const userPlanActive = Boolean(
+    user && isSubscriptionActive(
+      (user.subscriptionPlan ?? "free") as any,
+      user.subscriptionExpiresAt
+    )
+  );
+  return subscriptionRowActive || userPlanActive;
+}
+
 function publicResource(row: any) {
   return {
     _id: row._id, slug: row.slug, title: row.title, summary: row.summary,
@@ -62,7 +81,7 @@ export const getPublicDetail = query({
       try {
         const email = await requireSession(args.sessionToken, ctx);
         const user = await ctx.db.query("users").withIndex("by_email", q => q.eq("email", email)).first();
-        active = Boolean(user && isSubscriptionActive((user.subscriptionPlan ?? "free") as any, user.subscriptionExpiresAt));
+        active = await hasActiveSubscriptionAccess(ctx, email, user);
       } catch { active = false; }
     }
     const fullAccess = active || row.access === "free";
@@ -217,7 +236,7 @@ export const issueDownloadToken = mutation({
     const resource = await ctx.db.get(args.resourceId);
     if (!resource || resource.status !== "published") throw new Error("Resource is unavailable.");
     const user = await ctx.db.query("users").withIndex("by_email", q => q.eq("email", email)).first();
-    const active = Boolean(user && isSubscriptionActive((user.subscriptionPlan ?? "free") as any, user.subscriptionExpiresAt));
+    const active = await hasActiveSubscriptionAccess(ctx, email, user);
     const freeAccess = resource.access === "free";
     if (!freeAccess && !active) throw new Error("An active subscription is required to access this resource file.");
     const storageId = args.fileKind === "guide" ? resource.guideStorageId
@@ -243,7 +262,7 @@ export const consumeDownloadToken = internalMutation({
     const resource = await ctx.db.get(row.resourceId);
     const user = await ctx.db.query("users").withIndex("by_email", q => q.eq("email", row.userEmail)).first();
     if (!resource || resource.status !== "published" || !user) return null;
-    const active = isSubscriptionActive((user.subscriptionPlan ?? "free") as any, user.subscriptionExpiresAt);
+    const active = await hasActiveSubscriptionAccess(ctx, row.userEmail, user);
     if (resource.access !== "free" && !active) return null;
     const storageId = row.fileKind === "guide" ? resource.guideStorageId
       : row.fileKind === "worksheet" ? resource.worksheetStorageId

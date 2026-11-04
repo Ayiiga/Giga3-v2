@@ -29,6 +29,9 @@ describe("GigaLearn teaching materials library", () => {
   it("rechecks subscription validity before issuing and consuming protected download tokens", () => {
     const backend = read("convex/teachingResources.ts");
     expect(backend).toContain("isSubscriptionActive");
+    expect(backend).toContain("hasActiveSubscriptionAccess");
+    expect(backend).toContain('q.eq("userId", email).eq("status", "active")');
+    expect(backend).toContain("subscription.periodEnd > now");
     expect(backend).toContain("issueDownloadToken = mutation");
     expect(backend).toContain("consumeDownloadToken = internalMutation");
     expect(backend).toContain("row.expiresAt <= Date.now()");
@@ -42,5 +45,8 @@ describe("GigaLearn teaching materials library", () => {
     expect(ui).toContain("api.teachingResources.getPublicDetail");
     expect(ui).toContain("api.teachingResources.issueDownloadToken");
     expect(ui).toContain("window.print()");
+    expect(ui).toContain("sessionReady");
+    expect(ui).toContain("Checking your subscription and loading resource details");
+    expect(ui).not.toContain("</p>\\n          {!detail.fullAccess");
   });
 });

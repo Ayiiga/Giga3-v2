@@ -39,6 +39,7 @@ export function TeachingResourcesLibrary() {
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [sessionReady, setSessionReady] = useState(false);
   const [adminTitle, setAdminTitle] = useState("");
   const [adminSubject, setAdminSubject] = useState("Integrated Science");
   const [adminLevel, setAdminLevel] = useState<"jhs" | "shs">("jhs");
@@ -54,7 +55,11 @@ export function TeachingResourcesLibrary() {
   const [adminExercises, setAdminExercises] = useState("");
   const [adminAccess, setAdminAccess] = useState<"free" | "subscriber">("subscriber");
   const [adminMessage, setAdminMessage] = useState("");
-  useEffect(() => { setSessionToken(getSessionToken()); }, []);
+  useEffect(() => {
+    // Resolve the persisted browser session before showing subscriber detail.
+    setSessionToken(getSessionToken());
+    setSessionReady(true);
+  }, []);
   useEffect(() => {
     const resourceSlug = new URLSearchParams(window.location.search).get("resource");
     if (resourceSlug) setSelected(resourceSlug);
@@ -73,7 +78,7 @@ export function TeachingResourcesLibrary() {
     category: category === "all" ? undefined : category,
   }) as Resource[] | undefined;
   const detail = useQuery(api.teachingResources.getPublicDetail,
-    selected ? { slug: selected, sessionToken: sessionToken ?? undefined } : "skip") as Detail | null | undefined;
+    selected && sessionReady ? { slug: selected, sessionToken: sessionToken ?? undefined } : "skip") as Detail | null | undefined;
   const issueDownload = useMutation(api.teachingResources.issueDownloadToken);
 
   const suggestions = useMemo(() => {
@@ -171,9 +176,10 @@ export function TeachingResourcesLibrary() {
       </section>
 
       {selected && <section className="rounded-3xl border border-violet-200 bg-white p-4 shadow-sm print-resource" aria-live="polite">
-        {!detail ? <p className="text-sm text-slate-500">Loading resource details…</p> : <>
+        {!sessionReady || detail === undefined ? <p className="text-sm text-slate-500">Checking your subscription and loading resource details…</p> : !detail ? <p className="text-sm text-slate-500">This resource is no longer available. Refresh the library and try again.</p> : <>
           <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-wide text-violet-700">{detail.subject} · {detail.classes.join(", ")}</p><h2 className="mt-1 text-xl font-black text-slate-950">{detail.title}</h2><p className="mt-1 text-sm text-slate-600">{detail.summary}</p></div><button onClick={() => setSelected(null)} className="rounded-full border px-3 py-2 text-sm">Close</button></div>
-          <p className="mt-4 text-sm leading-6 text-slate-700">{detail.description}</p>\n          {!detail.fullAccess && <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">You are viewing a free preview. Sign in with an active Giga3 AI subscription to unlock the complete practical instructions, teacher notes and student exercises.</div>}
+          <p className="mt-4 text-sm leading-6 text-slate-700">{detail.description}</p>
+          {!detail.fullAccess && <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">You are viewing a free preview. Sign in with an active Giga3 AI subscription to unlock the complete practical instructions, teacher notes and student exercises.</div>}
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <DetailList title="Components and functions" items={detail.components} />
             <DetailList title="How to use it" items={detail.instructions} />
