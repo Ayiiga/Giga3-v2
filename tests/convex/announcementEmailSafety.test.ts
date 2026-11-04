@@ -489,7 +489,10 @@ describe("eligibility, segmentation, and tip campaign keys", () => {
       }).ctaPath
     ).toBe("/gigalearn/");
     expect(announcementCopyForSegment("social").subjectLine).toContain("GigaSocial");
-    expect(digestCopyForSegment("learn").ctaPath).toBe("/gigalearn/");
+    expect(digestCopyForSegment("learn").ctaPath).toBe("/gigalearn/exam/");
+    expect(digestCopyForSegment("learn").subjectLine).toContain("Teacher Promotion");
+    expect(digestCopyForSegment("create").ctaPath).toBe("/chat/");
+    expect(digestCopyForSegment("social").ctaPath).toBe("/gigasocial/awards/");
   });
 
   it("feature_announcement_v2 copy mentions all five requested capabilities in every segment", () => {
