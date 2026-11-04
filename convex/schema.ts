@@ -2504,4 +2504,65 @@ export default defineSchema({
     .index("by_token", ["token"])
     .index("by_expiry", ["expiresAt"]),
 
+
+  /** GigaSEO AI configuration and editorial workflow foundation. Automation remains disabled until explicitly enabled. */
+  gigaSeoSettings: defineTable({
+    key: v.string(),
+    enabled: v.boolean(),
+    articlesPerWeek: v.number(),
+    publishingPermission: v.union(
+      v.literal("human_approval"),
+      v.literal("automatic_after_quality_checks")
+    ),
+    targetMarket: v.union(
+      v.literal("ghana_only"),
+      v.literal("ghana_international"),
+      v.literal("africa_international")
+    ),
+    contentPriorities: v.array(v.string()),
+    updatedBy: v.string(),
+    updatedAt: v.number(),
+  }).index("by_key", ["key"]),
+
+  /** Research candidates collected by GigaSEO AI; no automatic publishing side effects. */
+  gigaSeoKeywordIdeas: defineTable({
+    keyword: v.string(),
+    market: v.string(),
+    searchIntent: v.optional(v.string()),
+    searchVolume: v.optional(v.number()),
+    difficulty: v.optional(v.number()),
+    source: v.optional(v.string()),
+    status: v.union(v.literal("new"), v.literal("selected"), v.literal("rejected")),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_status_created", ["status", "createdAt"])
+    .index("by_keyword_market", ["keyword", "market"]),
+
+  /** Editorial pipeline records. Public publishing is handled by a later static-export integration. */
+  gigaSeoContentPlans: defineTable({
+    title: v.string(),
+    slug: v.string(),
+    primaryKeyword: v.string(),
+    market: v.string(),
+    audience: v.string(),
+    status: v.union(
+      v.literal("idea"),
+      v.literal("researching"),
+      v.literal("draft"),
+      v.literal("quality_review"),
+      v.literal("approved"),
+      v.literal("scheduled"),
+      v.literal("published"),
+      v.literal("archived")
+    ),
+    scheduledAt: v.optional(v.number()),
+    publishedUrl: v.optional(v.string()),
+    qualityScore: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_status_updated", ["status", "updatedAt"])
+    .index("by_slug", ["slug"]),
+
 });
