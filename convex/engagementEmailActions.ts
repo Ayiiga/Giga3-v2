@@ -118,18 +118,6 @@ function buildEngagementHtml(candidate: Candidate): {
   const greet = candidate.name?.trim()
     ? `Hi ${candidate.name.trim().split(/\s+/)[0]},`
     : "Hi there,";
-  const memory =
-    candidate.topics.length > 0
-      ? `Lately you have been exploring <strong>${candidate.topics
-          .slice(0, 3)
-          .join(", ")}</strong>.`
-      : "Your workspace still has room for a fresh idea today.";
-  const streak =
-    candidate.streakDays > 0
-      ? `Your learning streak is at <strong>${candidate.streakDays}</strong> day${
-          candidate.streakDays === 1 ? "" : "s"
-        }.`
-      : "A short session today can start a new streak.";
   const unsub = `${getConvexSiteUrl()}/email/unsubscribe?email=${encodeURIComponent(
     candidate.email
   )}&token=${encodeURIComponent(candidate.unsubscribeToken)}`;
@@ -140,7 +128,6 @@ function buildEngagementHtml(candidate: Candidate): {
     bodyHtml: `
       <p style="margin:0 0 12px;">${greet}</p>
       <p style="margin:0 0 12px;">${theme.lead}</p>
-      <p style="margin:0 0 12px;">${memory} ${streak}</p>
       <ul style="margin:0 0 20px;padding-left:18px;">
         ${theme.bullets.map((b) => `<li style="margin:0 0 6px;">${b}</li>`).join("")}
       </ul>
@@ -160,9 +147,6 @@ function buildEngagementHtml(candidate: Candidate): {
   const text = [
     greet.replace(/,$/, ""),
     theme.lead,
-    candidate.topics.length
-      ? `Topics you explored: ${candidate.topics.slice(0, 3).join(", ")}`
-      : "",
     `${theme.ctaLabel}: ${ctaUrl}`,
     `Unsubscribe: ${unsub}`,
   ]
