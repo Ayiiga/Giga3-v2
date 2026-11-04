@@ -39,7 +39,24 @@ export function TeachingResourcesLibrary() {
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [adminTitle, setAdminTitle] = useState("");
+  const [adminSubject, setAdminSubject] = useState("Integrated Science");
+  const [adminLevel, setAdminLevel] = useState<"jhs" | "shs">("jhs");
+  const [adminClass, setAdminClass] = useState("JHS 1");
+  const [adminSummary, setAdminSummary] = useState("");
+  const [adminDescription, setAdminDescription] = useState("");
+  const [adminTopic, setAdminTopic] = useState("");
+  const [adminCategory, setAdminCategory] = useState("Laboratory Equipment");
+  const [adminActivity, setAdminActivity] = useState("");
+  const [adminInstructions, setAdminInstructions] = useState("");
+  const [adminComponents, setAdminComponents] = useState("");
+  const [adminSafety, setAdminSafety] = useState("");
+  const [adminExercises, setAdminExercises] = useState("");
+  const [adminAccess, setAdminAccess] = useState<"free" | "subscriber">("subscriber");
+  const [adminMessage, setAdminMessage] = useState("");
   useEffect(() => { setSessionToken(getSessionToken()); }, []);
+  const admin = useQuery(api.adminAuth.isCurrentUserPlatformAdmin, sessionToken ? { sessionToken } : "skip");
+  const createResource = useMutation(api.teachingResources.createResource);
   const resources = useQuery(api.teachingResources.listPublished, {
     search: search || undefined, subject: subject === "all" ? undefined : subject,
     levelBand: level === "all" ? undefined : level as "jhs" | "shs",
@@ -85,6 +102,48 @@ export function TeachingResourcesLibrary() {
 
 
 
+      {admin?.isAdmin && <section className="rounded-2xl border border-amber-300 bg-amber-50 p-4">
+        <h2 className="font-extrabold text-amber-950">Administrator · Add a resource</h2>
+        <p className="mt-1 text-xs text-amber-900">New records are saved as drafts. Review and publish them only after checking the content and uploaded files.</p>
+        <form className="mt-3 grid gap-2 sm:grid-cols-2" onSubmit={async e => {
+          e.preventDefault(); if (!sessionToken) return;
+          setBusy(true); setAdminMessage("");
+          try {
+            const slug = adminTitle.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+            await createResource({
+              sessionToken, slug, title: adminTitle, summary: adminSummary, description: adminDescription,
+              subject: adminSubject, levelBand: adminLevel, classes: [adminClass], topic: adminTopic,
+              category: adminCategory, activity: adminActivity,
+              componentsJson: JSON.stringify(adminComponents.split("\n").map(x => x.trim()).filter(Boolean)),
+              instructionsJson: JSON.stringify(adminInstructions.split("\n").map(x => x.trim()).filter(Boolean)),
+              activitiesJson: JSON.stringify(adminActivity ? [adminActivity] : []),
+              safetyJson: JSON.stringify(adminSafety.split("\n").map(x => x.trim()).filter(Boolean)),
+              mistakesJson: JSON.stringify([]), studentExercises: adminExercises,
+              previewText: adminSummary, access: adminAccess, status: "draft",
+            });
+            setAdminMessage("Draft saved. Upload its files and complete review before publishing.");
+            setAdminTitle(""); setAdminSummary(""); setAdminDescription("");
+          } catch (error) { setAdminMessage(error instanceof Error ? error.message : "Could not save resource."); }
+          finally { setBusy(false); }
+        }}>
+          <input required value={adminTitle} onChange={e => setAdminTitle(e.target.value)} placeholder="Resource / equipment name" className="min-h-11 rounded-lg border px-3 text-sm" />
+          <select value={adminSubject} onChange={e => setAdminSubject(e.target.value)} className="min-h-11 rounded-lg border bg-white px-3 text-sm">{SUBJECTS.map(s => <option key={s}>{s}</option>)}</select>
+          <select value={adminLevel} onChange={e => {setAdminLevel(e.target.value as "jhs"|"shs");setAdminClass(e.target.value === "jhs" ? "JHS 1" : "SHS 1");}} className="min-h-11 rounded-lg border bg-white px-3 text-sm"><option value="jhs">JHS</option><option value="shs">SHS</option></select>
+          <select value={adminClass} onChange={e => setAdminClass(e.target.value)} className="min-h-11 rounded-lg border bg-white px-3 text-sm">{CLASSES.filter(x => x.toLowerCase().startsWith(adminLevel)).map(x => <option key={x}>{x}</option>)}</select>
+          <input required value={adminSummary} onChange={e => setAdminSummary(e.target.value)} placeholder="Short summary" className="min-h-11 rounded-lg border px-3 text-sm sm:col-span-2" />
+          <input value={adminTopic} onChange={e => setAdminTopic(e.target.value)} placeholder="Curriculum topic" className="min-h-11 rounded-lg border px-3 text-sm" />
+          <select value={adminCategory} onChange={e => setAdminCategory(e.target.value)} className="min-h-11 rounded-lg border bg-white px-3 text-sm">{CATEGORIES.map(x => <option key={x}>{x}</option>)}</select>
+          <textarea required value={adminDescription} onChange={e => setAdminDescription(e.target.value)} placeholder="Description and educational purpose" className="min-h-20 rounded-lg border p-3 text-sm sm:col-span-2" />
+          <textarea value={adminComponents} onChange={e => setAdminComponents(e.target.value)} placeholder="Components and functions (one per line)" className="min-h-20 rounded-lg border p-3 text-sm" />
+          <textarea value={adminInstructions} onChange={e => setAdminInstructions(e.target.value)} placeholder="Step-by-step instructions (one per line)" className="min-h-20 rounded-lg border p-3 text-sm" />
+          <textarea value={adminActivity} onChange={e => setAdminActivity(e.target.value)} placeholder="Practical activity" className="min-h-16 rounded-lg border p-3 text-sm" />
+          <textarea value={adminSafety} onChange={e => setAdminSafety(e.target.value)} placeholder="Safety precautions (one per line)" className="min-h-20 rounded-lg border p-3 text-sm" />
+          <textarea value={adminExercises} onChange={e => setAdminExercises(e.target.value)} placeholder="Student exercises / teacher notes" className="min-h-20 rounded-lg border p-3 text-sm" />
+          <select value={adminAccess} onChange={e => setAdminAccess(e.target.value as "free"|"subscriber")} className="min-h-11 rounded-lg border bg-white px-3 text-sm"><option value="free">Free resource</option><option value="subscriber">Subscriber-only resource</option></select>
+          <button disabled={busy} className="min-h-11 rounded-lg bg-amber-900 px-4 text-sm font-bold text-white disabled:opacity-50">Save draft resource</button>
+        </form>
+        {adminMessage && <p role="status" className="mt-3 text-sm text-amber-950">{adminMessage}</p>}
+      </section>}
       <section className="grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label="Resource filters">
         <label className="text-xs font-semibold text-slate-700">Subject<select value={subject} onChange={e => setSubject(e.target.value)} className="mt-1 min-h-11 w-full rounded-xl border border-slate-200 bg-white px-2 text-sm"><option value="all">All subjects</option>{SUBJECTS.map(s => <option key={s}>{s}</option>)}</select></label>
         <label className="text-xs font-semibold text-slate-700">Level<select value={level} onChange={e => {setLevel(e.target.value);setClassName("all");}} className="mt-1 min-h-11 w-full rounded-xl border border-slate-200 bg-white px-2 text-sm"><option value="all">JHS & SHS</option><option value="jhs">JHS 1–3</option><option value="shs">SHS 1–3</option></select></label>
