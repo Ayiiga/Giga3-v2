@@ -11,6 +11,7 @@ import { gigaSocialPostOgImage } from "./gigaSocialPostOgImage";
 import { gigaSocialPostPreview } from "./gigaSocialPostPreview";
 import { unsubscribeEngagementEmail } from "./engagementEmailHttp";
 import { healthCheck } from "./health";
+import { teachingResourceDownload } from "./teachingResources";
 import { paystackWebhook } from "./paystack";
 import { developerApiHealth, developerApiMe } from "./developerApi";
 import {
@@ -46,6 +47,12 @@ http.route({
   path: "/auth/oauth/callback",
   method: "POST",
   handler: socialOAuthCallbackPost,
+});
+
+http.route({
+  path: "/teaching-resource-download",
+  method: "GET",
+  handler: teachingResourceDownload,
 });
 
 http.route({
