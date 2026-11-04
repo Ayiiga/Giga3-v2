@@ -59,6 +59,74 @@ export const getPublicDetail = query({
   },
 });
 
+export const seedStarterResources = mutation({
+  args: { sessionToken: v.string() },
+  handler: async (ctx, args) => {
+    const email = await requireSession(args.sessionToken, ctx);
+    if (!isPlatformAdminEmail(email)) throw new Error("Administrator access required.");
+    const existing = await ctx.db.query("teachingResources").take(1);
+    if (existing.length) return { created: 0, message: "Starter resources already exist." };
+    const starter = [
+      {
+        slug: "compound-microscope", title: "Compound Microscope", summary: "Observe cells and other tiny structures using magnification.", description: "A compound microscope is an optical instrument used in school science laboratories to magnify very small specimens that cannot be seen clearly with the naked eye.",
+        subject: "Integrated Science", levelBand: "jhs" as const, classes: ["JHS 2", "JHS 3"], topic: "Cells and microscopes", category: "Laboratory Equipment", activity: "Prepare and observe a temporary onion-cell slide.",
+        componentsJson: JSON.stringify(["Eyepiece: lens viewed through by the observer","Objective lenses: provide different magnifications","Stage: supports the slide","Stage clips: hold the slide in position","Diaphragm: controls the amount of light","Mirror or illuminator: directs light through the specimen","Coarse and fine adjustment knobs: bring the image into focus","Arm and base: support the instrument"]),
+        instructionsJson: JSON.stringify(["Carry the microscope with two hands, one holding the arm and the other supporting the base.","Place it on a stable, clean bench and select the lowest-power objective lens.","Place the prepared slide on the stage and secure it with the clips.","Adjust the light source or mirror so light passes through the specimen.","Look through the eyepiece and use the coarse adjustment slowly to locate the image.","Use the fine adjustment to sharpen the image. Centre the specimen before changing to a higher power.","After observation, return to the lowest-power objective, remove the slide and clean the instrument with lens paper."]),
+        activitiesJson: JSON.stringify(["Observe a prepared onion epidermis slide and draw the visible cells.","Compare the appearance of the same specimen under low and high power.","Record the objective lens used and describe how the image changes."]),
+        safetyJson: JSON.stringify(["Carry with two hands and keep away from the edge of the bench.","Do not touch lenses with fingers or ordinary cloth.","Use prepared slides carefully; report broken glass immediately.","Never force the adjustment knobs or objective turret."]),
+        mistakesJson: JSON.stringify(["Starting with the highest-power objective","Using coarse focus at high magnification","Allowing the objective lens to hit the slide","Using tissue or fingers to clean lenses"]),
+        teacherGuidance: "Demonstrate safe carrying, focusing and slide handling before group work. Where microscopes are limited, organise small rotating groups and use a projected demonstration if available.",
+        studentExercises: "1. Name four parts of a microscope and state their functions. 2. Explain why focusing begins with the low-power objective. 3. Draw and label a compound microscope.",
+        curriculumReference: "Ghana NaCCA JHS Science: cells, observation and use of scientific equipment.", previewText: "Learn the parts of a compound microscope, safe focusing and a simple onion-cell observation."
+      },
+      {
+        slug: "laboratory-beaker", title: "Laboratory Beaker", summary: "Hold, mix and heat liquids during practical science activities.", description: "A beaker is a wide-mouthed laboratory container with a flat bottom and a pouring lip. Graduations provide approximate volume estimates; they are not intended for highly accurate measurement.",
+        subject: "Chemistry", levelBand: "shs" as const, classes: ["SHS 1", "SHS 2"], topic: "Laboratory apparatus and measurement", category: "Laboratory Equipment", activity: "Measure, mix and transfer a safe volume of water.",
+        componentsJson: JSON.stringify(["Rim and pouring spout: support controlled pouring","Graduated markings: give approximate volume readings","Cylindrical body: contains liquids or mixtures","Flat base: allows the beaker to stand on a bench or heatproof mat"]),
+        instructionsJson: JSON.stringify(["Check the beaker for cracks or chips before use.","Place it on a level bench or heatproof mat.","Pour the liquid slowly, keeping the spout directed away from people.","Read the approximate volume at eye level.","If heating is required, use teacher-approved equipment and suitable heat protection.","Allow hot glassware to cool in a safe place; never handle hot glass with bare hands."]),
+        activitiesJson: JSON.stringify(["Pour 50 mL and 100 mL of water and compare approximate readings.","Mix water and salt using a glass stirring rod.","Compare a beaker reading with a measuring cylinder reading and discuss accuracy."]),
+        safetyJson: JSON.stringify(["Do not use cracked glassware.","Use goggles and follow the teacher's instructions when heating.","Assume heated glass is hot even when it does not look hot.","Never heat a sealed container."]),
+        mistakesJson: JSON.stringify(["Treating beaker graduations as precise measurements","Reading the scale from above or below eye level","Placing hot glass on a cold or wet surface"]),
+        teacherGuidance: "Explain the difference between approximate beaker measurements and accurate volumetric measurements using a measuring cylinder or pipette.",
+        studentExercises: "1. State two uses of a beaker. 2. Why is a measuring cylinder preferred for accurate volume measurement? 3. List three precautions when heating liquids.",
+        curriculumReference: "SHS Chemistry: laboratory apparatus, measurement and safe practical work.", previewText: "Identify beaker parts, understand approximate graduations and practise safe handling."
+      },
+      {
+        slug: "laboratory-thermometer", title: "Laboratory Thermometer", summary: "Measure temperature changes during experiments.", description: "A laboratory thermometer measures the temperature of substances during experiments. Students should read the scale at eye level and avoid allowing the bulb to touch the container.",
+        subject: "Integrated Science", levelBand: "jhs" as const, classes: ["JHS 1", "JHS 2"], topic: "Temperature and heat", category: "Laboratory Equipment", activity: "Measure the temperature of water at different conditions.",
+        componentsJson: JSON.stringify(["Bulb: contains the temperature-sensitive material","Stem: protects and supports the capillary","Scale: displays temperature values","Capillary: narrow tube in which the indicator moves"]),
+        instructionsJson: JSON.stringify(["Check the thermometer for damage and identify its scale and range.","Place the bulb in the liquid without touching the sides or bottom of the container.","Wait until the reading becomes steady.","Keep your eye level with the top of the liquid column.","Record the temperature with the correct unit, usually degrees Celsius.","Remove and clean the thermometer as directed by the teacher."]),
+        activitiesJson: JSON.stringify(["Compare the temperature of room-temperature and warm water.","Record temperature at regular intervals as warm water cools.","Plot a simple temperature-against-time graph."]),
+        safetyJson: JSON.stringify(["Do not use a cracked thermometer.","Do not use a laboratory thermometer to taste or stir substances.","Avoid temperatures outside the thermometer's stated range.","Report spills or breakages to the teacher."]),
+        mistakesJson: JSON.stringify(["Allowing the bulb to touch the container","Reading before the indicator becomes steady","Viewing the scale from an angle","Forgetting to record the unit"]),
+        teacherGuidance: "Use water at safe temperatures for demonstrations. Discuss why a thermometer must be suitable for the expected temperature range.",
+        studentExercises: "1. State the function of the bulb. 2. Why should the bulb not touch the container? 3. Record and compare three temperature readings in degrees Celsius.",
+        curriculumReference: "Ghana NaCCA JHS Science: heat, temperature and measurement.", previewText: "Learn to position, read and care for a laboratory thermometer."
+      },
+      {
+        slug: "digital-multimeter", title: "Digital Multimeter", summary: "Measure voltage, current and resistance in basic electrical circuits.", description: "A digital multimeter is an electronic test instrument used to measure electrical quantities. Correct socket selection, range selection and connection method are essential for safe and valid readings.",
+        subject: "Physics", levelBand: "shs" as const, classes: ["SHS 1", "SHS 2", "SHS 3"], topic: "Electricity and electrical measurement", category: "Workshop Tools", activity: "Measure the voltage of a low-voltage battery under teacher supervision.",
+        componentsJson: JSON.stringify(["Display: shows the measured value","Rotary selector: selects measurement type and range","COM socket: common test-lead connection","V/Ω socket: voltage and resistance input","A or mA socket: current input, depending on model","Test probes: make contact with circuit points"]),
+        instructionsJson: JSON.stringify(["Inspect the meter, leads and probe insulation for damage.","Read the meter's manual and identify the correct input sockets.","For a low-voltage battery, select DC voltage and a range above the expected value.","Connect the black lead to COM and the red lead to the voltage socket.","Touch the probes to the battery terminals with correct polarity and read the display.","Switch off and remove the probes after the measurement. Return the selector to OFF."]),
+        activitiesJson: JSON.stringify(["Measure a teacher-approved low-voltage cell or battery.","Compare readings from two cells connected separately.","Discuss why voltage is measured in parallel and current in series, using a safe demonstration circuit."]),
+        safetyJson: JSON.stringify(["Students must not measure mains electricity.","Never measure resistance on an energised circuit.","Never place probes across a power source while the lead is in the current socket.","Use only intact insulated probes and teacher-approved low-voltage sources."]),
+        mistakesJson: JSON.stringify(["Using the current socket for voltage measurement","Selecting AC instead of DC for a battery","Measuring resistance on a live circuit","Allowing probe tips to short circuit a battery"]),
+        teacherGuidance: "Keep student work to extra-low-voltage batteries and protected educational circuit kits. Demonstrate socket selection before learners handle the meter.",
+        studentExercises: "1. Name three quantities measured by a multimeter. 2. Explain why voltage is measured in parallel. 3. Give two safety precautions.",
+        curriculumReference: "SHS Physics: current electricity, potential difference and electrical measurement.", previewText: "Explore multimeter parts and safe low-voltage measurement."
+      }
+    ];
+    const now = Date.now();
+    for (const item of starter) {
+      await ctx.db.insert("teachingResources", {
+        ...item, access: "free", status: "published", createdBy: email,
+        createdAt: now, updatedAt: now,
+      });
+    }
+    return { created: starter.length, message: "Starter practical resources published." };
+  },
+});
+
 export const createResource = mutation({
   args: {
     sessionToken: v.string(), slug: v.string(), title: v.string(), summary: v.string(),
