@@ -29,6 +29,9 @@ describe("feature announcement emails", () => {
     expect(safety).toContain("book writing");
     expect(safety).toContain("thesis and research writing");
     expect(safety).toContain("WASSCE and BECE");
+    expect(safety).toContain("Teacher Promotion");
+    expect(safety).toContain("GigaSocial Awards");
+    expect(safety).toContain("public candidate profile");
     expect(safety).toMatch(/kids['’] learning environment/);
     expect(safety).toContain("tipCampaignKey");
   });
