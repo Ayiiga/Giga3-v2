@@ -1,4 +1,4 @@
-import { httpAction, internalMutation, internalQuery, mutation, query } from "./_generated/server";
+import { httpAction, internalMutation, mutation, query } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import { requireSession } from "./auth";
@@ -55,7 +55,7 @@ export const getPublicDetail = query({
         active = Boolean(user && isSubscriptionActive((user.subscriptionPlan ?? "free") as any, user.subscriptionExpiresAt));
       } catch { active = false; }
     }
-    const fullAccess = row.access === "free" || active;
+    const fullAccess = active;
     const components = JSON.parse(row.componentsJson);
     const instructions = JSON.parse(row.instructionsJson);
     const activities = JSON.parse(row.activitiesJson);
