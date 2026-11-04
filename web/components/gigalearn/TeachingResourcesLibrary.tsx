@@ -4,7 +4,7 @@ import { useMemo, useState, useEffect } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "convex/_generated/api";
 import { getSessionToken } from "@/lib/auth";
-import { getConvexSiteUrl } from "@/lib/convex/env";
+import { getConvexSiteUrl, getConvexUrl } from "@/lib/convex/env";
 import { BookOpen, Search, ShieldCheck, Download, Printer, Play, FlaskConical } from "lucide-react";
 
 const SUBJECTS = [
@@ -83,9 +83,9 @@ export function TeachingResourcesLibrary() {
     setBusy(true); setNotice("");
     try {
       const result = await issueDownload({ sessionToken: token, resourceId: detail._id as any, fileKind: kind });
-      const site = getConvexSiteUrl();
+      const site = getConvexSiteUrl() ?? getConvexUrl()?.replace(".convex.cloud", ".convex.site");
       if (!site) throw new Error("Secure download service is not configured. Please contact support.");
-      window.location.assign(site.replace(/\\/$/, "") + "/teaching-resource-download?token=" + encodeURIComponent(result.token));
+      window.location.assign(site.replace(/\/$/, "") + "/teaching-resource-download?token=" + encodeURIComponent(result.token));
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "Could not prepare this download.");
     } finally { setBusy(false); }
