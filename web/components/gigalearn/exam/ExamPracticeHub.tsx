@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useQuery } from "convex/react";
+import { api } from "convex/_generated/api";
 import { BookOpen, GraduationCap, Users, Target, Timer, RotateCcw, Layers, Play } from "lucide-react";
 import { getExamBankMeta, examPracticeHref } from "@/lib/gigalearn/examPractice/examBankMeta";
 
@@ -26,6 +28,7 @@ export function ExamPracticeHub() {
   const [subject, setSubject] = useState("");
   const [mode, setMode] = useState<Mode>("practice_test");
   const [count, setCount] = useState("50");
+  const featuredResources = useQuery(api.teachingResources.listPublished, {}) as Array<{_id:string;slug:string;title:string;summary:string;subject:string;classes:string[];access:"free"|"subscriber"}> | undefined;
 
   const bece = getExamBankMeta("exam-bece-prep");
   const subjects = useMemo(() => {
@@ -67,13 +70,20 @@ export function ExamPracticeHub() {
         </div>
       </header>
 
-      <a href="/gigalearn/resources/" data-testid="teaching-resources-entry" className="group flex items-center justify-between gap-3 rounded-2xl border border-violet-200 bg-gradient-to-r from-violet-50 to-fuchsia-50 p-4 shadow-sm transition hover:border-violet-400 hover:shadow-md">
-        <span className="flex min-w-0 items-center gap-3">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-violet-700 text-white"><span aria-hidden>🔬</span></span>
-          <span className="min-w-0"><span className="block text-base font-extrabold text-violet-950">Teaching Materials & Practical Resources</span><span className="mt-1 block text-xs leading-5 text-slate-600">Search equipment, teaching aids, practical guides and learning materials for JHS and SHS.</span></span>
-        </span>
-        <span className="shrink-0 text-xl font-black text-violet-800" aria-hidden>→</span>
-      </a>
+      <section aria-labelledby="featured-resources-title" className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <div><h3 id="featured-resources-title" className="text-sm font-extrabold text-slate-950">Learning materials <span className="sr-only">Teaching Materials & Practical Resources</span></h3><p className="text-xs text-slate-600">Quick practical guides for JHS & SHS</p></div>
+          <a href="/gigalearn/resources/" data-testid="teaching-resources-entry" className="shrink-0 rounded-full border border-violet-300 px-3 py-2 text-xs font-bold text-violet-900 hover:bg-violet-50">View all →</a>
+        </div>
+        {featuredResources === undefined ? <p className="py-2 text-xs text-slate-600">Loading learning materials…</p> :
+          featuredResources.length === 0 ? <p className="rounded-xl bg-slate-50 p-3 text-xs text-slate-700">New practical guides will appear here as they are published.</p> :
+          <div className="grid gap-2 sm:grid-cols-2">
+            {featuredResources.slice(0,2).map(resource => <a key={resource._id} href={`/gigalearn/resources/?resource=${encodeURIComponent(resource.slug)}`} className="flex min-w-0 items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 hover:border-violet-300 hover:bg-violet-50">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-violet-100 text-xl" aria-hidden>🔬</span>
+              <span className="min-w-0"><span className="block truncate text-sm font-bold text-slate-950">{resource.title}</span><span className="mt-0.5 block text-xs text-slate-700">{resource.subject} · {resource.classes.join(", ")}</span><span className="mt-1 block text-[11px] font-semibold text-violet-800">{resource.access === "free" ? "Free resource" : "Subscriber resource"}</span></span>
+            </a>)}
+          </div>}
+      </section>
 
       <section className="space-y-3" aria-labelledby="exam-select-title">
         <div className="flex items-center gap-3"><span className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-700 text-lg font-black text-white">1</span><h3 id="exam-select-title" className="text-xl font-extrabold text-slate-950">Select Exam</h3></div>
