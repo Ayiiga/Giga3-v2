@@ -127,6 +127,7 @@ import type * as gigaLearnProgress from "../gigaLearnProgress.js";
 import type * as gigaLearnTechBanks from "../gigaLearnTechBanks.js";
 import type * as gigaPersonas from "../gigaPersonas.js";
 import type * as gigaSocial from "../gigaSocial.js";
+import type * as gigaSeo from "../gigaSeo.js";
 import type * as gigaSocialCommunities from "../gigaSocialCommunities.js";
 import type * as gigaSocialDeveloperApi from "../gigaSocialDeveloperApi.js";
 import type * as gigaSocialDeveloperApiRateLimit from "../gigaSocialDeveloperApiRateLimit.js";
@@ -467,6 +468,7 @@ declare const fullApi: ApiFromModules<{
   gigaLearnTechBanks: typeof gigaLearnTechBanks;
   gigaPersonas: typeof gigaPersonas;
   gigaSocial: typeof gigaSocial;
+  gigaSeo: typeof gigaSeo;
   gigaSocialCommunities: typeof gigaSocialCommunities;
   gigaSocialDeveloperApi: typeof gigaSocialDeveloperApi;
   gigaSocialDeveloperApiRateLimit: typeof gigaSocialDeveloperApiRateLimit;

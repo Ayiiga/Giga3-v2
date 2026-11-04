@@ -1,6 +1,7 @@
 "use client";
 
 import { AdminPhase4ControlsPanel } from "@/components/admin/AdminPhase4ControlsPanel";
+import { GigaSeoAdminPanel } from "@/components/admin/GigaSeoAdminPanel";
 import { AdminPhase5AnalyticsPanel } from "@/components/admin/AdminPhase5AnalyticsPanel";
 import { AdminPhase5BetaPanel } from "@/components/admin/AdminPhase5BetaPanel";
 import { AdminPhase5ControlsPanel } from "@/components/admin/AdminPhase5ControlsPanel";
@@ -120,6 +121,7 @@ function AdminInner() {
       )}
 
       <AdminPlatformOverview adminCreds={adminCreds} />
+      <GigaSeoAdminPanel adminCreds={adminCreds} />
       <AdminFoundingMembersPanel adminCreds={adminCreds} />
 
       <AdminInvitesPanel />
