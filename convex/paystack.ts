@@ -392,14 +392,6 @@ export const fulfillPayment = internalMutation({
       throw amountErr;
     }
 
-    await ctx.db.patch(record._id, {
-      status: "success",
-      paystackResponse: args.paystackResponse,
-      ...(appliesPlatformFee(record.type)
-        ? { platformFeeGhs: computePlatformFeeGhs(record.amountGhs) }
-        : {}),
-    });
-
     // Save reusable card authorizations so subscriptions can renew automatically.
     if (record.type === "subscription" || record.type === "video_subscription") {
       const auth = extractReusableAuthorization(args.paystackResponse);
@@ -511,6 +503,17 @@ export const fulfillPayment = internalMutation({
         }
       );
     }
+
+    // Mark paid only after every downstream fulfilment has completed.
+    // If a step throws, keep the payment retryable; fulfilment operations use
+    // payment references to make replay safe.
+    await ctx.db.patch(record._id, {
+      status: "success",
+      paystackResponse: args.paystackResponse,
+      ...(appliesPlatformFee(record.type)
+        ? { platformFeeGhs: computePlatformFeeGhs(record.amountGhs) }
+        : {}),
+    });
 
     return { alreadyFulfilled: false as const };
   },
@@ -1068,13 +1071,14 @@ export const paystackWebhook = httpAction(async (ctx, request) => {
     });
   } catch (err) {
     console.error("[paystack webhook]", err);
-    // Acknowledge to avoid Paystack retry storms when fulfillment already ran.
+    // A failed fulfilment must be retried by Paystack. Returning 200 would
+    // permanently acknowledge a charge whose product was not delivered.
     return new Response(
       JSON.stringify({
         ok: false,
         error: err instanceof Error ? err.message : "Webhook error",
       }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
+      { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
 });
