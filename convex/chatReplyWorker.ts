@@ -279,6 +279,13 @@ async function runHybridAiEngine(
     return exhausted;
   }
 
+  // Check the hourly abuse limit first. A request rejected here must not
+  // consume one of the user's scarce daily free OpenAI messages.
+  await ctx.runMutation(internal.aiRateLimit.consumeAiRateLimitInternal, {
+    userId: args.email,
+    tier: args.routing.tier,
+  });
+
   // Image generation has its own free daily allowance — do not burn Pro text quota.
   if (args.routing.usingFreeOpenAiQuota && routePlan.requestKind !== "image_generation") {
     const consumed = await ctx.runMutation(internal.freeOpenAiQuota.tryConsumeInternal, {
@@ -303,11 +310,6 @@ async function runHybridAiEngine(
       remaining: consumed.snapshot.remaining,
     });
   }
-
-  await ctx.runMutation(internal.aiRateLimit.consumeAiRateLimitInternal, {
-    userId: args.email,
-    tier: args.routing.tier,
-  });
 
   if (routePlan.requestKind === "image_generation") {
     const started = Date.now();
