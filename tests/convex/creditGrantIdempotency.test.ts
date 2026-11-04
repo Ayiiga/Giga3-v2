@@ -90,4 +90,26 @@ describe("credit grant idempotency", () => {
       })
     ).rejects.toThrow("Credit grant reference already belongs to another operation");
   });
+
+  it("allows separate users to receive their own signup grants", async () => {
+    const t = convexTest(schema, modules);
+    await t.run(async (ctx) => {
+      for (const email of ["first@example.com", "second@example.com"]) {
+        await ctx.db.insert("users", {
+          email, tokens: 0, plan: "free", tier: "free",
+          subscriptionPlan: "free", credits: 0, starterCreditsGranted: false,
+        });
+      }
+    });
+    const first = await t.mutation(internal.credits.grantCreditsInternal, {
+      userId: "first@example.com", credits: 25, action: "starter_grant",
+      reference: "signup:first@example.com", setBalance: true,
+    });
+    const second = await t.mutation(internal.credits.grantCreditsInternal, {
+      userId: "second@example.com", credits: 25, action: "starter_grant",
+      reference: "signup:second@example.com", setBalance: true,
+    });
+    expect(first).toBe(25);
+    expect(second).toBe(25);
+  });
 });
