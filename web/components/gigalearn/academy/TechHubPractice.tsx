@@ -274,7 +274,9 @@ function TechHubInner() {
         sessionToken,
         courseSlug,
         mode,
-        topicId: mode === "topic" || mode === "challenge" ? topicId || undefined : undefined,
+        // BECE subject links carry topicId even in Practice / Timed modes. Keep
+        // that subject constraint so a Maths session cannot draw RME questions.
+        topicId: isExamCourse && topicId ? topicId : mode === "topic" || mode === "challenge" ? topicId || undefined : undefined,
         count,
         timeLimitMinutes: mode === "timed" ? 30 : undefined,
         questionType: questionType || undefined,
