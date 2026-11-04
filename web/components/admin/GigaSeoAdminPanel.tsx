@@ -54,11 +54,14 @@ export function GigaSeoAdminPanel({ adminCreds }: { adminCreds: AdminCredentials
     }
   }
 
-  if (overview === undefined || !settings) {
+  if (overview === undefined) {
     return <section className="rounded-2xl border bg-card p-5"><p className="text-sm text-muted">Loading GigaSEO AI…</p></section>;
   }
   if (overview === null) {
     return <section className="rounded-2xl border bg-card p-5"><p className="text-sm text-red-700">GigaSEO AI access denied.</p></section>;
+  }
+  if (!settings) {
+    return <section className="rounded-2xl border bg-card p-5"><p className="text-sm text-muted">Preparing GigaSEO AI settings…</p></section>;
   }
 
   return (
