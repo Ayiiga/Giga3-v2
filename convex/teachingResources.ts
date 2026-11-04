@@ -42,19 +42,33 @@ export const listPublished = query({
 });
 
 export const getPublicDetail = query({
-  args: { slug: v.string() },
+  args: { slug: v.string(), sessionToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
     const row = await ctx.db.query("teachingResources")
       .withIndex("by_slug", q => q.eq("slug", args.slug)).first();
     if (!row || row.status !== "published") return null;
+    let activeSubscriber = false;
+    if (args.sessionToken) {
+      try {
+        const email = await requireSession(args.sessionToken, ctx);
+        const user = await ctx.db.query("users").withIndex("by_email", q => q.eq("email", email)).first();
+        activeSubscriber = Boolean(user && isSubscriptionActive((user.subscriptionPlan ?? "free") as any, user.subscriptionExpiresAt));
+      } catch { activeSubscriber = false; }
+    }
+    const fullAccess = row.access === "free" || activeSubscriber;
     return {
       ...publicResource(row), description: row.description,
-      components: JSON.parse(row.componentsJson), instructions: JSON.parse(row.instructionsJson),
-      activities: JSON.parse(row.activitiesJson), safety: JSON.parse(row.safetyJson),
-      commonMistakes: JSON.parse(row.mistakesJson), teacherGuidance: row.teacherGuidance ?? "",
-      studentExercises: row.studentExercises ?? "", curriculumReference: row.curriculumReference ?? "",
+      components: fullAccess ? JSON.parse(row.componentsJson) : [],
+      instructions: fullAccess ? JSON.parse(row.instructionsJson) : [],
+      activities: fullAccess ? JSON.parse(row.activitiesJson) : [],
+      safety: fullAccess ? JSON.parse(row.safetyJson) : [],
+      commonMistakes: fullAccess ? JSON.parse(row.mistakesJson) : [],
+      teacherGuidance: fullAccess ? row.teacherGuidance ?? "" : "",
+      studentExercises: fullAccess ? row.studentExercises ?? "" : "",
+      curriculumReference: row.curriculumReference ?? "",
       hasImage: Boolean(row.imageStorageId), hasDiagram: Boolean(row.diagramStorageId),
       hasGuide: Boolean(row.guideStorageId), hasWorksheet: Boolean(row.worksheetStorageId),
+      fullAccess,
     };
   },
 });
@@ -211,7 +225,7 @@ export const issueDownloadToken = mutation({
       token, resourceId: args.resourceId, userEmail: email, fileKind: args.fileKind,
       expiresAt: now + 90_000, createdAt: now,
     });
-    return { url: `${process.env.CONVEX_SITE_URL ?? ""}/teaching-resource-download?token=${token}`, expiresInSeconds: 90 };
+    return { url: `${(process.env.CONVEX_SITE_URL ?? process.env.NEXT_PUBLIC_CONVEX_SITE_URL ?? "https://perfect-lark-521.convex.site").replace(/\\/$/, "")}/teaching-resource-download?token=${token}`, expiresInSeconds: 90 };
   },
 });
 
