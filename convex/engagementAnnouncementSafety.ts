@@ -480,55 +480,55 @@ export function digestCopyForSegment(segment: InterestSegment): FeatureEmailCopy
   switch (segment) {
     case "learn":
       return {
-        title: "Your next learning streak is waiting",
-        lead: "GigaLearn and chat can turn a short session into clear notes, quizzes, and explanations.",
-        ctaLabel: "Continue learning",
-        ctaPath: "/gigalearn/",
+        title: "Prepare for BECE, WASSCE or Teacher Promotion",
+        lead: "Your next exam goal deserves focused practice. GigaLearn brings exam preparation and practical learning resources together, so you can revise with more confidence.",
+        ctaLabel: "Start exam practice",
+        ctaPath: "/gigalearn/exam/",
         bullets: [
-          "Ask for a lesson summary or practice questions",
-          "Save strong answers into your workspace",
-          "Come back tomorrow to keep your streak alive",
+          "Practise for BECE and WASSCE with subject-based questions",
+          "Prepare for Ghana Teacher Promotion examinations with rank-focused practice",
+          "Explore learning materials and explanations to strengthen difficult topics",
         ],
-        subjectLine: "Your next learning streak is waiting",
+        subjectLine: "BECE, WASSCE or Teacher Promotion? Practise on Giga3",
       };
     case "create":
       return {
-        title: "Make something new in minutes",
-        lead: "Media Studio and GigaEdit are ready for your next poster, clip, or social Story.",
-        ctaLabel: "Start creating",
-        ctaPath: "/gigaedit/",
+        title: "Turn your ideas into books, research and professional documents",
+        lead: "Giga3 AI can help you plan, draft and refine meaningful written work — from your first book outline to a stronger CV or research paper.",
+        ctaLabel: "Start writing with AI",
+        ctaPath: "/chat/",
         bullets: [
-          "Generate or refine an image for your brand",
-          "Edit and export with GigaEdit",
-          "Post a photo or video Story on GigaSocial",
+          "Plan a book, develop chapters and improve your manuscript",
+          "Structure research papers, academic projects, reports and proposals",
+          "Draft or improve a CV, résumé, cover letter and professional profile",
         ],
-        subjectLine: "Make something new in minutes",
+        subjectLine: "Write a book, research paper or CV with Giga3 AI",
       };
     case "social":
       return {
-        title: "Come back for entertainment & community",
-        lead: "GigaSocial now loads faster offline — reopen watched Reels and posts from cache, then remix with the original video attached.",
-        ctaLabel: "Open GigaSocial",
-        ctaPath: "/gigasocial/",
+        title: "Discover GigaSocial Awards — and more on Giga3 AI",
+        lead: "Explore GigaSocial Awards when a season is open: review categories, apply or nominate, and share approved candidate profiles with the community.",
+        ctaLabel: "Explore GigaSocial Awards",
+        ctaPath: "/gigasocial/awards/",
         bullets: [
-          "Browse your cached feed and Stories offline",
-          "Remix keeps the source video in your composition",
-          "Tip, comment, and grow with the community",
+          "Awards participation includes a public candidate profile, free public voting and a shareable voting link when approved",
+          "You can also prepare for BECE, WASSCE and Teacher Promotion examinations",
+          "Use Giga3 AI for book writing, research writing, CVs and professional documents",
         ],
-        subjectLine: "Come back for entertainment & community",
+        subjectLine: "Awards, recognition and new ways to grow on Giga3 AI",
       };
     default:
       return {
-        title: "New on Giga3 AI — faster Social, smarter remix",
-        lead: "Your feed is snappier, offline-ready, and remix now keeps the original video attached. Open Giga3 when you are ready.",
-        ctaLabel: "Open Giga3",
-        ctaPath: "/gigasocial/",
+        title: "Discover more ways to learn, achieve and create with Giga3 AI",
+        lead: "Giga3 AI brings learning, writing and community opportunities together. Choose a goal and explore the tools that can help you make progress.",
+        ctaLabel: "Explore Giga3 AI",
+        ctaPath: "/",
         bullets: [
-          "Faster photos & videos with smart caching",
-          "Offline feed, Reels, and Stories you already watched",
-          "Giga Remix preserves source media + attribution",
+          "Apply or nominate for GigaSocial Awards when applications are open; approved candidates receive a public profile, free public voting and a shareable voting link",
+          "Practise for BECE, WASSCE and Ghana Teacher Promotion examinations in GigaLearn",
+          "Write books, research papers, CVs, reports, proposals and other professional documents with AI assistance",
         ],
-        subjectLine: "New on Giga3 AI — faster Social, smarter remix",
+        subjectLine: "Awards, exam practice and AI writing — discover Giga3",
       };
   }
 }
@@ -540,55 +540,55 @@ export function announcementCopyForSegment(
   switch (segment) {
     case "learn":
       return {
-        title: "What’s new in Giga3 AI",
-        lead: "GigaLearn and chat are ready for WASSCE and BECE prep, a kids’ learning environment for younger learners, plus CV and resume writing, book writing, and thesis and research writing when you need deeper support.",
-        ctaLabel: "Open GigaLearn",
-        ctaPath: "/gigalearn/",
+        title: "Your next exam success starts with practice",
+        lead: "GigaLearn helps learners and teachers prepare with focused practice for BECE, WASSCE and Ghana Teacher Promotion examinations.",
+        ctaLabel: "Open exam practice",
+        ctaPath: "/gigalearn/exam/",
         bullets: [
-          "WASSCE and BECE practice with clear explanations in GigaLearn",
-          "Kids’ learning environment for parents and early learners",
-          "Draft a CV or resume, outline a book, or shape thesis and research writing in chat",
+          "Practise BECE and WASSCE questions and strengthen subject knowledge",
+          "Prepare for Teacher Promotion examinations with rank-focused practice",
+          "Explore teaching and learning materials alongside your revision",
         ],
-        subjectLine: "What’s new in Giga3 AI · Learn, exams & writing",
+        subjectLine: "BECE, WASSCE & Teacher Promotion practice on Giga3",
       };
     case "create":
       return {
-        title: "What’s new in Giga3 AI",
-        lead: "Create in Giga3 — draft a CV or resume, start book writing, or shape thesis and research writing in chat, then polish visuals in Media Studio and GigaEdit. GigaLearn still covers WASSCE and BECE prep and a kids’ learning environment.",
-        ctaLabel: "Open GigaEdit",
-        ctaPath: "/gigaedit/",
+        title: "Create your next big piece of work with Giga3 AI",
+        lead: "From a book idea to a research paper or a job-ready CV, use Giga3 AI to plan, draft, organize and improve your writing.",
+        ctaLabel: "Open AI writing assistant",
+        ctaPath: "/chat/",
         bullets: [
-          "CV and resume writing plus book writing and thesis and research writing in chat",
-          "WASSCE and BECE prep and a kids’ learning environment in GigaLearn",
-          "Generate, edit, and share with Media Studio, GigaEdit, and GigaSocial",
+          "Develop book concepts, outlines and chapters",
+          "Structure research papers, academic projects, reports and proposals",
+          "Create or improve CVs, résumés and cover letters",
         ],
-        subjectLine: "What’s new in Giga3 AI · Create & write",
+        subjectLine: "Book writing, research and CV tools on Giga3 AI",
       };
     case "social":
       return {
-        title: "What’s new in Giga3 AI",
-        lead: "GigaSocial stays your place to share Stories and Reels — and the rest of Giga3 is ready for CV and resume writing, book writing, thesis and research writing, WASSCE and BECE prep, and a kids’ learning environment.",
-        ctaLabel: "Explore GigaSocial",
-        ctaPath: "/gigasocial/",
+        title: "Your opportunity to be recognised — GigaSocial Awards",
+        lead: "Discover GigaSocial Awards, explore available categories, and apply or nominate when the relevant season is open.",
+        ctaLabel: "Explore Awards",
+        ctaPath: "/gigasocial/awards/",
         bullets: [
-          "Share Stories and Reels on GigaSocial with faster, offline-friendly feeds",
-          "CV and resume writing, book writing, and thesis and research writing in chat",
-          "WASSCE and BECE prep plus a kids’ learning environment in GigaLearn",
+          "Approved candidates can receive a public profile, free public votes and a shareable voting link",
+          "Explore the nomination and application process and review the category requirements",
+          "Also discover exam practice and AI-powered writing tools across Giga3",
         ],
-        subjectLine: "What’s new in Giga3 AI · GigaSocial & more",
+        subjectLine: "GigaSocial Awards — explore, apply or nominate",
       };
     default:
       return {
-        title: "What’s new in Giga3 AI",
-        lead: "One place to learn, write, create, and share — GigaLearn, chat, GigaEdit, and GigaSocial cover school, work, and family learning.",
-        ctaLabel: "Open Giga3",
+        title: "Meet more of what Giga3 AI can do",
+        lead: "Whether you want to prepare for an examination, write something important or take part in community recognition, Giga3 AI has tools worth exploring.",
+        ctaLabel: "Explore Giga3 AI",
         ctaPath: "/",
         bullets: [
-          "CV and resume writing for job-ready drafts in chat",
-          "Book writing plus thesis and research writing when you need structure",
-          "WASSCE and BECE preparation and a kids’ learning environment in GigaLearn",
+          "GigaSocial Awards: explore categories and apply or nominate when a season is open",
+          "GigaLearn: practise for BECE, WASSCE and Teacher Promotion examinations",
+          "AI writing: work on books, research papers, CVs, reports and professional documents",
         ],
-        subjectLine: "What’s new in Giga3 AI · Writing, exams & kids",
+        subjectLine: "New opportunities: Awards, exam practice & AI writing",
       };
   }
 }
