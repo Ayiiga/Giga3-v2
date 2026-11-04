@@ -65,7 +65,7 @@ export const getPublicDetail = query({
         active = Boolean(user && isSubscriptionActive((user.subscriptionPlan ?? "free") as any, user.subscriptionExpiresAt));
       } catch { active = false; }
     }
-    const fullAccess = active;
+    const fullAccess = active || row.access === "free";
     const components = JSON.parse(row.componentsJson);
     const instructions = JSON.parse(row.instructionsJson);
     const activities = JSON.parse(row.activitiesJson);
@@ -218,8 +218,8 @@ export const issueDownloadToken = mutation({
     if (!resource || resource.status !== "published") throw new Error("Resource is unavailable.");
     const user = await ctx.db.query("users").withIndex("by_email", q => q.eq("email", email)).first();
     const active = Boolean(user && isSubscriptionActive((user.subscriptionPlan ?? "free") as any, user.subscriptionExpiresAt));
-    const freePreview = resource.access === "free" && (args.fileKind === "image" || args.fileKind === "diagram");
-    if (!freePreview && !active) throw new Error("An active subscription is required to access this resource file.");
+    const freeAccess = resource.access === "free";
+    if (!freeAccess && !active) throw new Error("An active subscription is required to access this resource file.");
     const storageId = args.fileKind === "guide" ? resource.guideStorageId
       : args.fileKind === "worksheet" ? resource.worksheetStorageId
       : args.fileKind === "image" ? resource.imageStorageId : resource.diagramStorageId;
@@ -244,7 +244,7 @@ export const consumeDownloadToken = internalMutation({
     const user = await ctx.db.query("users").withIndex("by_email", q => q.eq("email", row.userEmail)).first();
     if (!resource || resource.status !== "published" || !user) return null;
     const active = isSubscriptionActive((user.subscriptionPlan ?? "free") as any, user.subscriptionExpiresAt);
-    if (!(resource.access === "free" && (row.fileKind === "image" || row.fileKind === "diagram")) && !active) return null;
+    if (resource.access !== "free" && !active) return null;
     const storageId = row.fileKind === "guide" ? resource.guideStorageId
       : row.fileKind === "worksheet" ? resource.worksheetStorageId
       : row.fileKind === "image" ? resource.imageStorageId : resource.diagramStorageId;
