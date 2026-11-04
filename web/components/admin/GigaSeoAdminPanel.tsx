@@ -77,12 +77,10 @@ export function GigaSeoAdminPanel({ adminCreds }: { adminCreds: AdminCredentials
         </span>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-2">
         {[
           ["Keyword ideas", overview.keywordCount],
-          ["New keywords", overview.newKeywordCount],
           ["Content plans", overview.contentPlanCount],
-          ["Published", overview.publishedCount],
         ].map(([label, value]) => (
           <div key={String(label)} className="rounded-xl border p-3">
             <p className="text-xs text-muted">{label}</p>
