@@ -98,16 +98,16 @@ export function TeachingResourcesLibrary() {
 
   return (
     <main className="mx-auto w-full max-w-6xl space-y-5 pb-12" data-testid="teaching-resources-library">
-      <header className="overflow-hidden rounded-3xl bg-gradient-to-br from-violet-900 via-purple-800 to-fuchsia-700 p-5 text-white shadow-lg sm:p-7">
-        <div className="flex items-center gap-3"><span className="rounded-2xl bg-white/15 p-3"><FlaskConical className="h-7 w-7" /></span><div><p className="text-xs font-bold uppercase tracking-widest text-violet-200">GigaLearn · Practical learning</p><h1 className="text-2xl font-black sm:text-3xl">Teaching Materials & Practical Resources</h1></div></div>
-        <p className="mt-3 max-w-3xl text-sm leading-6 text-white/90">Search, explore and learn how to use educational materials, laboratory equipment, teaching aids and practical learning resources.</p>
-        <div className="mt-4 flex items-center gap-2 rounded-2xl bg-white p-3 text-slate-900"><Search className="h-5 w-5 shrink-0 text-violet-700" /><input aria-label="Search teaching materials" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search microscope, beaker, topic or activity…" className="min-w-0 flex-1 bg-transparent text-sm outline-none" /></div>
-        {suggestions.length > 0 && <div className="mt-2 flex flex-wrap gap-2">{suggestions.map(s => <button key={s} onClick={() => setSearch(s)} className="rounded-full border border-white/30 bg-white/10 px-3 py-1 text-xs text-white">{s}</button>)}</div>}
+      <header className="overflow-hidden rounded-2xl border border-violet-200 bg-white p-4 text-slate-950 shadow-sm sm:p-5">
+        <div className="flex items-center gap-3"><span className="rounded-xl bg-violet-100 p-2.5 text-violet-800"><FlaskConical className="h-6 w-6" /></span><div><p className="text-[10px] font-bold uppercase tracking-widest text-violet-700">GigaLearn · Learning library</p><h1 className="text-xl font-black text-slate-950 sm:text-2xl">Teaching & Practical Materials</h1></div></div>
+        <p className="mt-2 max-w-3xl text-sm leading-5 text-slate-700">Explore equipment, practical guides and learning aids for JHS and SHS.</p>
+        <div className="mt-3 flex items-center gap-2 rounded-xl border border-slate-300 bg-slate-50 p-3 text-slate-950"><Search className="h-5 w-5 shrink-0 text-violet-800" /><input aria-label="Search teaching materials" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search microscope, beaker or topic…" className="min-w-0 flex-1 bg-transparent text-sm text-slate-950 placeholder:text-slate-500 outline-none" /></div>
+        {suggestions.length > 0 && <div className="mt-2 flex flex-wrap gap-2">{suggestions.map(s => <button key={s} onClick={() => setSearch(s)} className="rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-900">{s}</button>)}</div>}
       </header>
 
 
 
-      {admin?.isAdmin && <section className="rounded-2xl border border-amber-300 bg-amber-50 p-4">
+      {admin?.isAdmin && <details className="rounded-2xl border border-amber-300 bg-amber-50 p-4"><summary className="cursor-pointer list-none font-extrabold text-amber-950"><span className="inline-flex items-center gap-2">⚙️ Manage Resources <span className="text-xs font-semibold text-amber-800">(administrator only)</span></span><p className="mt-1 text-xs font-normal text-amber-900">Add, upload and review learning materials. Open only when you need to manage the library.</p></summary><div className="mt-4 border-t border-amber-200 pt-4">
         <h2 className="font-extrabold text-amber-950">Administrator · Add a resource</h2>
         <button type="button" disabled={busy || !sessionToken} onClick={async () => {setBusy(true);try {const result=await seedStarter({sessionToken:sessionToken!});setAdminMessage(result.message);}catch(e){setAdminMessage(e instanceof Error?e.message:"Could not load starter resources.");}finally{setBusy(false);}}} className="mt-3 rounded-lg border border-amber-700 px-3 py-2 text-xs font-bold text-amber-950">Load four starter equipment guides</button>
         <p className="mt-1 text-xs text-amber-900">The four starter guides are published as subscriber resources. New resources created below are saved as drafts until reviewed.</p>
@@ -132,17 +132,17 @@ export function TeachingResourcesLibrary() {
           } catch (error) { setAdminMessage(error instanceof Error ? error.message : "Could not save resource."); }
           finally { setBusy(false); }
         }}>
-          <input required value={adminTitle} onChange={e => setAdminTitle(e.target.value)} placeholder="Resource / equipment name" className="min-h-11 rounded-lg border px-3 text-sm" />
-          <select value={adminSubject} onChange={e => setAdminSubject(e.target.value)} className="min-h-11 rounded-lg border bg-white px-3 text-sm">{SUBJECTS.map(s => <option key={s}>{s}</option>)}</select>
+          <input required value={adminTitle} onChange={e => setAdminTitle(e.target.value)} placeholder="Resource / equipment name" className="min-h-11 rounded-lg border border-amber-300 bg-white px-3 text-sm text-slate-950 placeholder:text-slate-500" />
+          <select value={adminSubject} onChange={e => setAdminSubject(e.target.value)} className="min-h-11 rounded-lg border border-amber-300 bg-white px-3 text-sm text-slate-950">{SUBJECTS.map(s => <option key={s}>{s}</option>)}</select>
           <select value={adminLevel} onChange={e => {setAdminLevel(e.target.value as "jhs"|"shs");setAdminClass(e.target.value === "jhs" ? "JHS 1" : "SHS 1");}} className="min-h-11 rounded-lg border bg-white px-3 text-sm"><option value="jhs">JHS</option><option value="shs">SHS</option></select>
           <select value={adminClass} onChange={e => setAdminClass(e.target.value)} className="min-h-11 rounded-lg border bg-white px-3 text-sm">{CLASSES.filter(x => x.toLowerCase().startsWith(adminLevel)).map(x => <option key={x}>{x}</option>)}</select>
           <input required value={adminSummary} onChange={e => setAdminSummary(e.target.value)} placeholder="Short summary" className="min-h-11 rounded-lg border px-3 text-sm sm:col-span-2" />
           <input value={adminTopic} onChange={e => setAdminTopic(e.target.value)} placeholder="Curriculum topic" className="min-h-11 rounded-lg border px-3 text-sm" />
           <select value={adminCategory} onChange={e => setAdminCategory(e.target.value)} className="min-h-11 rounded-lg border bg-white px-3 text-sm">{CATEGORIES.map(x => <option key={x}>{x}</option>)}</select>
-          <textarea required value={adminDescription} onChange={e => setAdminDescription(e.target.value)} placeholder="Description and educational purpose" className="min-h-20 rounded-lg border p-3 text-sm sm:col-span-2" />
+          <textarea required value={adminDescription} onChange={e => setAdminDescription(e.target.value)} placeholder="Description and educational purpose" className="min-h-20 rounded-lg border border-amber-300 bg-white p-3 text-sm text-slate-950 placeholder:text-slate-500 sm:col-span-2" />
           <textarea value={adminComponents} onChange={e => setAdminComponents(e.target.value)} placeholder="Components and functions (one per line)" className="min-h-20 rounded-lg border p-3 text-sm" />
           <textarea value={adminInstructions} onChange={e => setAdminInstructions(e.target.value)} placeholder="Step-by-step instructions (one per line)" className="min-h-20 rounded-lg border p-3 text-sm" />
-          <textarea value={adminActivity} onChange={e => setAdminActivity(e.target.value)} placeholder="Practical activity" className="min-h-16 rounded-lg border p-3 text-sm" />
+          <textarea value={adminActivity} onChange={e => setAdminActivity(e.target.value)} placeholder="Practical activity" className="min-h-16 rounded-lg border border-amber-300 bg-white p-3 text-sm text-slate-950 placeholder:text-slate-500" />
           <textarea value={adminSafety} onChange={e => setAdminSafety(e.target.value)} placeholder="Safety precautions (one per line)" className="min-h-20 rounded-lg border p-3 text-sm" />
           <textarea value={adminExercises} onChange={e => setAdminExercises(e.target.value)} placeholder="Student exercises / teacher notes" className="min-h-20 rounded-lg border p-3 text-sm" />
           <select value={adminAccess} onChange={e => setAdminAccess(e.target.value as "free"|"subscriber")} className="min-h-11 rounded-lg border bg-white px-3 text-sm"><option value="free">Free resource</option><option value="subscriber">Subscriber-only resource</option></select>
@@ -158,7 +158,7 @@ export function TeachingResourcesLibrary() {
             <div className="mt-2 flex flex-wrap gap-2">{(["guide","worksheet","image","diagram"] as const).map(kind => <label key={kind} className="cursor-pointer rounded-lg border border-slate-200 px-2 py-1 text-[10px] font-semibold text-slate-700">{kind} {kind==="guide"?r.hasGuide:kind==="worksheet"?r.hasWorksheet:kind==="image"?r.hasImage:r.hasDiagram ? "✓" : "+"}<input type="file" accept={kind==="guide"||kind==="worksheet"?"application/pdf":kind==="image"?"image/jpeg,image/png,image/webp":"image/png,image/jpeg"} className="hidden" onChange={async e => {const file=e.target.files?.[0];if(!file||!sessionToken)return;setBusy(true);try{const uploadUrl=await createUploadUrl({sessionToken});const response=await fetch(uploadUrl,{method:"POST",headers:{"Content-Type":file.type},body:file});if(!response.ok)throw new Error("File upload failed.");const {storageId}=await response.json();await attachFile({sessionToken,resourceId:r._id,fileKind:kind,storageId});setAdminMessage(`${kind} uploaded for ${r.title}.`);}catch(err){setAdminMessage(err instanceof Error?err.message:"Upload failed.");}finally{setBusy(false);e.target.value="";}}}/></label>)}</div>
           </div>)}</div>}
         </div>
-      </section>}
+      </div></details>}
       <section className="grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label="Resource filters">
         <label className="text-xs font-semibold text-slate-700">Subject<select value={subject} onChange={e => setSubject(e.target.value)} className="mt-1 min-h-11 w-full rounded-xl border border-slate-200 bg-white px-2 text-sm"><option value="all">All subjects</option>{SUBJECTS.map(s => <option key={s}>{s}</option>)}</select></label>
         <label className="text-xs font-semibold text-slate-700">Level<select value={level} onChange={e => {setLevel(e.target.value);setClassName("all");}} className="mt-1 min-h-11 w-full rounded-xl border border-slate-200 bg-white px-2 text-sm"><option value="all">JHS & SHS</option><option value="jhs">JHS 1–3</option><option value="shs">SHS 1–3</option></select></label>
