@@ -27,7 +27,7 @@ type Detail = Resource & {
   description: string; components: string[]; instructions: string[]; activities: string[];
   safety: string[]; commonMistakes: string[]; teacherGuidance: string;
   studentExercises: string; curriculumReference: string;
-  hasImage: boolean; hasDiagram: boolean; hasGuide: boolean; hasWorksheet: boolean;
+  hasImage: boolean; hasDiagram: boolean; hasGuide: boolean; hasWorksheet: boolean; fullAccess: boolean;
 };
 
 export function TeachingResourcesLibrary() {
@@ -51,7 +51,7 @@ export function TeachingResourcesLibrary() {
     category: category === "all" ? undefined : category,
   }) as Resource[] | undefined;
   const detail = useQuery(api.teachingResources.getPublicDetail,
-    selected ? { slug: selected } : "skip") as Detail | null | undefined;
+    selected ? { slug: selected, sessionToken: sessionToken ?? undefined } : "skip") as Detail | null | undefined;
   const issueDownload = useMutation(api.teachingResources.issueDownloadToken);
 
   const suggestions = useMemo(() => {
@@ -102,7 +102,7 @@ export function TeachingResourcesLibrary() {
       {selected && <section className="rounded-3xl border border-violet-200 bg-white p-4 shadow-sm print-resource" aria-live="polite">
         {!detail ? <p className="text-sm text-slate-500">Loading resource details…</p> : <>
           <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-wide text-violet-700">{detail.subject} · {detail.classes.join(", ")}</p><h2 className="mt-1 text-xl font-black text-slate-950">{detail.title}</h2><p className="mt-1 text-sm text-slate-600">{detail.summary}</p></div><button onClick={() => setSelected(null)} className="rounded-full border px-3 py-2 text-sm">Close</button></div>
-          <p className="mt-4 text-sm leading-6 text-slate-700">{detail.description}</p>
+          <p className="mt-4 text-sm leading-6 text-slate-700">{detail.description}</p>\n          {!detail.fullAccess && <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">You are viewing a free preview. Sign in with an active Giga3 AI subscription to unlock the complete practical instructions, teacher notes and student exercises.</div>}
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <DetailList title="Components and functions" items={detail.components} />
             <DetailList title="How to use it" items={detail.instructions} />
@@ -119,7 +119,7 @@ export function TeachingResourcesLibrary() {
             {detail.hasWorksheet && <button disabled={busy} onClick={() => download("worksheet")} className="inline-flex items-center gap-2 rounded-xl border border-violet-300 px-4 py-3 text-sm font-bold text-violet-800">Download worksheet</button>}
             {detail.hasImage && <button onClick={() => download("image")} className="rounded-xl border px-3 py-3 text-sm">Material photo</button>}
             {detail.hasDiagram && <button onClick={() => download("diagram")} className="rounded-xl border px-3 py-3 text-sm">Labelled diagram</button>}
-            <button onClick={printResource} className="inline-flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-bold"><Printer className="h-4 w-4" /> Print resource</button>
+            <button disabled={!detail.fullAccess} onClick={printResource} className="inline-flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-40"><Printer className="h-4 w-4" /> Print resource</button>
           </div>
           {detail.access === "subscriber" && <p className="mt-3 flex items-center gap-2 text-xs text-amber-800"><ShieldCheck className="h-4 w-4" /> Complete files require an active Giga3 AI subscription. Access is verified when downloading.</p>}
           {notice && <p role="alert" className="mt-3 rounded-xl bg-amber-50 p-3 text-sm text-amber-900">{notice}</p>}
