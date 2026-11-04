@@ -6,7 +6,7 @@
 import type { EmailFailureReason } from "./emailClient";
 
 /** Default campaign key for announcement idempotency (override via action args). */
-export const DEFAULT_FEATURE_ANNOUNCEMENT_CAMPAIGN = "feature_announcement_v2";
+export const DEFAULT_FEATURE_ANNOUNCEMENT_CAMPAIGN = "feature_announcement_v3";
 
 /** Max allowlist size for a controlled retry batch (smoke mode allows exactly 1). */
 export const ANNOUNCEMENT_ALLOWLIST_MAX = 20;
