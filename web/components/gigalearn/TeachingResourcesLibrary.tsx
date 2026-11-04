@@ -1,8 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useMutation, useQuery } from "convex/react";
-import { useEffect } from "react";
 import { api } from "convex/_generated/api";
 import { getSessionToken } from "@/lib/auth";
 import { getConvexSiteUrl } from "@/lib/convex/env";
@@ -40,10 +39,7 @@ export function TeachingResourcesLibrary() {
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
-  const [seedMessage, setSeedMessage] = useState("");
   useEffect(() => { setSessionToken(getSessionToken()); }, []);
-  const admin = useQuery(api.adminAuth.isCurrentUserPlatformAdmin, sessionToken ? { sessionToken } : "skip");
-  const seedStarter = useMutation(api.teachingResources.seedStarterResources);
   const resources = useQuery(api.teachingResources.listPublished, {
     search: search || undefined, subject: subject === "all" ? undefined : subject,
     levelBand: level === "all" ? undefined : level as "jhs" | "shs",
@@ -67,7 +63,7 @@ export function TeachingResourcesLibrary() {
       const result = await issueDownload({ sessionToken: token, resourceId: detail._id as any, fileKind: kind });
       const site = getConvexSiteUrl();
       if (!site) throw new Error("Secure download service is not configured. Please contact support.");
-      window.location.assign(result.url.startsWith("http") ? result.url : site + result.url);
+      window.location.assign(site.replace(/\\/$/, "") + "/teaching-resource-download?token=" + encodeURIComponent(result.token));
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "Could not prepare this download.");
     } finally { setBusy(false); }
@@ -87,10 +83,7 @@ export function TeachingResourcesLibrary() {
         {suggestions.length > 0 && <div className="mt-2 flex flex-wrap gap-2">{suggestions.map(s => <button key={s} onClick={() => setSearch(s)} className="rounded-full border border-white/30 bg-white/10 px-3 py-1 text-xs text-white">{s}</button>)}</div>}
       </header>
 
-      {admin?.isAdmin && <section className="rounded-2xl border border-amber-300 bg-amber-50 p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-sm font-extrabold text-amber-950">Resource administration</p><p className="mt-1 text-xs text-amber-900">Publish starter catalogue records for initial review and testing.</p></div><button disabled={!sessionToken || busy} onClick={async () => {setBusy(true);try {const result = await seedStarter({sessionToken: sessionToken!});setSeedMessage(result.message);} catch(e) {setSeedMessage(e instanceof Error ? e.message : "Could not seed resources.");} finally {setBusy(false);}}} className="rounded-xl bg-amber-900 px-4 py-2.5 text-sm font-bold text-white">Load starter resources</button></div>
-        {seedMessage && <p className="mt-2 text-xs text-amber-950" role="status">{seedMessage}</p>}
-      </section>}
+
 
       <section className="grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label="Resource filters">
         <label className="text-xs font-semibold text-slate-700">Subject<select value={subject} onChange={e => setSubject(e.target.value)} className="mt-1 min-h-11 w-full rounded-xl border border-slate-200 bg-white px-2 text-sm"><option value="all">All subjects</option>{SUBJECTS.map(s => <option key={s}>{s}</option>)}</select></label>
