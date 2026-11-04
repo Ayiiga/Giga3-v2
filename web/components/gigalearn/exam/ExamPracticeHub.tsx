@@ -67,6 +67,14 @@ export function ExamPracticeHub() {
         </div>
       </header>
 
+      <a href="/gigalearn/resources/" data-testid="teaching-resources-entry" className="group flex items-center justify-between gap-3 rounded-2xl border border-violet-200 bg-gradient-to-r from-violet-50 to-fuchsia-50 p-4 shadow-sm transition hover:border-violet-400 hover:shadow-md">
+        <span className="flex min-w-0 items-center gap-3">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-violet-700 text-white"><span aria-hidden>🔬</span></span>
+          <span className="min-w-0"><span className="block text-base font-extrabold text-violet-950">Teaching Materials & Practical Resources</span><span className="mt-1 block text-xs leading-5 text-slate-600">Search equipment, teaching aids, practical guides and learning materials for JHS and SHS.</span></span>
+        </span>
+        <span className="shrink-0 text-xl font-black text-violet-800" aria-hidden>→</span>
+      </a>
+
       <section className="space-y-3" aria-labelledby="exam-select-title">
         <div className="flex items-center gap-3"><span className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-700 text-lg font-black text-white">1</span><h3 id="exam-select-title" className="text-xl font-extrabold text-slate-950">Select Exam</h3></div>
         <div className="grid grid-cols-3 gap-2 sm:gap-3">

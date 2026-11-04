@@ -336,6 +336,7 @@ import type * as videoPlans from "../videoPlans.js";
 import type * as videoQueries from "../videoQueries.js";
 import type * as voices from "../voices.js";
 import type * as webSearch from "../webSearch.js";
+import type * as teachingResources from "../teachingResources.js";
 import type * as welcomeEmailClaim from "../welcomeEmailClaim.js";
 import type * as welcomeEmailDelivery from "../welcomeEmailDelivery.js";
 import type * as writingCraft from "../writingCraft.js";
@@ -675,6 +676,7 @@ declare const fullApi: ApiFromModules<{
   videoQueries: typeof videoQueries;
   voices: typeof voices;
   webSearch: typeof webSearch;
+  teachingResources: typeof teachingResources;
   welcomeEmailClaim: typeof welcomeEmailClaim;
   welcomeEmailDelivery: typeof welcomeEmailDelivery;
   writingCraft: typeof writingCraft;

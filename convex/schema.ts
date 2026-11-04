@@ -2449,4 +2449,59 @@ export default defineSchema({
   })
     .index("by_season_created", ["seasonId", "createdAt"])
     .index("by_created", ["createdAt"]),
+  /** Curated Ghana JHS/SHS teaching materials and practical equipment. */
+  teachingResources: defineTable({
+    slug: v.string(),
+    title: v.string(),
+    summary: v.string(),
+    description: v.string(),
+    subject: v.string(),
+    levelBand: v.union(v.literal("jhs"), v.literal("shs")),
+    classes: v.array(v.string()),
+    topic: v.string(),
+    category: v.string(),
+    activity: v.string(),
+    componentsJson: v.string(),
+    instructionsJson: v.string(),
+    activitiesJson: v.string(),
+    safetyJson: v.string(),
+    mistakesJson: v.string(),
+    teacherGuidance: v.optional(v.string()),
+    studentExercises: v.optional(v.string()),
+    curriculumReference: v.optional(v.string()),
+    imageStorageId: v.optional(v.id("_storage")),
+    diagramStorageId: v.optional(v.id("_storage")),
+    guideStorageId: v.optional(v.id("_storage")),
+    worksheetStorageId: v.optional(v.id("_storage")),
+    imageContentType: v.optional(v.string()),
+    diagramContentType: v.optional(v.string()),
+    guideContentType: v.optional(v.string()),
+    worksheetContentType: v.optional(v.string()),
+    videoUrl: v.optional(v.string()),
+    previewText: v.optional(v.string()),
+    access: v.union(v.literal("free"), v.literal("subscriber")),
+    status: v.union(v.literal("draft"), v.literal("pending"), v.literal("published"), v.literal("archived")),
+    createdBy: v.string(),
+    reviewedBy: v.optional(v.string()),
+    reviewedAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_slug", ["slug"])
+    .index("by_status_subject", ["status", "subject"])
+    .index("by_status_level", ["status", "levelBand"])
+    .index("by_status_updated", ["status", "updatedAt"]),
+
+  teachingResourceDownloadTokens: defineTable({
+    token: v.string(),
+    resourceId: v.id("teachingResources"),
+    userEmail: v.string(),
+    fileKind: v.union(v.literal("guide"), v.literal("worksheet"), v.literal("image"), v.literal("diagram")),
+    expiresAt: v.number(),
+    consumedAt: v.optional(v.number()),
+    createdAt: v.number(),
+  })
+    .index("by_token", ["token"])
+    .index("by_expiry", ["expiresAt"]),
+
 });
