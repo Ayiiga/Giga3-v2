@@ -73,23 +73,32 @@ async function issueSession(
 function buildWelcomeEmailPayload(to: string) {
   const frontend = getFrontendBaseUrl();
   const html = wrapEmailHtml({
-    title: "Welcome to Giga3 AI",
+    title: "Welcome to Giga3 AI — learn, achieve and create",
     bodyHtml: `
-      <p style="margin:0 0 12px;">Your account is ready.</p>
-      <p style="margin:0 0 12px;">Come back anytime to chat, learn, create, and share photo or video Stories on GigaSocial.</p>
-      <ul style="margin:0 0 20px;padding-left:18px;">
-        <li style="margin:0 0 6px;"><a href="${frontend}/chat/" style="color:#0f766e;">Chat &amp; ideas</a></li>
-        <li style="margin:0 0 6px;"><a href="${frontend}/gigalearn/" style="color:#0f766e;">Learn with GigaLearn</a></li>
-        <li style="margin:0 0 6px;"><a href="${frontend}/gigaedit/" style="color:#0f766e;">Create with GigaEdit</a></li>
-        <li style="margin:0 0 6px;"><a href="${frontend}/gigasocial/" style="color:#0f766e;">GigaSocial Stories</a></li>
-      </ul>
+      <p style="margin:0 0 12px;">Your Giga3 AI account is ready. Discover tools and opportunities for learning, professional growth, writing and community recognition.</p>
+      <h3 style="margin:18px 0 8px;">🏆 GigaSocial Awards</h3>
+      <p style="margin:0 0 8px;">Explore award categories and apply or nominate when a season is open. Approved candidates can receive a public profile, free public voting and a shareable voting link.</p>
+      <p style="margin:0 0 8px;"><a href="${frontend}/gigasocial/awards/" style="color:#0f766e;">Explore GigaSocial Awards</a></p>
+      <h3 style="margin:18px 0 8px;">📚 Prepare for your examinations</h3>
+      <p style="margin:0 0 8px;">Practise for BECE, WASSCE and Ghana Teacher Promotion examinations with GigaLearn.</p>
+      <p style="margin:0 0 8px;"><a href="${frontend}/gigalearn/exam/" style="color:#0f766e;">Open exam practice</a></p>
+      <h3 style="margin:18px 0 8px;">✍️ Write and work smarter with AI</h3>
+      <p style="margin:0 0 8px;">Get help planning books, structuring research papers, preparing CVs and résumés, and drafting reports, proposals and other professional documents.</p>
+      <p style="margin:0 0 8px;"><a href="${frontend}/chat/" style="color:#0f766e;">Open the AI writing assistant</a></p>
+      <p style="margin:18px 0 0;">Choose one goal and take your first step today. Welcome to Giga3 AI!</p>
     `,
   });
   return {
     to,
-    subject: "Welcome to Giga3 AI — create, learn, and share",
+    subject: "Welcome to Giga3 AI — Awards, exam practice & AI writing",
     html,
-    text: `Welcome to Giga3 AI. Open ${frontend}/chat/ to get started.`,
+    text: `Welcome to Giga3 AI! Explore GigaSocial Awards: ${frontend}/gigasocial/awards/
+
+Practise for BECE, WASSCE and Teacher Promotion: ${frontend}/gigalearn/exam/
+
+Write books, research papers, CVs and professional documents with the AI assistant: ${frontend}/chat/
+
+Built in Africa. Powered by AI. Designed for Everyone.`,
     tags: [
       { name: "category", value: "welcome" },
       { name: "app", value: "giga3" },
