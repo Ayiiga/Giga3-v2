@@ -25,41 +25,14 @@ export const getAdminOverview = query({
       .query("gigaSeoSettings")
       .withIndex("by_key", (q) => q.eq("key", "primary"))
       .unique();
-    const [
-      keywordCount,
-      newKeywordCount,
-      contentPlanCount,
-      draftCount,
-      scheduledCount,
-      publishedCount,
-    ] = await Promise.all([
+    const [keywordCount, contentPlanCount] = await Promise.all([
       ctx.db.query("gigaSeoKeywordIdeas").count(),
-      ctx.db
-        .query("gigaSeoKeywordIdeas")
-        .withIndex("by_status_created", (q) => q.eq("status", "new"))
-        .count(),
       ctx.db.query("gigaSeoContentPlans").count(),
-      ctx.db
-        .query("gigaSeoContentPlans")
-        .withIndex("by_status_updated", (q) => q.eq("status", "draft"))
-        .count(),
-      ctx.db
-        .query("gigaSeoContentPlans")
-        .withIndex("by_status_updated", (q) => q.eq("status", "scheduled"))
-        .count(),
-      ctx.db
-        .query("gigaSeoContentPlans")
-        .withIndex("by_status_updated", (q) => q.eq("status", "published"))
-        .count(),
     ]);
     return {
       settings: settings ?? DEFAULT_SETTINGS,
       keywordCount,
-      newKeywordCount,
       contentPlanCount,
-      draftCount,
-      scheduledCount,
-      publishedCount,
     };
   },
 });
