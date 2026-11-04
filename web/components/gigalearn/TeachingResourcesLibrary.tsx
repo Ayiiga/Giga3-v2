@@ -55,6 +55,10 @@ export function TeachingResourcesLibrary() {
   const [adminAccess, setAdminAccess] = useState<"free" | "subscriber">("subscriber");
   const [adminMessage, setAdminMessage] = useState("");
   useEffect(() => { setSessionToken(getSessionToken()); }, []);
+  useEffect(() => {
+    const resourceSlug = new URLSearchParams(window.location.search).get("resource");
+    if (resourceSlug) setSelected(resourceSlug);
+  }, []);
   const admin = useQuery(api.adminAuth.isCurrentUserPlatformAdmin, sessionToken ? { sessionToken } : "skip");
   const createResource = useMutation(api.teachingResources.createResource);
   const seedStarter = useMutation(api.teachingResources.seedStarterResources);
