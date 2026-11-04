@@ -487,7 +487,7 @@ describe("eligibility, segmentation, and tip campaign keys", () => {
         topics: ["exam prep"],
         role: "student",
       }).ctaPath
-    ).toBe("/gigalearn/");
+    ).toBe("/gigalearn/exam/");
     expect(announcementCopyForSegment("social").subjectLine).toContain("GigaSocial");
     expect(digestCopyForSegment("learn").ctaPath).toBe("/gigalearn/exam/");
     expect(digestCopyForSegment("learn").subjectLine).toContain("Teacher Promotion");
