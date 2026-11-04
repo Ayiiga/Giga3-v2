@@ -9,6 +9,16 @@ const fileKind = v.union(v.literal("guide"), v.literal("worksheet"), v.literal("
 const accessKind = v.union(v.literal("free"), v.literal("subscriber"));
 const statusKind = v.union(v.literal("draft"), v.literal("pending"), v.literal("published"), v.literal("archived"));
 
+function parseStringArray(value: string, field: string): string[] {
+  let parsed: unknown;
+  try { parsed = JSON.parse(value); } catch { throw new Error(`${field} must be valid JSON.`); }
+  if (!Array.isArray(parsed) || !parsed.every(item => typeof item === "string")) {
+    throw new Error(`${field} must be a JSON array of text values.`);
+  }
+  return parsed;
+}
+
+
 function publicResource(row: any) {
   return {
     _id: row._id, slug: row.slug, title: row.title, summary: row.summary,
@@ -28,7 +38,7 @@ export const listPublished = query({
   handler: async (ctx, args) => {
     let rows = await ctx.db.query("teachingResources")
       .withIndex("by_status_updated", q => q.eq("status", "published"))
-      .order("desc").take(300);
+      .order("desc").collect();
     if (args.subject) rows = rows.filter(r => r.subject === args.subject);
     if (args.levelBand) rows = rows.filter(r => r.levelBand === args.levelBand);
     if (args.className) rows = rows.filter(r => r.classes.includes(args.className!));
@@ -37,7 +47,7 @@ export const listPublished = query({
     if (q) rows = rows.filter(r =>
       [r.title, r.summary, r.subject, r.topic, r.category, r.activity].join(" ").toLowerCase().includes(q)
     );
-    return rows.map(publicResource);
+    return rows.slice(0, 300).map(publicResource);
   },
 });
 
@@ -144,6 +154,11 @@ export const createResource = mutation({
     const existing = await ctx.db.query("teachingResources").withIndex("by_slug", q => q.eq("slug", slug)).first();
     if (existing) throw new Error("A resource with this slug already exists.");
     const now = Date.now();
+    parseStringArray(args.componentsJson, "Components");
+    parseStringArray(args.instructionsJson, "Instructions");
+    parseStringArray(args.activitiesJson, "Activities");
+    parseStringArray(args.safetyJson, "Safety precautions");
+    parseStringArray(args.mistakesJson, "Common mistakes");
     const { sessionToken: _token, ...data } = args;
     return await ctx.db.insert("teachingResources", {
       ...data, slug, createdBy: email, createdAt: now, updatedAt: now,
