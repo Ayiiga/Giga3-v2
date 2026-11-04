@@ -79,6 +79,21 @@ export const getPublicDetail = query({
   },
 });
 
+export const listAdminResources = query({
+  args: { sessionToken: v.string() },
+  handler: async (ctx, args) => {
+    const email = await requireSession(args.sessionToken, ctx);
+    if (!isPlatformAdminEmail(email)) throw new Error("Administrator access required.");
+    const rows = await ctx.db.query("teachingResources").order("desc").take(300);
+    return rows.map(row => ({
+      _id: row._id, slug: row.slug, title: row.title, subject: row.subject,
+      status: row.status, access: row.access, hasGuide: Boolean(row.guideStorageId),
+      hasWorksheet: Boolean(row.worksheetStorageId), hasImage: Boolean(row.imageStorageId),
+      hasDiagram: Boolean(row.diagramStorageId),
+    }));
+  },
+});
+
 export const createResource = mutation({
   args: {
     sessionToken: v.string(), slug: v.string(), title: v.string(), summary: v.string(),
