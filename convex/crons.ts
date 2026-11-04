@@ -64,12 +64,13 @@ crons.daily(
   { limit: 50, minInactiveDays: 2, minDaysSinceLastEmail: 4 }
 );
 
-// Weekly branded product-update email for opted-in users (respects unsubscribe + 12-day gap).
-crons.weekly(
-  "feature announcement emails",
-  { dayOfWeek: "monday", hourUTC: 14, minuteUTC: 0 },
+// Gradual feature-announcement rollout: send at most 10 emails per day to opted-in users.
+// Candidate selection respects unsubscribe/consent, and the 12-day cross-campaign gap.
+crons.daily(
+  "feature announcement emails — gradual rollout",
+  { hourUTC: 14, minuteUTC: 0 },
   internal.engagementEmailActions.sendFeatureAnnouncementEmails,
-  { limit: 40, minDaysSinceLastEmail: 12 }
+  { limit: 10, minDaysSinceLastEmail: 12 }
 );
 
 crons.interval(
