@@ -210,8 +210,12 @@ export async function cacheViewedStoryMedia(post: SocialPost): Promise<boolean> 
     const db = await openDb();
     const existing = await readMeta(db, post._id);
     if (existing?.sourceMediaUrl === mediaUrl) {
-      await writeMeta(db, { ...existing, lastAccessedAt: Date.now() });
-      return true;
+      const cachedBlob = await readBlob(db, blobKey(post._id, "media"));
+      if (cachedBlob && cachedBlob.size > 0) {
+        await writeMeta(db, { ...existing, lastAccessedAt: Date.now() });
+        return true;
+      }
+      // Metadata can outlive a blob after browser storage eviction. Rebuild it.
     }
 
     const mediaBlob = await fetchBlob(mediaUrl);
@@ -222,6 +226,10 @@ export async function cacheViewedStoryMedia(post: SocialPost): Promise<boolean> 
     if (thumbnailUrl) {
       thumbnailBlob = await fetchBlob(thumbnailUrl);
     }
+
+    // Replace stale media only after the new download succeeds, preserving the
+    // previous offline copy if the network request fails.
+    if (existing) await removeCachedStoryInternal(db, post._id);
 
     const incomingBytes = mediaBlob.size + (thumbnailBlob?.size ?? 0);
     await ensureQuota(db, incomingBytes);
