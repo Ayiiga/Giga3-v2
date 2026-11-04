@@ -40,7 +40,7 @@ export function saveFeedSnapshot(posts: SocialPost[]): void {
       savedAt: Date.now(),
       posts: posts.slice(0, 40),
     };
-    window.localStorage.setItem(SNAPSHOT_KEY, JSON.stringify(payload));
+    window.localStorage.setItem(snapshotKey(), JSON.stringify(payload));
   } catch {
     /* quota or private mode */
   }
