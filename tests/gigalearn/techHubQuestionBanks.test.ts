@@ -208,6 +208,24 @@ describe("Technology Learning Hub question banks", () => {
     expect(getBuiltinAcademyCourse("exam-bece-prep")?.description).toMatch(/practice|not.*official|WAEC/i);
   });
 
+  it("keeps BECE subject questions isolated across practice modes", () => {
+    for (const mode of ["practice_test", "timed", "learn", "random", "revision"] as const) {
+      const ids = selectTechQuestionIds({
+        courseSlug: "exam-bece-prep",
+        mode,
+        topicId: "mathematics",
+        count: 50,
+        seed: 73,
+        revisionQuestionIds: mode === "revision" ? getTechBankQuestions("exam-bece-prep", { topicId: "mathematics" }).map((q) => q.questionId) : undefined,
+      });
+      expect(ids.length).toBeGreaterThan(0);
+      const selectedIds = new Set(ids);
+      const selectedRows = getTechBankQuestions("exam-bece-prep").filter((q) => selectedIds.has(q.questionId));
+      expect(selectedRows).toHaveLength(ids.length);
+      expect(selectedRows.every((q) => q.topicId === "mathematics")).toBe(true);
+    }
+  });
+
   it("allows exam packs up to 500 while tech hub stays at 50", () => {
     const examIds = selectTechQuestionIds({
       courseSlug: "exam-bece-prep",
