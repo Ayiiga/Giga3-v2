@@ -130,6 +130,34 @@ export default function PricingPage() {
             </p>
           </section>
 
+          <section aria-labelledby="credit-costs" className="mx-auto mt-8 max-w-3xl rounded-2xl border border-border p-5">
+            <h2 id="credit-costs" className="text-lg font-semibold text-foreground">
+              What uses credits?
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-muted">
+              Ordinary text conversations in AI Chat are free. Credits are used for
+              premium generation actions; the amount is shown before you confirm.
+            </p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-xl bg-muted/10 p-4">
+                <p className="font-medium text-foreground">AI image generation</p>
+                <p className="mt-1 text-sm text-muted">2 credits per image</p>
+              </div>
+              <div className="rounded-xl bg-muted/10 p-4">
+                <p className="font-medium text-foreground">AI video generation</p>
+                <ul className="mt-1 space-y-1 text-sm text-muted">
+                  <li>5 seconds — 9 credits</li>
+                  <li>10 seconds — 20 credits</li>
+                  <li>15 seconds — 30 credits</li>
+                </ul>
+              </div>
+            </div>
+            <p className="mt-3 text-xs text-muted">
+              Other tools may have their own usage rules. Always review the displayed
+              credit charge before starting a paid task.
+            </p>
+          </section>
+
           <PricingPageClient />
         </Container>
       </div>
