@@ -14,7 +14,7 @@ concurrency:
 jobs:
   vitest:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -44,6 +44,25 @@ jobs:
 
       - name: Run Vitest (unit + security)
         run: npm test
+
+      - name: Backend TypeScript check (Convex)
+        run: web/node_modules/.bin/tsc --noEmit --project tsconfig.gigaseo.json
+
+      # The existing web app intentionally sets typescript.ignoreBuildErrors=true in next.config.mjs.
+      # A repository-wide tsc gate reports extensive pre-existing errors across unrelated modules;
+      # the production Next build remains the authoritative web compilation gate for this project.
+      - name: Web TypeScript syntax check
+        working-directory: web
+        run: npx tsc --noEmit --noCheck
+
+      - name: Production static build (web)
+        working-directory: web
+        env:
+          NEXT_PUBLIC_CONVEX_URL: https://perfect-lark-521.convex.cloud
+          NEXT_PUBLIC_CONVEX_SITE_URL: https://perfect-lark-521.convex.site
+          NEXT_PUBLIC_GIGA3_DATA_BACKEND: convex
+          NEXT_TELEMETRY_DISABLED: "1"
+        run: npm run build
 
       - name: Summarize
         if: always()

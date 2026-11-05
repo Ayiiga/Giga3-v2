@@ -62,10 +62,13 @@ async function verifySignature(
   secret: string
 ): Promise<boolean> {
   const key = await importHmacKey(secret);
+  const decodedSignature = base64UrlDecode(signatureB64);
+  const signatureBuffer = new ArrayBuffer(decodedSignature.byteLength);
+  new Uint8Array(signatureBuffer).set(decodedSignature);
   return await crypto.subtle.verify(
     "HMAC",
     key,
-    base64UrlDecode(signatureB64),
+    signatureBuffer,
     new TextEncoder().encode(payloadB64)
   );
 }

@@ -2544,6 +2544,7 @@ export default defineSchema({
     keyword: v.string(),
     market: v.string(),
     searchIntent: v.optional(v.string()),
+    rationale: v.optional(v.string()),
     searchVolume: v.optional(v.number()),
     difficulty: v.optional(v.number()),
     source: v.optional(v.string()),
@@ -2574,10 +2575,15 @@ export default defineSchema({
     scheduledAt: v.optional(v.number()),
     publishedUrl: v.optional(v.string()),
     qualityScore: v.optional(v.number()),
+    metaDescription: v.optional(v.string()),
+    draftContent: v.optional(v.string()),
+    qualityIssues: v.optional(v.array(v.string())),
+    factCheckNotes: v.optional(v.array(v.string())),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("by_status_updated", ["status", "updatedAt"])
+    .index("by_updated", ["updatedAt"])
     .index("by_slug", ["slug"]),
 
 });
