@@ -1,0 +1,23 @@
+{
+  "extends": "./web/tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "./web",
+    "paths": {
+      "@/*": [
+        "./*"
+      ],
+      "convex/*": [
+        "../convex/*"
+      ]
+    },
+    "incremental": false,
+    "noEmit": true
+  },
+  "include": [
+    "convex/gigaSeo.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "web/node_modules"
+  ]
+}
