@@ -6,6 +6,11 @@ import { useAction, useMutation, useQuery } from "convex/react";
 import type { Id } from "convex/_generated/dataModel";
 
 type AdminCredentials = { adminSessionToken?: string; adminKey?: string };
+type KeywordIdea = { _id: Id<"gigaSeoKeywordIdeas">; keyword: string; searchIntent?: string; rationale?: string };
+type ContentPlan = {
+  _id: Id<"gigaSeoContentPlans">; title: string; primaryKeyword: string; status: string;
+  qualityScore?: number; qualityIssues?: string[]; factCheckNotes?: string[]; draftContent?: string;
+};
 type Settings = {
   enabled: boolean;
   articlesPerWeek: number;
@@ -138,7 +143,7 @@ export function GigaSeoAdminPanel({ adminCreds }: { adminCreds: AdminCredentials
         </label>
         <button type="button" onClick={() => void runResearch()} disabled={busy || topic.trim().length < 3} className="rounded-xl bg-sky-700 px-4 py-3 text-sm font-semibold text-white disabled:opacity-50">{busy ? "Working…" : "Generate keyword ideas"}</button>
         <div className="space-y-2">
-          {(ideas ?? []).map((idea) => <div key={idea._id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-muted/30 p-3">
+          {(ideas ?? []).map((idea: KeywordIdea) => <div key={idea._id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-muted/30 p-3">
             <div className="min-w-0"><p className="text-sm font-semibold">{idea.keyword}</p><p className="text-xs text-muted">{idea.searchIntent ?? "Informational"} · AI suggestion</p>{idea.rationale && <p className="mt-1 text-xs text-muted">{idea.rationale}</p>}</div>
             <button type="button" onClick={() => void makePlan(idea.keyword)} disabled={busy} className="rounded-lg border px-3 py-2 text-xs font-semibold">Create plan</button>
           </div>)}
@@ -148,11 +153,11 @@ export function GigaSeoAdminPanel({ adminCreds }: { adminCreds: AdminCredentials
 
       <div className="space-y-3 rounded-xl border p-4">
         <div><h3 className="font-semibold">2. Editorial pipeline</h3><p className="text-xs text-muted">Generate drafts for review; this does not publish to the public blog.</p></div>
-        {(plans ?? []).map((plan) => <article key={plan._id} className="space-y-2 rounded-lg bg-muted/30 p-3">
+        {(plans ?? []).map((plan: ContentPlan) => <article key={plan._id} className="space-y-2 rounded-lg bg-muted/30 p-3">
           <div className="flex flex-wrap items-start justify-between gap-2"><div><p className="text-sm font-semibold">{plan.title}</p><p className="text-xs text-muted">{plan.primaryKeyword} · {plan.status.replace("_", " ")}</p></div>
             {typeof plan.qualityScore === "number" && <span className="text-xs font-semibold">{plan.qualityScore}/100</span>}</div>
-          {plan.qualityIssues?.length ? <ul className="list-disc pl-5 text-xs text-muted">{plan.qualityIssues.map((issue, index) => <li key={index}>{issue}</li>)}</ul> : null}
-          {plan.factCheckNotes?.length ? <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-950"><p className="font-semibold">Claims requiring verification</p><ul className="mt-1 list-disc pl-5">{plan.factCheckNotes.map((note, index) => <li key={index}>{note}</li>)}</ul></div> : null}
+          {plan.qualityIssues?.length ? <ul className="list-disc pl-5 text-xs text-muted">{plan.qualityIssues.map((issue: string, index: number) => <li key={index}>{issue}</li>)}</ul> : null}
+          {plan.factCheckNotes?.length ? <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-950"><p className="font-semibold">Claims requiring verification</p><ul className="mt-1 list-disc pl-5">{plan.factCheckNotes.map((note: string, index: number) => <li key={index}>{note}</li>)}</ul></div> : null}
           {plan.draftContent ? <details className="text-sm"><summary className="cursor-pointer font-medium">Preview generated draft</summary><pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap text-xs">{plan.draftContent}</pre></details> : null}
           {plan.status !== "quality_review" && plan.status !== "approved" && <button type="button" onClick={() => void makeDraft(plan._id)} disabled={drafting !== null} className="rounded-lg bg-sky-700 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">{drafting === String(plan._id) ? "Generating…" : "Generate article draft"}</button>}
           {plan.status === "quality_review" && <div className="flex flex-wrap items-center gap-2"><p className="text-xs font-semibold text-amber-700">Review the draft and factual claims before approval.</p><button type="button" onClick={() => void approve(plan._id)} disabled={busy || (plan.qualityScore ?? 0) < 60} className="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50">Approve draft</button></div>}{plan.status === "approved" && <p className="text-xs font-semibold text-emerald-700">Approved · awaiting a separate publishing workflow.</p>}
