@@ -238,6 +238,7 @@ async function runHybridAiEngine(
     cached: boolean;
     requestKind: RequestKind;
     usedFreeImageQuota?: boolean;
+    freeOpenAiQuotaReservationId?: string;
   }
 > {
   const sourceImageUrl = resolveChatImageSourceUrl({
