@@ -2529,6 +2529,7 @@ export default defineSchema({
     keyword: v.string(),
     market: v.string(),
     searchIntent: v.optional(v.string()),
+    rationale: v.optional(v.string()),
     searchVolume: v.optional(v.number()),
     difficulty: v.optional(v.number()),
     source: v.optional(v.string()),
