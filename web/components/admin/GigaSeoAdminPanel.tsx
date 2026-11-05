@@ -28,6 +28,7 @@ export function GigaSeoAdminPanel({ adminCreds }: { adminCreds: AdminCredentials
   const plans = useQuery(api.gigaSeo.listContentPlans, { ...adminCreds, limit: 12 });
   const saveSettings = useMutation(api.gigaSeo.updateSettings);
   const createPlan = useMutation(api.gigaSeo.createContentPlan);
+  const approveDraft = useMutation(api.gigaSeo.approveDraft);
   const research = useAction(api.gigaSeo.researchKeywords);
   const generateDraft = useAction(api.gigaSeo.generateDraft);
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -82,7 +83,7 @@ export function GigaSeoAdminPanel({ adminCreds }: { adminCreds: AdminCredentials
     } finally { setBusy(false); }
   }
 
-  async function makeDraft(planId: Id<"gigaSeoContentPlans">) {
+  async function approve(planId: Id<"gigaSeoContentPlans">) {\n    setBusy(true); setMessage("");\n    try { await approveDraft({ ...adminCreds, planId }); setMessage("Draft approved for the next publishing stage. It has not been published."); }\n    catch (error) { setMessage(error instanceof Error ? error.message : "Could not approve draft."); }\n    finally { setBusy(false); }\n  }\n\n  async function makeDraft(planId: Id<"gigaSeoContentPlans">) {
     setDrafting(String(planId)); setMessage("");
     try {
       const result = await generateDraft({ ...adminCreds, planId });
@@ -131,7 +132,7 @@ export function GigaSeoAdminPanel({ adminCreds }: { adminCreds: AdminCredentials
         <button type="button" onClick={() => void runResearch()} disabled={busy || topic.trim().length < 3} className="rounded-xl bg-sky-700 px-4 py-3 text-sm font-semibold text-white disabled:opacity-50">{busy ? "Working…" : "Generate keyword ideas"}</button>
         <div className="space-y-2">
           {(ideas ?? []).map((idea) => <div key={idea._id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-muted/30 p-3">
-            <div className="min-w-0"><p className="text-sm font-semibold">{idea.keyword}</p><p className="text-xs text-muted">{idea.searchIntent ?? "Informational"} · AI suggestion</p></div>
+            <div className="min-w-0"><p className="text-sm font-semibold">{idea.keyword}</p><p className="text-xs text-muted">{idea.searchIntent ?? "Informational"} · AI suggestion</p>{idea.rationale && <p className="mt-1 text-xs text-muted">{idea.rationale}</p>}</div>
             <button type="button" onClick={() => void makePlan(idea.keyword)} disabled={busy} className="rounded-lg border px-3 py-2 text-xs font-semibold">Create plan</button>
           </div>)}
           {ideas.length === 0 && <p className="text-sm text-muted">No keyword ideas yet. Enter a topic to begin.</p>}
@@ -146,7 +147,7 @@ export function GigaSeoAdminPanel({ adminCreds }: { adminCreds: AdminCredentials
           {plan.qualityIssues?.length ? <ul className="list-disc pl-5 text-xs text-muted">{plan.qualityIssues.map((issue, index) => <li key={index}>{issue}</li>)}</ul> : null}
           {plan.draftContent ? <details className="text-sm"><summary className="cursor-pointer font-medium">Preview generated draft</summary><pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap text-xs">{plan.draftContent}</pre></details> : null}
           {plan.status !== "quality_review" && plan.status !== "approved" && <button type="button" onClick={() => void makeDraft(plan._id)} disabled={drafting !== null} className="rounded-lg bg-sky-700 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">{drafting === String(plan._id) ? "Generating…" : "Generate article draft"}</button>}
-          {plan.status === "quality_review" && <p className="text-xs font-semibold text-amber-700">Editorial quality review required before approval.</p>}
+          {plan.status === "quality_review" && <div className="flex flex-wrap items-center gap-2"><p className="text-xs font-semibold text-amber-700">Review the draft and factual claims before approval.</p><button type="button" onClick={() => void approve(plan._id)} disabled={busy || (plan.qualityScore ?? 0) < 60} className="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50">Approve draft</button></div>}{plan.status === "approved" && <p className="text-xs font-semibold text-emerald-700">Approved · awaiting a separate publishing workflow.</p>}
         </article>)}
         {plans.length === 0 && <p className="text-sm text-muted">Your content plans will appear here.</p>}
       </div>
