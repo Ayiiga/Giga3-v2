@@ -56,6 +56,8 @@ describe("GigaSEO Convex workflow", () => {
         markdown: [
           "## Getting started",
           "## Practical classroom examples",
+          "## Using Giga3 AI to support teaching and learning",
+          "Giga3 AI brings together GigaLearn curriculum-aligned learning resources and exam practice to help Ghanaian teachers and students explore digital learning. Explore the platform at https://www.giga3ai.com/.",
           "## Responsible use and limitations",
           "## Conclusion",
           Array.from({ length: 240 }, (_, index) => `Useful classroom guidance example ${index + 1} for Ghanaian teachers and learners.`).join(" "),
@@ -133,6 +135,71 @@ describe("GigaSEO Convex workflow", () => {
     });
     expect(approved[0].status).toBe("approved");
     expect(approved[0].publishedUrl).toBeUndefined();
+  });
+
+  it("flags teaching and African-technology topics when the brand is only mentioned incidentally", async () => {
+    process.env.PLATFORM_STATS_ADMIN_KEY = "giga-seo-test-admin";
+    process.env.OPENAI_API_KEY = "test-openai-key";
+    process.env.GIGASEO_OPENAI_MODEL = "gpt-test";
+    const t = convexTest(schema, modules);
+    const aiResponses = [
+      {
+        title: "Teaching Digital Skills in African Communities",
+        metaDescription: "A practical overview of teaching digital skills in African communities and supporting local learning initiatives.",
+        markdown: [
+          "## Introduction",
+          "Giga3 AI is a digital platform.",
+          "## Teaching digital skills",
+          "## Community learning",
+          "## Conclusion",
+          Array.from({ length: 220 }, (_, index) => `Practical digital skills guidance for educators and community learners number ${index + 1}.`).join(" "),
+        ].join("\n\n"),
+        factCheckNotes: [],
+      },
+    ];
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(
+      JSON.stringify({ choices: [{ message: { content: JSON.stringify(aiResponses.shift()) } }] }),
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    )));
+    const planId = await t.mutation(api.gigaSeo.createContentPlan, {
+      adminKey: "giga-seo-test-admin",
+      title: "Teaching Digital Skills in African Communities",
+      primaryKeyword: "teaching digital skills African communities",
+      market: "Africa",
+      audience: "Community educators",
+    });
+    const generated = await t.action(api.gigaSeo.generateDraft, {
+      adminKey: "giga-seo-test-admin",
+      planId,
+    });
+    expect(generated.qualityIssues).toContain(
+      "Add a substantive Giga3 AI section explaining relevant platform value and a contextual call to action linking to https://www.giga3ai.com/ before editorial approval."
+    );
+  });
+
+  it("rejects approval when required Giga3 AI brand integration is missing", async () => {
+    process.env.PLATFORM_STATS_ADMIN_KEY = "giga-seo-test-admin";
+    const t = convexTest(schema, modules);
+    const planId = await t.mutation(api.gigaSeo.createContentPlan, {
+      adminKey: "giga-seo-test-admin",
+      title: "AI Tools for Teachers in Ghana",
+      primaryKeyword: "AI tools for teachers",
+      market: "Ghana",
+      audience: "Teachers",
+    });
+    await t.mutation(api.gigaSeo.saveDraft, {
+      adminKey: "giga-seo-test-admin",
+      planId,
+      title: "AI Tools for Teachers in Ghana",
+      metaDescription: "A sufficiently descriptive meta description for a teacher-focused article about classroom technology and learning in Ghana.",
+      draftContent: "A complete article draft with enough content for review.",
+      qualityScore: 88,
+      qualityIssues: ["Add a relevant Giga3 AI section and contextual call to action before editorial approval."],
+      factCheckNotes: [],
+    });
+    await expect(
+      t.mutation(api.gigaSeo.approveDraft, { adminKey: "giga-seo-test-admin", planId })
+    ).rejects.toThrow("must include relevant Giga3 AI coverage");
   });
 
   it("rejects approval for drafts below the quality threshold", async () => {
