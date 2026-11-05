@@ -83,7 +83,14 @@ export function GigaSeoAdminPanel({ adminCreds }: { adminCreds: AdminCredentials
     } finally { setBusy(false); }
   }
 
-  async function approve(planId: Id<"gigaSeoContentPlans">) {\n    setBusy(true); setMessage("");\n    try { await approveDraft({ ...adminCreds, planId }); setMessage("Draft approved for the next publishing stage. It has not been published."); }\n    catch (error) { setMessage(error instanceof Error ? error.message : "Could not approve draft."); }\n    finally { setBusy(false); }\n  }\n\n  async function makeDraft(planId: Id<"gigaSeoContentPlans">) {
+  async function approve(planId: Id<"gigaSeoContentPlans">) {
+    setBusy(true); setMessage("");
+    try { await approveDraft({ ...adminCreds, planId }); setMessage("Draft approved for the next publishing stage. It has not been published."); }
+    catch (error) { setMessage(error instanceof Error ? error.message : "Could not approve draft."); }
+    finally { setBusy(false); }
+  }
+
+  async function makeDraft(planId: Id<"gigaSeoContentPlans">) {
     setDrafting(String(planId)); setMessage("");
     try {
       const result = await generateDraft({ ...adminCreds, planId });
