@@ -32,6 +32,9 @@ jobs:
             npm install --legacy-peer-deps
           fi
 
+      - name: Validate Convex schema and generate types
+        run: npx convex codegen
+
       # Tests import web/ modules (e.g. lucide-react via gigaModels) — install web deps too.
       - name: Install web dependencies
         working-directory: web
