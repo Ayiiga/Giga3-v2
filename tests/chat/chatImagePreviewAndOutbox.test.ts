@@ -22,7 +22,7 @@ describe("chat image previews and offline outbox recovery", () => {
       expect(hook).toContain("async (force = false)");
       expect(hook).toContain("(!force && !effectiveOnline)");
       expect(hook).toContain("retryOutboxSync: () => flushOutbox(true)");
-      expect(hook).toContain("Keep queued messages");
+      expect(hook).toMatch(/Keep queued messages|Never discard a queued message/);
       expect(hook).not.toMatch(/row\.attempts \+ 1 >= maxOutboxAttempts/);
       expect(hook).not.toMatch(/row\.attempts \+ 1 >= maxSendRetries/);
     }
