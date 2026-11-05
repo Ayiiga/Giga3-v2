@@ -32,9 +32,6 @@ jobs:
             npm install --legacy-peer-deps
           fi
 
-      - name: Validate Convex schema and generate types
-        run: npx convex codegen
-
       # Tests import web/ modules (e.g. lucide-react via gigaModels) — install web deps too.
       - name: Install web dependencies
         working-directory: web
@@ -47,6 +44,9 @@ jobs:
 
       - name: Run Vitest (unit + security)
         run: npm test
+
+      - name: Backend TypeScript check (Convex)
+        run: web/node_modules/.bin/tsc --noEmit --target ES2020 --module ESNext --moduleResolution bundler --skipLibCheck --strict --esModuleInterop --types node convex/gigaSeo.ts
 
       - name: TypeScript check (web)
         working-directory: web
