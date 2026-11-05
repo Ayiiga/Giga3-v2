@@ -2563,10 +2563,12 @@ export default defineSchema({
     metaDescription: v.optional(v.string()),
     draftContent: v.optional(v.string()),
     qualityIssues: v.optional(v.array(v.string())),
+    factCheckNotes: v.optional(v.array(v.string())),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("by_status_updated", ["status", "updatedAt"])
+    .index("by_updated", ["updatedAt"])
     .index("by_slug", ["slug"]),
 
 });
