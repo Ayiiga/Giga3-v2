@@ -1358,8 +1358,20 @@ export const processJob = internalAction({
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      if (!quotaReplyPersisted) {
-        try {
+      try {
+        if (quotaReplyPersisted) {
+          // The answer is already visible: retry commit rather than refunding
+          // the allowance after a transient commit/analytics failure.
+          await ctx.runMutation(internal.freeOpenAiQuota.commitReservationInternal, {
+            userId: job.userId,
+            requestId: String(args.jobId),
+          });
+          logChatReply("free_openai_quota_commit_retried", {
+            conversationId: job.conversationId,
+            userId: job.userId,
+            requestId: String(args.jobId),
+          });
+        } else {
           await ctx.runMutation(internal.freeOpenAiQuota.releaseReservationInternal, {
             userId: job.userId,
             requestId: String(args.jobId),
@@ -1370,9 +1382,9 @@ export const processJob = internalAction({
             requestId: String(args.jobId),
             error: message,
           });
-        } catch (releaseErr) {
-          console.error("[chatReplyWorker] quota reservation release failed:", releaseErr);
         }
+      } catch (quotaRecoveryErr) {
+        console.error("[chatReplyWorker] quota reservation recovery failed:", quotaRecoveryErr);
       }
       logChatReply("worker_failed", {
         jobId: args.jobId,
