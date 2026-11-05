@@ -568,12 +568,12 @@ export function useSupabaseChatPlatform() {
     [activeConversation, conversations, email, isSlowNetwork, mode, effectiveOnline]
   );
 
-  const flushOutbox = useCallback(async () => {
+  const flushOutbox = useCallback(async (force = false) => {
     if (
       syncingOutboxRef.current ||
       typeof navigator === "undefined" ||
       !navigator.onLine ||
-      !effectiveOnline
+      (!force && !effectiveOnline)
     ) {
       return;
     }
@@ -599,13 +599,10 @@ export function useSupabaseChatPlatform() {
         } catch (e) {
           const msg = toUserFacingError(e, "Sync failed");
           await bumpOutboxAttempt(row.id, msg);
-          if (row.attempts + 1 >= maxSendRetries(isSlowNetwork)) {
-            await removeOutbox(row.id);
-            if (pendingUserText === row.content) {
-              setPendingUserText(null);
-            }
-            setError(toUserFacingError(e, msg));
-          }
+          // Never discard a queued message after a fixed retry count. Network
+          // failures can be transient on mobile; preserve the user's text and
+          // attachments until delivery is confirmed or the user cancels it.
+          setError(toUserFacingError(e, msg));
         } finally {
           setFlushingOutboxId((current) => (current === row.id ? null : current));
         }
