@@ -103,7 +103,10 @@ export function LinkedProvidersSettings() {
         </p>
       )}
       {info && <p className="mt-3 text-sm text-muted">{info}</p>}
-      {readiness && readiness.needsConfigurationCount > 0 ? (\n        <p className="mt-2 text-xs text-muted">Some sign-in providers are hidden until their secure server credentials are configured. Your existing sign-in methods remain available.</p>\n      ) : null}\n      <ul className="mt-3 space-y-2">
+      {readiness && readiness.needsConfigurationCount > 0 ? (
+        <p className="mt-2 text-xs text-muted">Some sign-in providers are hidden until their secure server credentials are configured. Your existing sign-in methods remain available.</p>
+      ) : null}
+      <ul className="mt-3 space-y-2">
         <li className="flex min-h-11 items-center justify-between gap-2 rounded-xl border border-border px-3 text-sm">
           <span>Google {linked.providers.includes("google") ? "· linked" : ""}</span>
           {linked.providers.includes("google") ? (
