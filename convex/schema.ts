@@ -769,7 +769,8 @@ export default defineSchema({
     createdAt: v.number(),
   })
     .index("by_user", ["userId"])
-    .index("by_user_created", ["userId", "createdAt"]),
+    .index("by_user_created", ["userId", "createdAt"])
+    .index("by_reference", ["reference"]),
 
   videoSubscriptions: defineTable({
     userId: v.string(),
