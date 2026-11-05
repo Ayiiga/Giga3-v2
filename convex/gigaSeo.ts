@@ -241,3 +241,21 @@ export const saveDraft = mutation({
     return { ok: true };
   },
 });
+
+
+/** Human approval changes workflow state only; it does not publish the article. */
+export const approveDraft = mutation({
+  args: { ...adminCredentialArgs, planId: v.id("gigaSeoContentPlans") },
+  handler: async (ctx, args) => {
+    await ensureAdminAccess(args);
+    const plan = await ctx.db.get(args.planId);
+    if (!plan || plan.status !== "quality_review" || !plan.draftContent) {
+      throw new Error("Only a generated draft in quality review can be approved.");
+    }
+    if ((plan.qualityScore ?? 0) < 60) {
+      throw new Error("This draft needs further editing before it can be approved.");
+    }
+    await ctx.db.patch(args.planId, { status: "approved", updatedAt: Date.now() });
+    return { ok: true as const };
+  },
+});
