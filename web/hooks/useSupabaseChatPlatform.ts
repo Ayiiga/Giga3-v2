@@ -927,7 +927,7 @@ export function useSupabaseChatPlatform() {
     isSyncingOutbox,
     flushingOutboxId,
     cancelOutboxMessage,
-    retryOutboxSync: flushOutbox,
+    retryOutboxSync: () => flushOutbox(true),
     retryFailedReply: async () => undefined,
     error,
     startNewChat,
