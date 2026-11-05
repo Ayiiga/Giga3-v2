@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { api } from "convex/_generated/api";
 import { useAction, useMutation, useQuery } from "convex/react";
+import type { Id } from "convex/_generated/dataModel";
 
 type AdminCredentials = { adminSessionToken?: string; adminKey?: string };
 type Settings = {
@@ -81,7 +82,7 @@ export function GigaSeoAdminPanel({ adminCreds }: { adminCreds: AdminCredentials
     } finally { setBusy(false); }
   }
 
-  async function makeDraft(planId: (typeof plans extends (infer T)[] | undefined ? T : never) extends { _id: infer I } ? I : never) {
+  async function makeDraft(planId: Id<"gigaSeoContentPlans">) {
     setDrafting(String(planId)); setMessage("");
     try {
       const result = await generateDraft({ ...adminCreds, planId });
