@@ -1,5 +1,10 @@
 import { action, mutation, query } from "./_generated/server";
-import { api } from "./_generated/api";
+import { makeFunctionReference } from "convex/server";
+
+// Keep this module's backend type-check independent of the repository-wide generated API map.
+const saveKeywordIdeasRef = makeFunctionReference<"mutation">("gigaSeo:saveKeywordIdeas");
+const getPlanForDraftRef = makeFunctionReference<"query">("gigaSeo:getPlanForDraft");
+const saveDraftRef = makeFunctionReference<"mutation">("gigaSeo:saveDraft");
 import { v } from "convex/values";
 import { adminCredentialArgs, ensureAdminAccess } from "./adminAccess";
 
@@ -145,7 +150,7 @@ export const researchKeywords = action({
       };
     }).filter((item) => item.keyword.length >= 3);
     if (!ideas.length) throw new Error("No usable keyword ideas were generated. Please retry.");
-    await ctx.runMutation(api.gigaSeo.saveKeywordIdeas, { adminSessionToken: args.adminSessionToken, adminKey: args.adminKey, ideas, market: args.market });
+    await ctx.runMutation(saveKeywordIdeasRef, { adminSessionToken: args.adminSessionToken, adminKey: args.adminKey, ideas, market: args.market });
     return { saved: ideas.length, ideas };
   },
 });
@@ -194,7 +199,7 @@ export const generateDraft = action({
   args: { ...adminCredentialArgs, planId: v.id("gigaSeoContentPlans") },
   handler: async (ctx, args) => {
     await ensureAdminAccess(args);
-    const plan = await ctx.runQuery(api.gigaSeo.getPlanForDraft, { ...args, planId: args.planId });
+    const plan = await ctx.runQuery(getPlanForDraftRef, { ...args, planId: args.planId });
     if (!plan) throw new Error("Content plan not found.");
     const raw = await requestOpenAi(
       "You are a careful editorial writer for Giga3 AI, a Ghana-focused technology and education platform. Return JSON only with title, metaDescription, markdown, and factCheckNotes (array). Write an original, useful, well-structured article with H2/H3 headings, practical examples, a concise conclusion and FAQ where appropriate. Never invent statistics, quotes, dates, named sources, or citations. Mark claims requiring verification in factCheckNotes. Do not claim live keyword metrics.",
@@ -215,7 +220,7 @@ export const generateDraft = action({
       ...(notes.length ? [`${notes.length} factual claim(s) require editorial verification.`] : []),
     ];
     const qualityScore = Math.max(0, Math.min(100, 100 - issues.length * 12));
-    await ctx.runMutation(api.gigaSeo.saveDraft, { ...args, planId: args.planId, title, metaDescription, draftContent: markdown, qualityScore, qualityIssues: issues, factCheckNotes: notes });
+    await ctx.runMutation(saveDraftRef, { ...args, planId: args.planId, title, metaDescription, draftContent: markdown, qualityScore, qualityIssues: issues, factCheckNotes: notes });
     return { wordCount, qualityScore, qualityIssues: issues, factCheckNotes: notes };
   },
 });
