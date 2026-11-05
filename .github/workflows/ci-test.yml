@@ -14,7 +14,7 @@ concurrency:
 jobs:
   vitest:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -44,6 +44,19 @@ jobs:
 
       - name: Run Vitest (unit + security)
         run: npm test
+
+      - name: TypeScript check (web)
+        working-directory: web
+        run: npx tsc --noEmit
+
+      - name: Production static build (web)
+        working-directory: web
+        env:
+          NEXT_PUBLIC_CONVEX_URL: https://perfect-lark-521.convex.cloud
+          NEXT_PUBLIC_CONVEX_SITE_URL: https://perfect-lark-521.convex.site
+          NEXT_PUBLIC_GIGA3_DATA_BACKEND: convex
+          NEXT_TELEMETRY_DISABLED: "1"
+        run: npm run build
 
       - name: Summarize
         if: always()
