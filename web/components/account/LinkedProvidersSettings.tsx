@@ -134,7 +134,7 @@ export function LinkedProvidersSettings() {
             </span>
             {linked.providers.includes(p.id) ? (
               <span className="text-xs text-muted">Connected</span>
-            ) : (
+            ) : providerReady(p.id) ? (
               <button
                 type="button"
                 disabled={busy}
@@ -143,6 +143,8 @@ export function LinkedProvidersSettings() {
               >
                 Link
               </button>
+            ) : (
+              <span className="text-xs text-muted">Not configured</span>
             )}
           </li>
         ))}
