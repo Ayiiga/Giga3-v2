@@ -145,7 +145,7 @@ export const researchKeywords = action({
       };
     }).filter((item) => item.keyword.length >= 3);
     if (!ideas.length) throw new Error("No usable keyword ideas were generated. Please retry.");
-    await ctx.runMutation(api.gigaSeo.saveKeywordIdeas, { ...args, ideas, market: args.market });
+    await ctx.runMutation(api.gigaSeo.saveKeywordIdeas, { adminSessionToken: args.adminSessionToken, adminKey: args.adminKey, ideas, market: args.market });
     return { saved: ideas.length, ideas };
   },
 });
