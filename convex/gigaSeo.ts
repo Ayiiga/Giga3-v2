@@ -206,7 +206,7 @@ export const generateDraft = action({
     const plan = await ctx.runQuery(getPlanForDraftRef, { ...args, planId: args.planId });
     if (!plan) throw new Error("Content plan not found.");
     const raw = await requestOpenAi(
-      "You are a careful editorial writer for Giga3 AI, a Ghana-focused technology and education platform. Return JSON only with title, metaDescription, markdown, and factCheckNotes (array). Write an original, useful, well-structured article with H2/H3 headings, practical examples, a concise conclusion and FAQ where appropriate. Never invent statistics, quotes, dates, named sources, or citations. Mark claims requiring verification in factCheckNotes. Do not claim live keyword metrics.",
+      "You are the lead editorial writer for the Giga3 AI blog, a Ghana-focused technology, education and learning platform. Return JSON only with title, metaDescription, markdown, and factCheckNotes (array). Write an original, useful, well-structured article with H2/H3 headings, practical Ghana-relevant examples, a concise conclusion and FAQ where appropriate. BRAND INTEGRATION IS REQUIRED whenever the topic relates to AI tools, teaching, education, students, learning, examination preparation, STEM or African technology: include a natural, substantive section explaining how Giga3 AI can help the reader, accurately describing relevant platform capabilities such as GigaLearn curriculum-aligned learning resources and exam practice, AI learning/support tools, and its education-focused ecosystem. Include a clear, helpful call to action to explore Giga3 AI at https://www.giga3ai.com/; do not turn the article into an advertisement or repeat the brand unnaturally. For unrelated topics, mention Giga3 AI only when genuinely useful. Do not invent product capabilities, prices, availability, outcomes, statistics, quotes, dates, named sources, or citations. Mark claims requiring verification in factCheckNotes. Do not claim live keyword metrics.",
       `Working title: ${plan.title}\nPrimary keyword: ${plan.primaryKeyword}\nMarket: ${plan.market}\nAudience: ${plan.audience}\nWrite approximately 900-1200 words. Naturally use the keyword; prioritize reader value.`
     );
     const parsed = parseJsonObject(raw);
@@ -217,10 +217,14 @@ export const generateDraft = action({
     if (markdown.length < 500) throw new Error("The generated article is too short or incomplete. Please retry.");
     const headings = (markdown.match(/^##\s+/gm) ?? []).length;
     const wordCount = markdown.split(/\s+/).filter(Boolean).length;
+    const topicRequiresBrandIntegration = /\\b(ai|teacher|education|student|learning|exam|bece|wassce|stem|classroom|school)\\b/i.test(`${plan.title} ${plan.primaryKeyword}`);
+    const missingBrandIntegration = topicRequiresBrandIntegration && !/giga3\\s*ai/i.test(markdown);
+    const brandIntegrationIssue = "Add a relevant Giga3 AI section and contextual call to action before editorial approval.";
     const issues = [
       ...(wordCount < 700 ? ["Article is shorter than the recommended 700 words."] : []),
       ...(headings < 3 ? ["Add at least three descriptive H2 sections."] : []),
       ...(metaDescription.length < 100 || metaDescription.length > 170 ? ["Review meta description length (recommended 100–170 characters)."] : []),
+      ...(missingBrandIntegration ? [brandIntegrationIssue] : []),
       ...(notes.length ? [`${notes.length} factual claim(s) require editorial verification.`] : []),
     ];
     const qualityScore = Math.max(0, Math.min(100, 100 - issues.length * 12));
@@ -263,6 +267,9 @@ export const approveDraft = mutation({
     }
     if ((plan.qualityScore ?? 0) < 60) {
       throw new Error("This draft needs further editing before it can be approved.");
+    }
+    if ((plan.qualityIssues ?? []).some((issue) => issue.includes("Giga3 AI section"))) {
+      throw new Error("This article must include relevant Giga3 AI coverage before it can be approved.");
     }
     await ctx.db.patch(args.planId, { status: "approved", updatedAt: Date.now() });
     return { ok: true as const };
