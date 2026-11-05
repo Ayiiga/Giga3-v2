@@ -90,7 +90,7 @@ export const listContentPlans = query({
   handler: async (ctx, args) => {
     await ensureAdminAccess(args);
     const limit = Math.max(1, Math.min(50, Math.floor(args.limit ?? 20)));
-    return await ctx.db.query("gigaSeoContentPlans").withIndex("by_status_updated")
+    return await ctx.db.query("gigaSeoContentPlans").withIndex("by_updated")
       .order("desc").take(limit);
   },
 });
@@ -215,7 +215,7 @@ export const generateDraft = action({
       ...(notes.length ? [`${notes.length} factual claim(s) require editorial verification.`] : []),
     ];
     const qualityScore = Math.max(0, Math.min(100, 100 - issues.length * 12));
-    await ctx.runMutation(api.gigaSeo.saveDraft, { ...args, planId: args.planId, title, metaDescription, draftContent: markdown, qualityScore, qualityIssues: issues });
+    await ctx.runMutation(api.gigaSeo.saveDraft, { ...args, planId: args.planId, title, metaDescription, draftContent: markdown, qualityScore, qualityIssues: issues, factCheckNotes: notes });
     return { wordCount, qualityScore, qualityIssues: issues, factCheckNotes: notes };
   },
 });
@@ -230,14 +230,14 @@ export const getPlanForDraft = query({
 
 export const saveDraft = mutation({
   args: { ...adminCredentialArgs, planId: v.id("gigaSeoContentPlans"), title: v.string(),
-    metaDescription: v.string(), draftContent: v.string(), qualityScore: v.number(), qualityIssues: v.array(v.string()) },
+    metaDescription: v.string(), draftContent: v.string(), qualityScore: v.number(), qualityIssues: v.array(v.string()), factCheckNotes: v.array(v.string()) },
   handler: async (ctx, args) => {
     await ensureAdminAccess(args);
     const plan = await ctx.db.get(args.planId);
     if (!plan) throw new Error("Content plan not found.");
     await ctx.db.patch(args.planId, { title: args.title, metaDescription: args.metaDescription,
       draftContent: args.draftContent, qualityScore: args.qualityScore,
-      qualityIssues: args.qualityIssues, status: "quality_review", updatedAt: Date.now() });
+      qualityIssues: args.qualityIssues, factCheckNotes: args.factCheckNotes.slice(0, 20), status: "quality_review", updatedAt: Date.now() });
     return { ok: true };
   },
 });
