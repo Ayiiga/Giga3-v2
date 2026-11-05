@@ -154,7 +154,7 @@ export const GigaSocialMediaReview = memo(function GigaSocialMediaReview({
 
   return createPortal(
     <div className="gigasocial-stable gigasocial-media-review gigasocial-immersive-capture fixed inset-0 z-[71] flex flex-col bg-black">
-      <div className="relative min-h-0 flex-1">
+      <div className={kind === "video" ? "gigasocial-local-video-preview relative min-h-0 flex-1" : "relative min-h-0 flex-1"}>
         {kind === "video" ? (
           <video
             src={previewUrl}
