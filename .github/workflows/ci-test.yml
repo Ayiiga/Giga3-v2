@@ -46,7 +46,7 @@ jobs:
         run: npm test
 
       - name: Backend TypeScript check (Convex)
-        run: web/node_modules/.bin/tsc --noEmit --target ES2020 --module ESNext --moduleResolution bundler --skipLibCheck --strict --esModuleInterop --types node convex/gigaSeo.ts
+        run: web/node_modules/.bin/tsc --noEmit --project tsconfig.gigaseo.json
 
       - name: TypeScript check (web)
         working-directory: web
