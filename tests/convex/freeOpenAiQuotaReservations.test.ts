@@ -17,33 +17,36 @@ describe("free OpenAI quota reservations", () => {
 
   it("releases quota after provider failure so the next request can reserve it", async () => {
     const t = convexTest(schema, modules);
-    for (let i = 0; i < 5; i++) {
+    const userId = "fairness@example.com";
+    for (let i = 0; i < 4; i++) {
       const result = await t.mutation(internal.freeOpenAiQuota.tryReserveInternal, {
-        userId: "fairness@example.com",
-        requestId: "provider-attempt-" + i,
+        userId, requestId: "provider-success-" + i,
       });
       expect(result.ok).toBe(true);
       await t.mutation(internal.freeOpenAiQuota.commitReservationInternal, {
-        userId: "fairness@example.com",
-        requestId: "provider-attempt-" + i,
+        userId, requestId: "provider-success-" + i,
       });
     }
-    const blocked = await t.mutation(internal.freeOpenAiQuota.tryReserveInternal, {
-      userId: "fairness@example.com", requestId: "sixth-attempt",
+    const failedAttempt = await t.mutation(internal.freeOpenAiQuota.tryReserveInternal, {
+      userId, requestId: "provider-failure-job",
     });
-    expect(blocked.ok).toBe(false);
-    const released = await t.mutation(internal.freeOpenAiQuota.tryReserveInternal, {
-      userId: "release-user@example.com", requestId: "failed-provider-job",
-    });
-    expect(released.ok).toBe(true);
+    expect(failedAttempt.ok).toBe(true);
+    expect(failedAttempt.snapshot.remaining).toBe(0);
     await t.mutation(internal.freeOpenAiQuota.releaseReservationInternal, {
-      userId: "release-user@example.com", requestId: "failed-provider-job",
+      userId, requestId: "provider-failure-job",
     });
     const retry = await t.mutation(internal.freeOpenAiQuota.tryReserveInternal, {
-      userId: "release-user@example.com", requestId: "provider-retry-job",
+      userId, requestId: "provider-retry-job",
     });
     expect(retry.ok).toBe(true);
-    expect(retry.snapshot.remaining).toBe(4);
+    expect(retry.snapshot.remaining).toBe(0);
+    await t.mutation(internal.freeOpenAiQuota.commitReservationInternal, {
+      userId, requestId: "provider-retry-job",
+    });
+    const blocked = await t.mutation(internal.freeOpenAiQuota.tryReserveInternal, {
+      userId, requestId: "after-successful-retry",
+    });
+    expect(blocked.ok).toBe(false);
   });
 
   it("commits a reservation exactly once, including duplicate commit calls", async () => {
