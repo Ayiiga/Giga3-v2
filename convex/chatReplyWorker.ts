@@ -228,6 +228,7 @@ async function runHybridAiEngine(
     hasImageAttachment?: boolean;
     imageAttachments?: Array<{ dataUrl?: string }>;
     conversationId: string;
+    quotaReservationId: string;
     subscriptionPlan: string;
     subscriptionExpiresAt?: number | null;
     forceWebSearch?: boolean;
@@ -286,30 +287,9 @@ async function runHybridAiEngine(
     tier: args.routing.tier,
   });
 
-  // Image generation has its own free daily allowance — do not burn Pro text quota.
-  if (args.routing.usingFreeOpenAiQuota && routePlan.requestKind !== "image_generation") {
-    const consumed = await ctx.runMutation(internal.freeOpenAiQuota.tryConsumeInternal, {
-      userId: args.email,
-    });
-    if (!consumed.ok) {
-      const exhausted: ChatEngineResult & { cached: boolean; requestKind: RequestKind } = {
-        content:
-          `You've used all ${consumed.snapshot.limit} free OpenAI messages for today. ` +
-          "Subscribe or buy credits for unlimited Giga3 Pro, or switch to another model.",
-        providerId: "local_fallback",
-        usedFallback: true,
-        latencyMs: 0,
-        cached: false,
-        requestKind: "text_chat",
-      };
-      return exhausted;
-    }
-    logChatReply("free_openai_quota_used", {
-      conversationId: args.conversationId,
-      userId: args.email,
-      remaining: consumed.snapshot.remaining,
-    });
-  }
+  // Daily OpenAI usage is reserved after cache lookup and committed only
+  // once a usable reply has been persisted.
+  let freeOpenAiQuotaReserved = false;
 
   if (routePlan.requestKind === "image_generation") {
     const started = Date.now();
@@ -568,6 +548,33 @@ async function runHybridAiEngine(
     }
   }
 
+  if (args.routing.usingFreeOpenAiQuota && routePlan.requestKind !== "image_generation") {
+    const reserved = await ctx.runMutation(internal.freeOpenAiQuota.tryReserveInternal, {
+      userId: args.email,
+      requestId: args.quotaReservationId,
+    });
+    if (!reserved.ok) {
+      const exhausted: ChatEngineResult & { cached: boolean; requestKind: RequestKind } = {
+        content:
+          `You've used all ${reserved.snapshot.limit} free OpenAI messages for today. ` +
+          "Subscribe or buy credits for unlimited Giga3 Pro, or switch to another model.",
+        providerId: "local_fallback",
+        usedFallback: true,
+        latencyMs: 0,
+        cached: false,
+        requestKind: "text_chat",
+      };
+      return exhausted;
+    }
+    freeOpenAiQuotaReserved = !reserved.alreadyCommitted;
+    logChatReply("free_openai_quota_reserved", {
+      conversationId: args.conversationId,
+      userId: args.email,
+      remaining: reserved.snapshot.remaining,
+      requestId: args.quotaReservationId,
+    });
+  }
+
   const engineResult = await withWorkerTimeout(
     completeChatWithFailover(args.chatMessages, args.routing),
     args.hasAttachments || args.hasImageAttachment
@@ -594,7 +601,22 @@ async function runHybridAiEngine(
     conversationId: args.conversationId,
   });
 
-  return { ...engineResult, cached: false, requestKind: "text_chat" };
+  if (freeOpenAiQuotaReserved && engineResult.providerId === "local_fallback") {
+    await ctx.runMutation(internal.freeOpenAiQuota.releaseReservationInternal, {
+      userId: args.email,
+      requestId: args.quotaReservationId,
+    });
+    freeOpenAiQuotaReserved = false;
+  }
+
+  return {
+    ...engineResult,
+    cached: false,
+    requestKind: "text_chat",
+    ...(freeOpenAiQuotaReserved
+      ? { freeOpenAiQuotaReservationId: args.quotaReservationId }
+      : {}),
+  };
 }
 
 const FALLBACK_REPLY = chatUserFacingMessage(CHAT_ERROR_CODES.ALL_PROVIDERS_FAILED);
@@ -634,6 +656,7 @@ export const processJob = internalAction({
     }
 
     const workerStarted = Date.now();
+    let quotaReplyPersisted = false;
     logChatReply("worker_start", {
       jobId: args.jobId,
       conversationId: job.conversationId,
@@ -1076,6 +1099,7 @@ export const processJob = internalAction({
             .filter((a) => a.kind === "image")
             .map((a) => ({ dataUrl: a.dataUrl })),
           conversationId: job.conversationId,
+          quotaReservationId: String(args.jobId),
           subscriptionPlan: refreshedUser?.subscriptionPlan ?? "free",
           subscriptionExpiresAt: refreshedUser?.subscriptionExpiresAt,
           forceWebSearch: Boolean(
@@ -1192,6 +1216,22 @@ export const processJob = internalAction({
               })()
             : undefined,
       });
+      quotaReplyPersisted = true;
+      const quotaReservationId = (engineResult as ChatEngineResult & {
+        freeOpenAiQuotaReservationId?: string;
+      }).freeOpenAiQuotaReservationId;
+      if (quotaReservationId) {
+        await ctx.runMutation(internal.freeOpenAiQuota.commitReservationInternal, {
+          userId: email,
+          requestId: quotaReservationId,
+        });
+        logChatReply("free_openai_quota_committed", {
+          conversationId: job.conversationId,
+          userId: email,
+          requestId: quotaReservationId,
+        });
+      }
+
       logChatReply("worker_reply_persisted", {
         jobId: args.jobId,
         conversationId: job.conversationId,
@@ -1317,6 +1357,22 @@ export const processJob = internalAction({
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
+      if (!quotaReplyPersisted) {
+        try {
+          await ctx.runMutation(internal.freeOpenAiQuota.releaseReservationInternal, {
+            userId: job.userId,
+            requestId: String(args.jobId),
+          });
+          logChatReply("free_openai_quota_released", {
+            conversationId: job.conversationId,
+            userId: job.userId,
+            requestId: String(args.jobId),
+            error: message,
+          });
+        } catch (releaseErr) {
+          console.error("[chatReplyWorker] quota reservation release failed:", releaseErr);
+        }
+      }
       logChatReply("worker_failed", {
         jobId: args.jobId,
         conversationId: job.conversationId,
