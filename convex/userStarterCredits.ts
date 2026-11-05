@@ -27,7 +27,7 @@ export async function grantStarterCreditsIfNeeded(
     userId: email,
     credits: FREE_STARTER_CREDITS,
     action: "starter_grant",
-    reference: "signup",
+    reference: "signup:" + email.toLowerCase(),
     setBalance: balance === 0,
   });
 

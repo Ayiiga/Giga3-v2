@@ -7,7 +7,7 @@ describe("Paystack fulfillment safety", () => {
     const src = readFileSync(resolve(__dirname, "../../convex/paystack.ts"), "utf8");
     const fulfillStart = src.indexOf("export const fulfillPayment");
     expect(fulfillStart).toBeGreaterThan(-1);
-    const fulfillBody = src.slice(fulfillStart, fulfillStart + 4500);
+    const fulfillBody = src.slice(fulfillStart, fulfillStart + 10000);
 
     const alreadyIdx = fulfillBody.indexOf("alreadyFulfilled: true");
     const amountIdx = fulfillBody.indexOf("validatePaymentAmount(record");

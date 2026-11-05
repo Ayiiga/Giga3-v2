@@ -128,6 +128,19 @@ export const activateSubscription = internalMutation({
     note: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    // A Paystack reference can activate only one subscription period. Webhook
+    // retries must not extend expiry or create duplicate active subscription rows.
+    const prior = await ctx.db
+      .query("subscriptions")
+      .withIndex("by_reference", (q) => q.eq("paystackReference", args.paystackReference))
+      .first();
+    if (prior) {
+      if (prior.userId !== args.userId || prior.planId !== args.planId) {
+        throw new Error("Subscription payment reference already belongs to another operation");
+      }
+      return { subscriptionId: prior._id, periodEnd: prior.periodEnd, alreadyActivated: true as const };
+    }
+
     const user = await ctx.db
       .query("users")
       .withIndex("by_email", (q) => q.eq("email", args.userId))
@@ -183,7 +196,7 @@ export const activateSubscription = internalMutation({
         : {}),
     });
 
-    return { subscriptionId: subId, periodEnd };
+    return { subscriptionId: subId, periodEnd, alreadyActivated: false as const };
   },
 });
 

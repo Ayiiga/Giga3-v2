@@ -156,6 +156,18 @@ export const activateVideoSubscriptionInternal = internalMutation({
     periodMs: v.number(),
   },
   handler: async (ctx, args) => {
+    // Webhook/callback replay must not extend the same video subscription twice.
+    const prior = await ctx.db
+      .query("videoSubscriptions")
+      .withIndex("by_reference", (q) => q.eq("paystackReference", args.paystackReference))
+      .first();
+    if (prior) {
+      if (prior.userId !== args.userId || prior.planId !== args.planId) {
+        throw new Error("Video subscription reference already belongs to another operation");
+      }
+      return { periodEnd: prior.periodEnd, alreadyActivated: true as const };
+    }
+
     const now = Date.now();
     const user = await ctx.db
       .query("users")
@@ -198,6 +210,6 @@ export const activateVideoSubscriptionInternal = internalMutation({
       updatedAt: now,
     });
 
-    return { periodEnd };
+    return { periodEnd, alreadyActivated: false as const };
   },
 });

@@ -67,6 +67,51 @@ export const grantVideoStarterCreditsInternal = internalMutation({
   },
 });
 
+export const grantVideoCreditsInternal = internalMutation({
+  args: {
+    userId: v.string(),
+    credits: v.number(),
+    action: videoCreditActionValidator,
+    reference: v.optional(v.string()),
+    metadata: v.optional(v.string()),
+    setBalance: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    if (!Number.isFinite(args.credits) || args.credits <= 0) {
+      throw new Error("Credits must be a positive finite number");
+    }
+    const user = await getUserByEmail(ctx, args.userId);
+    if (!user) throw new Error("User not found");
+
+    if (args.reference) {
+      const prior = await ctx.db
+        .query("videoCreditLogs")
+        .withIndex("by_reference", (q: any) => q.eq("reference", args.reference))
+        .first();
+      if (prior) {
+        if (prior.userId !== args.userId || prior.action !== args.action) {
+          throw new Error("Video credit reference already belongs to another operation");
+        }
+        return { balanceAfter: prior.balanceAfter, alreadyGranted: true as const };
+      }
+    }
+
+    const balanceAfter = args.setBalance
+      ? args.credits
+      : (user.videoCredits ?? 0) + args.credits;
+    await ctx.db.patch(user._id, { videoCredits: balanceAfter });
+    await logVideoCredit(ctx, {
+      userId: args.userId,
+      action: args.action,
+      amount: args.credits,
+      balanceAfter,
+      reference: args.reference,
+      metadata: args.metadata,
+    });
+    return { balanceAfter, alreadyGranted: false as const };
+  },
+});
+
 export const refundVideoCreditsInternal = internalMutation({
   args: {
     userId: v.string(),

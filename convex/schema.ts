@@ -510,7 +510,8 @@ export default defineSchema({
     createdAt: v.number(),
   })
     .index("by_user", ["userId"])
-    .index("by_user_created", ["userId", "createdAt"]),
+    .index("by_user_created", ["userId", "createdAt"])
+    .index("by_reference", ["reference"]),
 
   /**
    * Atomic credit holds for paid generation (GigaLearn / book creation).
@@ -639,7 +640,20 @@ export default defineSchema({
     bucketKey: v.string(),
     windowStartMs: v.number(),
     count: v.number(),
+    reservedCount: v.optional(v.number()),
   }).index("by_bucket", ["bucketKey"]),
+
+  freeOpenAiQuotaReservations: defineTable({
+    userId: v.string(),
+    requestId: v.string(),
+    status: v.union(v.literal("reserved"), v.literal("committed"), v.literal("released"), v.literal("expired")),
+    windowStartMs: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    expiresAt: v.number(),
+  })
+    .index("by_request", ["requestId"])
+    .index("by_user_status", ["userId", "status"]),
 
   securityEvents: defineTable({
     eventType: v.string(),
@@ -755,7 +769,8 @@ export default defineSchema({
     createdAt: v.number(),
   })
     .index("by_user", ["userId"])
-    .index("by_user_created", ["userId", "createdAt"]),
+    .index("by_user_created", ["userId", "createdAt"])
+    .index("by_reference", ["reference"]),
 
   videoSubscriptions: defineTable({
     userId: v.string(),
