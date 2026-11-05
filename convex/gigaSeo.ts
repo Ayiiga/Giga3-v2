@@ -162,10 +162,10 @@ export const saveKeywordIdeas = mutation({
       const existing = await ctx.db.query("gigaSeoKeywordIdeas")
         .withIndex("by_keyword_market", (q) => q.eq("keyword", keyword).eq("market", args.market)).unique();
       if (existing) {
-        await ctx.db.patch(existing._id, { searchIntent: idea.searchIntent, source: "ai_suggestion", updatedAt: now });
+        await ctx.db.patch(existing._id, { searchIntent: idea.searchIntent, rationale: idea.rationale, source: "ai_suggestion", updatedAt: now });
       } else {
         await ctx.db.insert("gigaSeoKeywordIdeas", { keyword, market: args.market,
-          searchIntent: idea.searchIntent, source: "ai_suggestion", status: "new", createdAt: now, updatedAt: now });
+          searchIntent: idea.searchIntent, rationale: idea.rationale, source: "ai_suggestion", status: "new", createdAt: now, updatedAt: now });
       }
       saved++;
     }
