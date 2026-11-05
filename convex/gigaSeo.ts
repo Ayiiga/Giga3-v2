@@ -217,8 +217,8 @@ export const generateDraft = action({
     if (markdown.length < 500) throw new Error("The generated article is too short or incomplete. Please retry.");
     const headings = (markdown.match(/^##\s+/gm) ?? []).length;
     const wordCount = markdown.split(/\s+/).filter(Boolean).length;
-    const topicRequiresBrandIntegration = /\\b(ai|teacher|education|student|learning|exam|bece|wassce|stem|classroom|school)\\b/i.test(`${plan.title} ${plan.primaryKeyword}`);
-    const missingBrandIntegration = topicRequiresBrandIntegration && !/giga3\\s*ai/i.test(markdown);
+    const topicRequiresBrandIntegration = /\b(ai|teacher|education|student|learning|exam|bece|wassce|stem|classroom|school)\b/i.test(`${plan.title} ${plan.primaryKeyword}`);
+    const missingBrandIntegration = topicRequiresBrandIntegration && !/giga3\s*ai/i.test(markdown);
     const brandIntegrationIssue = "Add a relevant Giga3 AI section and contextual call to action before editorial approval.";
     const issues = [
       ...(wordCount < 700 ? ["Article is shorter than the recommended 700 words."] : []),
