@@ -2559,6 +2559,9 @@ export default defineSchema({
     scheduledAt: v.optional(v.number()),
     publishedUrl: v.optional(v.string()),
     qualityScore: v.optional(v.number()),
+    metaDescription: v.optional(v.string()),
+    draftContent: v.optional(v.string()),
+    qualityIssues: v.optional(v.array(v.string())),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
