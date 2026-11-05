@@ -72,10 +72,14 @@ export const getAdminOverview = query({
   handler: async (ctx, args) => {
     await ensureAdminAccess(args);
     const settings = await ctx.db.query("gigaSeoSettings").withIndex("by_key", (q) => q.eq("key", "primary")).unique();
-    const [keywordCount, contentPlanCount] = await Promise.all([
-      ctx.db.query("gigaSeoKeywordIdeas").count(),
-      ctx.db.query("gigaSeoContentPlans").count(),
+    // Keep the admin overview bounded; the dashboard only needs a useful count
+    // and these collections are expected to remain comfortably below this cap.
+    const [keywordRows, contentPlanRows] = await Promise.all([
+      ctx.db.query("gigaSeoKeywordIdeas").take(10_000),
+      ctx.db.query("gigaSeoContentPlans").take(10_000),
     ]);
+    const keywordCount = keywordRows.length;
+    const contentPlanCount = contentPlanRows.length;
     return { settings: settings ?? DEFAULT_SETTINGS, keywordCount, contentPlanCount };
   },
 });
