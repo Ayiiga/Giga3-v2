@@ -640,7 +640,20 @@ export default defineSchema({
     bucketKey: v.string(),
     windowStartMs: v.number(),
     count: v.number(),
+    reservedCount: v.optional(v.number()),
   }).index("by_bucket", ["bucketKey"]),
+
+  freeOpenAiQuotaReservations: defineTable({
+    userId: v.string(),
+    requestId: v.string(),
+    status: v.union(v.literal("reserved"), v.literal("committed"), v.literal("released"), v.literal("expired")),
+    windowStartMs: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    expiresAt: v.number(),
+  })
+    .index("by_request", ["requestId"])
+    .index("by_user_status", ["userId", "status"]),
 
   securityEvents: defineTable({
     eventType: v.string(),
