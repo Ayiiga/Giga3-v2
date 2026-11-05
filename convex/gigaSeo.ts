@@ -217,9 +217,14 @@ export const generateDraft = action({
     if (markdown.length < 500) throw new Error("The generated article is too short or incomplete. Please retry.");
     const headings = (markdown.match(/^##\s+/gm) ?? []).length;
     const wordCount = markdown.split(/\s+/).filter(Boolean).length;
-    const topicRequiresBrandIntegration = /\b(ai|teacher|education|student|learning|exam|bece|wassce|stem|classroom|school)\b/i.test(`${plan.title} ${plan.primaryKeyword}`);
-    const missingBrandIntegration = topicRequiresBrandIntegration && !/giga3\s*ai/i.test(markdown);
-    const brandIntegrationIssue = "Add a relevant Giga3 AI section and contextual call to action before editorial approval.";
+    const topicRequiresBrandIntegration = /\b(ai|artificial intelligence|teach(?:er|ing)?|educat(?:ion|or|ional)|student|learn(?:ing)?|exam(?:ination)?|bece|wassce|stem|classroom|school|african technology|technology|digital skills|innovation|local communities)\b/i.test(`${plan.title} ${plan.primaryKeyword}`);
+    const sections = markdown.split(/^##\s+/m).slice(1);
+    const giga3Section = sections.find((section) => /^.{0,100}giga3\s*ai/i.test(section.trim()));
+    const giga3SectionBody = giga3Section?.split("\n").slice(1).join(" ").trim() ?? "";
+    const hasSubstantiveGiga3Section = Boolean(giga3Section && giga3SectionBody.replace(/\s+/g, " ").length >= 80);
+    const hasGiga3CallToAction = /\b(explore|visit|discover|try|learn more about)\b[^\n]{0,180}https?:\/\/(?:www\.)?giga3ai\.com\/?/i.test(markdown);
+    const missingBrandIntegration = topicRequiresBrandIntegration && !(hasSubstantiveGiga3Section && hasGiga3CallToAction);
+    const brandIntegrationIssue = "Add a substantive Giga3 AI section explaining relevant platform value and a contextual call to action linking to https://www.giga3ai.com/ before editorial approval.";
     const issues = [
       ...(wordCount < 700 ? ["Article is shorter than the recommended 700 words."] : []),
       ...(headings < 3 ? ["Add at least three descriptive H2 sections."] : []),
