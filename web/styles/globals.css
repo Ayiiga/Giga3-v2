@@ -346,6 +346,36 @@ button:focus-visible {
   transition-property: none !important;
 }
 
+/* Isolate local-file video previews from the surrounding mobile composer layers.
+   Android Chromium can otherwise repaint adjacent fixed/sticky UI while a native
+   video control surface is active (visible as horizontal tearing in screenshots). */
+.gigasocial-local-video-preview {
+  display: block;
+  position: relative;
+  isolation: isolate;
+  contain: paint;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  will-change: transform;
+}
+
+.gigasocial-local-video-preview video {
+  display: block;
+  position: relative;
+  z-index: 0;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+@media (max-width: 1023px) {
+  .gigasocial-local-video-preview {
+    overflow: hidden;
+    contain: layout paint;
+  }
+}
+
 .gigasocial-stable .gigasocial-featured-media,
 .gigasocial-stable .gigasocial-featured-media video {
   touch-action: pan-y;
