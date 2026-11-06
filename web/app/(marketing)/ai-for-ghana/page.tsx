@@ -19,8 +19,8 @@ const PATH = "/ai-for-ghana";
 
 export const metadata = publicMetadata({
   path: PATH,
-  title: "AI for Students, Creators and Businesses in Ghana — Giga3 AI",
-  description: `Giga3 AI is an AI platform from Ghana for learning, research, coding and creativity. Start free with ${FREE_STARTER_CREDITS} credits; paid plans billed in GHS via Paystack.`,
+  title: "AI for Students, Creators and Businesses in Ghana — Giga3 Hub",
+  description: `Giga3 Hub is a connected digital platform from Ghana, with Giga3 AI providing AI assistance for learning, research, coding and creativity. Start free with ${FREE_STARTER_CREDITS} credits; paid plans billed in GHS via Paystack.`,
 });
 
 const PLAN_LINES = buildPublicPlanSummaryLines();
@@ -34,17 +34,17 @@ const PAID_PLAN_SUMMARY = (["basic", "pro", "premium"] as const)
 
 const FAQ: FaqItem[] = [
   {
-    question: "What is Giga3 AI?",
+    question: "What is Giga3 Hub?",
     answer:
-      "Giga3 AI is an AI platform from Ghana for learning, research, coding, creativity and productivity. It brings multiple AI-powered capabilities together in one platform.",
+      "Giga3 Hub is a connected digital platform from Ghana for learning, social networking, exam practice, creative tools and digital commerce. Giga3 AI is its dedicated AI assistant service.",
   },
   {
-    question: "How much does Giga3 AI cost?",
-    answer: `Giga3 AI has a Free plan at GHS 0 with ${FREE_STARTER_CREDITS} credits, paid plans (${PAID_PLAN_SUMMARY}), and a Custom Enterprise plan. Paid billing is supported through Paystack in GHS.`,
+    question: "How much does Giga3 Hub cost?",
+    answer: `Giga3 Hub has a Free plan at GHS 0 with ${FREE_STARTER_CREDITS} credits, paid plans (${PAID_PLAN_SUMMARY}), and a Custom Enterprise plan. Paid billing is supported through Paystack in GHS.`,
   },
   {
-    question: "Can students in Ghana use Giga3 AI?",
-    answer: `Yes. Giga3 AI is designed for students and other users in Ghana, with a free plan that provides ${FREE_STARTER_CREDITS} credits to help users get started with AI-assisted learning, research and productivity.`,
+    question: "Can students in Ghana use Giga3 Hub?",
+    answer: `Yes. Giga3 Hub is designed for students and other users in Ghana, with a free plan that provides ${FREE_STARTER_CREDITS} credits to help users get started with AI-assisted learning, research and productivity.`,
   },
 ];
 
@@ -54,9 +54,9 @@ export default function AiForGhanaPage() {
       <JsonLd
         webPage={{
           path: PATH,
-          name: "AI for Students, Creators and Businesses in Ghana — Giga3 AI",
+          name: "AI for Students, Creators and Businesses in Ghana — Giga3 Hub",
           description:
-            "Giga3 AI is an AI platform from Ghana for learning, research, coding and creativity. Start free with starter credits; paid plans billed in GHS via Paystack.",
+            "Giga3 Hub is a connected digital platform from Ghana, with Giga3 AI providing AI assistance for learning, research, coding and creativity. Start free with starter credits; paid plans billed in GHS via Paystack.",
         }}
       />
       <JsonLd
@@ -74,7 +74,7 @@ export default function AiForGhanaPage() {
                 AI for Students, Creators and Businesses in Ghana
               </h1>
               <p className="section-lead mt-4">
-                Giga3 AI is an AI platform from Ghana built to help students, creators, developers,
+                Giga3 Hub is a connected digital platform from Ghana built to help students, creators, educators and businesses,
                 researchers and businesses learn, research, code and create with powerful artificial
                 intelligence tools in one place.
               </p>
@@ -173,7 +173,7 @@ export default function AiForGhanaPage() {
             <section className="mt-12 space-y-5">
               <ArticleH2>One AI Platform for Modern African Users</ArticleH2>
               <Prose>
-                Giga3 AI is more than a basic chatbot. Its wider vision is to create an accessible AI
+                Giga3 Hub is more than a chatbot. It brings accessible AI assistance together with learning, social, creative and digital services.
                 platform for learning, research, coding and creativity.
               </Prose>
               <Prose>
@@ -187,16 +187,16 @@ export default function AiForGhanaPage() {
               </Prose>
               <Prose>
                 Explore the platform&apos;s capabilities on the{" "}
-                <ArticleLink href="/features">Giga3 AI Features page</ArticleLink>{" "}
+                <ArticleLink href="/features">Giga3 Hub Features page</ArticleLink>{" "}
                 and see the available plans on the{" "}
-                <ArticleLink href="/pricing">Giga3 AI Pricing page</ArticleLink>.
+                <ArticleLink href="/pricing">Giga3 Hub Pricing page</ArticleLink>.
               </Prose>
             </section>
 
             <FaqSection items={FAQ} />
 
             <section className="mt-14 rounded-3xl border border-border bg-slate-50 p-8 text-center">
-              <ArticleH2>Start Using Giga3 AI</ArticleH2>
+              <ArticleH2>Start Using Giga3 Hub</ArticleH2>
               <p className="mt-3 text-base text-muted">
                 Ready to explore AI for learning, research, coding and creativity?
               </p>
@@ -212,7 +212,7 @@ export default function AiForGhanaPage() {
                 </ButtonLink>
               </div>
               <p className="mt-8 text-sm text-muted">
-                Giga3 AI — Built in Africa. Powered by AI. Designed for Everyone.
+                Giga3 Hub — Built in Africa. Powered by AI. Designed for Everyone.
               </p>
             </section>
 
@@ -229,7 +229,7 @@ export default function AiForGhanaPage() {
                 { href: "/ai-for-creators-ghana", label: "AI for creators in Ghana" },
                 { href: "/african-ai-tools", label: "African AI tools on Giga3" },
                 { href: "/gigalearn", label: "GigaLearn — AI tutor for students" },
-                { href: "/pricing", label: "Giga3 AI plans and GHS pricing" },
+                { href: "/pricing", label: "Giga3 Hub plans and GHS pricing" },
               ]}
             />
           </article>
