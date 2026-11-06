@@ -117,14 +117,11 @@ export default function FeaturesPage() {
             <section className="mt-14 max-w-3xl space-y-4">
               <ArticleH2>How the pieces fit together</ArticleH2>
               <Prose>
-                Create an image in <ArticleLink href="/media">Media Studio</ArticleLink>, cut it into a
-                clip with captions in <ArticleLink href="/gigaedit">GigaEdit</ArticleLink>, publish it to{" "}
-                <ArticleLink href="/gigasocial">GigaSocial</ArticleLink>, and sell the finished template on
-                the <ArticleLink href="/marketplace">Marketplace</ArticleLink>. Students follow the same path
-                from a <ArticleLink href="/chat">chat</ArticleLink> explanation to{" "}
-                <ArticleLink href="/gigalearn">GigaLearn</ArticleLink> practice, while schools and teams add{" "}
-                <ArticleLink href="/enterprise">workspaces</ArticleLink> and{" "}
-                <ArticleLink href="/automation">automation</ArticleLink> on top.
+                Use <ArticleLink href="/chat">Giga3 AI</ArticleLink> for explanations, research and ideation, continue learning and exam preparation with{" "}
+                <ArticleLink href="/gigalearn">GigaLearn</ArticleLink>, create with the available creative tools, share with{" "}
+                <ArticleLink href="/gigasocial">GigaSocial</ArticleLink>, and discover digital products on the{" "}
+                <ArticleLink href="/marketplace">Marketplace</ArticleLink>. Schools and teams can also explore{" "}
+                <ArticleLink href="/enterprise">workspaces</ArticleLink>.
               </Prose>
               <Prose>
                 Billing is in Ghanaian cedis through Paystack, with one credit balance shared across
