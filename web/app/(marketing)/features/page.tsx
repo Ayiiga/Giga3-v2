@@ -33,7 +33,7 @@ const FAQ: FaqItem[] = [
   },
   {
     question: "Do I pay separately for each product?",
-    answer: `One account covers everything. Chat, research, writing and image tools draw from the same credit balance: ${FREE_STARTER_CREDITS} free starter credits, then ${SUBSCRIPTION_PLANS.basic.label} (GHS ${SUBSCRIPTION_PLANS.basic.priceGhs}), ${SUBSCRIPTION_PLANS.pro.label} (GHS ${SUBSCRIPTION_PLANS.pro.priceGhs}) or ${SUBSCRIPTION_PLANS.premium.label} (GHS ${SUBSCRIPTION_PLANS.premium.priceGhs}) per month. Video AI uses a separate video-credit wallet with its own plans.`,
+    answer: `Giga3 Hub plans provide access to eligible platform services through one account. Available features, credit usage and plan limits are shown in the current pricing and service screens. ${FREE_STARTER_CREDITS} free starter credits are available, with paid monthly options including ${SUBSCRIPTION_PLANS.basic.label}, ${SUBSCRIPTION_PLANS.pro.label} and ${SUBSCRIPTION_PLANS.premium.label}.`,
   },
   {
     question: "Which AI models power Giga3 AI?",
