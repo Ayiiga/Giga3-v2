@@ -17,12 +17,11 @@ export function Hero() {
           </div>
 
           <h1 className="hero-title">
-            Africa&apos;s AI Super App — Built in Ghana
+            Africa&apos;s Connected Digital Hub — Built in Ghana
           </h1>
 
           <p className="section-lead mx-auto mt-6 max-w-2xl">
-            Giga3 AI is Africa&apos;s AI Super App for people who want to learn, create,
-            connect, and grow their work from one mobile-ready platform.
+            Giga3 Hub brings AI assistance, social networking, learning, exam practice and creative tools together so people can connect, create and grow from one mobile-ready platform.
           </p>
 
           <VisionTagline className="mx-auto mt-5 max-w-md text-center" variant="subtle" />
@@ -33,7 +32,7 @@ export function Hero() {
               <ArrowRight aria-hidden />
             </ButtonLink>
             <ButtonLink href="#multi-chat" variant="secondary" size="lg" className="w-full">
-              Open Giga3 AI
+              Explore Giga3 Hub
             </ButtonLink>
             <InstallButton size="lg" variant="outline" className="w-full" />
           </div>
@@ -55,7 +54,7 @@ export function Hero() {
           <div className="saas-card rounded-2xl p-6 sm:p-8">
             <div className="mb-4 flex items-center gap-2 border-b border-border pb-4">
               <Bot className="text-accent" aria-hidden />
-              <span className="font-medium text-foreground">Giga3 Assistant</span>
+              <span className="font-medium text-foreground">Giga3 AI Assistant</span>
               <span className="ml-auto rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
                 Failover active
               </span>
