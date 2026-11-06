@@ -323,7 +323,7 @@ export const GHANA_LANDING_PAGES = {
     path: "/african-ai-tools",
     metaTitle: "African AI Tools — Giga3 Hub Platform",
     metaDescription:
-      "Giga3 Hub is an Africa-focused AI super app for chat, learning, media, and creator tools — built in Ghana with GHS billing and multi-provider failover.",
+      "Giga3 Hub is an Africa-focused connected digital platform for AI assistance, learning, social connection, exam preparation, creative tools and digital commerce — built in Ghana with GHS billing.",
     h1: "African AI Tools on Giga3 Hub",
     lead:
       "An Africa-focused AI platform for chat, education, media, and creator workflows — built in Ghana, billed in GHS, designed for learners and builders across the continent.",
