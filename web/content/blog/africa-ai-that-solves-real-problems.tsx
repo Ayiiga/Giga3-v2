@@ -14,14 +14,14 @@ const TOC = [
   { id: "who-ai-helps", label: "Who practical AI should help" },
   { id: "african-context", label: "Why African context matters" },
   { id: "responsibility", label: "Responsibility still comes first" },
-  { id: "why-giga3", label: "Why I am building Giga3 AI" },
+  { id: "why-giga3", label: "Why I am building Giga3 Hub" },
   { id: "invitation", label: "An invitation" },
 ] as const;
 
 export const PLAIN_TEXT = `
 Africa does not need more AI hype. We need AI that solves real problems for students teachers
 entrepreneurs researchers creators everyday users. African needs and experiences should shape
-AI development. Responsible AI verification privacy human judgment. Giga3 AI built in Africa
+AI development. Responsible AI verification privacy human judgment. Giga3 Hub built in Africa
 powered by AI designed for everyone. Chat GigaLearn Creator Studio creative productivity.
 `.trim();
 
@@ -51,7 +51,7 @@ function ArticleContent() {
       <Prose>
         I care less about whether a product claims to be the smartest model, and more about whether
         it is reachable, understandable, and honest about what it can and cannot do. That standard
-        is how I evaluate Giga3 AI as we build it — and how I hope readers will evaluate every AI
+        is how I evaluate Giga3 Hub as we build it — and how I hope readers will evaluate every AI
         tool they try.
       </Prose>
 
@@ -72,7 +72,7 @@ function ArticleContent() {
         be verified.
       </Prose>
       <Prose>
-        On Giga3 AI, that direction shows up across{" "}
+        On Giga3 Hub, that direction shows up across{" "}
         <ArticleLink href="/chat/">AI Chat</ArticleLink> for learning, research, writing, and
         everyday questions;{" "}
         <ArticleLink href="/gigalearn/">GigaLearn</ArticleLink> for structured study and exam
@@ -115,16 +115,16 @@ function ArticleContent() {
         promises and keep trust than chase every trend that cannot survive scrutiny.
       </Prose>
 
-      <ArticleH2 id="why-giga3">Why I am building Giga3 AI</ArticleH2>
+      <ArticleH2 id="why-giga3">Why I am building Giga3 Hub</ArticleH2>
       <Prose>
-        I am building Giga3 AI because I want people here — students, educators, creators, and
+        I am building Giga3 Hub because I want people here — students, educators, creators, and
         small businesses — to have a coherent place to learn, create, and work with AI without
         needing a stack of disconnected apps and foreign payment friction. As a basic school
         educationist in Ghana, I see daily how much time is lost to busywork and how much potential
         opens when tools are clear and accessible.
       </Prose>
       <Prose>
-        Giga3 AI is an evolving platform. Capabilities grow as we harden reliability, improve
+        Giga3 Hub is an evolving platform. Capabilities grow as we harden reliability, improve
         creative workflows, and listen to what users actually ask for. It is not a claim that we
         have solved every problem in African technology. It is a commitment to keep building toward
         practical usefulness — chat assistance, learning support, and creative productivity —
@@ -185,10 +185,10 @@ function Body({ post }: BlogArticleBodyProps) {
       toc={TOC}
       cta={
         <BlogProductCta
-          title="Explore Giga3 AI"
+          title="Explore Giga3 Hub"
           description="Built in Africa. Powered by AI. Designed for Everyone. Start with chat, GigaLearn, or the feature overview — then tell us which real problem you want AI to help solve."
           href="/"
-          label="Visit Giga3 AI"
+          label="Visit Giga3 Hub"
         />
       }
     >

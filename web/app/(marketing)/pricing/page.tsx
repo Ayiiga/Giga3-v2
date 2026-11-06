@@ -22,8 +22,8 @@ const PAID_PLAN_IDS = ["basic", "pro", "premium"] as const;
 
 export const metadata = publicMetadata({
   path: "/pricing",
-  title: "Giga3 AI Pricing — Plans in GHS via Paystack",
-  description: `Giga3 AI plans: Free with ${FREE_STARTER_CREDITS} credits, then ${PAID_PLAN_IDS.map(
+  title: "Giga3 Hub Pricing — Plans in GHS via Paystack",
+  description: `Giga3 Hub plans: Free with ${FREE_STARTER_CREDITS} credits, then ${PAID_PLAN_IDS.map(
     (id) => `${SUBSCRIPTION_PLANS[id].label} GHS ${SUBSCRIPTION_PLANS[id].priceGhs}`
   ).join(", ")} per month. Pay in Ghana cedis with Paystack; renews monthly, cancel anytime.`,
 });
@@ -63,13 +63,13 @@ export default function PricingPage() {
       <JsonLd
         webPage={{
           path: "/pricing",
-          name: "Giga3 AI Pricing — Plans in GHS via Paystack",
-          description: `Giga3 AI plans: Free with ${FREE_STARTER_CREDITS} credits, then paid monthly plans billed in Ghana cedis through Paystack.`,
+          name: "Giga3 Hub Pricing — Plans in GHS via Paystack",
+          description: `Giga3 Hub plans: Free with ${FREE_STARTER_CREDITS} credits, then paid monthly plans billed in Ghana cedis through Paystack.`,
         }}
       />
       <JsonLd
         breadcrumbs={[
-          { name: "Giga3 AI", path: "/" },
+          { name: "Giga3 Hub", path: "/" },
           { name: "Pricing", path: "/pricing" },
         ]}
       />
@@ -90,7 +90,7 @@ export default function PricingPage() {
             </h2>
             <div className="overflow-x-auto rounded-2xl border border-border">
               <table className="w-full min-w-[30rem] text-left text-sm">
-                <caption className="sr-only">Giga3 AI subscription plans and monthly credits</caption>
+                <caption className="sr-only">Giga3 Hub subscription plans and monthly credits</caption>
                 <thead className="bg-slate-50 text-foreground">
                   <tr>
                     <th scope="col" className="px-4 py-3 font-semibold">Plan</th>

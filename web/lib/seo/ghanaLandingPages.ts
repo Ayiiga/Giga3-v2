@@ -36,14 +36,14 @@ export function ghanaLandingMetadata(config: GhanaLandingConfig): Metadata {
 export const GHANA_LANDING_PAGES = {
   teachers: {
     path: "/ai-for-teachers-ghana",
-    metaTitle: "AI for Teachers in Ghana | Giga3 AI",
+    metaTitle: "AI for Teachers in Ghana | Giga3 Hub",
     metaDescription:
-      "How Ghanaian teachers use Giga3 AI and GigaLearn for lesson planning, quizzes, worksheets, and classroom productivity — with GHS pricing via Paystack.",
+      "How Ghanaian teachers use Giga3 Hub and GigaLearn for lesson planning, quizzes, worksheets, and classroom productivity — with GHS pricing via Paystack.",
     h1: "AI for Teachers in Ghana",
     lead:
-      "Practical AI support for Ghanaian teachers — lesson ideas, quiz drafts, worksheet outlines, and classroom productivity inside Giga3 AI.",
+      "Practical AI support for Ghanaian teachers — lesson ideas, quiz drafts, worksheet outlines, and classroom productivity inside Giga3 Hub.",
     intro: [
-      "Teachers in Ghana balance large classes, limited prep time, and diverse learner needs. Giga3 AI helps you draft materials faster while you stay in control of accuracy, tone, and what goes to students.",
+      "Teachers in Ghana balance large classes, limited prep time, and diverse learner needs. Giga3 Hub helps you draft materials faster while you stay in control of accuracy, tone, and what goes to students.",
       "GigaLearn adds structured study modes for JHS and SHS contexts. Organisation workspaces at /workspace let schools onboard teachers and students when your institution is ready.",
     ],
     sections: [
@@ -72,12 +72,12 @@ export const GHANA_LANDING_PAGES = {
     ],
     faq: [
       {
-        question: "Is Giga3 AI an official GES or WAEC product?",
+        question: "Is Giga3 Hub an official GES or WAEC product?",
         answer:
-          "No. Giga3 AI is an independent platform from Ghana. It can support teaching and learning workflows, but it is not affiliated with GES, WAEC, or any government examination body unless explicitly stated in a verified partnership announcement.",
+          "No. Giga3 Hub is an independent platform from Ghana. It can support teaching and learning workflows, but it is not affiliated with GES, WAEC, or any government examination body unless explicitly stated in a verified partnership announcement.",
       },
       {
-        question: "Can teachers try Giga3 AI for free?",
+        question: "Can teachers try Giga3 Hub for free?",
         answer: `Yes. New accounts receive ${FREE_STARTER_CREDITS} starter credits to explore chat and GigaLearn before choosing a paid plan billed in GHS through Paystack.`,
       },
     ],
@@ -92,9 +92,9 @@ export const GHANA_LANDING_PAGES = {
   },
   schools: {
     path: "/ai-for-schools-ghana",
-    metaTitle: "AI for Schools in Ghana | Giga3 AI",
+    metaTitle: "AI for Schools in Ghana | Giga3 Hub",
     metaDescription:
-      "How schools in Ghana use Giga3 AI workspaces for classrooms, roles, and responsible AI learning — contact sales for volume onboarding.",
+      "How schools in Ghana use Giga3 Hub workspaces for classrooms, roles, and responsible AI learning — contact sales for volume onboarding.",
     h1: "AI for Schools in Ghana",
     lead:
       "Organisation workspaces, classrooms, and role-based access for schools exploring responsible AI — built on the same Giga3 chat and GigaLearn tools.",
@@ -149,12 +149,12 @@ export const GHANA_LANDING_PAGES = {
   },
   beceWassce: {
     path: "/ai-for-bece-wassce-ghana",
-    metaTitle: "AI for BECE & WASSCE Preparation in Ghana | Giga3 AI",
+    metaTitle: "AI for BECE & WASSCE Preparation in Ghana | Giga3 Hub",
     metaDescription:
-      "BECE and WASSCE revision support with GigaLearn on Giga3 AI — practice questions, study plans, and AI tutoring for JHS and SHS students in Ghana.",
+      "BECE and WASSCE revision support with GigaLearn on Giga3 Hub — practice questions, study plans, and AI tutoring for JHS and SHS students in Ghana.",
     h1: "AI for BECE & WASSCE Preparation in Ghana",
     lead:
-      "Structured revision support for JHS and SHS students preparing for BECE and WASSCE — through GigaLearn on Giga3 AI.",
+      "Structured revision support for JHS and SHS students preparing for BECE and WASSCE — through GigaLearn on Giga3 Hub.",
     intro: [
       "Exam preparation needs consistent practice, clear explanations, and study plans students can follow between classes.",
       "GigaLearn provides AI tutoring, practice questions, and progress tracking for Ghana-focused study contexts. It supports revision — it is not an official WAEC paper bank or guaranteed pass product.",
@@ -185,9 +185,9 @@ export const GHANA_LANDING_PAGES = {
     ],
     faq: [
       {
-        question: "Does Giga3 AI guarantee exam passes?",
+        question: "Does Giga3 Hub guarantee exam passes?",
         answer:
-          "No. Giga3 AI is a study aid. Results depend on each student's effort, school preparation, and the official examination. Always verify AI-generated content with teachers and syllabus materials.",
+          "No. Giga3 Hub is a study aid. Results depend on each student's effort, school preparation, and the official examination. Always verify AI-generated content with teachers and syllabus materials.",
       },
       {
         question: "Where should students start?",
@@ -207,15 +207,15 @@ export const GHANA_LANDING_PAGES = {
   },
   business: {
     path: "/ai-for-business-ghana",
-    metaTitle: "AI Tools for Ghanaian Businesses | Giga3 AI",
+    metaTitle: "AI Tools for Ghanaian Businesses | Giga3 Hub",
     metaDescription:
-      "AI chat, research, writing, and automation for Ghanaian businesses — GHS billing via Paystack, workspaces for teams, and creator tools on Giga3 AI.",
+      "AI chat, research, writing, and automation for Ghanaian businesses — GHS billing via Paystack, workspaces for teams, and creator tools on Giga3 Hub.",
     h1: "AI Tools for Ghanaian Businesses",
     lead:
-      "Research, writing, coding assistance, and workflow automation for Ghanaian teams — with GHS pricing and Paystack billing on Giga3 AI.",
+      "Research, writing, coding assistance, and workflow automation for Ghanaian teams — with GHS pricing and Paystack billing on Giga3 Hub.",
     intro: [
       "Businesses in Ghana use AI for customer communication drafts, research summaries, internal documentation, marketing copy, and developer productivity.",
-      "Giga3 AI keeps billing, credits, and entitlements on the server. Teams can explore organisation workspaces; volume plans go through Enterprise sales.",
+      "Giga3 Hub keeps billing, credits, and entitlements on the server. Teams can explore organisation workspaces; volume plans go through Enterprise sales.",
     ],
     sections: [
       {
@@ -226,7 +226,7 @@ export const GHANA_LANDING_PAGES = {
         bullets: [
           "Research and writing assistance with cited web search where enabled",
           "Coding help for internal tools and scripts",
-          "Media Studio for marketing visuals and Video AI for short clips",
+          "Giga3 Hub creative tools for available image, video, music and logo workflows",
         ],
       },
       {
@@ -264,12 +264,12 @@ export const GHANA_LANDING_PAGES = {
   },
   creators: {
     path: "/ai-for-creators-ghana",
-    metaTitle: "AI for Creators in Ghana | Giga3 AI",
+    metaTitle: "AI for Creators in Ghana | Giga3 Hub",
     metaDescription:
-      "Create and publish with Giga3 AI — AI Assistant, Creator Studio, GigaSocial, and Marketplace for Ghanaian creators with GHS payments.",
+      "Create and publish with Giga3 Hub — AI Assistant, Creator Studio, GigaSocial, and Marketplace for Ghanaian creators with GHS payments.",
     h1: "AI for Creators in Ghana",
     lead:
-      "From AI-assisted writing and images to community publishing — one creator workflow on Giga3 AI for Ghanaian creators.",
+      "From AI-assisted writing and images to community publishing — one creator workflow on Giga3 Hub for Ghanaian creators.",
     intro: [
       "Creators in Ghana need tools that work on mobile networks, bill in cedis, and connect drafting → publishing without juggling five separate apps.",
       "Giga3 links the AI Assistant, Creator Studio, GigaSocial, and Marketplace under one account with server-checked credits.",
@@ -321,21 +321,21 @@ export const GHANA_LANDING_PAGES = {
   },
   africanAiTools: {
     path: "/african-ai-tools",
-    metaTitle: "African AI Tools — Giga3 AI Platform",
+    metaTitle: "African AI Tools — Giga3 Hub Platform",
     metaDescription:
-      "Giga3 AI is an Africa-focused AI super app for chat, learning, media, and creator tools — built in Ghana with GHS billing and multi-provider failover.",
-    h1: "African AI Tools on Giga3 AI",
+      "Giga3 Hub is an Africa-focused connected digital platform for AI assistance, learning, social connection, exam preparation, creative tools and digital commerce — built in Ghana with GHS billing.",
+    h1: "African AI Tools on Giga3 Hub",
     lead:
       "An Africa-focused AI platform for chat, education, media, and creator workflows — built in Ghana, billed in GHS, designed for learners and builders across the continent.",
     intro: [
-      "Many global AI tools assume USD billing, desktop-first UX, and single-provider reliability. Giga3 AI is built with African users in mind: Paystack in Ghana cedis, PWA install on mobile, and server-side provider failover.",
+      "Many global AI tools assume USD billing, desktop-first UX, and single-provider reliability. Giga3 Hub is built with African users in mind: Paystack in Ghana cedis, PWA install on mobile, and server-side provider failover.",
       "This page describes what Giga3 offers today — not a ranking of every AI product on the continent.",
     ],
     sections: [
       {
         heading: "What makes Giga3 different for African users",
         paragraphs: [
-          "Giga3 combines chat, GigaLearn, Media Studio, Video AI, GigaEdit, GigaSocial, and Marketplace in one account. Credits and subscriptions are enforced on the server — not in the browser.",
+          "Giga3 Hub brings Giga3 AI, GigaLearn, exam practice, GigaSocial, available creative tools and Marketplace into one connected account. Credits and subscriptions are enforced on the server — not in the browser.",
         ],
         bullets: [
           "GHS pricing via Paystack for consumer plans",
@@ -358,7 +358,7 @@ export const GHANA_LANDING_PAGES = {
     ],
     faq: [
       {
-        question: "Is Giga3 AI only for Ghana?",
+        question: "Is Giga3 Hub only for Ghana?",
         answer:
           "Giga3 is built in Ghana and optimises for Ghanaian billing and education context, but the platform is available to users worldwide. Feature availability still depends on your plan and server-side entitlements.",
       },
@@ -371,8 +371,8 @@ export const GHANA_LANDING_PAGES = {
     breadcrumbLabel: "African AI tools",
     relatedReading: [
       { href: "/ai-for-ghana", label: "AI for Ghana" },
-      { href: "/features", label: "All Giga3 AI features" },
-      { href: "/about", label: "About Giga3 AI" },
+      { href: "/features", label: "All Giga3 Hub features" },
+      { href: "/about", label: "About Giga3 Hub" },
     ],
     primaryCta: { href: "/chat/login", label: "Try Giga3 free" },
     secondaryCta: { href: "/features", label: "Explore features" },

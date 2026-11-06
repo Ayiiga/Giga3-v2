@@ -10,7 +10,7 @@ type BrandLogoProps = {
   alt?: string;
 };
 
-/** Giga3 AI mark — violet gradient G (PWA icons via `npm run generate:branding`). */
+/** Giga3 Hub mark — violet gradient G (PWA icons via `npm run generate:branding`). */
 export function BrandLogo({ size = 36, className, alt }: BrandLogoProps) {
   return (
     <Giga3Logo

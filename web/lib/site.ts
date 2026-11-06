@@ -2,10 +2,10 @@ import { buildHomepagePricingTeasers } from "@/lib/payments/marketingPricing";
 import { GIGA3_VISION } from "@/lib/vision";
 
 export const siteConfig = {
-  name: "Giga3 AI",
+  name: "Giga3 Hub",
   tagline: GIGA3_VISION.tagline,
   description:
-    "Giga3 AI is an advanced artificial intelligence platform from Ghana for learning, research, coding, creativity, productivity, content creation, and problem-solving.",
+    "Giga3 Hub is a connected digital platform from Ghana for AI assistance, social networking, learning, exam practice, creativity, publishing, productivity and digital commerce.",
   url: "https://www.giga3ai.com",
   founder: {
     name: "Ayiiga Benard Issaka",
@@ -54,7 +54,7 @@ export const navLinks = [
   { href: "/features", label: "Features" },
   { href: "/gigalearn/academy/", label: "Academy" },
   { href: "/gigalearn/exam/", label: "Exam Practice" },
-  { href: "/chat", label: "AI Assistant" },
+  { href: "/chat", label: "Giga3 AI" },
   { href: "/gigalearn/academy/tech/", label: "Technology Hub" },
   { href: "/gigasocial", label: "GigaSocial" },
   { href: "/marketplace", label: "Marketplace" },
@@ -120,4 +120,4 @@ export const pricingPlans = buildHomepagePricingTeasers();
  * page so answer engines (ChatGPT, Gemini, Perplexity) pick up one consistent description.
  */
 export const GEO_POSITIONING_STATEMENT =
-  "Giga3 AI is an AI-powered learning and productivity platform built in Africa for learners, teachers and communities — including GigaLearn Academy, Exam Practice, AI Assistant, Technology Learning Hub, GigaSocial, and Marketplace, with GHS billing via Paystack.";
+  "Giga3 Hub is a connected digital platform built in Africa for learners, teachers, creators and communities — bringing together Giga3 AI, GigaSocial, GigaLearn, Giga3 Practice, Giga3 Create, publishing and Marketplace, with GHS billing via Paystack.";

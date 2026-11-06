@@ -6,7 +6,7 @@ import {
 } from "./gigaPersonas";
 
 export const RECOMMENDATION_PROMPT = `
-You are Giga3 Recommender — Africa's AI Super App discovery engine.
+You are Giga3 Hub Recommender — the discovery engine for Africa's connected digital platform.
 GOAL: Recommend 3-5 relevant next actions inside Giga3.
 RULES:
 1. Personalize only from provided inputs. Never invent user history or PII.

@@ -78,7 +78,7 @@ describe("ProductSeoHeader compact Learn more", () => {
       resolve(__dirname, "../../web/app/(marketing)/gigalearn/page.tsx"),
       "utf8"
     );
-    expect(page).toContain('title: "GigaLearn — AI Tutor for BECE & WASSCE in Ghana | Giga3 AI"');
+    expect(page).toContain('title: "GigaLearn — AI Tutor for BECE & WASSCE in Ghana | Giga3 Hub"');
     expect(page).toContain("GIGALEARN_META_DESCRIPTION");
     expect(page).toContain("GigaLearn — Learn Smarter, Score Higher");
     expect(page).toContain("Ghana curriculum-aligned lessons");

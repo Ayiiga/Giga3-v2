@@ -13,7 +13,7 @@ export function blogArticleMetadata(post: BlogPost): Metadata {
   const canonicalPath = `${path}/`;
   const canonical = new URL(canonicalPath, siteConfig.url).toString();
   const headline = post.seoTitle ?? post.title;
-  const socialTitle = headline.includes("Giga3") ? headline : `${headline} | Giga3 AI`;
+  const socialTitle = headline.includes("Giga3") ? headline : `${headline} | Giga3 Hub`;
   const documentTitle = headline.includes("Giga3") ? { absolute: headline } : headline;
   const image = post.featuredImage.startsWith("http")
     ? post.featuredImage
@@ -35,7 +35,7 @@ export function blogArticleMetadata(post: BlogPost): Metadata {
     openGraph: {
       type: "article",
       url: canonical,
-      siteName: "Giga3 AI",
+      siteName: "Giga3 Hub",
       title: socialTitle,
       description: post.description,
       publishedTime: `${post.publishedAt}T00:00:00.000Z`,
@@ -58,7 +58,7 @@ export function blogIndexMetadata(): Metadata {
   const path = "/blog";
   const canonicalPath = `${path}/`;
   const canonical = new URL(canonicalPath, siteConfig.url).toString();
-  const title = "Giga3 AI Blog — AI, Education & Technology in Ghana";
+  const title = "Giga3 Hub Blog — AI, Education & Technology in Ghana";
   const description =
     "Guides on artificial intelligence, education, BECE and WASSCE preparation, creator tools, business automation and digital opportunities in Ghana and across Africa.";
   const image = brandingAssetUrl("/images/blog/blog-hero.jpg");
@@ -81,10 +81,10 @@ export function blogIndexMetadata(): Metadata {
     openGraph: {
       type: "website",
       url: canonical,
-      siteName: "Giga3 AI",
+      siteName: "Giga3 Hub",
       title,
       description,
-      images: [{ url: image, alt: "Giga3 AI Blog" }],
+      images: [{ url: image, alt: "Giga3 Hub Blog" }],
     },
     twitter: {
       card: "summary_large_image",

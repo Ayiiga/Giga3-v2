@@ -7,9 +7,9 @@ import { publicMetadata } from "@/lib/seo/publicMetadata";
 
 export const metadata = publicMetadata({
   path: "/contact",
-  title: "Contact Giga3 AI — Support, Sales and Security",
+  title: "Contact Giga3 Hub — Support, Sales and Security",
   description:
-    "Reach the Giga3 AI team in Ghana: support for your account or billing, enterprise and education workspaces, partnerships, and responsible security disclosure.",
+    "Reach the Giga3 Hub team in Ghana: support for your account or billing, enterprise and education workspaces, partnerships, and responsible security disclosure.",
 });
 
 const CHANNELS = [
@@ -32,14 +32,14 @@ export default function ContactPage() {
     <>
       <JsonLd
         breadcrumbs={[
-          { name: "Giga3 AI", path: "/" },
+          { name: "Giga3 Hub", path: "/" },
           { name: "Contact", path: "/contact" },
         ]}
       />
       <div className="marketing-stable bg-white">
         <Container className="section-padding">
           <div className="mx-auto max-w-3xl">
-            <h1 className="page-title">Contact Giga3 AI</h1>
+            <h1 className="page-title">Contact Giga3 Hub</h1>
             <p className="section-lead mt-4">
               We are based in {siteConfig.founder.location} and reply by email. One address covers
               support, sales and security so nothing gets lost.

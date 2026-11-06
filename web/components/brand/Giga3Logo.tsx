@@ -13,7 +13,7 @@ export function Giga3Logo({ size = 32, className, "aria-label": ariaLabel }: Gig
   return (
     <div
       role="img"
-      aria-label={ariaLabel ?? "Giga3 AI"}
+      aria-label={ariaLabel ?? "Giga3 Hub"}
       className={cn(
         "giga3-logo relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-[12px]",
         "bg-gradient-to-br from-[#6D28D9] to-[#7C3AED] shadow-[0_0_20px_rgba(124,58,237,0.4)]",

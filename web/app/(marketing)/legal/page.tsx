@@ -6,9 +6,9 @@ import { publicMetadata } from "@/lib/seo/publicMetadata";
 
 export const metadata = publicMetadata({
   path: "/legal",
-  title: "Legal — Giga3 AI Policies",
+  title: "Legal — Giga3 Hub Policies",
   description:
-    "Giga3 AI legal policies — Terms of Service, Privacy, Cookies, Refunds and cancellation, Acceptable Use, AI Usage Policy and Security Overview.",
+    "Giga3 Hub legal policies — Terms of Service, Privacy, Cookies, Refunds and cancellation, Acceptable Use, AI Usage Policy and Security Overview.",
 });
 
 export default function LegalIndexPage() {
@@ -16,7 +16,7 @@ export default function LegalIndexPage() {
     <>
       <JsonLd
         breadcrumbs={[
-          { name: "Giga3 AI", path: "/" },
+          { name: "Giga3 Hub", path: "/" },
           { name: "Legal", path: "/legal" },
         ]}
       />
@@ -25,7 +25,7 @@ export default function LegalIndexPage() {
         <div className="mx-auto max-w-3xl">
           <h1 className="hero-title">Legal</h1>
           <p className="mt-4 text-base leading-[1.7] text-muted">
-            Policies for using Giga3 AI. Effective {LEGAL_EFFECTIVE_DATE}.
+            Policies for using Giga3 Hub. Effective {LEGAL_EFFECTIVE_DATE}.
           </p>
 
           <ul className="mt-10 space-y-4">

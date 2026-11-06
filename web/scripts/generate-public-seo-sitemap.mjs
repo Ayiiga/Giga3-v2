@@ -455,9 +455,9 @@ function writeBlogRss() {
   const rss = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Giga3 AI Blog</title>
+    <title>Giga3 Hub Blog</title>
     <link>${siteOrigin}/blog/</link>
-    <description>AI, education and technology guides for Ghana and Africa from Giga3 AI.</description>
+    <description>AI, education and technology guides for Ghana and Africa from Giga3 Hub.</description>
     <language>en-gh</language>
     <atom:link href="${siteOrigin}/blog/rss.xml" rel="self" type="application/rss+xml"/>
 ${items}

@@ -58,7 +58,7 @@ describe("emailClient helpers", () => {
       bodyHtml: "<p>Click below</p>",
     });
     expect(html).toContain("Reset your password");
-    expect(html).toContain("Giga3 AI");
-    expect(html).toContain("Open Giga3 AI");
+    expect(html).toContain("Giga3 Hub");
+    expect(html).toContain("Open Giga3 Hub");
   });
 });

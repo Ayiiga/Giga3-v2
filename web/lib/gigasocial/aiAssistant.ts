@@ -128,7 +128,7 @@ export function improveCaption(text: string): string {
   const trimmed = text.trim();
   if (!trimmed) return trimmed;
   if (trimmed.length < 40) {
-    return `${trimmed}\n\nShared on GigaSocial — create, learn, and grow with Giga3 AI.`;
+    return `${trimmed}\n\nShared on GigaSocial — create, learn, and grow with Giga3 Hub.`;
   }
   if (!/[.!?]$/.test(trimmed)) {
     return `${trimmed}.`;

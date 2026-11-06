@@ -153,7 +153,7 @@ export function buildGigaSocialOgMeta(
     description: description || `${author} shared on GigaSocial`,
     imageUrl,
     imageAlt: display.title || `${label} by ${author} on GigaSocial`,
-    siteName: "GigaSocial · Giga3 AI",
+    siteName: "GigaSocial · Giga3 Hub",
     type: videoUrl ? "video.other" : "article",
     videoUrl,
     videoDurationSec: post.videoDurationSec,
@@ -243,8 +243,8 @@ export function renderGigaSocialUnavailableHtml(postId: string, origin?: string)
     title,
     description,
     imageUrl: DEFAULT_OG_IMAGE,
-    imageAlt: "GigaSocial on Giga3 AI",
-    siteName: "GigaSocial · Giga3 AI",
+    imageAlt: "GigaSocial on Giga3 Hub",
+    siteName: "GigaSocial · Giga3 Hub",
     type: "website",
   });
 }

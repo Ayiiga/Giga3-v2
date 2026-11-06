@@ -35,11 +35,12 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
-    default: "Giga3 AI — Africa's AI Super App | Multi-Provider AI Chat with Failover",
+    default: "Giga3 Hub — Africa's Connected Digital Platform | AI, Social, Learning & Creativity",
     template: `%s | ${siteConfig.name}`,
   },
   description: branding.description,
   keywords: [
+    "Giga3 Hub",
     "Giga3 AI",
     "Africa AI super app",
     "AI chat Ghana",
@@ -49,9 +50,9 @@ export const metadata: Metadata = {
     "Ghana AI",
     "Convex AI chat",
   ],
-  authors: [{ name: "Giga3 AI", url: siteConfig.url }],
-  creator: "Giga3 AI",
-  publisher: "Giga3 AI",
+  authors: [{ name: "Giga3 Hub", url: siteConfig.url }],
+  creator: "Giga3 Hub",
+  publisher: "Giga3 Hub",
   robots: {
     index: true,
     follow: true,

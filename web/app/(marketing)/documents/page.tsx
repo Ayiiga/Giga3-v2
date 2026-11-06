@@ -18,7 +18,7 @@ const DocumentsPageRoot = dynamic(
 
 export const metadata = publicMetadata({
   path: "/documents",
-  title: "Document Studio — PDF & Word Export | Giga3 AI",
+  title: "Document Studio — PDF & Word Export | Giga3 Hub",
   description:
     "Create and edit CVs, letters, plans and reports in Giga3 Document Studio. Export real PDF and Word files with A4/A5 page setup.",
   index: true,
@@ -29,7 +29,7 @@ export default function DocumentsPage() {
     <>
       <JsonLd
         breadcrumbs={[
-          { name: "Giga3 AI", path: "/" },
+          { name: "Giga3 Hub", path: "/" },
           { name: "Document Studio", path: "/documents" },
         ]}
       />

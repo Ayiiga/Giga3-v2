@@ -24,8 +24,8 @@ def twaManifest = [
     applicationId: 'com.giga3ai.app',
     hostName: 'www.giga3ai.com', // The domain being opened in the TWA.
     launchUrl: '/', // The start path for the TWA. Must be relative to the domain.
-    name: 'Giga3 AI', // The application name.
-    launcherName: 'Giga3', // The name shown on the Android Launcher.
+    name: 'Giga3 Hub', // The application name.
+    launcherName: 'Giga3 Hub', // The name shown on the Android Launcher.
     themeColor: '#7C3AED', // The color used for the status bar.
     themeColorDark: '#000000', // The color used for the dark status bar.
     navigationColor: '#000000', // The color used for the navigation bar.

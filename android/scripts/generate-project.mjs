@@ -28,8 +28,8 @@ const twa = TwaManifest.fromWebManifestJson(webManifestUrl, webManifest);
 Object.assign(twa, {
   packageId: "com.giga3ai.app",
   host: "www.giga3ai.com",
-  name: "Giga3 AI",
-  launcherName: "Giga3",
+  name: "Giga3 Hub",
+  launcherName: "Giga3 Hub",
   startUrl: "/",
   fullScopeUrl: "https://www.giga3ai.com/",
   webManifestUrl: "https://www.giga3ai.com/manifest.json",

@@ -115,7 +115,7 @@ export function GigaSocialPostJsonLd({
     image: imageUrl || brandingAssetUrl("/images/logo.png"),
     publisher: {
       "@type": "Organization",
-      name: "Giga3 AI",
+      name: "Giga3 Hub",
       logo: {
         "@type": "ImageObject",
         url: brandingAssetUrl("/images/logo.png"),

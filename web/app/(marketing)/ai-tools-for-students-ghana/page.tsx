@@ -25,7 +25,7 @@ const PREMIUM = SUBSCRIPTION_PLANS.premium;
 
 export const metadata = publicMetadata({
   path: PATH,
-  title: "Best AI Tools for Students in Ghana 2026 | Giga3 AI",
+  title: "Best AI Tools for Students in Ghana 2026 | Giga3 Hub",
   description: `Compare AI study tools for Ghana in 2026 — Giga3 AI, ChatGPT, Gemini and more for research, coding and exams. From GHS ${BASIC.priceGhs}/${BASIC.label} via Paystack.`,
 });
 
@@ -83,7 +83,7 @@ const STUDENT_FEATURES = [
 const FAQ: FaqItem[] = [
   {
     question: "What is the best AI tool for university students in Ghana in 2026?",
-    answer: `The best option depends on the student's needs. Giga3 AI is particularly relevant for students looking for a Ghana-focused platform with GHS pricing, Paystack billing and tools covering learning, research, coding and creativity. Its ${BASIC.label} plan at GHS ${BASIC.priceGhs} per month is the lowest-cost paid option.`,
+    answer: `The best option depends on the student's needs. Giga3 AI is particularly relevant for students looking for a Ghana-focused AI assistant inside Giga3 Hub with GHS pricing, Paystack billing and tools covering learning, research, coding and creativity. Its ${BASIC.label} plan at GHS ${BASIC.priceGhs} per month is the lowest-cost paid option.`,
   },
   {
     question: "Which AI tool is cheapest for Ghanaian students?",
@@ -102,14 +102,14 @@ export default function AiToolsForStudentsGhanaPage() {
       <JsonLd
         webPage={{
           path: PATH,
-          name: "Best AI Tools for Students in Ghana 2026 | Giga3 AI",
+          name: "Best AI Tools for Students in Ghana 2026 | Giga3 Hub",
           description:
             "Compare Giga3 AI, ChatGPT, Gemini, Copilot and Perplexity for study, research and coding — with GHS pricing and a responsible-use guide.",
         }}
       />
       <JsonLd
         breadcrumbs={[
-          { name: "Giga3 AI", path: "/" },
+          { name: "Giga3 Hub", path: "/" },
           { name: "AI for Ghana", path: "/ai-for-ghana" },
           { name: "Best AI tools for students in Ghana", path: PATH },
         ]}
@@ -143,28 +143,28 @@ export default function AiToolsForStudentsGhanaPage() {
             </div>
 
             <section className="mt-12 space-y-5">
-              <ArticleH2>1. Giga3 AI — A Ghana-Focused AI Platform</ArticleH2>
+              <ArticleH2>1. Giga3 AI — The AI Assistant Inside Giga3 Hub</ArticleH2>
               <Prose>
-                Giga3 AI is an AI platform from Ghana designed for learning, research, coding,
+                Giga3 AI is the AI assistant inside Giga3 Hub, designed to support learning, research, coding,
                 creativity and productivity.
               </Prose>
               <Prose>
                 For Ghanaian university students, one of its biggest advantages is GHS-based Paystack
                 billing. Instead of making students think primarily in foreign-currency subscription
-                prices, Giga3 AI provides plans designed around its Ghana-focused offering.
+                prices, Giga3 Hub provides plans designed around its Ghana-focused offering.
               </Prose>
 
               <ArticleH3>
                 {BASIC.label} plan at GHS {BASIC.priceGhs}
               </ArticleH3>
               <Prose>
-                Giga3 AI&apos;s {BASIC.label} plan costs GHS {BASIC.priceGhs} per month and includes{" "}
+                Giga3 Hub&apos;s {BASIC.label} plan costs GHS {BASIC.priceGhs} per month and includes{" "}
                 {BASIC.credits} credits, making it the most affordable way for students to move beyond
                 the free tier.
               </Prose>
               <Prose>The pricing structure includes:</Prose>
               <ArticleTable
-                caption="Giga3 AI pricing plans"
+                caption="Giga3 Hub pricing plans"
                 headers={["Plan", "Price", "Credits"]}
                 rows={PRICING_ROWS}
               />
@@ -192,8 +192,8 @@ export default function AiToolsForStudentsGhanaPage() {
               </Prose>
               <Prose>
                 Explore the platform&apos;s capabilities on the{" "}
-                <ArticleLink href="/features">Giga3 AI Features page</ArticleLink> or compare plans on
-                the <ArticleLink href="/pricing">Giga3 AI Pricing page</ArticleLink>.
+                <ArticleLink href="/features">Giga3 Hub Features page</ArticleLink> or compare plans on
+                the <ArticleLink href="/pricing">Giga3 Hub Pricing page</ArticleLink>.
               </Prose>
             </section>
 

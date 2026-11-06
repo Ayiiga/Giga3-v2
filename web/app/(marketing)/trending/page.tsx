@@ -17,9 +17,9 @@ const TrendingPageClient = dynamic(
 
 export const metadata = publicMetadata({
   path: "/trending",
-  title: "Trending — Giga3 AI Topics",
+  title: "Trending — Giga3 Hub Topics",
   description:
-    "Trending AI topics on Giga3 AI — artificial intelligence, coding, education, business, sports, technology, health, finance, entertainment, and the creator economy.",
+    "Trending topics across Giga3 Hub — artificial intelligence, coding, education, business, sports, technology, health, finance, entertainment, and the creator economy.",
 });
 
 export default function TrendingPage() {
@@ -27,7 +27,7 @@ export default function TrendingPage() {
     <>
       <JsonLd
         breadcrumbs={[
-          { name: "Giga3 AI", path: "/" },
+          { name: "Giga3 Hub", path: "/" },
           { name: "Trending", path: "/trending" },
         ]}
       />

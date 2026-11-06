@@ -1,9 +1,9 @@
 /** Shared PWA / install branding tokens (keep in sync with manifest + generate-branding.mjs). */
 export const branding = {
-  name: "Giga3 AI",
-  shortName: "Giga3 AI",
+  name: "Giga3 Hub",
+  shortName: "Giga3 Hub",
   description:
-    "Giga3 AI is Africa's AI Super App for social, AI tools, learning, creativity, marketplace and digital services.",
+    "Giga3 Hub brings AI assistance, social networking, learning, creativity, publishing, marketplace and digital services together in one connected platform. Giga3 AI remains the dedicated AI assistant service.",
   themeColor: "#7C3AED",
   backgroundColor: "#0A0A0F",
   accentLight: "#f5f3ff",

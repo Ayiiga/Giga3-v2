@@ -13,11 +13,11 @@ import {
 } from "@/lib/payments/subscriptionCatalog";
 
 const HOME_DESCRIPTION =
-  "Giga3 AI is Africa's AI super app for chat, research, learning, coding, image and video creation, editing and productivity. Built in Ghana for Africa and the world.";
+  "Giga3 Hub is Africa's connected digital platform for AI assistance, social networking, learning, exam practice, creativity, publishing and productivity. Built in Ghana for Africa and the world.";
 
 export const metadata = publicMetadata({
   path: "/",
-  title: "Giga3 AI — Africa's AI Super App for Ghana | Chat, Learn & Create",
+  title: "Giga3 Hub — Africa's Connected Digital Platform | AI, Social, Learn & Create",
   description: HOME_DESCRIPTION,
 });
 

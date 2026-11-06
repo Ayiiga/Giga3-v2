@@ -1,5 +1,5 @@
 /** Bump with `npm run generate:branding` when logo/splash/icons change. */
-export const BRANDING_ASSET_VERSION = "20260918-v258";
+export const BRANDING_ASSET_VERSION = "20261106-v259";
 
 export function brandingAssetUrl(path: string): string {
   const normalized = path.startsWith("/") ? path : `/${path}`;

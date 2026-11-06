@@ -7,7 +7,7 @@ const document = legalDocumentBySlug["ai-usage"];
 
 export const metadata = publicMetadata({
   path: `/legal/${document.slug}`,
-  title: `${document.title} — Giga3 AI`,
+  title: `${document.title} — Giga3 Hub`,
   description: document.description,
 });
 
@@ -16,7 +16,7 @@ export default function AiUsagePolicyPage() {
     <>
       <JsonLd
         breadcrumbs={[
-          { name: "Giga3 AI", path: "/" },
+          { name: "Giga3 Hub", path: "/" },
           { name: "Legal", path: "/legal" },
           { name: document.title, path: `/legal/${document.slug}` },
         ]}

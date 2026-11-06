@@ -19,14 +19,14 @@ export default function BlogIndexPage() {
       <JsonLd
         webPage={{
           path: "/blog",
-          name: "Giga3 AI Blog — AI, Education & Technology in Ghana",
+          name: "Giga3 Hub Blog — AI, Education & Technology in Ghana",
           description:
             "Guides on artificial intelligence, education, BECE and WASSCE preparation, creator tools, business automation and digital opportunities in Ghana and across Africa.",
         }}
       />
       <JsonLd
         breadcrumbs={[
-          { name: "Giga3 AI", path: "/" },
+          { name: "Giga3 Hub", path: "/" },
           { name: "Blog", path: "/blog" },
         ]}
       />
@@ -35,13 +35,13 @@ export default function BlogIndexPage() {
           <div className="mx-auto max-w-5xl">
             <BlogBreadcrumbs
               items={[
-                { name: "Giga3 AI", href: "/" },
+                { name: "Giga3 Hub", href: "/" },
                 { name: "Blog" },
               ]}
             />
             <header className="mx-auto mt-6 max-w-3xl text-center">
               <h1 className="page-title">
-                Giga3 AI Blog — AI, Education &amp; Technology in Ghana
+                Giga3 Hub Blog — AI, Education &amp; Technology in Ghana
               </h1>
               <p className="section-lead mt-4">
                 Practical guides on artificial intelligence, education, BECE and WASSCE preparation,
@@ -115,7 +115,7 @@ export default function BlogIndexPage() {
                 Product guides &amp; explainers
               </h2>
               <p className="mt-2 text-base text-muted">
-                Long-form pages about Giga3 AI products and AI adoption in Ghana.
+                Long-form guides about Giga3 Hub services and AI adoption in Ghana.
               </p>
               <ul className="mt-6 space-y-4">
                 {PUBLIC_ARTICLES.map((article) => (

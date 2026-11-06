@@ -7,9 +7,9 @@ const meta = RETIRED_PRODUCTS.find((p) => p.id === "ai-studio")!;
 
 export const metadata = publicMetadata({
   path: "/ai-studio",
-  title: "AI Studio retired | Giga3 AI",
+  title: "AI Studio retired | Giga3 Hub",
   description:
-    "Giga3 AI Studio creative umbrella pages are retired. Continue with AI Assistant, GigaLearn Academy, Exam Practice, and GigaSocial.",
+    "The former AI Studio umbrella is retired. Continue exploring Giga3 Hub services including Giga3 AI, GigaLearn Academy, Exam Practice and GigaSocial.",
   index: false,
 });
 

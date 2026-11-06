@@ -2,7 +2,7 @@ let baseTitle: string | null = null;
 let activeGenerationCount = 0;
 
 function ensureBaseTitle(): string {
-  if (typeof document === "undefined") return "Giga3 AI";
+  if (typeof document === "undefined") return "Giga3 Hub";
   if (!baseTitle) {
     baseTitle = document.title.replace(/^\(Generating…\)\s*/, "");
   }

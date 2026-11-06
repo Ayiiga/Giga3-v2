@@ -23,7 +23,7 @@ const GigaLearnPageRoot = dynamic(
 
 export const metadata = publicMetadata({
   path: "/gigalearn",
-  title: "GigaLearn — AI Tutor for BECE & WASSCE in Ghana | Giga3 AI",
+  title: "GigaLearn — AI Tutor for BECE & WASSCE in Ghana | Giga3 Hub",
   description: GIGALEARN_META_DESCRIPTION,
 });
 
@@ -46,7 +46,7 @@ export default function GigaLearnPage() {
       />
       <JsonLd
         breadcrumbs={[
-          { name: "Giga3 AI", path: "/" },
+          { name: "Giga3 Hub", path: "/" },
           { name: "GigaLearn", path: "/gigalearn" },
         ]}
       />

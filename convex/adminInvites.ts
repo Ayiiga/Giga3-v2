@@ -81,17 +81,17 @@ export const sendInviteEmail = action({
     const link = `${getFrontendBaseUrl()}/invite?token=${encodeURIComponent(magicLinkToken)}`;
     const html = `
       <div style="font-family:system-ui,sans-serif;line-height:1.6;color:#111">
-        <h1 style="color:#7c3aed">Explore Giga3 AI</h1>
-        <p>Ghana AI Super App for BECE/WASSCE, GigaLearn, GigaEdits, Media Studio, and GigaSocial.</p>
+        <h1 style="color:#7c3aed">Explore Giga3 Hub</h1>
+        <p>Ghana-built digital platform for Giga3 AI assistance, BECE/WASSCE preparation, GigaLearn, GigaSocial and connected creative services.</p>
         <p>You were invited as <strong>${args.role}</strong>.</p>
         <p><a href="${link}" style="display:inline-block;background:#7c3aed;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700">Accept invite</a></p>
         <p style="font-size:12px;color:#666">Or copy: ${link}</p>
       </div>`;
     const result = await sendEmail({
       to: record.email,
-      subject: "You're invited to Giga3 AI",
+      subject: "You're invited to Giga3 Hub",
       html,
-      text: `Explore Giga3 AI — accept your invite: ${link}`,
+      text: `Explore Giga3 Hub — accept your invite: ${link}`,
       tags: [{ name: "category", value: "admin_invite" }],
     });
     if (!result.ok) {
@@ -118,14 +118,14 @@ export const resendInviteEmail = action({
     const link = `${getFrontendBaseUrl()}/invite?token=${encodeURIComponent(row.magicLinkToken)}`;
     const html = `
       <div style="font-family:system-ui,sans-serif;line-height:1.6;color:#111">
-        <h1 style="color:#7c3aed">Reminder: Giga3 AI invite</h1>
+        <h1 style="color:#7c3aed">Reminder: Giga3 Hub invite</h1>
         <p><a href="${link}" style="display:inline-block;background:#7c3aed;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700">Accept invite</a></p>
       </div>`;
     const result = await sendEmail({
       to: row.email,
-      subject: "Reminder: Giga3 AI invite",
+      subject: "Reminder: Giga3 Hub invite",
       html,
-      text: `Accept your Giga3 AI invite: ${link}`,
+      text: `Accept your Giga3 Hub invite: ${link}`,
     });
     if (!result.ok) {
       throw new Error(result.providerMessage ?? "Could not resend invite.");

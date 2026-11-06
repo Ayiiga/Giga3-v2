@@ -107,7 +107,7 @@ describe("blog metadata", () => {
   it("sets unique blog index metadata", () => {
     const meta = blogIndexMetadata();
     expect(meta.title).toEqual({
-      absolute: "Giga3 AI Blog — AI, Education & Technology in Ghana",
+      absolute: "Giga3 Hub Blog — AI, Education & Technology in Ghana",
     });
     expect(meta.alternates?.canonical).toBe("/blog/");
   });
@@ -138,7 +138,7 @@ describe("blog JSON-LD author type", () => {
 describe("shared blog promotion", () => {
   it("promotes Giga3 AI Chat and GigaSocial Awards on every article layout", () => {
     const layout = readFileSync(resolve(WEB_ROOT, "components/blog/BlogHeader.tsx"), "utf8");
-    expect(layout).toContain('aria-label="Explore Giga3 AI"');
+    expect(layout).toContain('aria-label="Explore Giga3 Hub"');
     expect(layout).toContain('href="/chat/login/"');
     expect(layout).toContain("Try Giga3 AI Chat");
     expect(layout).toContain('href="/gigasocial/awards/"');
