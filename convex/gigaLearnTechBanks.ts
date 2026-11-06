@@ -752,8 +752,14 @@ async function finalizeSession(
       const journey = parseFreeExamJourney(learner.examPracticeJourneyJson);
       const key = `${session.courseSlug}:${session.topicId?.trim() || "all"}`;
       const current = journey[key];
-      if (current && current.currentQuestionIds.length > 0) {
-        if (graded.percent >= EXAM_PRACTICE_FREE_JOURNEY_PASS_PERCENT) {
+      const sessionIdsMatch = Boolean(
+        current &&
+          current.currentQuestionIds.length === questionIds.length &&
+          questionIds.every((id) => current.currentQuestionIds.includes(id))
+      );
+      if (current && current.currentQuestionIds.length > 0 && sessionIdsMatch) {
+        const passed = graded.percent >= EXAM_PRACTICE_FREE_JOURNEY_PASS_PERCENT;
+        if (passed) {
           const completed = new Set(current.completedQuestionIds);
           for (const id of questionIds) completed.add(id);
           journey[key] = {
@@ -765,6 +771,22 @@ async function finalizeSession(
         } else {
           journey[key] = { ...current, lastPercent: graded.percent };
         }
+        const completedQuestions = journey[key].completedQuestionIds.length;
+        const remainingAvailable = getTechBankQuestions(session.courseSlug, {
+          approvedOnly: true,
+          freeTierOnly: true,
+          topicId: session.topicId,
+        }).length;
+        freeJourneyResult = {
+          passed,
+          nextStage: journey[key].stage + 1,
+          completedQuestions,
+          totalQuestionLimit: Math.min(
+            EXAM_PRACTICE_FREE_JOURNEY_TOTAL,
+            completedQuestions + remainingAvailable
+          ),
+          passPercent: EXAM_PRACTICE_FREE_JOURNEY_PASS_PERCENT,
+        };
         await ctx.db.patch(learner._id, {
           examPracticeJourneyJson: JSON.stringify(journey),
         });
@@ -878,6 +900,7 @@ async function finalizeSession(
     rewardLabel,
     totalXp,
     sessionsCompleted,
+    journey: freeJourneyResult,
   };
 }
 
