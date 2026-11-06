@@ -2,9 +2,11 @@
 
 /**
  * Fans required before a creator may accept monetisation terms and start earning.
- * Product rule (2026-10-24 Earnings Centre brief): 500 genuine fans.
+ * Default global rule: 500 genuine fans. Verified African creators use a
+ * server-calculated 15-fan threshold; clients must display the server value.
  */
 export const MIN_FANS_FOR_MONETIZATION = 500;
+export const MIN_FANS_FOR_AFRICAN_MONETIZATION = 15;
 
 /** Fans required before a creator may request a withdrawal (still requires acceptance + balance). */
 export const MIN_FANS_FOR_WITHDRAWAL = 50;
