@@ -3,9 +3,9 @@ import { siteConfig } from "@/lib/site";
 /** Canonical PWA / marketing URL for attribution on shares and exports. */
 export const GIGA3_APP_URL = siteConfig.url.replace(/\/$/, "");
 
-export const GIGA3_ATTRIBUTION_LINE = `Made with Giga3 AI — ${GIGA3_APP_URL}`;
+export const GIGA3_ATTRIBUTION_LINE = `Made with Giga3 Hub — ${GIGA3_APP_URL}`;
 
-export const GIGA3_WATERMARK_LABEL = "Giga3 AI · giga3ai.com";
+export const GIGA3_WATERMARK_LABEL = "Giga3 Hub · giga3ai.com";
 
 export function hasGiga3Attribution(text: string): boolean {
   return /giga3ai\.com/i.test(text);
@@ -27,8 +27,8 @@ export function giga3ShareDefaults(overrides?: {
   const url = overrides?.url?.trim() || GIGA3_APP_URL;
   const raw = overrides?.text?.trim() ?? "";
   return {
-    title: overrides?.title?.trim() || "Giga3 AI",
-    text: appendGiga3Attribution(raw || "Shared from Giga3 AI"),
+    title: overrides?.title?.trim() || "Giga3 Hub",
+    text: appendGiga3Attribution(raw || "Shared from Giga3 Hub"),
     url,
   };
 }
