@@ -56,7 +56,7 @@ export function BlogArticleJsonLd({ post, path }: BlogArticleJsonLdProps) {
       {
         "@type": "ListItem",
         position: 1,
-        name: "Giga3 AI",
+        name: "Giga3 Hub",
         item: siteConfig.url,
       },
       {
