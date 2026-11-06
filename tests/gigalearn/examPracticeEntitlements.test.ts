@@ -54,6 +54,14 @@ describe("free BECE and WASSCE staged practice", () => {
     expect(source).toContain("sessionIdsMatch");
     expect(source).toContain("approvedOnly: true");
   });
+
+  it("applies the same course-wide stage gate regardless of entry mode", () => {
+    const source = readFileSync(resolve(ROOT, "convex/gigaLearnTechBanks.ts"), "utf8");
+    expect(source).toContain("const progressiveFreeJourney = isFreeProgressiveExamCourseSlug(slug);");
+    expect(source).toContain('const journeyKey = `${slug}:${topicKey}`;');
+    expect(source).toContain('const topicKey = "all";');
+    expect(source).toContain('const key = `${session.courseSlug}:all`;');
+  });
 });
 
 describe("Exam practice billing policy (no invented prices)", () => {
