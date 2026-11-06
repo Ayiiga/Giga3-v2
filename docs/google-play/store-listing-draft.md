@@ -6,7 +6,7 @@ Prepared for Google Play Console. **Do not upload without explicit authorization
 
 | Field | Value |
 |-------|--------|
-| App name | Giga3 AI |
+| App name | Giga3 Hub |
 | Package name | `com.giga3ai.app` |
 | Default language | English |
 | Category | Productivity (confirm in Console) |
@@ -23,15 +23,15 @@ Africa’s AI Super App — chat, learn, create, and marketplace in one place.
 ## Full description (draft)
 
 ```
-Giga3 AI is Africa’s AI Super App, built in Ghana for students, creators, and teams.
+Giga3 Hub is Africa’s connected digital platform, built in Ghana for students, creators, educators, and teams.
 
-Chat with Giga3 AI for research, writing, coding help, and everyday questions.
+Use Giga3 AI, the built-in AI assistant, for research, writing, coding help, and everyday questions.
 Learn with GigaLearn — curriculum-aligned study support for BECE and WASSCE preparation.
 Create with Media Studio and GigaEdits for images, video, and creative workflows.
 Connect on GigaSocial and discover digital products on the Marketplace.
 Manage credits and subscriptions securely in GigaWallet.
 
-Giga3 AI runs as a Trusted Web Activity wrapping the official website at www.giga3ai.com.
+Giga3 Hub runs as a Trusted Web Activity wrapping the official website at www.giga3ai.com.
 An internet connection is required for AI features. Some tools may use device camera or microphone through the website when you choose to grant access.
 
 Payments on the website use Paystack where available. Review the Privacy Policy and Terms before using paid features.
@@ -40,8 +40,8 @@ Payments on the website use Paystack where available. Review the Privacy Policy 
 ## Release notes (1.0.0)
 
 ```
-Initial Google Play packaging of Giga3 AI (Trusted Web Activity).
-Opens the official Giga3 AI website in a fullscreen Android app shell.
+Initial Google Play packaging of Giga3 Hub (Trusted Web Activity).
+Opens the official Giga3 Hub website in a fullscreen Android app shell.
 ```
 
 ## Graphics checklist
