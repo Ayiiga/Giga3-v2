@@ -82,7 +82,7 @@ export default function PressPage() {
               <p className="text-sm text-muted">
                 More context:{" "}
                 <Link href="/about/" className="text-accent underline">
-                  About Giga3 AI
+                  About Giga3 Hub
                 </Link>
               </p>
             </section>
