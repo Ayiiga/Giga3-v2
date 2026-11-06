@@ -86,7 +86,7 @@ describe("creatorEconomy eligibility", () => {
   });
 
   it("publishes a stable monetisation policy version", () => {
-    expect(CREATOR_MONETIZATION_POLICY_VERSION).toBe("giga-creator-monetisation-v1");
+    expect(CREATOR_MONETIZATION_POLICY_VERSION).toBe("giga-creator-monetisation-v2");
   });
 });
 
