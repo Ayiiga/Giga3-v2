@@ -1,8 +1,8 @@
 {
   "packageId": "com.giga3ai.app",
   "host": "www.giga3ai.com",
-  "name": "Giga3 AI",
-  "launcherName": "Giga3",
+  "name": "Giga3 Hub",
+  "launcherName": "Giga3 Hub",
   "display": "standalone",
   "themeColor": "#7C3AED",
   "themeColorDark": "#000000",
