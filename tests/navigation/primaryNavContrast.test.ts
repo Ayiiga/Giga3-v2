@@ -42,7 +42,7 @@ describe("primary nav daylight contrast", () => {
     expect(mobileBlock).toContain("bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px))");
     expect(mobileBlock).toContain("margin-top: 0");
     expect(mobileBlock).toContain("safe-area-inset-bottom");
-    expect(css).toContain("min-height: 48px");
+    expect(css).toContain("min-height: 3.55rem");
     expect(css).toContain(".primary-nav__item:focus-visible");
     expect(component).toContain('aria-current={active ? "page" : undefined}');
     expect(component).toContain('aria-label="Giga3 primary navigation"');
