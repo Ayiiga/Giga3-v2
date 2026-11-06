@@ -20,16 +20,16 @@ const PATH = "/features";
 
 export const metadata = publicMetadata({
   path: PATH,
-  title: "Giga3 AI Features — Every Product in One AI Ecosystem",
+  title: "Giga3 Hub Features — One Connected Digital Platform",
   description:
-    "All Giga3 AI products in one place: AI chat and research, GigaLearn, Media Studio, Video AI, GigaEdit, GigaSocial, Marketplace, Enterprise and developer API.",
+    "Explore Giga3 Hub services in one place: Giga3 AI assistance, GigaSocial, GigaLearn, exam practice, creative tools, publishing and Marketplace.",
 });
 
 const FAQ: FaqItem[] = [
   {
-    question: "Are Giga3 AI products separate apps?",
+    question: "Are Giga3 Hub services separate apps?",
     answer:
-      "No. Every product runs inside the same Giga3 AI account and progressive web app. Your sign-in, credits and subscription are shared, and creations move between tools — for example an image from Media Studio can be edited in GigaEdit and published to GigaSocial.",
+      "No. Giga3 Hub brings its services together in one account and progressive web app. Your sign-in, eligible credits and subscription are connected across the platform, so you can move between Giga3 AI, learning, exam practice, creative tools, publishing and community features.",
   },
   {
     question: "Do I pay separately for each product?",
@@ -48,14 +48,14 @@ export default function FeaturesPage() {
       <JsonLd
         webPage={{
           path: PATH,
-          name: "Giga3 AI Features — Every Product in One AI Ecosystem",
+          name: "Giga3 Hub Features — One Connected Digital Platform",
           description:
-            "All Giga3 AI products in one place: AI chat and research, GigaLearn, Media Studio, Video AI, GigaEdit, GigaSocial, Marketplace, Enterprise and developer API.",
+            "Explore Giga3 Hub services in one place: Giga3 AI assistance, GigaSocial, GigaLearn, exam practice, creative tools, publishing and Marketplace.",
         }}
       />
       <JsonLd
         breadcrumbs={[
-          { name: "Giga3 AI", path: "/" },
+          { name: "Giga3 Hub", path: "/" },
           { name: "Features", path: PATH },
         ]}
       />
@@ -64,9 +64,9 @@ export default function FeaturesPage() {
         <Container className="section-padding">
           <div className="mx-auto max-w-4xl">
             <header className="max-w-3xl">
-              <h1 className="page-title">Giga3 AI features: one ecosystem, every tool connected</h1>
+              <h1 className="page-title">Giga3 Hub features: one ecosystem, every service connected</h1>
               <p className="section-lead mt-4">
-                Giga3 AI is a single account and app that brings AI chat, research, coding help,
+                Giga3 Hub is a connected platform that brings together Giga3 AI chat and research, learning, exam practice, creative tools, publishing and community services.
                 learning, image and video creation, editing, a creator community and a GHS
                 marketplace together. Each product below is live today and links to its own page.
               </p>
@@ -143,7 +143,7 @@ export default function FeaturesPage() {
                   { href: "/ai-for-teachers-ghana", label: "AI for teachers in Ghana" },
                   { href: "/ai-for-bece-wassce-ghana", label: "AI for BECE & WASSCE preparation" },
                   { href: "/ai-tools-for-students-ghana", label: "Best AI tools for university students in Ghana 2026" },
-                  { href: "/install", label: "Install the Giga3 AI app" },
+                  { href: "/install", label: "Install the Giga3 Hub app" },
                 ]}
               />
             </div>
