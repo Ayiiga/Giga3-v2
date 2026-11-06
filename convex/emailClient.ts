@@ -51,7 +51,7 @@ export function getAuthFromEmail(): string {
   return (
     process.env.AUTH_FROM_EMAIL?.trim() ||
     // Resend onboarding sender works before a custom domain is verified.
-    "Giga3 AI <onboarding@resend.dev>"
+    "Giga3 Hub <onboarding@resend.dev>"
   );
 }
 
@@ -216,7 +216,7 @@ export function wrapEmailHtml(opts: {
     <tr><td align="center">
       <table role="presentation" width="100%" style="max-width:560px;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #d1e5e1;">
         <tr><td style="background:linear-gradient(135deg,#0f766e,#042f2e);padding:28px 24px;color:#ecfdf5;">
-          <div style="font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#99f6e4;">Giga3 AI</div>
+          <div style="font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#99f6e4;">Giga3 Hub</div>
           <h1 style="margin:10px 0 0;font-size:24px;line-height:1.25;color:#ffffff;">${opts.title}</h1>
         </td></tr>
         <tr><td style="padding:28px 24px;font-size:16px;line-height:1.6;">
@@ -224,7 +224,7 @@ export function wrapEmailHtml(opts: {
         </td></tr>
         <tr><td style="padding:0 24px 28px;font-size:13px;line-height:1.5;color:#5f7a76;">
           ${opts.footerHtml ?? ""}
-          <p style="margin:16px 0 0;"><a href="${frontend}" style="color:#0f766e;">Open Giga3 AI</a></p>
+          <p style="margin:16px 0 0;"><a href="${frontend}" style="color:#0f766e;">Open Giga3 Hub</a></p>
         </td></tr>
       </table>
     </td></tr>
