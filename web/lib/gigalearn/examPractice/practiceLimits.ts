@@ -16,6 +16,9 @@
  */
 
 export const EXAM_PRACTICE_FREE_QUESTION_COUNT = 50;
+export const EXAM_PRACTICE_FREE_JOURNEY_TOTAL = 500;
+export const EXAM_PRACTICE_FREE_JOURNEY_STAGE_SIZE = 50;
+export const EXAM_PRACTICE_FREE_JOURNEY_PASS_PERCENT = 60;
 export const EXAM_PRACTICE_PREMIUM_QUESTION_COUNT = 500;
 
 /** Lowest paid catalog plan that unlocks Exam Practice premium packs. */
@@ -33,6 +36,11 @@ export const TECH_HUB_DEFAULT_MAX_COUNT = 50;
  * Starting a new session abandons prior open ones (prevents pile-up abuse).
  */
 export const EXAM_PRACTICE_MAX_CONCURRENT_IN_PROGRESS = 1;
+
+export function isFreeProgressiveExamCourseSlug(courseSlug: string): boolean {
+  const slug = courseSlug.trim().toLowerCase();
+  return slug === "exam-bece-prep" || slug.startsWith("exam-wassce-");
+}
 
 export function isExamPracticeCourseSlug(courseSlug: string): boolean {
   const slug = courseSlug.trim().toLowerCase();
