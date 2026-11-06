@@ -1,4 +1,4 @@
-# Giga3 AI — MVP
+# Giga3 Hub
 
 This repo contains a minimal production-ready MVP using Convex (TypeScript) backend and a pure HTML/CSS/JS frontend.
 
