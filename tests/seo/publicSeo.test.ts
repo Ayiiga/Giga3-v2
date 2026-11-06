@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { publicMetadata } from "../../web/lib/seo/publicMetadata";
+import { branding } from "../../web/lib/branding";
 import { GIGA3_PRODUCT_LINKS, FOOTER_PRODUCT_LINKS } from "../../web/lib/seo/productLinks";
 import {
   gigaSocialPostPath,
@@ -55,6 +56,30 @@ describe("publicMetadata", () => {
       description: "Learning support.",
     });
     expect(meta.title).toBe("GigaLearn — AI Tutor");
+  });
+});
+
+describe("Giga3 Hub master brand", () => {
+  it("uses Giga3 Hub as the installed platform identity while retaining Giga3 AI as the assistant", () => {
+    expect(branding.name).toBe("Giga3 Hub");
+    expect(branding.shortName).toBe("Giga3 Hub");
+    const manifest = JSON.parse(
+      readFileSync(resolve(__dirname, "../../web/public/manifest.json"), "utf8")
+    );
+    expect(manifest.name).toBe("Giga3 Hub");
+    expect(manifest.short_name).toBe("Giga3 Hub");
+    expect(manifest.shortcuts.find((item: { url: string }) => item.url === "/chat/")?.description)
+      .toContain("Giga3 AI");
+  });
+
+  it("uses Giga3 Hub as the public metadata publisher", () => {
+    const meta = publicMetadata({
+      path: "/features",
+      title: "Features",
+      description: "Explore the connected Giga3 Hub services for learning, creativity and community.",
+    });
+    expect(meta.openGraph?.siteName).toBe("Giga3 Hub");
+    expect(meta.openGraph?.title).toBe("Features | Giga3 Hub");
   });
 });
 
