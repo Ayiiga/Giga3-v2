@@ -155,6 +155,13 @@ export async function recoverInvalidSession(options: {
     };
   }
 
+  try {
+    const mod = await import("@/lib/supabase/auth");
+    refreshCredentialPending = mod.hasStoredSupabaseRefreshToken();
+  } catch {
+    refreshCredentialPending = false;
+  }
+
   if (refreshCredentialPending) {
     const cachedToken = getSessionToken();
     if (cachedToken) return { status: "ok", sessionToken: cachedToken, email };
