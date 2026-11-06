@@ -1,5 +1,5 @@
 /**
- * Generates Giga3 AI PWA branding assets (icons, favicons, splash screens, logo).
+ * Generates Giga3 Hub PWA branding assets (icons, favicons, splash screens, logo).
  * Pure Node.js — no native image dependencies.
  *
  * Run: node scripts/generate-branding.mjs
@@ -21,10 +21,10 @@ const frontendImagesDir = join(__dirname, "..", "..", "frontend", "assets", "ima
 const BRAND_ASSET_VERSION = "20260918-v258";
 
 const BRAND = {
-  name: "Giga3 AI",
-  shortName: "Giga3 AI",
+  name: "Giga3 Hub",
+  shortName: "Giga3 Hub",
   description:
-    "Giga3 AI is Africa's AI Super App for social, AI tools, learning, creativity, marketplace and digital services.",
+    "Giga3 Hub brings AI assistance, social networking, learning, creativity, publishing, marketplace and digital services together in one connected platform.",
   themeColor: "#7C3AED",
   backgroundColor: "#0A0A0F",
   /** Violet gradient endpoints for app icons (#6D28D9 → #7C3AED). */
@@ -251,7 +251,7 @@ function renderSplash(width, height) {
 
   const textScale = Math.max(3, Math.round(Math.min(width, height) / 220));
   const titleY = cy + markScale * 1.35;
-  drawText(pixels, width, height, "Giga3 AI", cx, titleY, textScale, BRAND.violet);
+  drawText(pixels, width, height, "Giga3 Hub", cx, titleY, textScale, BRAND.violet);
 
   const tagScale = Math.max(2, textScale - 1);
   const tagY = titleY + textScale * 10;
@@ -359,7 +359,7 @@ const SPLASH_SCREENS = [
 ];
 
 const FAVICON_SVG = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Giga3 AI">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Giga3 Hub">
   <rect width="512" height="512" rx="112" fill="#43148c"/>
   <rect x="14" y="14" width="484" height="484" rx="98" fill="#5b21b6"/>
   <path fill="#ffffff" d="M 356 178 A 104 104 0 1 0 356 334 L 300 334 A 48 48 0 0 1 300 256 L 356 256 L 356 226 L 268 226 A 88 88 0 0 1 268 178 Z"/>
@@ -412,7 +412,7 @@ function buildManifest() {
       {
         name: "Chat",
         short_name: "Chat",
-        description: "Open Giga3 AI chat",
+        description: "Open Giga3 AI assistant",
         url: "/chat/",
         icons: [{ src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
       },
@@ -537,7 +537,7 @@ await writeFile(
   `${BRAND_ASSET_VERSION}\n`
 );
 
-console.log("Generated Giga3 AI branding assets:");
+console.log("Generated Giga3 Hub branding assets:");
 console.log(`  version: ${BRAND_ASSET_VERSION}`);
 console.log(`  icons: ${ICON_SIZES.length + 2} PNGs in public/icons/`);
 console.log("  logo: public/images/logo.png");
