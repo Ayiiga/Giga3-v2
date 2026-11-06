@@ -38,7 +38,7 @@ export function BlogArticleLayout({ post, toc, children, cta }: BlogArticleLayou
     <article className="mx-auto max-w-3xl">
       <BlogBreadcrumbs
         items={[
-          { name: "Giga3 AI", href: "/" },
+          { name: "Giga3 Hub", href: "/" },
           { name: "Blog", href: "/blog/" },
           { name: post.title },
         ]}
@@ -104,7 +104,7 @@ export function BlogArticleLayout({ post, toc, children, cta }: BlogArticleLayou
       {cta}
 
       <aside
-        aria-label="Explore Giga3 AI"
+        aria-label="Explore Giga3 Hub"
         className="mt-12 rounded-2xl border border-violet-200 bg-gradient-to-br from-violet-50 via-white to-indigo-50 p-6 sm:p-7"
       >
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-violet-700">
