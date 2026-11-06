@@ -31,7 +31,7 @@ export default function AboutPage() {
         path: "/about",
         name: "About Giga3 Hub",
         description:
-          "Giga3 AI is an AI platform built in Ghana for learning, research, coding and creativity — designed for students, creators and businesses worldwide.",
+          "Giga3 Hub is a connected digital platform built in Ghana for AI assistance, social networking, learning, exam practice, creativity and digital commerce.",
       }}
     />
     <JsonLd
