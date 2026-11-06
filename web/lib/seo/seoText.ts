@@ -8,8 +8,8 @@ export const SEO_TITLE_MAX = 70;
 export const SEO_DESCRIPTION_MIN = 50;
 export const SEO_DESCRIPTION_MAX = 165;
 
-/** Root layout appends " | Giga3 AI" (11 chars) unless the title already has brand. */
-const LAYOUT_SUFFIX = " | Giga3 AI";
+/** Root layout appends " | Giga3 Hub" (12 chars) unless the title already has brand. */
+const LAYOUT_SUFFIX = " | Giga3 Hub";
 
 function clean(value: string): string {
   return value.replace(/\s+/g, " ").trim();
@@ -51,7 +51,7 @@ function clampWithBudget(text: string, token: string | undefined, budget: number
   return `${truncateWords(head, headBudget)} · ${token}`;
 }
 
-const DESCRIPTION_PADDER = "— more on Giga3 AI, Africa's AI Super App";
+const DESCRIPTION_PADDER = "— more on Giga3 Hub, Africa's connected digital platform";
 
 /**
  * Clamp a meta description to [SEO_DESCRIPTION_MIN, SEO_DESCRIPTION_MAX].
