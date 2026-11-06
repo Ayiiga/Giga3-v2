@@ -19,7 +19,7 @@ export const metadata = publicMetadata({
   path: "/discover",
   title: "Discover — Prompts, Tools, and Communities",
   description:
-    "Discover popular AI prompts, GigaLearn study resources, creator tools, marketplace listings, and GigaSocial communities on Giga3 AI.",
+    "Discover popular AI prompts, GigaLearn study resources, creator tools, marketplace listings, and GigaSocial communities on Giga3 Hub.",
 });
 
 export default function DiscoverPage() {
@@ -27,13 +27,13 @@ export default function DiscoverPage() {
     <>
       <JsonLd
         breadcrumbs={[
-          { name: "Giga3 AI", path: "/" },
+          { name: "Giga3 Hub", path: "/" },
           { name: "Discover", path: "/discover" },
         ]}
       />
       <ProductSeoHeader
-        title="Discover — Explore the Giga3 AI ecosystem"
-        description="Find trending prompts, educational resources, marketplace products, and community topics across Giga3 AI products in one place."
+        title="Discover — Explore the Giga3 Hub ecosystem"
+        description="Find trending prompts, educational resources, marketplace products, and community topics across Giga3 Hub services in one place."
         detail="Use Discover to jump into AI Chat, GigaLearn, Media Studio, GigaEdit, GigaSocial, or the Marketplace without hunting through menus."
         showProductNav={false}
       />
