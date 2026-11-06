@@ -150,9 +150,9 @@ describe("AI for Ghana landing page", () => {
   it("emits FAQPage structured data from the same FAQ used for visible copy", () => {
     expect(src).toContain("<JsonLd faq={FAQ} />");
     expect(src).toContain("<FaqSection items={FAQ} />");
-    expect(src).toContain("What is Giga3 AI?");
-    expect(src).toContain("How much does Giga3 AI cost?");
-    expect(src).toContain("Can students in Ghana use Giga3 AI?");
+    expect(src).toContain("What is Giga3 Hub?");
+    expect(src).toContain("How much does Giga3 Hub cost?");
+    expect(src).toContain("Can students in Ghana use Giga3 Hub?");
   });
 
   it("derives pricing from the subscription catalog instead of hardcoding", () => {
