@@ -226,7 +226,7 @@ export const GHANA_LANDING_PAGES = {
         bullets: [
           "Research and writing assistance with cited web search where enabled",
           "Coding help for internal tools and scripts",
-          "Media Studio for marketing visuals and Video AI for short clips",
+          "Giga3 Hub creative tools for available image, video, music and logo workflows",
         ],
       },
       {
@@ -335,7 +335,7 @@ export const GHANA_LANDING_PAGES = {
       {
         heading: "What makes Giga3 different for African users",
         paragraphs: [
-          "Giga3 combines chat, GigaLearn, Media Studio, Video AI, GigaEdit, GigaSocial, and Marketplace in one account. Credits and subscriptions are enforced on the server — not in the browser.",
+          "Giga3 Hub brings Giga3 AI, GigaLearn, exam practice, GigaSocial, available creative tools and Marketplace into one connected account. Credits and subscriptions are enforced on the server — not in the browser.",
         ],
         bullets: [
           "GHS pricing via Paystack for consumer plans",
