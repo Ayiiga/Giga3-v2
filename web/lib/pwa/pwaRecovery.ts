@@ -6,6 +6,7 @@ const AUTH_KEYS = [
   "giga3_user_email",
   "giga3_session_token",
   "giga3_supabase_access_token",
+  "giga3_supabase_refresh_token",
 ] as const;
 
 const RECOVERY_COUNTER_KEY = "giga3_pwa_recovery_count";

@@ -129,13 +129,42 @@ export async function recoverInvalidSession(options: {
     return { status: "unauthenticated" };
   }
 
-  const fromSupabase = await trySupabaseSessionRefresh();
+  let refreshCredentialPending = false;
+  try {
+    const mod = await import("@/lib/supabase/auth");
+    refreshCredentialPending = mod.hasStoredSupabaseRefreshToken();
+  } catch {
+    /* Supabase is optional; continue with the existing recovery path. */
+  }
+
+  let fromSupabase: string | null = null;
+  try {
+    fromSupabase = await trySupabaseSessionRefresh();
+  } catch {
+    // A network/provider outage is not proof that the user's session was revoked.
+    if (refreshCredentialPending) {
+      const cachedToken = getSessionToken();
+      if (cachedToken) return { status: "ok", sessionToken: cachedToken, email };
+    }
+  }
   if (fromSupabase) {
     return {
       status: "refreshed",
       sessionToken: fromSupabase,
       email: getUserEmail(),
     };
+  }
+
+  try {
+    const mod = await import("@/lib/supabase/auth");
+    refreshCredentialPending = mod.hasStoredSupabaseRefreshToken();
+  } catch {
+    refreshCredentialPending = false;
+  }
+
+  if (refreshCredentialPending) {
+    const cachedToken = getSessionToken();
+    if (cachedToken) return { status: "ok", sessionToken: cachedToken, email };
   }
 
   if (email) {

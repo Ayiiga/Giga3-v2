@@ -77,6 +77,18 @@ describe("session restore + workspace persistence", () => {
     expect(getSessionToken()).toBe("fresh-token");
   });
 
+  it("clears persisted provider refresh credentials only on explicit sign-out", async () => {
+    const { clearAllClientAuth, setAuthSession } = await import("../../web/lib/auth");
+    setAuthSession("user@example.com", "session-token");
+    localStorage.setItem("giga3_supabase_access_token", "access-token");
+    localStorage.setItem("giga3_supabase_refresh_token", "refresh-token");
+    clearAllClientAuth();
+    expect(localStorage.getItem("giga3_user_email")).toBeNull();
+    expect(localStorage.getItem("giga3_session_token")).toBeNull();
+    expect(localStorage.getItem("giga3_supabase_access_token")).toBeNull();
+    expect(localStorage.getItem("giga3_supabase_refresh_token")).toBeNull();
+  });
+
   it("persists composer drafts and active conversation", async () => {
     const { writeComposerDraft, readComposerDraft, clearComposerDraft } = await import(
       "../../web/lib/chat/composerDraft"

@@ -1,6 +1,7 @@
 const STORAGE_KEY = "giga3_user_email";
 const SESSION_KEY = "giga3_session_token";
 const SUPABASE_ACCESS_KEY = "giga3_supabase_access_token";
+const SUPABASE_REFRESH_KEY = "giga3_supabase_refresh_token";
 
 export function getUserEmail(): string | null {
   if (typeof window === "undefined") return null;
@@ -47,6 +48,7 @@ export function clearAllClientAuth(): void {
   localStorage.removeItem(STORAGE_KEY);
   localStorage.removeItem(SESSION_KEY);
   localStorage.removeItem(SUPABASE_ACCESS_KEY);
+  localStorage.removeItem(SUPABASE_REFRESH_KEY);
   try {
     sessionStorage.removeItem("giga3_admin_session");
   } catch {

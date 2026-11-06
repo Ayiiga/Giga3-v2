@@ -170,6 +170,12 @@ export function createSupabaseRestClient(options?: {
         }),
       });
     },
+    authRefreshSession(refreshToken: string): Promise<{ access_token?: string; refresh_token?: string; expires_in?: number; user?: { id?: string; email?: string } }> {
+      return request<{ access_token?: string; refresh_token?: string; expires_in?: number; user?: { id?: string; email?: string } }>(
+        "/auth/v1/token?grant_type=refresh_token",
+        { method: "POST", headers: { Authorization: `Bearer ${key}` }, body: JSON.stringify({ refresh_token: refreshToken }) }
+      );
+    },
     authGetUser(accessToken: string): Promise<{ user: { id?: string; email?: string } | null }> {
       return request<{ user: { id?: string; email?: string } | null }>("/auth/v1/user", {
         method: "GET",
