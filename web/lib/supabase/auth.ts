@@ -89,6 +89,10 @@ export async function signOutSupabase(): Promise<void> {
 }
 
 /** Refresh the provider credential first, then exchange its verified access token. */
+export function hasStoredSupabaseRefreshToken(): boolean {
+  return typeof window !== "undefined" && Boolean(localStorage.getItem(REFRESH_TOKEN_KEY));
+}
+
 export async function refreshGiga3SessionFromSupabase(): Promise<string | null> {
   if (typeof window === "undefined") return null;
   const client = getSupabaseClient();
@@ -106,9 +110,16 @@ export async function refreshGiga3SessionFromSupabase(): Promise<string | null> 
       accessToken = refreshed.access_token;
       storeAccessToken(refreshed.access_token);
       localStorage.setItem(REFRESH_TOKEN_KEY, refreshed.refresh_token);
-    } catch {
-      // A still-valid access token may be exchanged below; never clear credentials
-      // merely because the refresh endpoint is temporarily unreachable.
+    } catch (error) {
+      const status = typeof error === "object" && error !== null && "status" in error
+        ? Number((error as { status?: unknown }).status)
+        : 0;
+      if (status === 400 || status === 401) {
+        localStorage.removeItem(REFRESH_TOKEN_KEY);
+      } else if (!status || status >= 500) {
+        // Keep the refresh credential for a later retry during transient outages.
+        throw error;
+      }
     }
   }
 
