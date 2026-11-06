@@ -2,7 +2,7 @@
  * Giga3 AI PWA service worker — Cloudflare Pages static export.
  * Bump CACHE_VERSION on every deploy that changes JS/CSS.
  */
-const CACHE_VERSION = "giga3-v74";
+const CACHE_VERSION = "giga3-v75";
 const OFFLINE_URL = "/offline.html";
 const NETWORK_TIMEOUT_MS = 15000;
 
@@ -23,6 +23,29 @@ function jsonOffline() {
     status: 503,
     headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
   });
+}
+
+/** A top-level navigation must never expose the API's machine-readable offline payload. */
+function offlineDocumentResponse(offline) {
+  if (offline) {
+    return new Response(offline.body, {
+      status: 503,
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+        "Cache-Control": "no-store",
+      },
+    });
+  }
+  return new Response(
+    "<!doctype html><html lang=\"en\"><meta charset=\"utf-8\"><title>Giga3 offline</title><p>Giga3 is temporarily unavailable. Check your connection and try again.</p></html>",
+    {
+      status: 503,
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+        "Cache-Control": "no-store",
+      },
+    }
+  );
 }
 
 async function notifyClients(message) {
@@ -138,7 +161,15 @@ self.addEventListener("fetch", (event) => {
   // (a) API — network-only, never cache
   if (url.pathname.startsWith("/api/")) {
     event.respondWith(
-      fetchWithTimeout(request, NETWORK_TIMEOUT_MS).catch(() => jsonOffline())
+      fetchWithTimeout(request, NETWORK_TIMEOUT_MS).catch(async () => {
+        // A user opening an API URL directly should see the offline page, not raw JSON.
+        if (request.mode === "navigate") {
+          const offline = await caches.match(OFFLINE_URL);
+          return offlineDocumentResponse(offline);
+        }
+        // Programmatic API consumers retain the stable JSON error contract.
+        return jsonOffline();
+      })
     );
     return;
   }

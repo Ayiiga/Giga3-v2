@@ -12,6 +12,10 @@ describe("service worker cache version", () => {
     expect(sw).toContain("fetchWithTimeout");
     expect(sw).toContain("handleStaleChunk");
     expect(sw).toContain('"/api/"');
+    expect(sw).toContain('if (request.mode === "navigate")');
+    expect(sw).toContain("offlineDocumentResponse(offline)");
+    expect(sw).toContain('"Content-Type": "text/html; charset=utf-8"');
+    expect(sw).toContain("return jsonOffline();");
     // Activate retires prior Giga3 generations only (never blanket-delete third-party caches).
     expect(sw).toContain('k.startsWith("giga3-") && k !== CACHE_VERSION');
   });
