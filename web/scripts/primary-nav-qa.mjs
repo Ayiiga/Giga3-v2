@@ -32,9 +32,9 @@ const VIEWPORTS = [
 const ROUTES = [
   { path: "/chat/", tab: "Home" },
   { path: "/gigalearn/", tab: "Learn" },
-  { path: "/media/", tab: "Create" },
-  { path: "/gigaedit/", tab: "Create" },
+  { path: "/gigalearn/exam/", tab: "Practice" },
   { path: "/gigasocial/", tab: "Social" },
+  { path: "/marketplace/", tab: "Market" },
 ];
 
 const MIME = {
@@ -184,7 +184,7 @@ async function auditViewport(page, vp, route) {
     if (data.desktop) fail(`${key}: desktop rail visible on phone/tablet`);
   }
 
-  const expected = ["Home", "Studio", "Edits", "Social"];
+  const expected = ["Home", "Learn", "Practice", "Social", "Market"];
   if (!expected.every((l) => data.labels.includes(l))) {
     fail(`${key}: labels missing ${JSON.stringify(data.labels)}`);
   } else {
@@ -203,7 +203,7 @@ async function auditViewport(page, vp, route) {
   for (const t of data.targets) {
     if (t.h < 44 || t.w < 44) fail(`${key}: touch target ${t.label} ${t.w}x${t.h}`);
   }
-  if (data.targets.length === 4 && data.targets.every((t) => t.h >= 44 && t.w >= 44)) {
+  if (data.targets.length === 5 && data.targets.every((t) => t.h >= 44 && t.w >= 44)) {
     pass(`${key}: touch targets OK`);
   }
 
@@ -333,11 +333,11 @@ async function auditGigaSocialNoDualDock(page) {
       pass(`gigasocial ${vp.name}: top context nav visible`);
     }
 
-    const expected = ["Home", "Studio", "Edits", "Social"];
+    const expected = ["Home", "Learn", "Practice", "Social", "Market"];
     if (!expected.every((l) => data.primaryLabels.includes(l))) {
       fail(`gigasocial ${vp.name}: primary labels ${JSON.stringify(data.primaryLabels)}`);
     } else {
-      pass(`gigasocial ${vp.name}: four global tabs present`);
+      pass(`gigasocial ${vp.name}: five global tabs present`);
     }
   }
 }
