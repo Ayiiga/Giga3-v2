@@ -13,7 +13,7 @@ type PublicMetadataInput = {
   imageAlt?: string;
 };
 
-/** Consistent, canonical metadata for crawlable Giga3 AI marketing pages. */
+/** Consistent, canonical metadata for crawlable Giga3 Hub pages. */
 export function publicMetadata({
   path,
   title,
@@ -24,11 +24,11 @@ export function publicMetadata({
 }: PublicMetadataInput): Metadata {
   const canonicalPath = path === "/" ? "/" : `${path.replace(/\/$/, "")}/`;
   const canonical = new URL(canonicalPath, siteConfig.url).toString();
-  const socialTitle = title.includes("Giga3") ? title : `${title} | Giga3 AI`;
+  const socialTitle = title.includes("Giga3") ? title : `${title} | Giga3 Hub`;
   const fallbackImage = brandingAssetUrl("/images/logo.png");
   const image = imageOverride?.trim() || fallbackImage;
-  const alt = imageAlt?.trim() || (imageOverride ? title : "Giga3 AI logo");
-  /** Avoid root layout `%s | Giga3 AI` duplicating titles that already include the brand. */
+  const alt = imageAlt?.trim() || (imageOverride ? title : "Giga3 Hub logo");
+  /** Avoid root layout `%s | Giga3 Hub` duplicating titles that already include the brand. */
   const documentTitle = title.includes("Giga3") ? { absolute: title } : title;
 
   return {
@@ -46,7 +46,7 @@ export function publicMetadata({
     openGraph: {
       type: "website",
       url: canonical,
-      siteName: "Giga3 AI",
+      siteName: "Giga3 Hub",
       title: socialTitle,
       description,
       images: [{ url: image, width: imageOverride ? 1200 : 512, height: imageOverride ? 630 : 512, alt }],
