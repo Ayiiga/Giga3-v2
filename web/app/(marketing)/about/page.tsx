@@ -9,9 +9,9 @@ import { BrandLogo } from "@/components/brand/BrandLogo";
 
 export const metadata: Metadata = publicMetadata({
   path: "/about",
-  title: "About Giga3 AI",
+  title: "About Giga3 Hub",
   description:
-    "Giga3 AI is an AI platform built in Ghana for learning, research, coding and creativity — designed for students, creators and businesses worldwide.",
+    "Giga3 Hub is a connected digital platform built in Ghana for AI assistance, social networking, learning, exam practice, creativity and digital commerce.",
 });
 
 const TECH_STACK = [
@@ -29,14 +29,14 @@ export default function AboutPage() {
     <JsonLd
       webPage={{
         path: "/about",
-        name: "About Giga3 AI",
+        name: "About Giga3 Hub",
         description:
           "Giga3 AI is an AI platform built in Ghana for learning, research, coding and creativity — designed for students, creators and businesses worldwide.",
       }}
     />
     <JsonLd
       breadcrumbs={[
-        { name: "Giga3 AI", path: "/" },
+        { name: "Giga3 Hub", path: "/" },
         { name: "About", path: "/about" },
       ]}
     />
@@ -55,8 +55,8 @@ export default function AboutPage() {
 
           <div className="mt-10 space-y-6 text-base leading-relaxed text-muted">
             <p>
-              {siteConfig.name} is an advanced artificial intelligence platform from Ghana for learning,
-              research, coding, creativity, productivity, content creation, and problem-solving.
+              {siteConfig.name} connects AI assistance, social networking, learning, exam practice, creative tools,
+              publishing, productivity and digital commerce in one platform.
             </p>
             <p>
               Designed and founded by{" "}
@@ -73,7 +73,7 @@ export default function AboutPage() {
           </div>
 
           <section className="mt-10 rounded-2xl border border-border bg-slate-50 p-5" aria-labelledby="about-positioning">
-            <h2 id="about-positioning" className="text-base font-semibold text-foreground">What Giga3 AI does</h2>
+            <h2 id="about-positioning" className="text-base font-semibold text-foreground">What Giga3 Hub offers</h2>
             <p className="mt-2 text-base leading-relaxed text-muted" data-testid="geo-positioning">
               {GEO_POSITIONING_STATEMENT}
             </p>
