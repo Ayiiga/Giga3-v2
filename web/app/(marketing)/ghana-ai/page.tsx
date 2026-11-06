@@ -148,12 +148,12 @@ const FAQ: FaqItem[] = [
   {
     question: "What is the Ghana AI Super App?",
     answer:
-      "The Ghana AI Super App is Giga3 AI — one platform combining AI chat, GigaLearn tutoring, video and image creation, GigaEdit, GigaSocial community and Marketplace, built in Ghana with GHS billing through Paystack.",
+      "Ghana AI and digital services are brought together by Giga3 Hub, including Giga3 AI assistance, GigaLearn tutoring, exam practice, GigaSocial community and Marketplace, built in Ghana with GHS billing through Paystack.",
   },
   {
-    question: "How does Giga3 AI help BECE and WASSCE students?",
+    question: "How does Giga3 Hub help BECE and WASSCE students?",
     answer:
-      "GigaLearn on Giga3 AI gives JHS and SHS students AI tutoring, practice questions, study plans and clear explanations for BECE and WASSCE revision. It is a study aid that supports classroom learning — always verify answers with teachers and syllabus materials.",
+      "GigaLearn on Giga3 Hub gives JHS and SHS students AI tutoring, practice questions, study plans and clear explanations for BECE and WASSCE revision. It is a study aid that supports classroom learning — always verify answers with teachers and syllabus materials.",
   },
   {
     question: "Which Ghanaian languages does Giga3 AI support?",
@@ -161,18 +161,18 @@ const FAQ: FaqItem[] = [
       "Giga3 AI supports Twi, Ga, Ewe, Hausa, Ghanaian Pidgin and English across chat and African voice readers, so students, teachers and businesses can ask questions in the language they think in.",
   },
   {
-    question: "How much does Giga3 AI cost in Ghana?",
-    answer: `Giga3 AI has a Free plan at GHS 0 with ${FREE_STARTER_CREDITS} starter credits. Paid plans bill in Ghana cedis through Paystack: ${PAID_PLAN_SUMMARY}. Mobile Money, cards and bank transfer are supported.`,
+    question: "How much does Giga3 Hub cost in Ghana?",
+    answer: `Giga3 Hub has a Free plan at GHS 0 with ${FREE_STARTER_CREDITS} starter credits. Paid plans bill in Ghana cedis through Paystack: ${PAID_PLAN_SUMMARY}. Mobile Money, cards and bank transfer are supported.`,
   },
   {
-    question: "Can teachers use Giga3 AI for lesson plans?",
+    question: "Can teachers use Giga3 Hub for lesson plans?",
     answer:
-      "Yes. Teachers use Giga3 AI chat to draft lesson outlines, learning objectives, quizzes and classroom materials, then review everything before class. GigaLearn adds structured tutoring support for students. Giga3 AI is an independent platform and is not affiliated with GES or WAEC.",
+      "Yes. Teachers use Giga3 AI, the assistant inside Giga3 Hub, to draft lesson outlines, learning objectives, quizzes and classroom materials, then review everything before class. GigaLearn adds structured tutoring support for students. Giga3 AI is an independent platform and is not affiliated with GES or WAEC.",
   },
   {
-    question: "Is Giga3 AI an official GES or WAEC product?",
+    question: "Is Giga3 Hub an official GES or WAEC product?",
     answer:
-      "No. Giga3 AI is an independent platform built in Ghana. It supports teaching, learning and business workflows, but it is not affiliated with GES, WAEC or any government examination body unless a verified partnership is announced.",
+      "No. Giga3 Hub is an independent digital platform built in Ghana. It supports teaching, learning and business workflows, but it is not affiliated with GES, WAEC or any government examination body unless a verified partnership is announced.",
   },
 ];
 
@@ -195,14 +195,14 @@ export default function GhanaAiPage() {
       <JsonLd
         webPage={{
           path: PATH,
-          name: "Ghana AI Super App — Giga3 AI",
+          name: "Ghana AI & Digital Services — Giga3 Hub",
           description:
-            "Ghana's AI Super App for BECE, WASSCE and beyond — chat, GigaLearn, creators and business tools built in Ghana.",
+            "Ghana's connected digital platform for AI assistance, GigaLearn, exam preparation, community and creative services, built in Ghana.",
         }}
       />
       <JsonLd
         breadcrumbs={[
-          { name: "Giga3 AI", path: "/" },
+          { name: "Giga3 Hub", path: "/" },
           { name: "AI for Ghana", path: "/ai-for-ghana" },
           { name: "Ghana AI Super App", path: PATH },
         ]}
@@ -224,7 +224,7 @@ export default function GhanaAiPage() {
             Built in Ghana · Powered by AI
           </p>
           <h1 className="mx-auto mt-6 max-w-3xl text-4xl font-extrabold leading-tight sm:text-5xl">
-            Ghana AI Super App — <span style={{ color: GHANA_GOLD }}>Giga3 AI</span>
+            Ghana AI & Digital Services — <span style={{ color: GHANA_GOLD }}>Giga3 Hub</span>
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg leading-relaxed text-slate-300">
             AI chat, GigaLearn, BECE and WASSCE support, video and image creation, and
@@ -316,7 +316,7 @@ export default function GhanaAiPage() {
             One super app, built for every Ghanaian
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-center text-base text-slate-600">
-            Pick who you are — Giga3 AI adapts to students, teachers, businesses and
+            Pick who you are — Giga3 Hub adapts to students, teachers, businesses and
             creators.
           </p>
           <div
@@ -385,7 +385,7 @@ export default function GhanaAiPage() {
             Everything Ghana needs, in one app
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-center text-base text-slate-600">
-            Stop juggling five subscriptions. Giga3 AI links chat, learning, creation,
+            Stop juggling five subscriptions. Giga3 Hub connects AI assistance, learning, creation,
             community and commerce under one account.
           </p>
           <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
