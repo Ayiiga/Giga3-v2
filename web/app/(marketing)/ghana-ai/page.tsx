@@ -146,7 +146,7 @@ const PAID_PLAN_SUMMARY = (["basic", "pro", "premium"] as const)
 
 const FAQ: FaqItem[] = [
   {
-    question: "What is the Ghana AI Super App?",
+    question: "What is Giga3 Hub?",
     answer:
       "Ghana AI and digital services are brought together by Giga3 Hub, including Giga3 AI assistance, GigaLearn tutoring, exam practice, GigaSocial community and Marketplace, built in Ghana with GHS billing through Paystack.",
   },
@@ -167,7 +167,7 @@ const FAQ: FaqItem[] = [
   {
     question: "Can teachers use Giga3 Hub for lesson plans?",
     answer:
-      "Yes. Teachers use Giga3 AI, the assistant inside Giga3 Hub, to draft lesson outlines, learning objectives, quizzes and classroom materials, then review everything before class. GigaLearn adds structured tutoring support for students. Giga3 AI is an independent platform and is not affiliated with GES or WAEC.",
+      "Yes. Teachers use Giga3 AI, the assistant inside Giga3 Hub, to draft lesson outlines, learning objectives, quizzes and classroom materials, then review everything before class. GigaLearn adds structured tutoring support for students. Giga3 Hub is independent and is not affiliated with GES or WAEC.",
   },
   {
     question: "Is Giga3 Hub an official GES or WAEC product?",
@@ -204,7 +204,7 @@ export default function GhanaAiPage() {
         breadcrumbs={[
           { name: "Giga3 Hub", path: "/" },
           { name: "AI for Ghana", path: "/ai-for-ghana" },
-          { name: "Ghana AI Super App", path: PATH },
+          { name: "Ghana AI & Digital Services", path: PATH },
         ]}
       />
       <JsonLd faq={FAQ} />
