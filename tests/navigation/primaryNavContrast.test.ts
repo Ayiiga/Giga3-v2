@@ -12,10 +12,10 @@ const component = readFileSync(
 
 describe("primary nav daylight contrast", () => {
   it("paints the active tab indigo with white text and a stable shadow", () => {
-    expect(css).toContain("background: #5b21b6");
+    expect(css).toContain("background: #6334c9");
     expect(css).toContain("color: #fff");
-    expect(css).toContain("box-shadow: 0 4px 20px rgba(91, 33, 182, 0.4)");
-    expect(css).toContain("font-weight: 700");
+    expect(css).toContain("box-shadow: 0 5px 16px rgba(99, 52, 201, 0.28)");
+    expect(css).toContain("font-weight: 800");
     expect(css).not.toContain("scale-105");
     expect(css).not.toContain("translateY(-0.5px)");
     expect(globals).toContain("background: #5b21b6 !important");
@@ -24,23 +24,25 @@ describe("primary nav daylight contrast", () => {
     expect(globals).not.toMatch(/primary-nav__item--active svg[\s\S]{0,180}color:\s*#7c3aed/);
   });
 
-  it("keeps inactive tabs white with gray-500 text and darker icons", () => {
-    expect(css).toMatch(/\.primary-nav__item \{[\s\S]*?color:\s*#6b7280/);
-    expect(css).toMatch(/\.primary-nav__item \{[\s\S]*?background:\s*#fff/);
-    expect(css).toContain("color: #4b5563");
-    expect(css).toContain("background: rgba(255, 255, 255, 0.98)");
-    expect(css).toContain("border-top: 1px solid #e5e7eb");
-    expect(css).toContain("box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.08)");
+  it("uses a floating deep-navy pill with readable inactive tabs and uppercase labels", () => {
+    expect(css).toMatch(/\.primary-nav__item \{[\s\S]*?color:\s*#d7d0e8/);
+    expect(css).toMatch(/\.primary-nav__item \{[\s\S]*?background:\s*transparent/);
+    expect(css).toContain("color: #b8a8e8");
+    expect(css).toContain("background: #17132b");
+    expect(css).toContain("border-radius: 1.5rem");
+    expect(css).toContain("text-transform: uppercase");
+    expect(css).toContain("letter-spacing: 0.075em");
+    expect(css).toContain("box-shadow: 0 10px 30px rgba(23, 19, 43, 0.24)");
   });
 
   it("preserves safe-area offset, focus, aria-current, and 48px targets", () => {
     expect(css).toContain("env(safe-area-inset-bottom, 0px)");
     expect(css).toContain("--primary-nav-offset");
     const mobileBlock = css.match(/\.primary-nav--mobile \{[\s\S]*?\n\}/)?.[0] ?? "";
-    expect(mobileBlock).toContain("bottom: 0");
+    expect(mobileBlock).toContain("bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px))");
     expect(mobileBlock).toContain("margin-top: 0");
-    expect(mobileBlock).not.toContain("safe-area-inset-bottom");
-    expect(css).toContain("min-height: 48px");
+    expect(mobileBlock).toContain("safe-area-inset-bottom");
+    expect(css).toContain("min-height: 3.55rem");
     expect(css).toContain(".primary-nav__item:focus-visible");
     expect(component).toContain('aria-current={active ? "page" : undefined}');
     expect(component).toContain('aria-label="Giga3 primary navigation"');

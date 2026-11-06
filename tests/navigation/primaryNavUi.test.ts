@@ -59,7 +59,8 @@ describe("PrimaryNav UI wiring", () => {
       "bottom-[calc(var(--primary-nav-offset)+1.75rem)]"
     );
     expect(creatorHub).toContain("lg:bottom-0");
-    expect(css).toContain("font-size: 0.7rem");
+    expect(css).toContain("font-size: 0.62rem");
+    expect(css).toContain("text-transform: uppercase");
     expect(css).toContain("overflow: visible");
     expect(css).toContain("white-space: nowrap");
   });

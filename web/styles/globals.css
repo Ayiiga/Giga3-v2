@@ -2773,13 +2773,20 @@ html.primary-nav-route.primary-nav-bar-visible.chat-route .chat-keyboard-shell {
   min-width: 48px !important;
 }
 
-.bottom-nav .active,
-.primary-nav__item--active {
+.bottom-nav .active {
   border: 0 !important;
   background: #5b21b6 !important;
   color: #fff !important;
   box-shadow: 0 4px 20px rgba(91, 33, 182, 0.4) !important;
   font-weight: 700 !important;
+}
+
+.primary-nav__item--active {
+  border: 0 !important;
+  background: #6334c9 !important;
+  color: #fff !important;
+  box-shadow: 0 5px 16px rgba(99, 52, 201, 0.28) !important;
+  font-weight: 800 !important;
 }
 
 .bottom-nav .active svg,
