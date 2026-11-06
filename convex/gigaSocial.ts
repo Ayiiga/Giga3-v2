@@ -1249,7 +1249,7 @@ export const setCreatorEligibilityVerification = mutation({
     revokeRegionVerification: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const adminEmail = await requireSession(args.sessionToken);
+    const adminEmail = await requireSession(args.sessionToken, ctx);
     if (!isPlatformAdminEmail(adminEmail)) throw new Error("Administrator access required.");
     const email = args.creatorEmail.trim().toLowerCase();
     if (!email || !email.includes("@")) throw new Error("A valid creator email is required.");
