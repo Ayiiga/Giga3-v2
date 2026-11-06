@@ -1,7 +1,7 @@
 {
-  "name": "Giga3 AI",
-  "short_name": "Giga3",
-  "description": "AI chat, media, and credits",
+  "name": "Giga3 Hub",
+  "short_name": "Giga3 Hub",
+  "description": "AI assistance, social, learning, creativity and connected digital services",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f1115",
