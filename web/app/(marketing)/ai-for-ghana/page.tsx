@@ -61,7 +61,7 @@ export default function AiForGhanaPage() {
       />
       <JsonLd
         breadcrumbs={[
-          { name: "Giga3 AI", path: "/" },
+          { name: "Giga3 Hub", path: "/" },
           { name: "AI for Ghana", path: PATH },
         ]}
       />
@@ -84,13 +84,13 @@ export default function AiForGhanaPage() {
               <Prose>
                 Whether you are a university student working on an assignment, a creator developing
                 content, a developer writing code, or a business looking for smarter digital
-                workflows, Giga3 AI gives you practical AI tools designed for everyday use.
+                workflows, Giga3 Hub connects practical digital services for everyday use, with Giga3 AI as its built-in assistant.
               </Prose>
               <p className="text-lg font-semibold text-foreground">
                 Built in Africa. Powered by AI. Designed for Everyone.
               </p>
               <Prose>
-                Giga3 AI brings AI chat, learning, research, coding, creative tools and other
+                Giga3 Hub brings AI chat, learning, research, coding, creative tools and other
                 productivity features together in a simple Progressive Web App (PWA) that works across
                 modern devices.
               </Prose>
@@ -100,7 +100,7 @@ export default function AiForGhanaPage() {
               <ArticleH2>Powerful AI Tools for Learning and Productivity</ArticleH2>
               <Prose>
                 Students in Ghana often need AI for research, studying, writing, brainstorming, coding
-                and understanding difficult subjects. Giga3 AI helps bring these tasks into one
+                and understanding difficult subjects. Giga3 Hub helps bring these tasks into one
                 convenient platform.
               </Prose>
               <Prose>
@@ -113,7 +113,7 @@ export default function AiForGhanaPage() {
                 brainstorming and productivity.
               </Prose>
               <Prose>
-                Giga3 AI is designed to be useful without requiring users to manage several separate AI
+                Giga3 Hub is designed to be useful without requiring users to manage several separate digital
                 platforms for different tasks.
               </Prose>
             </section>
@@ -144,7 +144,7 @@ export default function AiForGhanaPage() {
                 convenient locally.
               </Prose>
               <Prose>
-                Giga3 AI is designed with Ghanaian users in mind, including Paystack billing in
+                Giga3 Hub is designed with Ghanaian users in mind, including Paystack billing in
                 Ghanaian cedis (GHS) for supported paid plans.
               </Prose>
               <Prose>The current pricing structure includes:</Prose>
@@ -171,10 +171,9 @@ export default function AiForGhanaPage() {
             </section>
 
             <section className="mt-12 space-y-5">
-              <ArticleH2>One AI Platform for Modern African Users</ArticleH2>
+              <ArticleH2>Connected Digital Services for Modern African Users</ArticleH2>
               <Prose>
                 Giga3 Hub is more than a chatbot. It brings accessible AI assistance together with learning, social, creative and digital services.
-                platform for learning, research, coding and creativity.
               </Prose>
               <Prose>
                 Students can use AI as a learning companion. Creators can use it to develop and refine
