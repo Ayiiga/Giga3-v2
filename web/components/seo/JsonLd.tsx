@@ -184,7 +184,7 @@ export function JsonLd({
             url: siteConfig.url,
             image: logo,
             description:
-              "Giga3 AI is an African AI-powered super app combining social media, AI tools, creator editing, learning, marketplace and digital services in one platform.",
+              "Giga3 Hub is an African digital platform connecting AI assistance, social networking, creator tools, learning, exam practice, publishing, marketplace and digital services in one ecosystem.",
           }
         : type === "WebApplication"
           ? {
