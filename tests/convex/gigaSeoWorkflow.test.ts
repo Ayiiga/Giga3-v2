@@ -148,7 +148,7 @@ describe("GigaSEO Convex workflow", () => {
         metaDescription: "A practical overview of teaching digital skills in African communities and supporting local learning initiatives.",
         markdown: [
           "## Introduction",
-          "Giga3 AI is a digital platform.",
+          "Giga3 Hub is a digital platform.",
           "## Teaching digital skills",
           "## Community learning",
           "## Conclusion",
@@ -173,11 +173,11 @@ describe("GigaSEO Convex workflow", () => {
       planId,
     });
     expect(generated.qualityIssues).toContain(
-      "Add a substantive Giga3 AI section explaining relevant platform value and a contextual call to action linking to https://www.giga3ai.com/ before editorial approval."
+      "Add a substantive Giga3 Hub section explaining relevant platform value and a contextual call to action linking to https://www.giga3ai.com/ before editorial approval."
     );
   });
 
-  it("rejects approval when required Giga3 AI brand integration is missing", async () => {
+  it("rejects approval when required Giga3 Hub brand integration is missing", async () => {
     process.env.PLATFORM_STATS_ADMIN_KEY = "giga-seo-test-admin";
     const t = convexTest(schema, modules);
     const planId = await t.mutation(api.gigaSeo.createContentPlan, {
@@ -194,12 +194,12 @@ describe("GigaSEO Convex workflow", () => {
       metaDescription: "A sufficiently descriptive meta description for a teacher-focused article about classroom technology and learning in Ghana.",
       draftContent: "A complete article draft with enough content for review.",
       qualityScore: 88,
-      qualityIssues: ["Add a relevant Giga3 AI section and contextual call to action before editorial approval."],
+      qualityIssues: ["Add a relevant Giga3 Hub section and contextual call to action before editorial approval."],
       factCheckNotes: [],
     });
     await expect(
       t.mutation(api.gigaSeo.approveDraft, { adminKey: "giga-seo-test-admin", planId })
-    ).rejects.toThrow("must include relevant Giga3 AI coverage");
+    ).rejects.toThrow("must include relevant Giga3 Hub coverage");
   });
 
   it("rejects approval for drafts below the quality threshold", async () => {
