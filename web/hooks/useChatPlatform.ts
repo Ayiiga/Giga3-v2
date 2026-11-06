@@ -478,7 +478,11 @@ export function useChatPlatform() {
         bootstrapSession: async () => null,
       });
 
-      if (recovered.status === "refreshed" || recovered.status === "offline_cached") {
+      if (
+        recovered.status === "refreshed" ||
+        recovered.status === "offline_cached" ||
+        recovered.status === "ok"
+      ) {
         setSessionTokenState(recovered.sessionToken);
         setEmail(recovered.email);
         sessionRecoveryRef.current = false;
