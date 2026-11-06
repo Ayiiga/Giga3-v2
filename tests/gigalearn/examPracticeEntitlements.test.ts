@@ -10,6 +10,10 @@ import {
 } from "../../convex/creditsConfig";
 import {
   EXAM_PRACTICE_FREE_QUESTION_COUNT,
+  EXAM_PRACTICE_FREE_JOURNEY_PASS_PERCENT,
+  EXAM_PRACTICE_FREE_JOURNEY_STAGE_SIZE,
+  EXAM_PRACTICE_FREE_JOURNEY_TOTAL,
+  isFreeProgressiveExamCourseSlug,
   EXAM_PRACTICE_MAX_CONCURRENT_IN_PROGRESS,
   EXAM_PRACTICE_MIN_PAID_PLAN_GHS,
   EXAM_PRACTICE_PAID_UNLOCK_COPY,
@@ -28,6 +32,29 @@ import {
 import { examPracticeShareUrl } from "../../web/lib/gigalearn/examPractice/sharePractice";
 
 const ROOT = resolve(__dirname, "../..");
+
+describe("free BECE and WASSCE staged practice", () => {
+  it("targets 500 questions in 50-question stages with a 60% pass mark", () => {
+    expect(EXAM_PRACTICE_FREE_JOURNEY_TOTAL).toBe(500);
+    expect(EXAM_PRACTICE_FREE_JOURNEY_STAGE_SIZE).toBe(50);
+    expect(EXAM_PRACTICE_FREE_JOURNEY_PASS_PERCENT).toBe(60);
+  });
+
+  it("includes BECE and WASSCE, but not Teacher Promotion", () => {
+    expect(isFreeProgressiveExamCourseSlug("exam-bece-prep")).toBe(true);
+    expect(isFreeProgressiveExamCourseSlug("exam-wassce-english")).toBe(true);
+    expect(isFreeProgressiveExamCourseSlug("exam-wassce-core-mathematics")).toBe(true);
+    expect(isFreeProgressiveExamCourseSlug("exam-teacher-promotion")).toBe(false);
+  });
+
+  it("persists server-side stage progress and advances only on a verified score", () => {
+    const source = readFileSync(resolve(ROOT, "convex/gigaLearnTechBanks.ts"), "utf8");
+    expect(source).toContain("examPracticeJourneyJson");
+    expect(source).toContain("graded.percent >= EXAM_PRACTICE_FREE_JOURNEY_PASS_PERCENT");
+    expect(source).toContain("sessionIdsMatch");
+    expect(source).toContain("approvedOnly: true");
+  });
+});
 
 describe("Exam practice billing policy (no invented prices)", () => {
   it("has no CREDIT_COSTS entry for exam practice sessions", () => {
