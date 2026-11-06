@@ -1,6 +1,6 @@
 /** Creator monetisation policy — versioned for server-side acceptance records. */
 
-export const CREATOR_MONETIZATION_POLICY_VERSION = "giga-creator-monetisation-v1";
+export const CREATOR_MONETIZATION_POLICY_VERSION = "giga-creator-monetisation-v2";
 
 export const CREATOR_MONETIZATION_POLICY_TITLE =
   "GigaSocial Creator Monetisation Rules";
