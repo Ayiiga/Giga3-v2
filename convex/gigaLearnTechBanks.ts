@@ -27,6 +27,10 @@ import type { TechPracticeMode } from "../web/lib/gigalearn/academy/techBanks/te
 import {
   hasExamPracticePremiumAccess,
   isExamPracticeCourseSlug,
+  isFreeProgressiveExamCourseSlug,
+  EXAM_PRACTICE_FREE_JOURNEY_PASS_PERCENT,
+  EXAM_PRACTICE_FREE_JOURNEY_STAGE_SIZE,
+  EXAM_PRACTICE_FREE_JOURNEY_TOTAL,
   resolveExamPracticeSessionCount,
   shouldAbandonPriorExamInProgress,
 } from "../web/lib/gigalearn/examPractice/practiceLimits";
@@ -41,6 +45,25 @@ const MODE_VALIDATOR = v.union(
   v.literal("random"),
   v.literal("challenge")
 );
+
+type FreeExamJourneyEntry = {
+  stage: number;
+  currentQuestionIds: string[];
+  completedQuestionIds: string[];
+  lastPercent?: number;
+};
+type FreeExamJourneyState = Record<string, FreeExamJourneyEntry>;
+
+function parseFreeExamJourney(raw?: string): FreeExamJourneyState {
+  if (!raw) return {};
+  try {
+    const value = JSON.parse(raw) as unknown;
+    if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+    return value as FreeExamJourneyState;
+  } catch {
+    return {};
+  }
+}
 
 function normalizeSlug(slug: string): string {
   return slug.trim().toLowerCase().slice(0, 80);
@@ -273,12 +296,19 @@ export const startTechPracticeSession = mutation({
     );
     // Resolve entitlement before sizing the pool so free callers never see
     // premium-only stems (accessTier gate) and bankSize reflects their pool.
-    const premiumAccess = hasExamPracticePremiumAccess({
-      subscriptionActive,
-      hasPurchasedCredits,
-      credits: user?.credits ?? 0,
-      examPracticePremiumExpiresAt: user?.examPracticePremiumExpiresAt,
-    });
+    // Every entry mode must use the same server-controlled free journey.
+    // This prevents topic/random/revision/challenge selectors bypassing the 60% gate.
+    const progressiveFreeJourney = isFreeProgressiveExamCourseSlug(slug);
+    // BECE/WASSCE are free for every learner, including paid subscribers.
+    // Paid entitlements never bypass the staged 50-question progression.
+    const premiumAccess = progressiveFreeJourney
+      ? false
+      : hasExamPracticePremiumAccess({
+          subscriptionActive,
+          hasPurchasedCredits,
+          credits: user?.credits ?? 0,
+          examPracticePremiumExpiresAt: user?.examPracticePremiumExpiresAt,
+        });
     // Match the selector's exam-bank policy: approved items plus published
     // pending-review items with explicitly provisional, non-scored feedback.
     // Do not size the session from approved-only counts; promotion banks are
@@ -288,6 +318,11 @@ export const startTechPracticeSession = mutation({
       freeTierOnly: !premiumAccess,
       questionType,
     }).length;
+    if (progressiveFreeJourney && bankSize === 0 && meta.pendingQuestionCount > 0) {
+      throw new Error(
+        "This WASSCE question bank is awaiting answer-key verification. Free staged practice will open as soon as its questions are approved."
+      );
+    }
     if (questionType && bankSize === 0) {
       throw new Error(
         questionType === "true_false"
@@ -296,27 +331,80 @@ export const startTechPracticeSession = mutation({
       );
     }
     const resolved = resolveExamPracticeSessionCount({
-      requested: args.count ?? defaultCount,
+      requested: progressiveFreeJourney
+        ? EXAM_PRACTICE_FREE_JOURNEY_STAGE_SIZE
+        : args.count ?? defaultCount,
       courseSlug: slug,
       bankSize,
-      subscriptionActive,
-      hasPurchasedCredits,
+      subscriptionActive: progressiveFreeJourney ? false : subscriptionActive,
+      hasPurchasedCredits: progressiveFreeJourney ? false : hasPurchasedCredits,
       // Residual balance must not unlock — pass through only for API clarity.
       credits: user?.credits ?? 0,
-      examPracticePremiumExpiresAt: user?.examPracticePremiumExpiresAt,
+      examPracticePremiumExpiresAt: progressiveFreeJourney
+        ? undefined
+        : user?.examPracticePremiumExpiresAt,
     });
     const count = resolved.count;
     const seed = Date.now() ^ Math.floor(Math.random() * 1e9);
-    const questionIds = selectTechQuestionIds({
-      courseSlug: slug,
-      mode,
-      topicId: args.topicId?.trim() || undefined,
-      count,
-      seed,
-      revisionQuestionIds: revisionIds,
-      premiumAccess: resolved.premiumAccess,
-      questionType,
-    });
+    let questionIds: string[];
+    let journeyStage: number | null = null;
+    let journeyQuestionLimit: number | null = null;
+    const topicKey = "all";
+    const journeyKey = `${slug}:${topicKey}`;
+    if (progressiveFreeJourney) {
+      if (!user) throw new Error("Learner account not found.");
+      const journey = parseFreeExamJourney(user.examPracticeJourneyJson);
+      const current = journey[journeyKey] ?? {
+        stage: 0,
+        currentQuestionIds: [],
+        completedQuestionIds: [],
+      };
+      const completed = new Set(current.completedQuestionIds);
+      const candidates = getTechBankQuestions(slug, {
+        approvedOnly: true,
+        freeTierOnly: true,
+      }).filter((q) => !completed.has(q.questionId));
+      const remainingAllowance = Math.max(
+        0,
+        EXAM_PRACTICE_FREE_JOURNEY_TOTAL - current.completedQuestionIds.length
+      );
+      journeyQuestionLimit = Math.min(
+        EXAM_PRACTICE_FREE_JOURNEY_TOTAL,
+        current.completedQuestionIds.length + candidates.length
+      );
+      let stageIds = current.currentQuestionIds.filter((id) =>
+        candidates.some((q) => q.questionId === id)
+      );
+      if (stageIds.length === 0) {
+        if (remainingAllowance <= 0 || candidates.length === 0) {
+          throw new Error("You have completed all currently available free questions in this practice bank.");
+        }
+        const pool = candidates.slice(0, remainingAllowance).map((q) => q.questionId);
+        for (let i = pool.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [pool[i], pool[j]] = [pool[j], pool[i]];
+        }
+        stageIds = pool.slice(0, Math.min(EXAM_PRACTICE_FREE_JOURNEY_STAGE_SIZE, remainingAllowance));
+        journey[journeyKey] = {
+          ...current,
+          currentQuestionIds: stageIds,
+        };
+        await ctx.db.patch(user._id, { examPracticeJourneyJson: JSON.stringify(journey) });
+      }
+      questionIds = stageIds;
+      journeyStage = current.stage + 1;
+    } else {
+      questionIds = selectTechQuestionIds({
+        courseSlug: slug,
+        mode,
+        topicId: args.topicId?.trim() || undefined,
+        count,
+        seed,
+        revisionQuestionIds: revisionIds,
+        premiumAccess: resolved.premiumAccess,
+        questionType,
+      });
+    }
     if (questionIds.length === 0) {
       throw new Error("No approved questions available for this selection.");
     }
@@ -381,6 +469,15 @@ export const startTechPracticeSession = mutation({
       questionCount: questionIds.length,
       premiumAccess: resolved.premiumAccess,
       approvedBankSize: meta.approvedQuestionCount,
+      journey: progressiveFreeJourney
+        ? {
+            stage: journeyStage,
+            stageSize: questionIds.length,
+            totalQuestionLimit: journeyQuestionLimit,
+            passPercent: EXAM_PRACTICE_FREE_JOURNEY_PASS_PERCENT,
+            stagesTarget: Math.ceil((journeyQuestionLimit ?? 0) / EXAM_PRACTICE_FREE_JOURNEY_STAGE_SIZE),
+          }
+        : null,
       questions: bankQuestions.map((q) =>
         presentTechQuestion(q, optionPermutations[q.questionId])
       ),
@@ -624,6 +721,7 @@ async function finalizeSession(
     _id: any;
     userId: string;
     courseSlug: string;
+    topicId?: string;
     questionIdsJson: string;
     answersJson: string;
     optionPermutationsJson?: string;
@@ -645,6 +743,65 @@ async function finalizeSession(
     answers,
     optionPermutations,
   });
+  let freeJourneyResult: {
+    passed: boolean;
+    nextStage: number;
+    completedQuestions: number;
+    totalQuestionLimit: number;
+    passPercent: number;
+  } | null = null;
+
+  // Advance the free BECE/WASSCE journey only from the server-graded score.
+  // Exactly 60% passes; retries retain the same stage question set.
+  if (isFreeProgressiveExamCourseSlug(session.courseSlug)) {
+    const learner = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q: any) => q.eq("email", session.userId))
+      .first();
+    if (learner) {
+      const journey = parseFreeExamJourney(learner.examPracticeJourneyJson);
+      const key = `${session.courseSlug}:all`;
+      const current = journey[key];
+      const sessionIdsMatch = Boolean(
+        current &&
+          current.currentQuestionIds.length === questionIds.length &&
+          questionIds.every((id) => current.currentQuestionIds.includes(id))
+      );
+      if (current && current.currentQuestionIds.length > 0 && sessionIdsMatch) {
+        const passed = graded.percent >= EXAM_PRACTICE_FREE_JOURNEY_PASS_PERCENT;
+        if (passed) {
+          const completed = new Set(current.completedQuestionIds);
+          for (const id of questionIds) completed.add(id);
+          journey[key] = {
+            stage: current.stage + 1,
+            currentQuestionIds: [],
+            completedQuestionIds: [...completed].slice(0, EXAM_PRACTICE_FREE_JOURNEY_TOTAL),
+            lastPercent: graded.percent,
+          };
+        } else {
+          journey[key] = { ...current, lastPercent: graded.percent };
+        }
+        const completedQuestions = journey[key].completedQuestionIds.length;
+        const availableQuestionCount = getTechBankQuestions(session.courseSlug, {
+          approvedOnly: true,
+          freeTierOnly: true,
+        }).length;
+        freeJourneyResult = {
+          passed,
+          nextStage: journey[key].stage + 1,
+          completedQuestions,
+          totalQuestionLimit: Math.min(
+            EXAM_PRACTICE_FREE_JOURNEY_TOTAL,
+            availableQuestionCount
+          ),
+          passPercent: EXAM_PRACTICE_FREE_JOURNEY_PASS_PERCENT,
+        };
+        await ctx.db.patch(learner._id, {
+          examPracticeJourneyJson: JSON.stringify(journey),
+        });
+      }
+    }
+  }
 
   // Grant XP once — retries / already-graded path must not farm rewards.
   let rewardXp = session.rewardXp ?? 0;
@@ -752,6 +909,7 @@ async function finalizeSession(
     rewardLabel,
     totalXp,
     sessionsCompleted,
+    journey: freeJourneyResult,
   };
 }
 

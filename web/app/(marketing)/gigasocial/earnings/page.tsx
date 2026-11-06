@@ -25,7 +25,7 @@ export default function GigaSocialEarningsPage() {
       <ProductSeoHeader
         compact
         title="Creator Earnings Centre"
-        description="Transparent GH₵ earnings, eligibility at 500 fans, rewards, and awards. Sign in to open your live dashboard."
+        description="Transparent GH₵ earnings, eligibility from 15 verified African fans (500 elsewhere), rewards, and awards. Sign in to open your live dashboard."
         showProductNav={false}
       />
       <main className="gigasocial-page-shell marketing-stable w-full px-3 pb-10 pt-4 sm:px-6">
@@ -36,7 +36,7 @@ export default function GigaSocialEarningsPage() {
             revenue share and unfunded cash prizes stay unavailable until real programmes launch.
           </p>
           <ul className="mt-6 max-w-xl list-disc space-y-2 pl-5 text-sm text-foreground">
-            <li>500 genuine fans required before applying for monetisation</li>
+            <li>15 genuine fans for verified African creators; 500 for creators elsewhere</li>
             <li>Verified tips and Marketplace sales only in withdrawable balance</li>
             <li>Payouts stay pending until Paystack Transfer confirmation is available</li>
           </ul>

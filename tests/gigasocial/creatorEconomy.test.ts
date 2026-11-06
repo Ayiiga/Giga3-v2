@@ -5,6 +5,7 @@ import {
   MIN_FANS_FOR_WITHDRAWAL,
   fanProgressPercent,
   fansRemaining,
+  creatorMonetizationFanThreshold,
   formatGhs,
   isCreatorMonetizationUnlocked,
   isEligibleForMonetization,
@@ -14,6 +15,19 @@ import {
 import { CREATOR_MONETIZATION_POLICY_VERSION } from "@/lib/gigasocial/creatorMonetizationPolicy";
 import { FAN_LABELS } from "@/lib/gigasocial/fanBranding";
 import { CAMERA_CAPTURE_MODES, getCameraMode } from "@/lib/gigasocial/cameraModes";
+
+describe("verified regional creator eligibility", () => {
+  it("uses 15 fans only for admin-verified African creators", () => {
+    expect(creatorMonetizationFanThreshold({ verifiedAfricanCreator: true })).toBe(15);
+    expect(creatorMonetizationFanThreshold({ verifiedAfricanCreator: false })).toBe(500);
+    expect(
+      creatorMonetizationFanThreshold({
+        verifiedAfricanCreator: false,
+        defaultRequired: 650,
+      })
+    ).toBe(650);
+  });
+});
 
 describe("creatorEconomy eligibility", () => {
   it("formats GH₵ amounts", () => {
@@ -86,7 +100,7 @@ describe("creatorEconomy eligibility", () => {
   });
 
   it("publishes a stable monetisation policy version", () => {
-    expect(CREATOR_MONETIZATION_POLICY_VERSION).toBe("giga-creator-monetisation-v1");
+    expect(CREATOR_MONETIZATION_POLICY_VERSION).toBe("giga-creator-monetisation-v2");
   });
 });
 

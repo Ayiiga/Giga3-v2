@@ -3,6 +3,7 @@ import { v } from "convex/values";
 import { requireSession } from "./auth";
 import { sessionArgs } from "./validators";
 import { parseGamification } from "./gigaSocialViews";
+import { creatorMonetizationFanThreshold } from "../web/lib/gigasocial/creatorEconomy";
 import type { Doc, Id } from "./_generated/dataModel";
 import {
   CREATOR_MONETIZATION_POLICY_VERSION,
@@ -247,14 +248,25 @@ export async function getMonetizationEligibility(
   const fanCount = await getFanCount(ctx, profile.userId);
   const economy = parseEconomyJson(profile.economyJson);
   const accepted = hasValidMonetizationConsent(economy, profile.userId);
-  const fanEligible = fanCount >= config.minFansForMonetization;
+  const creator = await ctx.db
+    .query("users")
+    .withIndex("by_email", (q) => q.eq("email", profile.userId))
+    .first();
+  const verifiedAfricanCreator =
+    creator?.creatorMonetizationRegion === "africa" &&
+    typeof creator.creatorRegionVerifiedAt === "number";
+  const fansRequired = creatorMonetizationFanThreshold({
+    verifiedAfricanCreator,
+    defaultRequired: config.minFansForMonetization,
+  });
+  const fanEligible = fanCount >= fansRequired;
   const legacyUnlockOnly =
     !accepted &&
     typeof economy.monetizationUnlockedAt === "number" &&
     economy.monetizationUnlockedAt > 0;
   return {
     fanCount,
-    fansRequired: config.minFansForMonetization,
+    fansRequired,
     withdrawalFansRequired: config.minFansForWithdrawal,
     fanEligible,
     withdrawalFanEligible: fanCount >= config.minFansForWithdrawal,
@@ -500,7 +512,7 @@ export const getCreatorDashboard = query({
       unlocked: monetizationActive,
       fanCount,
       supportingCount,
-      fansRequired: settings.minFansForMonetization,
+      fansRequired: eligibility.fansRequired,
       withdrawalFansRequired: settings.minFansForWithdrawal,
       minWithdrawalGhs: settings.minWithdrawalGhs,
       fanEligible: eligibility.fanEligible,
@@ -509,7 +521,7 @@ export const getCreatorDashboard = query({
       policyVersion: eligibility.policyVersion,
       showEligibleInvite: eligibility.showEligibleInvite,
       requiresPolicyReacceptance: eligibility.requiresPolicyReacceptance,
-      fanProgress: Math.min(100, Math.round((fanCount / settings.minFansForMonetization) * 100)),
+      fanProgress: Math.min(100, Math.round((fanCount / eligibility.fansRequired) * 100)),
       level: gamification.level,
       xp: gamification.xp,
       badges: gamification.badges,
@@ -984,9 +996,10 @@ export const acceptMonetizationTerms = mutation({
 
     const settings = await loadEconomySettings(ctx);
     const fanCount = await getFanCount(ctx, userId);
-    if (fanCount < settings.minFansForMonetization) {
+    const eligibility = await getMonetizationEligibility(ctx, profile, settings);
+    if (!eligibility.fanEligible) {
       throw new Error(
-        `Creator monetisation unlocks at ${settings.minFansForMonetization} fans. You have ${fanCount}.`
+        `Creator monetisation unlocks at ${eligibility.fansRequired} fans. You have ${fanCount}.`
       );
     }
 
@@ -1126,7 +1139,7 @@ export const submitMonetizationApplication = mutation({
     const eligibility = await getMonetizationEligibility(ctx, profile, settings);
     if (!eligibility.fanEligible) {
       throw new Error(
-        `Need ${settings.minFansForMonetization} fans before applying. You have ${eligibility.fanCount}.`
+        `Need ${eligibility.fansRequired} fans before applying. You have ${eligibility.fanCount}.`
       );
     }
     if (!eligibility.accepted) {

@@ -15,6 +15,11 @@ describe("GigaSocial multi-account", () => {
     expect(src).toContain("export const listMySocialAccounts");
     expect(src).toContain("export const createSocialAccount");
     expect(src).toContain("export const setMainSocialAccount");
+    expect(src).toContain("admin-verified external creator history between 1 and 3 years old");
+    expect(src).toContain("export const setCreatorEligibilityVerification");
+    expect(src).toContain("isPlatformAdminEmail(adminEmail)");
+    expect(src).toContain("creatorHistoryVerifiedAt");
+    expect(src).toContain("requireSession(args.sessionToken, ctx)");
   });
 });
 

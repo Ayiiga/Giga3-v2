@@ -2,6 +2,7 @@ import { internal } from "./_generated/api";
 import { internalQuery, mutation, query, type MutationCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { requireSession } from "./auth";
+import { isPlatformAdminEmail } from "./platformAdmin";
 import { sessionArgs } from "./validators";
 import { socialPostMediaItemValidator, socialPostTypeValidator } from "./schema";
 import {
@@ -70,6 +71,26 @@ async function listProfileDocs(
     .query("socialProfiles")
     .withIndex("by_user", (q) => q.eq("userId", userId))
     .collect();
+}
+
+function hasEligibleEstablishedCreatorHistory(
+  user:
+    | { creatorHistoryStartedAt?: number; creatorHistoryVerifiedAt?: number }
+    | null
+    | undefined,
+  now = Date.now()
+): boolean {
+  const startedAt = user?.creatorHistoryStartedAt;
+  const verifiedAt = user?.creatorHistoryVerifiedAt;
+  const age = typeof startedAt === "number" ? now - startedAt : 0;
+  const oneYear = 365 * 24 * 60 * 60 * 1000;
+  const threeYears = 3 * oneYear + 24 * 60 * 60 * 1000;
+  return Boolean(
+    verifiedAt &&
+      typeof startedAt === "number" &&
+      age >= oneYear &&
+      age <= threeYears
+  );
 }
 
 async function getMainProfileDoc(
@@ -715,6 +736,14 @@ export const getMyProfile = query({
       }
 
       const allAccounts = await listProfileDocs(ctx, userId);
+      const creatorUser = await ctx.db
+        .query("users")
+        .withIndex("by_email", (q) => q.eq("email", userId))
+        .first();
+      const maxAccounts =
+        allAccounts.length >= 1 && !hasEligibleEstablishedCreatorHistory(creatorUser)
+          ? 1
+          : MAX_SOCIAL_ACCOUNTS_PER_USER;
       const accounts = [...allAccounts]
         .sort((a, b) => {
           if (a.isMain === true && b.isMain !== true) return -1;
@@ -749,7 +778,7 @@ export const getMyProfile = query({
           accountLabel: profile.accountLabel ?? "Main",
         },
         accounts,
-        maxAccounts: MAX_SOCIAL_ACCOUNTS_PER_USER,
+        maxAccounts,
         recentPosts,
       };
     } catch (error) {
@@ -1165,6 +1194,20 @@ export const createSocialAccount = mutation({
     if (existing.length >= MAX_SOCIAL_ACCOUNTS_PER_USER) {
       throw new Error(`You can create up to ${MAX_SOCIAL_ACCOUNTS_PER_USER} creator accounts.`);
     }
+    // Additional profiles are reserved for creators with manually verified
+    // external history between one and three years old. Login accounts remain
+    // one-per-verified-email; these are profiles under the same login.
+    if (existing.length >= 1) {
+      const user = await ctx.db
+        .query("users")
+        .withIndex("by_email", (q) => q.eq("email", userId))
+        .first();
+      if (!hasEligibleEstablishedCreatorHistory(user)) {
+        throw new Error(
+          "Additional creator profiles require admin-verified external creator history between 1 and 3 years old."
+        );
+      }
+    }
     const handle = normalizeSocialHandle(args.handle);
     if (!handle) throw new Error("Handle is required.");
     const clash = await ctx.db
@@ -1189,6 +1232,61 @@ export const createSocialAccount = mutation({
       updatedAt: now,
     });
     return { profileId: id, handle, displayName };
+  },
+});
+
+/**
+ * Owner/admin-only verification of external creator history and region.
+ * Evidence is reviewed out-of-band; clients cannot self-assign either status.
+ */
+export const setCreatorEligibilityVerification = mutation({
+  args: {
+    sessionToken: v.string(),
+    creatorEmail: v.string(),
+    creatorHistoryStartedAt: v.optional(v.number()),
+    creatorRegion: v.optional(v.union(v.literal("africa"), v.literal("other"))),
+    revokeHistoryVerification: v.optional(v.boolean()),
+    revokeRegionVerification: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    const adminEmail = await requireSession(args.sessionToken, ctx);
+    if (!isPlatformAdminEmail(adminEmail)) throw new Error("Administrator access required.");
+    const email = args.creatorEmail.trim().toLowerCase();
+    if (!email || !email.includes("@")) throw new Error("A valid creator email is required.");
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", email))
+      .first();
+    if (!user) throw new Error("Creator account not found.");
+    const now = Date.now();
+    const patch: {
+      creatorHistoryStartedAt?: number;
+      creatorHistoryVerifiedAt?: number;
+      creatorMonetizationRegion?: "africa" | "other";
+      creatorRegionVerifiedAt?: number;
+    } = {};
+    if (args.revokeHistoryVerification) {
+      patch.creatorHistoryStartedAt = undefined;
+      patch.creatorHistoryVerifiedAt = undefined;
+    } else if (args.creatorHistoryStartedAt !== undefined) {
+      const age = now - args.creatorHistoryStartedAt;
+      const year = 365 * 24 * 60 * 60 * 1000;
+      if (!Number.isFinite(age) || age < year || age > 3 * year + 24 * 60 * 60 * 1000) {
+        throw new Error("Verified creator history must be between 1 and 3 years old.");
+      }
+      patch.creatorHistoryStartedAt = args.creatorHistoryStartedAt;
+      patch.creatorHistoryVerifiedAt = now;
+    }
+    if (args.revokeRegionVerification) {
+      patch.creatorMonetizationRegion = undefined;
+      patch.creatorRegionVerifiedAt = undefined;
+    } else if (args.creatorRegion !== undefined) {
+      patch.creatorMonetizationRegion = args.creatorRegion;
+      patch.creatorRegionVerifiedAt = now;
+    }
+    if (!Object.keys(patch).length) throw new Error("No verification change supplied.");
+    await ctx.db.patch(user._id, patch);
+    return { ok: true, creatorEmail: email };
   },
 });
 
