@@ -760,7 +760,7 @@ async function finalizeSession(
       .first();
     if (learner) {
       const journey = parseFreeExamJourney(learner.examPracticeJourneyJson);
-      const key = `${session.courseSlug}:${session.topicId?.trim() || "all"}`;
+      const key = `${session.courseSlug}:all`;
       const current = journey[key];
       const sessionIdsMatch = Boolean(
         current &&
@@ -785,7 +785,6 @@ async function finalizeSession(
         const availableQuestionCount = getTechBankQuestions(session.courseSlug, {
           approvedOnly: true,
           freeTierOnly: true,
-          topicId: session.topicId,
         }).length;
         freeJourneyResult = {
           passed,
