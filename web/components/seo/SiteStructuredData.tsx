@@ -30,7 +30,7 @@ export function SiteStructuredData({ offers, homeDescription }: SiteStructuredDa
       "@type": "WebPage",
       "@id": homeUrl,
       url: homeUrl,
-      name: "Giga3 AI — Africa's AI Super App for Ghana",
+      name: "Giga3 Hub — Africa's Connected Digital Platform",
       description: homeDescription,
       isPartOf: { "@id": SEO_WEBSITE_ID },
       about: { "@id": SEO_ORGANIZATION_ID },
