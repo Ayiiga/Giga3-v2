@@ -2,6 +2,7 @@ import { internal } from "./_generated/api";
 import { internalQuery, mutation, query, type MutationCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { requireSession } from "./auth";
+import { isPlatformAdminEmail } from "./platformAdmin";
 import { sessionArgs } from "./validators";
 import { socialPostMediaItemValidator, socialPostTypeValidator } from "./schema";
 import {
@@ -1165,6 +1166,30 @@ export const createSocialAccount = mutation({
     if (existing.length >= MAX_SOCIAL_ACCOUNTS_PER_USER) {
       throw new Error(`You can create up to ${MAX_SOCIAL_ACCOUNTS_PER_USER} creator accounts.`);
     }
+    // Additional profiles are reserved for creators with manually verified
+    // external history between one and three years old. Login accounts remain
+    // one-per-verified-email; these are profiles under the same login.
+    if (existing.length >= 1) {
+      const user = await ctx.db
+        .query("users")
+        .withIndex("by_email", (q) => q.eq("email", userId))
+        .first();
+      const startedAt = user?.creatorHistoryStartedAt;
+      const verifiedAt = user?.creatorHistoryVerifiedAt;
+      const historyAge = typeof startedAt === "number" ? Date.now() - startedAt : 0;
+      const oneYear = 365 * 24 * 60 * 60 * 1000;
+      const threeYears = 3 * oneYear + 24 * 60 * 60 * 1000;
+      if (
+        !verifiedAt ||
+        typeof startedAt !== "number" ||
+        historyAge < oneYear ||
+        historyAge > threeYears
+      ) {
+        throw new Error(
+          "Additional creator profiles require admin-verified external creator history between 1 and 3 years old."
+        );
+      }
+    }
     const handle = normalizeSocialHandle(args.handle);
     if (!handle) throw new Error("Handle is required.");
     const clash = await ctx.db
@@ -1189,6 +1214,56 @@ export const createSocialAccount = mutation({
       updatedAt: now,
     });
     return { profileId: id, handle, displayName };
+  },
+});
+
+/**
+ * Owner/admin-only verification of external creator history and region.
+ * Evidence is reviewed out-of-band; clients cannot self-assign either status.
+ */
+export const setCreatorEligibilityVerification = mutation({
+  args: {
+    sessionToken: v.string(),
+    creatorEmail: v.string(),
+    creatorHistoryStartedAt: v.optional(v.number()),
+    creatorRegion: v.optional(v.union(v.literal("africa"), v.literal("other"))),
+    revokeHistoryVerification: v.optional(v.boolean()),
+    revokeRegionVerification: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    const adminEmail = await requireSession(args.sessionToken);
+    if (!isPlatformAdminEmail(adminEmail)) throw new Error("Administrator access required.");
+    const email = args.creatorEmail.trim().toLowerCase();
+    if (!email || !email.includes("@")) throw new Error("A valid creator email is required.");
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", email))
+      .first();
+    if (!user) throw new Error("Creator account not found.");
+    const now = Date.now();
+    const patch: Record<string, unknown> = {};
+    if (args.revokeHistoryVerification) {
+      patch.creatorHistoryStartedAt = undefined;
+      patch.creatorHistoryVerifiedAt = undefined;
+    } else if (args.creatorHistoryStartedAt !== undefined) {
+      const age = now - args.creatorHistoryStartedAt;
+      const year = 365 * 24 * 60 * 60 * 1000;
+      if (!Number.isFinite(age) || age < year || age > 3 * year + 24 * 60 * 60 * 1000) {
+        throw new Error("Verified creator history must be between 1 and 3 years old.");
+      }
+      patch.creatorHistoryStartedAt = args.creatorHistoryStartedAt;
+      patch.creatorHistoryVerifiedAt = now;
+    }
+    if (args.revokeRegionVerification) {
+      patch.creatorMonetizationRegion = undefined;
+      patch.creatorRegionVerifiedAt = undefined;
+    } else if (args.creatorRegion !== undefined) {
+      patch.creatorMonetizationRegion = args.creatorRegion;
+      patch.creatorRegionVerifiedAt = now;
+    }
+    if (!Object.keys(patch).length) throw new Error("No verification change supplied.");
+    await ctx.db.patch(user._id, patch);
+    return { ok: true, creatorEmail: email };
   },
 });
 
