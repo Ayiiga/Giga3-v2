@@ -70,6 +70,27 @@ describe("Giga3 Hub master brand", () => {
     expect(manifest.short_name).toBe("Giga3 Hub");
     expect(manifest.shortcuts.find((item: { url: string }) => item.url === "/chat/")?.description)
       .toContain("Giga3 AI");
+
+    const webManifest = JSON.parse(
+      readFileSync(resolve(__dirname, "../../web/public/manifest.webmanifest"), "utf8")
+    );
+    expect(webManifest.name).toBe("Giga3 Hub");
+    expect(webManifest.short_name).toBe("Giga3 Hub");
+
+    const androidManifest = JSON.parse(
+      readFileSync(resolve(__dirname, "../../android/twa-manifest.json"), "utf8")
+    );
+    expect(androidManifest.name).toBe("Giga3 Hub");
+    expect(androidManifest.launcherName).toBe("Giga3 Hub");
+    expect(androidManifest.packageId).toBe("com.giga3ai.app");
+
+    const assistantIdentity = readFileSync(
+      resolve(__dirname, "../../convex/assistantIdentity.ts"),
+      "utf8"
+    );
+    expect(assistantIdentity).toContain(
+      "You are Giga3 AI, the dedicated AI assistant inside Giga3 Hub"
+    );
   });
 
   it("uses Giga3 Hub as the public metadata publisher", () => {
