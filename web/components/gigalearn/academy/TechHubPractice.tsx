@@ -170,6 +170,13 @@ function TechHubInner() {
     rewardLabel?: string | null;
     totalXp?: number;
     sessionsCompleted?: number;
+    journey?: {
+      passed: boolean;
+      nextStage: number;
+      completedQuestions: number;
+      totalQuestionLimit: number;
+      passPercent: number;
+    } | null;
     results: Array<{
       questionId: string;
       selectedIndex: number | null;
@@ -208,6 +215,7 @@ function TechHubInner() {
             rewardLabel: r.rewardLabel,
             totalXp: r.totalXp,
             sessionsCompleted: r.sessionsCompleted,
+            journey: r.journey,
             results: r.results ?? [],
           });
         })
@@ -396,6 +404,7 @@ function TechHubInner() {
         rewardLabel: res.rewardLabel,
         totalXp: res.totalXp,
         sessionsCompleted: res.sessionsCompleted,
+        journey: res.journey,
         results: res.results ?? [],
       });
     } catch (e) {
@@ -437,6 +446,13 @@ function TechHubInner() {
                 }`
               : "No verified answer keys in this session — provisional items were not scored."}
           </p>
+          {results.journey ? (
+            <p className="rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-950" role="status">
+              {results.journey.passed
+                ? `Stage passed! You have completed ${results.journey.completedQuestions} of up to ${results.journey.totalQuestionLimit} available questions. Stage ${results.journey.nextStage} is now unlocked.`
+                : `You need at least ${results.journey.passPercent}% to unlock the next 50 questions. Retry this same stage to improve your score.`}
+            </p>
+          ) : null}
           <div className="grid gap-2 rounded-xl border border-emerald-200 bg-emerald-50/80 p-3 text-sm text-emerald-950 sm:grid-cols-2">
             <p>
               Questions attempted: <strong>{results.results.length}</strong>
