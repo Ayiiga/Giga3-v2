@@ -73,6 +73,26 @@ async function listProfileDocs(
     .collect();
 }
 
+function hasEligibleEstablishedCreatorHistory(
+  user:
+    | { creatorHistoryStartedAt?: number; creatorHistoryVerifiedAt?: number }
+    | null
+    | undefined,
+  now = Date.now()
+): boolean {
+  const startedAt = user?.creatorHistoryStartedAt;
+  const verifiedAt = user?.creatorHistoryVerifiedAt;
+  const age = typeof startedAt === "number" ? now - startedAt : 0;
+  const oneYear = 365 * 24 * 60 * 60 * 1000;
+  const threeYears = 3 * oneYear + 24 * 60 * 60 * 1000;
+  return Boolean(
+    verifiedAt &&
+      typeof startedAt === "number" &&
+      age >= oneYear &&
+      age <= threeYears
+  );
+}
+
 async function getMainProfileDoc(
   ctx: { db: import("./_generated/server").QueryCtx["db"] },
   userId: string
@@ -716,6 +736,14 @@ export const getMyProfile = query({
       }
 
       const allAccounts = await listProfileDocs(ctx, userId);
+      const creatorUser = await ctx.db
+        .query("users")
+        .withIndex("by_email", (q) => q.eq("email", userId))
+        .first();
+      const maxAccounts =
+        allAccounts.length >= 1 && !hasEligibleEstablishedCreatorHistory(creatorUser)
+          ? 1
+          : MAX_SOCIAL_ACCOUNTS_PER_USER;
       const accounts = [...allAccounts]
         .sort((a, b) => {
           if (a.isMain === true && b.isMain !== true) return -1;
@@ -750,7 +778,7 @@ export const getMyProfile = query({
           accountLabel: profile.accountLabel ?? "Main",
         },
         accounts,
-        maxAccounts: MAX_SOCIAL_ACCOUNTS_PER_USER,
+        maxAccounts,
         recentPosts,
       };
     } catch (error) {
@@ -1174,17 +1202,7 @@ export const createSocialAccount = mutation({
         .query("users")
         .withIndex("by_email", (q) => q.eq("email", userId))
         .first();
-      const startedAt = user?.creatorHistoryStartedAt;
-      const verifiedAt = user?.creatorHistoryVerifiedAt;
-      const historyAge = typeof startedAt === "number" ? Date.now() - startedAt : 0;
-      const oneYear = 365 * 24 * 60 * 60 * 1000;
-      const threeYears = 3 * oneYear + 24 * 60 * 60 * 1000;
-      if (
-        !verifiedAt ||
-        typeof startedAt !== "number" ||
-        historyAge < oneYear ||
-        historyAge > threeYears
-      ) {
+      if (!hasEligibleEstablishedCreatorHistory(user)) {
         throw new Error(
           "Additional creator profiles require admin-verified external creator history between 1 and 3 years old."
         );
