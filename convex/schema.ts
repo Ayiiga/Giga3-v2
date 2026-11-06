@@ -336,6 +336,8 @@ export default defineSchema({
     /** Admin-verified region; only verified African creators receive the 15-fan threshold. */
     creatorMonetizationRegion: v.optional(v.union(v.literal("africa"), v.literal("other"))),
     creatorRegionVerifiedAt: v.optional(v.number()),
+    /** Server-maintained BECE/WASSCE free-practice stage progress by course/topic. */
+    examPracticeJourneyJson: v.optional(v.string()),
   })
     .index("by_email", ["email"])
     .index("by_googleSub", ["googleSub"])
