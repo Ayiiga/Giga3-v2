@@ -10,6 +10,7 @@ import { convexHttpCall } from "@/lib/network/convexCall";
 import { getSupabaseClient } from "@/lib/supabase";
 
 const ACCESS_TOKEN_KEY = "giga3_supabase_access_token";
+const REFRESH_TOKEN_KEY = "giga3_supabase_refresh_token";
 
 function getStoredAccessToken(): string | null {
   if (typeof window === "undefined") return null;
@@ -24,8 +25,10 @@ export function consumeSupabaseAuthHash(): string | null {
   if (typeof window === "undefined" || !window.location.hash) return null;
   const params = new URLSearchParams(window.location.hash.slice(1));
   const accessToken = params.get("access_token");
+  const refreshToken = params.get("refresh_token");
   if (!accessToken) return null;
   storeAccessToken(accessToken);
+  if (refreshToken) localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
   window.history.replaceState(null, "", window.location.pathname + window.location.search);
   return accessToken;
 }
@@ -85,9 +88,30 @@ export async function signOutSupabase(): Promise<void> {
   clearAllClientAuth();
 }
 
-/** Refresh Giga3 session token from stored Supabase access token. */
+/** Refresh the provider credential first, then exchange its verified access token. */
 export async function refreshGiga3SessionFromSupabase(): Promise<string | null> {
-  const accessToken = getStoredAccessToken();
+  if (typeof window === "undefined") return null;
+  const client = getSupabaseClient();
+  if (!client) return null;
+
+  const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+  let accessToken = getStoredAccessToken();
+
+  if (refreshToken) {
+    try {
+      const refreshed = await client.authRefreshSession(refreshToken);
+      if (!refreshed?.access_token || !refreshed.refresh_token) {
+        return null;
+      }
+      accessToken = refreshed.access_token;
+      storeAccessToken(refreshed.access_token);
+      localStorage.setItem(REFRESH_TOKEN_KEY, refreshed.refresh_token);
+    } catch {
+      // A still-valid access token may be exchanged below; never clear credentials
+      // merely because the refresh endpoint is temporarily unreachable.
+    }
+  }
+
   if (!accessToken) return null;
   const result = await exchangeSupabaseTokenForGiga3Session(accessToken);
   return result?.sessionToken ?? null;
