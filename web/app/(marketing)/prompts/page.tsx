@@ -15,9 +15,9 @@ const PromptLibraryClient = dynamic(
 
 export const metadata = publicMetadata({
   path: "/prompts",
-  title: "Prompt Library — Giga3 AI",
+  title: "Prompt Library — Giga3 Hub",
   description:
-    "Curated AI prompt library for education, coding, business, marketing, writing, design, programming, productivity, and research on Giga3 AI.",
+    "Curated AI prompt library for education, coding, business, marketing, writing, design, programming, productivity, and research on Giga3 Hub.",
 });
 
 export default function PromptsPage() {
@@ -25,7 +25,7 @@ export default function PromptsPage() {
     <>
       <JsonLd
         breadcrumbs={[
-          { name: "Giga3 AI", path: "/" },
+          { name: "Giga3 Hub", path: "/" },
           { name: "Prompt library", path: "/prompts" },
         ]}
       />
