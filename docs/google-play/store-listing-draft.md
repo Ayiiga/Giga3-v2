@@ -27,7 +27,7 @@ Giga3 Hub is Africa’s connected digital platform, built in Ghana for students,
 
 Use Giga3 AI, the built-in AI assistant, for research, writing, coding help, and everyday questions.
 Learn with GigaLearn — curriculum-aligned study support for BECE and WASSCE preparation.
-Create with Media Studio and GigaEdits for images, video, and creative workflows.
+Explore the Studio tools for available image, video, music, and logo creation workflows.
 Connect on GigaSocial and discover digital products on the Marketplace.
 Manage credits and subscriptions securely in GigaWallet.
 
