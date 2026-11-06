@@ -1241,7 +1241,12 @@ export const setCreatorEligibilityVerification = mutation({
       .first();
     if (!user) throw new Error("Creator account not found.");
     const now = Date.now();
-    const patch: Record<string, unknown> = {};
+    const patch: {
+      creatorHistoryStartedAt?: number;
+      creatorHistoryVerifiedAt?: number;
+      creatorMonetizationRegion?: "africa" | "other";
+      creatorRegionVerifiedAt?: number;
+    } = {};
     if (args.revokeHistoryVerification) {
       patch.creatorHistoryStartedAt = undefined;
       patch.creatorHistoryVerifiedAt = undefined;
