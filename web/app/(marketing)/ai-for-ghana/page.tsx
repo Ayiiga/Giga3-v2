@@ -74,9 +74,9 @@ export default function AiForGhanaPage() {
                 AI for Students, Creators and Businesses in Ghana
               </h1>
               <p className="section-lead mt-4">
-                Giga3 Hub is a connected digital platform from Ghana built to help students, creators, educators and businesses,
-                researchers and businesses learn, research, code and create with powerful artificial
-                intelligence tools in one place.
+                Giga3 Hub is a connected digital platform from Ghana that brings AI assistance, learning,
+                exam preparation, creative tools and community services together for students, teachers,
+                creators and businesses.
               </p>
             </header>
 
