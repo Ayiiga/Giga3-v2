@@ -16,7 +16,7 @@ Prepared for Google Play Console. **Do not upload without explicit authorization
 ## Short description (≤80 characters)
 
 ```
-Africa’s AI Super App — chat, learn, create, and marketplace in one place.
+Africa’s connected digital platform — AI, social, learning, creativity and more.
 ```
 (79 characters)
 
