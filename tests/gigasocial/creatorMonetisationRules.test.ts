@@ -25,7 +25,9 @@ describe("creator monetisation server rules", () => {
     const next = src.indexOf("export const ", start + 10);
     const handler = src.slice(start, next === -1 ? undefined : next);
     expect(handler).toContain("requireSession(args.sessionToken, ctx)");
-    expect(handler).toContain("minFansForMonetization");
+    expect(handler).toContain("getMonetizationEligibility");
+    expect(handler).toContain("eligibility.fanEligible");
+    expect(handler).toContain("eligibility.fansRequired");
     expect(handler).toContain("monetizationAcceptedAt");
     expect(handler).toContain("monetizationPolicyVersion");
     expect(handler).toContain("monetizationAcceptedBy: userId");
