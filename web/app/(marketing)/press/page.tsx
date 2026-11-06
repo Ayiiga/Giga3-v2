@@ -10,9 +10,9 @@ import { brandingAssetUrl } from "@/lib/brandingAssets";
 
 export const metadata = publicMetadata({
   path: "/press",
-  title: "Giga3 AI Press Room — Media & Company Information",
+  title: "Giga3 Hub Press Room — Media & Company Information",
   description:
-    "Official Giga3 AI press information: company overview, founder, products, Ghana mission, logo assets and media contact for journalists and partners.",
+    "Official Giga3 Hub press information: company overview, founder, products, Ghana mission, logo assets and media contact for journalists and partners.",
 });
 
 const PRODUCT_HIGHLIGHTS = PRODUCT_CATALOG.filter((p) =>
@@ -29,14 +29,14 @@ export default function PressPage() {
       <JsonLd
         webPage={{
           path: "/press",
-          name: "Giga3 AI Press Room",
+          name: "Giga3 Hub Press Room",
           description:
-            "Media information about Giga3 AI — Africa's AI Super App built in Ghana by Intelligence Global Arena (GIGA).",
+            "Media information about Giga3 Hub — a connected digital platform built in Ghana by Intelligence Global Arena (GIGA).",
         }}
       />
       <JsonLd
         breadcrumbs={[
-          { name: "Giga3 AI", path: "/" },
+          { name: "Giga3 Hub", path: "/" },
           { name: "Press", path: "/press" },
         ]}
       />
@@ -44,15 +44,15 @@ export default function PressPage() {
         <Container className="section-padding">
           <article className="mx-auto max-w-3xl">
             <header>
-              <h1 className="page-title">Giga3 AI Press Room</h1>
+              <h1 className="page-title">Giga3 Hub Press Room</h1>
               <p className="section-lead mt-4">
                 Official information for journalists, educators, partners and researchers covering
-                Giga3 AI — Africa&apos;s AI Super App, built in Ghana.
+                Giga3 Hub — Africa&apos;s connected digital platform, built in Ghana.
               </p>
             </header>
 
             <section className="mt-10 space-y-4">
-              <h2 className="text-lg font-semibold text-foreground">About Giga3 AI</h2>
+              <h2 className="text-lg font-semibold text-foreground">About Giga3 Hub</h2>
               <p className="text-base leading-relaxed text-muted">{GEO_POSITIONING_STATEMENT}</p>
               <p className="text-base leading-relaxed text-muted">{GIGA3_VISION.mission}</p>
             </section>
@@ -88,7 +88,7 @@ export default function PressPage() {
             </section>
 
             <section className="mt-10 space-y-4">
-              <h2 className="text-lg font-semibold text-foreground">Giga3 AI products</h2>
+              <h2 className="text-lg font-semibold text-foreground">Giga3 Hub services</h2>
               <ul className="space-y-3 text-sm text-muted">
                 {PRODUCT_HIGHLIGHTS.map((product) => (
                   <li key={product.href} className="rounded-xl border border-border p-4">
@@ -104,7 +104,7 @@ export default function PressPage() {
               <p className="text-sm text-muted">
                 Full product map:{" "}
                 <Link href="/features/" className="text-accent underline">
-                  Giga3 AI features
+                  Giga3 Hub services
                 </Link>
               </p>
             </section>
@@ -112,7 +112,7 @@ export default function PressPage() {
             <section className="mt-10 space-y-4">
               <h2 className="text-lg font-semibold text-foreground">GigaLearn</h2>
               <p className="text-base leading-relaxed text-muted">
-                GigaLearn is Giga3 AI&apos;s learning assistant for homework help, practice questions,
+                GigaLearn is Giga3 Hub&apos;s learning service for homework help, practice questions,
                 study plans, and BECE and WASSCE revision support for JHS and SHS students in Ghana.
                 It is a study aid — not an official WAEC or GES product.
               </p>
@@ -130,7 +130,7 @@ export default function PressPage() {
             <section className="mt-10 space-y-4">
               <h2 className="text-lg font-semibold text-foreground">Ghana / Africa mission</h2>
               <p className="text-base leading-relaxed text-muted">
-                {GIGA3_VISION.tagline}. Giga3 AI is built with Ghanaian billing, education context
+                {GIGA3_VISION.tagline}. Giga3 Hub is built with Ghanaian billing, education context
                 (including BECE and WASSCE study support), and mobile-first PWA access for learners,
                 creators, and businesses across Africa and worldwide.
               </p>
@@ -144,7 +144,7 @@ export default function PressPage() {
             <section className="mt-10 space-y-4">
               <h2 className="text-lg font-semibold text-foreground">Official logo</h2>
               <div className="flex items-center gap-4 rounded-xl border border-border bg-slate-50 p-5">
-                <BrandLogo size={64} alt="Giga3 AI logo" />
+                <BrandLogo size={64} alt="Giga3 Hub logo" />
                 <div className="text-sm text-muted">
                   <p className="font-medium text-foreground">{siteConfig.name}</p>
                   <p className="mt-1 break-all">{logoUrl}</p>
@@ -165,7 +165,7 @@ export default function PressPage() {
               <p className="text-sm text-muted">
                 General contact:{" "}
                 <Link href="/contact/" className="text-accent underline">
-                  Contact Giga3 AI
+                  Contact Giga3 Hub
                 </Link>
               </p>
             </section>
@@ -176,7 +176,7 @@ export default function PressPage() {
                 Formal press releases will be listed here as they are published. For now, see product
                 updates on the{" "}
                 <Link href="/blog/" className="text-accent underline">
-                  Giga3 AI Blog
+                  Giga3 Hub Blog
                 </Link>
                 .
               </p>
