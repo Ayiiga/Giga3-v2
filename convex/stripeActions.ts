@@ -28,7 +28,7 @@ export const createCheckout = action({
         {
           price_data: {
             currency: "usd",
-            product_data: { name: `Giga3 AI Tokens (${args.tokens})` },
+            product_data: { name: `Giga3 Hub Credits (${args.tokens})` },
             unit_amount: unitAmount,
           },
           quantity: 1,
