@@ -14,6 +14,16 @@ export const MIN_FANS_FOR_WITHDRAWAL = 50;
 /** @deprecated Use MIN_FANS_FOR_MONETIZATION — kept for older imports. */
 export const DEFAULT_MIN_FANS_FOR_MONETIZATION = MIN_FANS_FOR_MONETIZATION;
 
+/** Server-reported regional eligibility; never infer Africa from IP or language. */
+export function creatorMonetizationFanThreshold(args: {
+  verifiedAfricanCreator: boolean;
+  defaultRequired?: number;
+}): number {
+  return args.verifiedAfricanCreator
+    ? MIN_FANS_FOR_AFRICAN_MONETIZATION
+    : Math.max(1, Math.floor(args.defaultRequired ?? MIN_FANS_FOR_MONETIZATION));
+}
+
 export function formatGhs(amount: number): string {
   if (!Number.isFinite(amount)) return "GH₵ 0.00";
   return `GH₵ ${amount.toFixed(2)}`;
