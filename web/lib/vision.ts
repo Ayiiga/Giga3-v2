@@ -3,7 +3,7 @@ export const GIGA3_VISION = {
   tagline: "Built in Africa. Powered by AI. Designed for Everyone.",
   shortTagline: "Built in Africa · Powered by AI",
   mission:
-    "Giga3 AI delivers education, productivity, creativity, commerce, and intelligent assistance from one unified, secure ecosystem — rooted in Ghana and built for the world.",
+    "Giga3 Hub brings education, productivity, creativity, commerce, social connection, publishing and intelligent assistance together in one unified, secure digital ecosystem — rooted in Ghana and built for the world.",
 } as const;
 
 export type UserRoleId =
