@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "Giga3 AI",
-  "short_name": "Giga3 AI",
-  "description": "Giga3 AI is Africa's AI Super App for social, AI tools, learning, creativity, marketplace and digital services.",
+  "name": "Giga3 Hub",
+  "short_name": "Giga3 Hub",
+  "description": "Giga3 Hub brings AI assistance, social networking, learning, creativity, publishing, marketplace and digital services together in one connected platform.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -122,7 +122,7 @@
     {
       "name": "Chat",
       "short_name": "Chat",
-      "description": "Open Giga3 AI chat",
+      "description": "Open Giga3 AI assistant",
       "url": "/chat/",
       "icons": [
         {
