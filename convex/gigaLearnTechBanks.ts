@@ -296,9 +296,9 @@ export const startTechPracticeSession = mutation({
     );
     // Resolve entitlement before sizing the pool so free callers never see
     // premium-only stems (accessTier gate) and bankSize reflects their pool.
-    const progressiveFreeJourney =
-      isFreeProgressiveExamCourseSlug(slug) &&
-      (mode === "learn" || mode === "practice_test" || mode === "timed");
+    // Every entry mode must use the same server-controlled free journey.
+    // This prevents topic/random/revision/challenge selectors bypassing the 60% gate.
+    const progressiveFreeJourney = isFreeProgressiveExamCourseSlug(slug);
     // BECE/WASSCE are free for every learner, including paid subscribers.
     // Paid entitlements never bypass the staged 50-question progression.
     const premiumAccess = progressiveFreeJourney
@@ -349,7 +349,7 @@ export const startTechPracticeSession = mutation({
     let questionIds: string[];
     let journeyStage: number | null = null;
     let journeyQuestionLimit: number | null = null;
-    const topicKey = args.topicId?.trim() || "all";
+    const topicKey = "all";
     const journeyKey = `${slug}:${topicKey}`;
     if (progressiveFreeJourney) {
       if (!user) throw new Error("Learner account not found.");
@@ -363,8 +363,6 @@ export const startTechPracticeSession = mutation({
       const candidates = getTechBankQuestions(slug, {
         approvedOnly: true,
         freeTierOnly: true,
-        topicId: args.topicId?.trim() || undefined,
-        questionType,
       }).filter((q) => !completed.has(q.questionId));
       const remainingAllowance = Math.max(
         0,
