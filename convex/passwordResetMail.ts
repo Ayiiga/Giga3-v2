@@ -30,7 +30,7 @@ function resetEmailHtml(resetUrl: string): string {
   return wrapEmailHtml({
     title: "Reset your password",
     bodyHtml: `
-      <p style="margin:0 0 14px;">We received a request to reset your Giga3 AI password.</p>
+      <p style="margin:0 0 14px;">We received a request to reset your Giga3 Hub password.</p>
       <p style="margin:0 0 22px;">This link expires in <strong>1 hour</strong>.</p>
       <p style="margin:0 0 22px;">
         <a href="${resetUrl}"
@@ -54,9 +54,9 @@ export function buildPasswordResetMessage(
   const to = assertPasswordResetRecipient(registeredEmail);
   return {
     to,
-    subject: "Reset your Giga3 AI password",
+    subject: "Reset your Giga3 Hub password",
     html: resetEmailHtml(resetUrl),
-    text: `Reset your Giga3 AI password (expires in 1 hour):\n${resetUrl}\n\nIf you did not request this, ignore this email.`,
+    text: `Reset your Giga3 Hub password (expires in 1 hour):\n${resetUrl}\n\nIf you did not request this, ignore this email.`,
     tags: [
       { name: "category", value: "password_reset" },
       { name: "app", value: "giga3" },
