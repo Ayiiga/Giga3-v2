@@ -14,7 +14,7 @@
 
 ## Store listing
 
-- [ ] App name: Giga3 AI
+- [ ] App name: Giga3 Hub
 - [ ] Short description (≤80 chars)
 - [ ] Full description (≤4000 chars)
 - [ ] App icon 512×512 (`web/public/icons/icon-512.png`)
@@ -45,7 +45,7 @@ Use the full matrix in `internal-testing-checklist.md`. Summary areas:
 
 - **Core:** launch, splash, homepage, navigation, back button, reload
 - **Auth:** signup, login, logout, session restore, Google Sign-In
-- **Giga3 AI:** chat, tools, GigaLearn
+- **Giga3 AI:** the built-in AI assistant; GigaLearn and other connected services are part of Giga3 Hub
 - **Marketplace:** browse, product pages, checkout initiation
 - **Payments:** Paystack test mode — success, cancel, fail, return URLs
 - **Media:** camera, mic, file/image/video upload
