@@ -4,9 +4,9 @@ import { publicMetadata } from "@/lib/seo/publicMetadata";
 
 export const metadata = publicMetadata({
   path: "/download",
-  title: "Download Giga3 AI",
+  title: "Download Giga3 Hub",
   description:
-    "Install Giga3 AI, Africa's AI Super App, for a fast app-like experience on your phone or desktop browser.",
+    "Install Giga3 Hub, Africa's connected digital platform, for a fast app-like experience on your phone or desktop browser.",
 });
 
 export default function DownloadPage() {
@@ -15,23 +15,23 @@ export default function DownloadPage() {
       <JsonLd
         webPage={{
           path: "/download",
-          name: "Download Giga3 AI",
+          name: "Download Giga3 Hub",
           description:
-            "Install Giga3 AI, Africa's AI Super App, for a fast app-like experience on your phone or desktop browser.",
+            "Install Giga3 Hub, Africa's connected digital platform, for a fast app-like experience on your phone or desktop browser.",
         }}
       />
       <JsonLd
         breadcrumbs={[
-          { name: "Giga3 AI", path: "/" },
+          { name: "Giga3 Hub", path: "/" },
           { name: "Download", path: "/download" },
         ]}
       />
       <PublicProductIntro
-        title="Download Giga3 AI — Africa's AI Super App"
-        description="Install Giga3 AI from your browser and open Social, AI, Learning, Creativity, and Business tools like an app."
-        audience="people who want a lightweight, mobile-first way to use Giga3 AI."
+        title="Download Giga3 Hub — Africa's AI Super App"
+        description="Install Giga3 Hub from your browser and open Social, AI, Learning, Creativity, and Business tools like an app."
+        audience="people who want a lightweight, mobile-first way to use Giga3 Hub."
         primaryHref="/install"
-        primaryLabel="Install Giga3 AI"
+        primaryLabel="Install Giga3 Hub"
       />
     </>
   );
