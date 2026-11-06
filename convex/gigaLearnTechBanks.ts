@@ -318,6 +318,11 @@ export const startTechPracticeSession = mutation({
       freeTierOnly: !premiumAccess,
       questionType,
     }).length;
+    if (progressiveFreeJourney && bankSize === 0 && meta.pendingQuestionCount > 0) {
+      throw new Error(
+        "This WASSCE question bank is awaiting answer-key verification. Free staged practice will open as soon as its questions are approved."
+      );
+    }
     if (questionType && bankSize === 0) {
       throw new Error(
         questionType === "true_false"
@@ -779,7 +784,7 @@ async function finalizeSession(
           journey[key] = { ...current, lastPercent: graded.percent };
         }
         const completedQuestions = journey[key].completedQuestionIds.length;
-        const remainingAvailable = getTechBankQuestions(session.courseSlug, {
+        const availableQuestionCount = getTechBankQuestions(session.courseSlug, {
           approvedOnly: true,
           freeTierOnly: true,
           topicId: session.topicId,
@@ -790,7 +795,7 @@ async function finalizeSession(
           completedQuestions,
           totalQuestionLimit: Math.min(
             EXAM_PRACTICE_FREE_JOURNEY_TOTAL,
-            completedQuestions + remainingAvailable
+            availableQuestionCount
           ),
           passPercent: EXAM_PRACTICE_FREE_JOURNEY_PASS_PERCENT,
         };
