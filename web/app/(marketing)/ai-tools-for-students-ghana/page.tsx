@@ -109,7 +109,7 @@ export default function AiToolsForStudentsGhanaPage() {
       />
       <JsonLd
         breadcrumbs={[
-          { name: "Giga3 AI", path: "/" },
+          { name: "Giga3 Hub", path: "/" },
           { name: "AI for Ghana", path: "/ai-for-ghana" },
           { name: "Best AI tools for students in Ghana", path: PATH },
         ]}
@@ -151,20 +151,20 @@ export default function AiToolsForStudentsGhanaPage() {
               <Prose>
                 For Ghanaian university students, one of its biggest advantages is GHS-based Paystack
                 billing. Instead of making students think primarily in foreign-currency subscription
-                prices, Giga3 AI provides plans designed around its Ghana-focused offering.
+                prices, Giga3 Hub provides plans designed around its Ghana-focused offering.
               </Prose>
 
               <ArticleH3>
                 {BASIC.label} plan at GHS {BASIC.priceGhs}
               </ArticleH3>
               <Prose>
-                Giga3 AI&apos;s {BASIC.label} plan costs GHS {BASIC.priceGhs} per month and includes{" "}
+                Giga3 Hub&apos;s {BASIC.label} plan costs GHS {BASIC.priceGhs} per month and includes{" "}
                 {BASIC.credits} credits, making it the most affordable way for students to move beyond
                 the free tier.
               </Prose>
               <Prose>The pricing structure includes:</Prose>
               <ArticleTable
-                caption="Giga3 AI pricing plans"
+                caption="Giga3 Hub pricing plans"
                 headers={["Plan", "Price", "Credits"]}
                 rows={PRICING_ROWS}
               />
