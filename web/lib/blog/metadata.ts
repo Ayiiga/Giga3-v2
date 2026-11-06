@@ -81,7 +81,7 @@ export function blogIndexMetadata(): Metadata {
     openGraph: {
       type: "website",
       url: canonical,
-      siteName: "Giga3 AI",
+      siteName: "Giga3 Hub",
       title,
       description,
       images: [{ url: image, alt: "Giga3 Hub Blog" }],
