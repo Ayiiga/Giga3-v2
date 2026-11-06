@@ -740,6 +740,13 @@ async function finalizeSession(
     answers,
     optionPermutations,
   });
+  let freeJourneyResult: {
+    passed: boolean;
+    nextStage: number;
+    completedQuestions: number;
+    totalQuestionLimit: number;
+    passPercent: number;
+  } | null = null;
 
   // Advance the free BECE/WASSCE journey only from the server-graded score.
   // Exactly 60% passes; retries retain the same stage question set.
