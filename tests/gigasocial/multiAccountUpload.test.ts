@@ -19,6 +19,7 @@ describe("GigaSocial multi-account", () => {
     expect(src).toContain("export const setCreatorEligibilityVerification");
     expect(src).toContain("isPlatformAdminEmail(adminEmail)");
     expect(src).toContain("creatorHistoryVerifiedAt");
+    expect(src).toContain("requireSession(args.sessionToken, ctx)");
   });
 });
 
