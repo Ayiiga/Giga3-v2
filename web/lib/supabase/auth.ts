@@ -12,6 +12,12 @@ import { getSupabaseClient } from "@/lib/supabase";
 const ACCESS_TOKEN_KEY = "giga3_supabase_access_token";
 const REFRESH_TOKEN_KEY = "giga3_supabase_refresh_token";
 
+function getUserEmailFromStorage(): string | null {
+  if (typeof window === "undefined") return null;
+  const email = localStorage.getItem("giga3_user_email");
+  return email?.trim().toLowerCase() || null;
+}
+
 function getStoredAccessToken(): string | null {
   if (typeof window === "undefined") return null;
   return localStorage.getItem(ACCESS_TOKEN_KEY);
@@ -63,6 +69,13 @@ export async function syncSupabaseAuthToLocalEmail(): Promise<string | null> {
 
   const exchanged = await exchangeSupabaseTokenForGiga3Session(accessToken);
   if (exchanged) return exchanged.email;
+
+  // A restored app may have an expired provider access token. Rotate it silently
+  // before deciding that the account needs an interactive sign-in.
+  if (hasStoredSupabaseRefreshToken()) {
+    const refreshedSession = await refreshGiga3SessionFromSupabase().catch(() => null);
+    if (refreshedSession) return getUserEmailFromStorage();
+  }
 
   const { user } = await client.authGetUser(accessToken);
   const email = user?.email?.trim().toLowerCase() ?? null;
