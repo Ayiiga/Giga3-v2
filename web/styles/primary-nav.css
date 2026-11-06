@@ -416,5 +416,10 @@ html.primary-nav-compact .primary-nav__item {
 }
 
 html.primary-nav-compact .primary-nav__inner {
+  min-height: 3rem;
   padding-block: 0.1rem;
+}
+
+html.primary-nav-compact .primary-nav__item {
+  min-height: 2.5rem;
 }
