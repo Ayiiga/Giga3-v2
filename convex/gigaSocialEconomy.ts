@@ -3,6 +3,7 @@ import { v } from "convex/values";
 import { requireSession } from "./auth";
 import { sessionArgs } from "./validators";
 import { parseGamification } from "./gigaSocialViews";
+import { creatorMonetizationFanThreshold } from "../web/lib/gigasocial/creatorEconomy";
 import type { Doc, Id } from "./_generated/dataModel";
 import {
   CREATOR_MONETIZATION_POLICY_VERSION,
@@ -254,7 +255,10 @@ export async function getMonetizationEligibility(
   const verifiedAfricanCreator =
     creator?.creatorMonetizationRegion === "africa" &&
     typeof creator.creatorRegionVerifiedAt === "number";
-  const fansRequired = verifiedAfricanCreator ? 15 : config.minFansForMonetization;
+  const fansRequired = creatorMonetizationFanThreshold({
+    verifiedAfricanCreator,
+    defaultRequired: config.minFansForMonetization,
+  });
   const fanEligible = fanCount >= fansRequired;
   const legacyUnlockOnly =
     !accepted &&
