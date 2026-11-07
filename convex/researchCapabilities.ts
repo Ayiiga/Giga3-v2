@@ -27,6 +27,7 @@ export const RESEARCH_CAPABILITY_IDS = [
   "fact_check",
   "verify_image",
   "deep_research",
+  "startup_funding",
 ] as const;
 
 export type ResearchCapabilityId = (typeof RESEARCH_CAPABILITY_IDS)[number];
@@ -63,7 +64,7 @@ const NEWS_CAPABILITIES = new Set<ResearchCapabilityId>([
   "breaking_news",
 ]);
 
-const TIME_SENSITIVE_RE =
+const STARTUP_FUNDING_INTENT_RE = /\b(funding|fundraise|fundraising|grant|grants|accelerator|incubator|investor|investment|venture capital|seed capital|startup competition|innovation challenge|pitch competition|non[- ]dilutive|capital raise)\b/i;\n\n/** Funding requests are research tasks, not requests for generic funding-monitoring software. */\nexport function detectStartupFundingIntent(query: string): boolean {\n  return STARTUP_FUNDING_INTENT_RE.test(query.trim());\n}\n\nconst TIME_SENSITIVE_RE =
   /\b(today|tonight|yesterday|this week|this month|this year|latest|current|recent|breaking|just now|right now|as of now|news|headlines|now|202[4-9]|stock price|weather|score|election|who is (the )?president|regulation|law passed|match result|final score)\b/i;
 
 /** News lookup phrasing that includes "announcement" — not user-pasted notices. */
@@ -545,7 +546,7 @@ export function researchSystemPromptAddon(capability: ResearchCapabilityId): str
           NEWS_RESPONSE_FORMAT_GUIDANCE,
         ].join("\n");
       }
-      if (capability === "deep_research") {
+      if (capability === "startup_funding") {\n        return [\n          "Mode: Startup Funding Intelligence.",\n          "Interpret the startup or organisation named by the user as the funding-seeking subject, not as a funding-monitoring product or tool.",\n          "Find actionable funding opportunities for that subject: grants, accelerators, incubators, startup competitions, innovation challenges, fellowships, and suitable investment programmes.",\n          "Prioritise official programme and application pages. For every opportunity provide provider, amount or benefits only when published, eligibility, geography/stage fit, deadline (or explicitly say not published), application status, and direct official application/source link.",\n          "Separate open opportunities, upcoming/rolling opportunities, closed opportunities, and general investor leads. Do not present investor directories or monitoring software as funding opportunities.",\n          "Assess fit only from facts supplied by the user or reliable sources. Mark unknown eligibility details as unknown; do not imply the startup qualifies without evidence.",\n          "Distinguish confirmed funding already received from funding being sought. Never invent funding rounds, investors, awards, application status, amounts, dates, or partnerships.",\n          "Treat a request to monitor as a request for a current search unless an ongoing scheduled monitor is explicitly configured. State that a one-time search is not continuous monitoring.",\n          "For a named startup, search both its exact name and relevant sector/geography funding programmes. Do not assume similarly named organisations are the same entity.",\n          NEWS_RESPONSE_FORMAT_GUIDANCE,\n        ].join("\\n");\n      }\n      if (capability === "deep_research") {
         return [
           "Mode: Deep research.",
           "Compare multiple authoritative sources, note conflicts, and cite publication dates.",
