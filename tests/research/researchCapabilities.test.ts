@@ -18,8 +18,6 @@ import {
   researchSystemPromptAddon,
   RESEARCH_CAPABILITY_LABELS,
   responseBasisForCapability,
-  buildResearchSearchQuery,
-  responseBasisForCapability,
   shouldAutoEnableLiveWeb,
   shouldRunLiveWebResearch,
   shouldUseConversationalWorker,
