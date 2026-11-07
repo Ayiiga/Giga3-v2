@@ -290,7 +290,7 @@ export const legalDocuments: readonly LegalDocument[] = [
         id: "cancellation",
         title: "Cancelling automatic renewal",
         paragraphs: [
-          "Paid plans renew automatically every 30 days unless you turn renewal off. To cancel, open your Wallet, choose the Subscription tab and select “Turn off auto-renewal” (or remove your saved payment method). You keep access until the end of the period you have paid for, and nothing further is charged.",
+          "Paid plans last 30 days. Automatic renewal is available only when an eligible reusable payment authorization is saved and renewal is enabled. Mobile money payments require manual renewal from your Wallet. If automatic renewal is active, open your Wallet, choose the Subscription tab and select “Turn off auto-renewal” before the next charge. You keep access until the end of the period you have paid for.",
           "Cancelling does not refund the current period. Credits already granted for that period remain available until it ends.",
         ],
       },
