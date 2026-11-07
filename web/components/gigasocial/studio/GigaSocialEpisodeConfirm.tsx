@@ -1,14 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
-import { SOCIAL_MAX_VIDEO_BYTES } from "@/lib/gigasocial/constants";
 import {
   buildEpisodePostBody,
   describeEpisodeRange,
   exportVideoEpisodes,
   formatBytesShort,
   planVideoEpisodes,
-  SOCIAL_EPISODE_SPLIT_COUNT,
+  getRecommendedEpisodeCount,
   type ConfirmedVideoEpisode,
   type VideoEpisodePlan,
 } from "@/lib/gigasocial/videoEpisodeSplit";
@@ -65,7 +64,7 @@ export const GigaSocialEpisodeConfirm = memo(function GigaSocialEpisodeConfirm({
         sizeBytes: file.size,
         caption,
         fileName: file.name,
-        episodeCount: SOCIAL_EPISODE_SPLIT_COUNT,
+        episodeCount: getRecommendedEpisodeCount(durationSec, file.size),
       });
       setPlan(next);
       setTitles(next.items.map((item) => item.suggestedTitle));
@@ -86,9 +85,9 @@ export const GigaSocialEpisodeConfirm = memo(function GigaSocialEpisodeConfirm({
 
   const headline = useMemo(() => {
     if (reason === "oversized") {
-      return `This video is ${formatBytesShort(file.size)} (limit ${formatBytesShort(SOCIAL_MAX_VIDEO_BYTES)}). Split it into ${SOCIAL_EPISODE_SPLIT_COUNT} episodes to upload.`;
+      return `This video is ${formatBytesShort(file.size)} and ${Math.ceil(durationSec / 60)} min long. Split it into ${plan?.episodeCount ?? getRecommendedEpisodeCount(durationSec, file.size)} episodes to meet the per-episode limits.`;
     }
-    return `Divide this video into ${SOCIAL_EPISODE_SPLIT_COUNT} named episodes, then confirm upload.`;
+    return `Divide this video into ${plan?.episodeCount ?? getRecommendedEpisodeCount(durationSec, file.size)} named episodes, then confirm upload.`;
   }, [file.size, reason]);
 
   async function handleConfirm() {
@@ -190,7 +189,7 @@ export const GigaSocialEpisodeConfirm = memo(function GigaSocialEpisodeConfirm({
         </button>
         <div className="min-w-0 flex-1">
           <h2 id="episode-confirm-title" className="truncate text-sm font-semibold">
-            Confirm {SOCIAL_EPISODE_SPLIT_COUNT} episodes
+            Confirm {plan?.episodeCount ?? getRecommendedEpisodeCount(durationSec, file.size)} episodes
           </h2>
           <p className="truncate text-xs text-[var(--muted-foreground)]">
             {formatBytesShort(file.size)} · {Math.ceil(durationSec)}s source
@@ -297,7 +296,7 @@ export const GigaSocialEpisodeConfirm = memo(function GigaSocialEpisodeConfirm({
               Creating…
             </>
           ) : (
-            `Confirm & upload ${SOCIAL_EPISODE_SPLIT_COUNT}`
+            `Confirm & upload ${plan?.episodeCount ?? getRecommendedEpisodeCount(durationSec, file.size)}`
           )}
         </Button>
       </footer>

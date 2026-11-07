@@ -5,6 +5,7 @@ import {
   episodeSeriesBaseTitle,
   isVideoOverSizeLimit,
   planVideoEpisodes,
+  getRecommendedEpisodeCount,
   shouldOfferEpisodeSplit,
   SOCIAL_EPISODE_SPLIT_COUNT,
   suggestEpisodeTitle,
@@ -15,9 +16,15 @@ describe("videoEpisodeSplit", () => {
   it("detects oversized videos and offers split for long clips", () => {
     expect(isVideoOverSizeLimit(SOCIAL_MAX_VIDEO_BYTES + 1)).toBe(true);
     expect(isVideoOverSizeLimit(SOCIAL_MAX_VIDEO_BYTES)).toBe(false);
-    expect(shouldOfferEpisodeSplit(SOCIAL_MAX_VIDEO_BYTES + 1, 349)).toBe(true);
-    expect(shouldOfferEpisodeSplit(SOCIAL_MAX_VIDEO_BYTES + 1, 20)).toBe(false);
+    expect(shouldOfferEpisodeSplit(SOCIAL_MAX_VIDEO_BYTES + 1, 349)).toBe(false);
+    expect(shouldOfferEpisodeSplit(SOCIAL_MAX_VIDEO_BYTES + 1, 175)).toBe(false);
     expect(shouldOfferEpisodeSplit(SOCIAL_MAX_VIDEO_BYTES - 1, 349)).toBe(false);
+    expect(shouldOfferEpisodeSplit(SOCIAL_MAX_VIDEO_BYTES - 1, 360)).toBe(false);
+    expect(shouldOfferEpisodeSplit(SOCIAL_MAX_VIDEO_BYTES - 1, 361)).toBe(true);
+    expect(getRecommendedEpisodeCount(175, 100 * 1024 * 1024)).toBe(1);
+    expect(getRecommendedEpisodeCount(361, 100 * 1024 * 1024)).toBe(2);
+    expect(getRecommendedEpisodeCount(18 * 60, 600 * 1024 * 1024)).toBe(3);
+    expect(getRecommendedEpisodeCount(2 * 60 * 60, 2 * 1024 * 1024 * 1024)).toBe(20);
     expect(canOptionalEpisodeSplit(349)).toBe(true);
     expect(canOptionalEpisodeSplit(40)).toBe(false);
   });
