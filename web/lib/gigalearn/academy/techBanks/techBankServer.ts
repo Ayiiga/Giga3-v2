@@ -263,8 +263,8 @@ export function selectTechQuestionIds(args: {
   revisionQuestionIds?: string[];
   /** When false, exclude premium-only items from the selection pool. */
   premiumAccess?: boolean;
-  /** Optional MCQ / True-False filter for type-specific practice. */
-  questionType?: "mcq" | "true_false";
+  /** Optional question-format filter for type-specific practice. */
+  questionType?: "mcq" | "true_false" | "structured";
 }): string[] {
   // Exam Practice packs allow up to 500; Technology Hub courses stay within 50.
   // Also clamp here when premiumAccess is false so free callers never receive
