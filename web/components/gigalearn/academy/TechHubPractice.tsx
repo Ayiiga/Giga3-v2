@@ -46,6 +46,7 @@ type LearnFeedback = {
   explanation: string;
   correctIndex: number | null;
   pendingReview?: boolean;
+  selfAssessment?: boolean;
   /** Matched provisional key — never drives verified praise rewards. */
   provisionalMatch?: boolean;
   optionExplanations?: string[];
@@ -187,6 +188,10 @@ function TechHubInner() {
       explanation: string;
       questionText: string;
       options: string[];
+      writtenAnswer?: string | null;
+      markingGuide?: string[];
+      maxMarks?: number;
+      requiresSelfAssessment?: boolean;
       optionExplanations?: string[];
       provisional?: boolean;
       provisionalMatch?: boolean;
@@ -418,6 +423,7 @@ function TechHubInner() {
         },
       }));
       setLearnFeedback((res.feedback as LearnFeedback) ?? null);
+      setAnswers((prev) => ({ ...prev, [current.questionId]: -1 }));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not save written response.");
     } finally {
@@ -832,7 +838,9 @@ function TechHubInner() {
                 <div className="exam-session-explain" role="status">
                   <p>
                     <span className="exam-session-explain-label">
-                      {activeFeedback.pendingReview
+                      {activeFeedback.selfAssessment
+                        ? "Response saved — "
+                        : activeFeedback.pendingReview
                         ? "Provisional feedback — "
                         : activeFeedback.correct
                           ? "Correct — "
