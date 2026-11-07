@@ -175,6 +175,28 @@ describe("robots.txt", () => {
   });
 });
 
+describe("public feature claims stay within the current product catalogue", () => {
+  const features = readFileSync(
+    resolve(__dirname, "../../web/app/(marketing)/features/page.tsx"),
+    "utf8"
+  );
+  const creator = readFileSync(
+    resolve(__dirname, "../../web/app/(marketing)/creator-studio/page.tsx"),
+    "utf8"
+  );
+
+  it("does not advertise retired Media Studio or GigaEdit workflows", () => {
+    expect(features).not.toMatch(/Media Studio|GigaEdit|href="\\/media"|href="\\/gigaedit"/i);
+    expect(creator).not.toMatch(/Media Studio|GigaEdit/i);
+  });
+
+  it("does not promise that every listed capability is live or that provider fallback always succeeds", () => {
+    expect(features).not.toContain("Each product below is live today");
+    expect(features).not.toContain("the next configured provider is tried");
+    expect(features).toContain("availability and access requirements vary by tool");
+  });
+});
+
 describe("productLinks", () => {
   it("includes core education-first ecosystem destinations", () => {
     const hrefs = GIGA3_PRODUCT_LINKS.map((l) => l.href);
