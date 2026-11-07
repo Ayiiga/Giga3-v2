@@ -16,7 +16,7 @@ export function getRecommendedEpisodeCount(
   if (!Number.isFinite(durationSec) || durationSec <= 0) return 2;
   const byDuration = Math.ceil(durationSec / maxEpisodeSec);
   const bySize = Number.isFinite(sizeBytes) && sizeBytes > 0 ? Math.ceil(sizeBytes / maxBytes) : 1;
-  return Math.max(2, Math.min(SOCIAL_EPISODE_SPLIT_MAX_COUNT, byDuration, Math.max(byDuration, bySize)));
+  return Math.max(2, Math.min(SOCIAL_EPISODE_SPLIT_MAX_COUNT, Math.max(byDuration, bySize)));
 }
 
 export type VideoEpisodePlanItem = {
