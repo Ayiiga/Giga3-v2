@@ -14948,6 +14948,622 @@
         "structured_response",
         "editorial_review_required"
       ]
+    },
+    {
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 7",
+      "reviewStatus": "pending_review",
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice",
+      "questionId": "exam-bece-asante-twi-q164",
+      "questionText": "Which Asante Twi expression means “I am fine” in a simple response to “Ɛte sɛn?”",
+      "options": [
+        "Me ho yɛ",
+        "Medaase",
+        "Maakye",
+        "Da yie"
+      ],
+      "correctIndex": 0,
+      "explanation": "“Me ho yɛ” is a common short response meaning I am fine; confirm the complete natural form with an educator.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceQuestionNumber": 164,
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "objective",
+        "editorial_review_required"
+      ]
+    },
+    {
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 7",
+      "reviewStatus": "pending_review",
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice",
+      "questionId": "exam-bece-asante-twi-q165",
+      "questionText": "Which word is commonly used for “food” in Asante Twi?",
+      "options": [
+        "Nsuo",
+        "Aduane",
+        "Nhoma",
+        "Fie"
+      ],
+      "correctIndex": 1,
+      "explanation": "“Aduane” means food.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceQuestionNumber": 165,
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "objective",
+        "editorial_review_required"
+      ]
+    },
+    {
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 7",
+      "reviewStatus": "pending_review",
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice",
+      "questionId": "exam-bece-asante-twi-q166",
+      "questionText": "What does “Abusua” mean?",
+      "options": [
+        "Family",
+        "Market",
+        "School",
+        "River"
+      ],
+      "correctIndex": 0,
+      "explanation": "“Abusua” means family.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceQuestionNumber": 166,
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "objective",
+        "editorial_review_required"
+      ]
+    },
+    {
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 7",
+      "reviewStatus": "pending_review",
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice",
+      "questionId": "exam-bece-asante-twi-q167",
+      "questionText": "Which word means “one” in Asante Twi?",
+      "options": [
+        "Baako",
+        "Mmienu",
+        "Mmiɛnsa",
+        "Anan"
+      ],
+      "correctIndex": 0,
+      "explanation": "“Baako” means one.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceQuestionNumber": 167,
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "objective",
+        "editorial_review_required"
+      ]
+    },
+    {
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 7",
+      "reviewStatus": "pending_review",
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice",
+      "questionId": "exam-bece-asante-twi-q168",
+      "questionText": "Which word means “two” in Asante Twi?",
+      "options": [
+        "Baako",
+        "Mmienu",
+        "Enum",
+        "Du"
+      ],
+      "correctIndex": 1,
+      "explanation": "“Mmienu” is a form used for two; educator review should confirm orthography.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceQuestionNumber": 168,
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "objective",
+        "editorial_review_required"
+      ]
+    },
+    {
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 7",
+      "reviewStatus": "pending_review",
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice",
+      "questionId": "exam-bece-asante-twi-q169",
+      "questionText": "Which expression is a suitable farewell when someone is going to sleep?",
+      "options": [
+        "Da yie",
+        "Maakye",
+        "Medaase",
+        "Ɛte sɛn?"
+      ],
+      "correctIndex": 0,
+      "explanation": "“Da yie” is commonly used as a night-time farewell.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceQuestionNumber": 169,
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "objective",
+        "editorial_review_required"
+      ]
+    },
+    {
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 7",
+      "reviewStatus": "pending_review",
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice",
+      "questionId": "exam-bece-asante-twi-q170",
+      "questionText": "Which word refers to a “child” in Asante Twi?",
+      "options": [
+        "Abofra",
+        "Ɔkyena",
+        "Dua",
+        "Kuro"
+      ],
+      "correctIndex": 0,
+      "explanation": "“Abofra” means child.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceQuestionNumber": 170,
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "objective",
+        "editorial_review_required"
+      ]
+    },
+    {
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 7",
+      "reviewStatus": "pending_review",
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice",
+      "questionId": "exam-bece-asante-twi-q171",
+      "questionText": "Which word is commonly used for “today” in Asante Twi?",
+      "options": [
+        "Ɛnnɛ",
+        "Ɔkyena",
+        "Ndeda",
+        "Anɔpa"
+      ],
+      "correctIndex": 0,
+      "explanation": "“Ɛnnɛ” means today.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceQuestionNumber": 171,
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "objective",
+        "editorial_review_required"
+      ]
+    },
+    {
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 7",
+      "reviewStatus": "pending_review",
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice",
+      "questionId": "exam-bece-asante-twi-q172",
+      "questionText": "Which expression asks “Where do you live?”",
+      "options": [
+        "Ɛhe na wote?",
+        "Wo din de sɛn?",
+        "Wopɛ sɛn?",
+        "Medaase"
+      ],
+      "correctIndex": 0,
+      "explanation": "“Ɛhe na wote?” asks where someone lives or stays.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceQuestionNumber": 172,
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "objective",
+        "editorial_review_required"
+      ]
+    },
+    {
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 7",
+      "reviewStatus": "pending_review",
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice",
+      "questionId": "exam-bece-asante-twi-q173",
+      "questionText": "Which word means “tomorrow” in Asante Twi?",
+      "options": [
+        "Ɛnnɛ",
+        "Ɔkyena",
+        "Anɔpa",
+        "Anadwo"
+      ],
+      "correctIndex": 1,
+      "explanation": "“Ɔkyena” means tomorrow.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceQuestionNumber": 173,
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "objective",
+        "editorial_review_required"
+      ]
+    },
+    {
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 7",
+      "reviewStatus": "pending_review",
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice",
+      "questionId": "exam-bece-asante-twi-q174",
+      "questionText": "A pupil wants to tell a visitor that the pupil is going to school. Which response is most suitable to “Worekɔ he?”",
+      "options": [
+        "Merekɔ sukuu",
+        "Medaase",
+        "Me din de Kofi",
+        "Da yie"
+      ],
+      "correctIndex": 0,
+      "explanation": "The response gives the destination: school.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceQuestionNumber": 174,
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "application",
+        "editorial_review_required"
+      ]
+    },
+    {
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 7",
+      "reviewStatus": "pending_review",
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice",
+      "questionId": "exam-bece-asante-twi-q175",
+      "questionText": "Your younger sibling spills water and apologises. You want to respond kindly. Which expression best communicates reassurance?",
+      "options": [
+        "Ɛnyɛ hwee",
+        "Worekɔ he?",
+        "Medaase",
+        "Maakye"
+      ],
+      "correctIndex": 0,
+      "explanation": "“Ɛnyɛ hwee” can mean it is nothing/no problem; context and natural usage need educator review.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceQuestionNumber": 175,
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "application",
+        "editorial_review_required"
+      ]
+    },
+    {
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 7",
+      "reviewStatus": "pending_review",
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice",
+      "questionId": "exam-bece-asante-twi-q176",
+      "questionText": "At a family gathering, someone asks “Wɔn ne henanom?” while pointing to a group. What information should you provide?",
+      "options": [
+        "Who the people are",
+        "The time of day",
+        "The price of food",
+        "The way to school"
+      ],
+      "correctIndex": 0,
+      "explanation": "The question asks for the identity of the people; check the exact form with an Asante Twi educator.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceQuestionNumber": 176,
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "application",
+        "editorial_review_required"
+      ]
+    },
+    {
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 7",
+      "reviewStatus": "pending_review",
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice",
+      "questionId": "exam-bece-asante-twi-q177",
+      "questionText": "A classmate asks you to identify your mother in a family photograph. Which response should you give?",
+      "options": [
+        "Point out and name your mother",
+        "Give the price of the photograph",
+        "Say you are going to school",
+        "Ask for water"
+      ],
+      "correctIndex": 0,
+      "explanation": "The situation requires identifying the mother in the picture.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceQuestionNumber": 177,
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "application",
+        "editorial_review_required"
+      ]
+    },
+    {
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 7",
+      "reviewStatus": "pending_review",
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice",
+      "questionId": "exam-bece-asante-twi-q178",
+      "questionText": "You are giving a visitor directions to your house. Which information is most useful to include in your explanation?",
+      "options": [
+        "A clear landmark and route",
+        "Your favourite song only",
+        "A list of classroom subjects",
+        "The visitor’s age"
+      ],
+      "correctIndex": 0,
+      "explanation": "Useful directions include a recognisable landmark and a clear route.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceQuestionNumber": 178,
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "application",
+        "editorial_review_required"
+      ]
+    },
+    {
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 7",
+      "reviewStatus": "pending_review",
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice",
+      "questionId": "exam-bece-asante-twi-q179",
+      "questionText": "Write six short sentences in Asante Twi describing a normal school day. Include when you arrive, one lesson, a break, and when you return home.",
+      "options": [],
+      "correctIndex": -1,
+      "explanation": "Structured response — use the marking points after submission for self-assessment. This item is not automatically scored.",
+      "difficulty": "intermediate",
+      "questionType": "structured",
+      "markingGuide": [
+        "1 mark: states arrival time or morning activity",
+        "1 mark: names a school lesson or subject",
+        "1 mark: describes a classroom activity",
+        "1 mark: mentions break or a school routine",
+        "1 mark: describes returning home",
+        "1 mark: understandable Asante Twi sentence construction"
+      ],
+      "maxMarks": 6,
+      "sourceQuestionNumber": 179,
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "structured_response",
+        "editorial_review_required"
+      ]
+    },
+    {
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 7",
+      "reviewStatus": "pending_review",
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice",
+      "questionId": "exam-bece-asante-twi-q180",
+      "questionText": "Write a short paragraph in Asante Twi about your mother or another caregiver. Include the person's name or relationship, one quality, and one helpful action.",
+      "options": [],
+      "correctIndex": -1,
+      "explanation": "Structured response — use the marking points after submission for self-assessment. This item is not automatically scored.",
+      "difficulty": "intermediate",
+      "questionType": "structured",
+      "markingGuide": [
+        "1 mark: identifies the person",
+        "1 mark: gives a relevant quality",
+        "1 mark: describes a helpful action",
+        "1 mark: uses coherent sentences",
+        "1 mark: readable spelling and appropriate vocabulary"
+      ],
+      "maxMarks": 5,
+      "sourceQuestionNumber": 180,
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "structured_response",
+        "editorial_review_required"
+      ]
+    },
+    {
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 7",
+      "reviewStatus": "pending_review",
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice",
+      "questionId": "exam-bece-asante-twi-q181",
+      "questionText": "Write five Asante Twi questions that you could ask a new classmate to get to know the person. Include questions about name, home, family, school, and interests.",
+      "options": [],
+      "correctIndex": -1,
+      "explanation": "Structured response — use the marking points after submission for self-assessment. This item is not automatically scored.",
+      "difficulty": "intermediate",
+      "questionType": "structured",
+      "markingGuide": [
+        "1 mark: asks for a name",
+        "1 mark: asks about home or place",
+        "1 mark: asks about family",
+        "1 mark: asks about school",
+        "1 mark: asks about an interest or preference"
+      ],
+      "maxMarks": 5,
+      "sourceQuestionNumber": 181,
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "structured_response",
+        "editorial_review_required"
+      ]
+    },
+    {
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 7",
+      "reviewStatus": "pending_review",
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice",
+      "questionId": "exam-bece-asante-twi-q182",
+      "questionText": "Describe in Asante Twi how to keep your classroom clean. Give at least five practical actions.",
+      "options": [],
+      "correctIndex": -1,
+      "explanation": "Structured response — use the marking points after submission for self-assessment. This item is not automatically scored.",
+      "difficulty": "intermediate",
+      "questionType": "structured",
+      "markingGuide": [
+        "1 mark: identifies keeping the floor clean",
+        "1 mark: mentions proper disposal of rubbish",
+        "1 mark: mentions arranging desks or materials",
+        "1 mark: includes another practical cleaning action",
+        "1 mark: clear and understandable sentences"
+      ],
+      "maxMarks": 5,
+      "sourceQuestionNumber": 182,
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "structured_response",
+        "editorial_review_required"
+      ]
+    },
+    {
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 7",
+      "reviewStatus": "pending_review",
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice",
+      "questionId": "exam-bece-asante-twi-q183",
+      "questionText": "Write a short Asante Twi account of a visit to the market with a family member. Mention what you saw, one item bought, and how you returned home.",
+      "options": [],
+      "correctIndex": -1,
+      "explanation": "Structured response — use the marking points after submission for self-assessment. This item is not automatically scored.",
+      "difficulty": "intermediate",
+      "questionType": "structured",
+      "markingGuide": [
+        "1 mark: introduces the market visit",
+        "1 mark: identifies a person who went with the learner",
+        "1 mark: describes something seen",
+        "1 mark: identifies an item bought",
+        "1 mark: describes the return home coherently"
+      ],
+      "maxMarks": 5,
+      "sourceQuestionNumber": 183,
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "structured_response",
+        "editorial_review_required"
+      ]
     }
   ]
 }
