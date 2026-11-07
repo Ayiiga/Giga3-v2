@@ -236,9 +236,8 @@ const STARTUP_FUNDING_INTENT_RE = /\b(funding|fundraise|fundraising|grant|grants
 export function detectStartupFundingIntent(query: string): boolean {
   const q = query.trim();
   if (!STARTUP_FUNDING_INTENT_RE.test(q)) return false;
-  return /\\b(monitor|track|find|search|look for|identify|apply|eligible|opportunit(?:y|ies)|funding for|grants? for|who funds|funding status|funding rounds|raised funding|funding sources)\\b/i.test(q);
+  return /monitor|track|find|search|look for|identify|apply|eligible|opportunit|funding for|grants? for|who funds|funding status|funding rounds|raised funding|funding sources/i.test(q);
 }
-
 export function detectFactCheckIntent(query: string): boolean {
   return FACT_CHECK_RE.test(query.trim());
 }
