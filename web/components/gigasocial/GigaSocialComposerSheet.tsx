@@ -33,6 +33,10 @@ export const GigaSocialComposerSheet = memo(function GigaSocialComposerSheet({
 
   useEffect(() => {
     if (!open) return;
+    // Pause hardware-decoded feed video surfaces before showing the fixed Android sheet.
+    document.querySelectorAll("video").forEach((video) => {
+      if (!video.closest(".gigasocial-composer-sheet")) video.pause();
+    });
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
@@ -55,7 +59,7 @@ export const GigaSocialComposerSheet = memo(function GigaSocialComposerSheet({
     <>
       {!fullscreenFlow ? (
         <div
-          className="gigasocial-stable gigasocial-composer-overlay fixed inset-0 z-[60] bg-black/45"
+          className="gigasocial-composer-overlay fixed inset-0 z-[60] bg-black/45"
           aria-hidden
           onClick={onClose}
         />
@@ -63,8 +67,8 @@ export const GigaSocialComposerSheet = memo(function GigaSocialComposerSheet({
       <div
         className={cn(
           fullscreenFlow
-            ? "gigasocial-stable fixed inset-0 z-[60] pointer-events-none"
-            : "gigasocial-stable gigasocial-composer-sheet fixed inset-x-0 bottom-0 z-[61] flex h-[min(85dvh,40rem)] max-h-[min(85dvh,40rem)] min-h-0 flex-col overflow-hidden border-t border-border bg-white shadow-2xl pb-[env(safe-area-inset-bottom)]"
+            ? "gigasocial-composer-fullscreen fixed inset-0 z-[60] pointer-events-none"
+            : "gigasocial-composer-sheet fixed inset-x-0 bottom-0 z-[61] flex h-[min(85dvh,40rem)] max-h-[min(85dvh,40rem)] min-h-0 flex-col overflow-hidden border-t border-border bg-white shadow-2xl pb-[env(safe-area-inset-bottom)]"
         )}
         role="dialog"
         aria-modal="true"
