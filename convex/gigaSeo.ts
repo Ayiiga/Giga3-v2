@@ -221,16 +221,16 @@ export const generateDraft = action({
     const wordCount = markdown.split(/\s+/).filter(Boolean).length;
     const topicRequiresBrandIntegration = /\b(ai|artificial intelligence|teach(?:er|ing)?|educat(?:ion|or|ional)|student|learn(?:ing)?|exam(?:ination)?|bece|wassce|stem|classroom|school|african technology|technology|digital skills|innovation|local communities)\b/i.test(`${plan.title} ${plan.primaryKeyword}`);
     // Normalize Markdown decoration before checking headings so bold/linked H2s are recognised.
-    const sections = markdown.split(/^##\\s+/m).slice(1);
+    const sections = markdown.split(/^##\s+/m).slice(1);
     const giga3Section = sections.find((section) => {
-      const heading = section.split("\\n", 1)[0].replace(/[*_\\[\\]]/g, "").trim();
-      return /giga3\\s*ai/i.test(heading);
+      const heading = section.split("\n", 1)[0].replace(/[*_\[\]]/g, "").trim();
+      return /giga3\s*ai/i.test(heading);
     });
-    const giga3SectionBody = giga3Section?.split("\\n").slice(1).join(" ").replace(/\\s+/g, " ").trim() ?? "";
+    const giga3SectionBody = giga3Section?.split("\n").slice(1).join(" ").replace(/\s+/g, " ").trim() ?? "";
     const hasSubstantiveGiga3Section = Boolean(giga3Section && giga3SectionBody.length >= 80);
     // Accept Markdown CTA links regardless of whether the URL is on the same line as its anchor.
-    const hasContextualInvitation = /\\b(explore|visit|discover|try|learn more about)\\b/i.test(markdown);
-    const hasOfficialGiga3Url = /https?:\\/\\/(?:www\\.)?giga3ai\\.com\\/?/i.test(markdown);
+    const hasContextualInvitation = /\b(explore|visit|discover|try|learn more about)\b/i.test(markdown);
+    const hasOfficialGiga3Url = /https?:\/\/(?:www\.)?giga3ai\.com\/?/i.test(markdown);
     const hasGiga3CallToAction = hasContextualInvitation && hasOfficialGiga3Url;
     const missingBrandIntegration = topicRequiresBrandIntegration && !(hasSubstantiveGiga3Section && hasGiga3CallToAction);
     const brandIntegrationIssue = "Add a substantive Giga3 AI section explaining relevant platform value and a contextual call to action linking to https://www.giga3ai.com/ before editorial approval.";
