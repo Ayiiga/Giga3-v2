@@ -204,7 +204,8 @@ describe("Technology Learning Hub question banks", () => {
       count: 50,
       seed: 144,
     });
-    expect(structuredIds).toHaveLength(70);
+    // The selector honors the requested session size (50), while the bank retains all 70 structured items.
+    expect(structuredIds).toHaveLength(50);
     expect(asanteTwi.filter((q) => structuredIds.includes(q.questionId)).every((q) => q.questionType === "structured")).toBe(true);
     expect(getTechCourseMeta("exam-bece-prep")?.awaitingMaterials).toBe(false);
     expect(new Set(bece.map((q) => q.topicId)).size).toBe(10);
