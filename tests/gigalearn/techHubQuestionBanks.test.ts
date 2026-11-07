@@ -171,7 +171,8 @@ describe("Technology Learning Hub question banks", () => {
     expect(ad2Meta?.approvedQuestionCount).toBe(0);
 
     const bece = getTechBankQuestions("exam-bece-prep");
-    expect(bece.length).toBe(659);
+    // The shared loader includes 419 approved + 300 pending-review items (649 MCQ + 70 structured).
+    expect(bece.length).toBe(719);
     const asanteTwi = getTechBankQuestions("exam-bece-prep", { topicId: "ghanaian-language-culture" });
     expect(asanteTwi).toHaveLength(300);
     expect(asanteTwi.every((q) => q.reviewStatus === "pending_review")).toBe(true);
