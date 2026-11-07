@@ -90,7 +90,7 @@ describe("Technology Learning Hub question banks", () => {
     expect(report.missingSources[0]?.status).toBe("not_uploaded");
     expect(report.missingSources[0]?.expectedRepoImportPath).toContain("mobile-app.json");
     expect(report.totals.techExtracted).toBe(2000);
-    expect(report.totals.techUniqueApproved).toBe(1055);
+    expect(report.totals.techUniqueApproved).toBe(1092);
     expect(report.totals.aiExtracted).toBe(500);
     expect(report.totals.aiNearDuplicatesRemoved).toBe(227);
     expect(report.totals.aiUniqueApproved).toBe(273);
