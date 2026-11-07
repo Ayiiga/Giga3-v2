@@ -66,7 +66,7 @@ export const listPublished = query({
     if (q) rows = rows.filter(r =>
       [r.title, r.summary, r.subject, r.topic, r.category, r.activity].join(" ").toLowerCase().includes(q)
     );
-    return await Promise.all(rows.slice(0, 300).map(async row => ({ ...publicResource(row), imageUrl: row.imageStorageId ? await ctx.storage.getUrl(row.imageStorageId) : null })));
+    return await Promise.all(rows.slice(0, 300).map(async row => ({ ...publicResource(row), imageUrl: row.access === "free" && row.imageStorageId ? await ctx.storage.getUrl(row.imageStorageId) : null })));
   },
 });
 
@@ -101,7 +101,7 @@ export const getPublicDetail = query({
       teacherGuidance: fullAccess ? row.teacherGuidance ?? "" : "",
       studentExercises: fullAccess ? row.studentExercises ?? "" : "",
       curriculumReference: row.curriculumReference ?? "",
-      hasImage: Boolean(row.imageStorageId), imageUrl: row.imageStorageId ? await ctx.storage.getUrl(row.imageStorageId) : null, hasDiagram: Boolean(row.diagramStorageId),
+      hasImage: Boolean(row.imageStorageId), imageUrl: fullAccess && row.imageStorageId ? await ctx.storage.getUrl(row.imageStorageId) : null, hasDiagram: Boolean(row.diagramStorageId),
       hasGuide: Boolean(row.guideStorageId), hasWorksheet: Boolean(row.worksheetStorageId),
       fullAccess,
     };
