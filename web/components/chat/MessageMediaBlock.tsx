@@ -68,7 +68,7 @@ export const MessageMediaBlock = memo(function MessageMediaBlock({
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState(false);
   const [userRequestedLoad, setUserRequestedLoad] = useState(false);
-  const deferLoad = (saveData || isSlowNetwork) && kind === "image" && !userRequestedLoad;
+  // Inline data/blob previews are already local and tiny; never hide an uploaded\n  // attachment behind the remote-image data-saver gate.\n  const isLocalPreview = /^(data:|blob:)/i.test(url);\n  const deferLoad =\n    (saveData || isSlowNetwork) &&\n    kind === "image" &&\n    !isLocalPreview &&\n    !userRequestedLoad;
 
   const run = useCallback(
     async (
