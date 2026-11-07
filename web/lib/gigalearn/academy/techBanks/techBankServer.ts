@@ -109,7 +109,7 @@ export function getTechBankQuestions(
     /** When true, drop premium-only items (backend entitlement gate). */
     freeTierOnly?: boolean;
     /** Filter to MCQ or True/False only. */
-    questionType?: "mcq" | "true_false";
+    questionType?: "mcq" | "true_false" | "structured";
   }
 ): TechBankQuestion[] {
   const slug = courseSlug.trim().toLowerCase();
