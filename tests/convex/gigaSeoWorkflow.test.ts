@@ -107,6 +107,14 @@ describe("GigaSEO Convex workflow", () => {
       market: "Ghana",
       audience: "Teachers",
     });
+    const repeatedPlanId = await t.mutation(api.gigaSeo.createContentPlan, {
+      adminKey: "giga-seo-test-admin",
+      title: "AI Tools for Teachers in Ghana: A Practical Guide",
+      primaryKeyword: "AI tools for teachers in Ghana",
+      market: "Ghana",
+      audience: "Teachers",
+    });
+    expect(repeatedPlanId).toBe(planId);
 
     const generated = await t.action(api.gigaSeo.generateDraft, {
       adminKey: "giga-seo-test-admin",
