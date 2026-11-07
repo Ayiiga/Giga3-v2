@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
-import { SOCIAL_MAX_VIDEO_BYTES } from "@/lib/gigasocial/constants";
 import {
   buildEpisodePostBody,
   describeEpisodeRange,
