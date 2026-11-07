@@ -58,8 +58,11 @@ export const getAdminOverview = query({
       ).map((p) => ({
         _id: p._id,
         displayName: p.displayName,
+        legalFullName: p.legalFullName ?? p.displayName,
+        verificationEmail: p.verificationEmail ?? p.userId,
         handle: p.handle,
         userId: p.userId,
+        idDocumentUrl: p.idDocumentStorageId ? await ctx.storage.getUrl(p.idDocumentStorageId) : null,
         verificationSubmittedAt: p.verificationSubmittedAt ?? null,
         locationCapturedAt: p.locationCapturedAt ?? null,
         idDocumentFileName: p.idDocumentFileName ?? null,
