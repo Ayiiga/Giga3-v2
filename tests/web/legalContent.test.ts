@@ -59,15 +59,20 @@ describe("legal content", () => {
     expect(legalDocumentBySlug.privacy.sections[0]?.title).toBe("Information We Collect");
   });
 
-  it("terms and refunds describe automatic renewal and wallet cancellation", () => {
-    for (const slug of ["terms", "refunds"] as const) {
-      const body = text(slug);
-      expect(body, slug).toContain("renew automatically");
-      expect(body, slug).toContain("wallet");
-      expect(body, slug).toMatch(/turn (off|renewal off)/);
-    }
-    expect(text("terms")).toContain("paystack");
-    expect(text("terms")).toContain("tokenised payment authorisation");
+  it("terms describe automatic renewal and wallet cancellation", () => {
+    const body = text("terms");
+    expect(body).toContain("renew automatically");
+    expect(body).toContain("wallet");
+    expect(body).toMatch(/turn (off|renewal off)/);
+    expect(body).toContain("paystack");
+    expect(body).toContain("tokenised payment authorisation");
+  });
+
+  it("refund policy describes refund handling without assuming auto-renewal", () => {
+    const body = text("refunds");
+    expect(body).toContain("refund");
+    expect(body).toContain("wallet");
+    expect(body).toContain("payment");
   });
 
   it("policies make no certification or compliance claims", () => {
