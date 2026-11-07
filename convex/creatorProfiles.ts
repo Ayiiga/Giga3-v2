@@ -148,6 +148,7 @@ export const generateVerificationUploadUrl = mutation({
 export const submitCreatorVerification = mutation({
   args: {
     sessionToken: v.string(),
+    legalFullName: v.string(),
     nationalIdNumber: v.string(),
     idDocumentStorageId: v.id("_storage"),
     idDocumentFileName: v.string(),
@@ -168,12 +169,22 @@ export const submitCreatorVerification = mutation({
       return { verificationStatus: "approved" as const, verified: true };
     }
 
+    const legalFullName = args.legalFullName.trim().replace(/\s+/g, " ").slice(0, 120);
+    if (legalFullName.length < 3) throw new Error("Enter your full legal name.");
+
     const fileName = args.idDocumentFileName.trim().slice(0, 200);
     if (!fileName) throw new Error("ID document filename is required.");
 
     const idDocumentMeta = await ctx.storage.getMetadata(args.idDocumentStorageId);
     if (!idDocumentMeta) {
       throw new Error("ID document upload was not found. Please upload again.");
+    }
+    const allowedTypes = new Set(["image/jpeg", "image/png", "application/pdf"]);
+    if (!allowedTypes.has(idDocumentMeta.contentType ?? "")) {
+      throw new Error("Upload a JPG, PNG, or PDF identity document.");
+    }
+    if (idDocumentMeta.size > 10 * 1024 * 1024) {
+      throw new Error("Identity document must be 10 MB or smaller.");
     }
 
     const nationalIdNumber = normalizeNationalId(args.nationalIdNumber);
@@ -204,6 +215,8 @@ export const submitCreatorVerification = mutation({
 
     const now = Date.now();
     await ctx.db.patch(profile._id, {
+      legalFullName,
+      verificationEmail: email,
       nationalIdNumber,
       idDocumentStorageId: args.idDocumentStorageId,
       idDocumentFileName: fileName,
@@ -211,19 +224,21 @@ export const submitCreatorVerification = mutation({
       longitude: args.longitude,
       locationAccuracyMeters: args.locationAccuracyMeters,
       locationCapturedAt: now,
-      verificationStatus: "approved",
-      verified: true,
+      legalFullName,
+      verificationEmail: email,
+      verificationStatus: "pending",
+      verified: false,
       verificationSubmittedAt: now,
-      verificationReviewedAt: now,
+      verificationReviewedAt: undefined,
       verificationRejectionReason: undefined,
       updatedAt: now,
     });
 
     return {
-      verificationStatus: "approved" as const,
-      verified: true,
+      verificationStatus: "pending" as const,
+      verified: false,
       message:
-        "Verification complete. Your national ID and GPS location were checked automatically — you can publish on the marketplace.",
+        "Your details were submitted for identity review. Your account email was captured from your signed-in session. You will be notified after a reviewer checks your documents.",
     };
   },
 });
@@ -247,7 +262,7 @@ export const requestVerification = mutation({
         verified: false,
         verificationStatus: "pending" as const,
         message:
-          "Verification is incomplete. Resubmit your national ID, document photo, and GPS location for automatic approval.",
+          "Your identity documents are awaiting manual review. You will be notified when the review is complete.",
       };
     }
     if (status === "rejected") {
@@ -264,7 +279,7 @@ export const requestVerification = mutation({
       verified: false,
       verificationStatus: "none" as const,
       message:
-        "Submit your national ID, ID document photo, and GPS location to register as a verified creator.",
+        "Submit your legal name and identity document for manual review. Your signed-in account email is captured automatically.",
     };
   },
 });
