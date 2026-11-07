@@ -139,9 +139,9 @@ describe("release audit: identity verification UI vs backend", () => {
     expect(body).toContain("evaluateCreatorVerification");
     expect(body).toContain("if (!autoCheck.ok)");
     expect(body).toContain("throw new Error(autoCheck.reason)");
-    // Successful patch to approved must come after the autoCheck gate.
+    // Submission stays pending; only the admin review mutation can approve.
     const failGateIdx = body.indexOf("if (!autoCheck.ok)");
-    const patchApprovedIdx = body.indexOf("verificationStatus: \"approved\",\n      verified: true");
+    const patchApprovedIdx = body.indexOf("verificationStatus: \"pending\"");
     expect(failGateIdx).toBeGreaterThan(-1);
     expect(patchApprovedIdx).toBeGreaterThan(failGateIdx);
     expect(body).toContain("legalFullName");
@@ -158,7 +158,7 @@ describe("release audit: identity verification UI vs backend", () => {
     expect(sellSrc).toContain("Submit for identity review");
     expect(sellSrc).toContain("support@giga3ai.com");
     expect(sellSrc).not.toContain("Verify automatically");
-    expect(sellSrc).not.toContain("Status: Pending review");
+    expect(sellSrc).not.toContain("Verify automatically");
     // Must not show contradictory “pending review” + “failed” together as success
     expect(sellSrc).not.toMatch(/Status:\s*Verified[\s\S]{0,80}Automatic verification did not finish/);
   });
