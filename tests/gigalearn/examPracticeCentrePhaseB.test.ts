@@ -27,7 +27,7 @@ describe("Exam Practice Centre Phase B", () => {
       "BECE practice materials are being prepared."
     );
     expect(BECE_BANK_SUMMARY.available).toBe(true);
-    expect(BECE_BANK_SUMMARY.approvedCount).toBe(468);
+    expect(BECE_BANK_SUMMARY.approvedCount).toBe(419);
     expect(BECE_SUBJECTS_AVAILABLE.length).toBeGreaterThanOrEqual(8);
     expect(BECE_SUBJECTS_AVAILABLE.some((s) => s.id === "mathematics")).toBe(true);
   });

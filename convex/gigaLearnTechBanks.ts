@@ -69,14 +69,15 @@ function normalizeSlug(slug: string): string {
   return slug.trim().toLowerCase().slice(0, 80);
 }
 
-function parseAnswers(raw: string): Record<string, number> {
+function parseAnswers(raw: string): Record<string, number | string> {
   try {
     const parsed = JSON.parse(raw) as unknown;
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
-    const out: Record<string, number> = {};
+    const out: Record<string, number | string> = {};
     for (const [k, val] of Object.entries(parsed as Record<string, unknown>)) {
-      // MCQ uses 0–3; True/False uses 0–1. Cap at 3 for storage hygiene.
       if (typeof val === "number" && Number.isInteger(val) && val >= 0 && val <= 3) {
+        out[k.slice(0, 120)] = val;
+      } else if (typeof val === "string" && val.length <= 5000) {
         out[k.slice(0, 120)] = val;
       }
     }
@@ -222,8 +223,8 @@ export const startTechPracticeSession = mutation({
     topicId: v.optional(v.string()),
     count: v.optional(v.number()),
     timeLimitMinutes: v.optional(v.number()),
-    /** Optional: "mcq" | "true_false" — type-specific practice when the bank has that format. */
-    questionType: v.optional(v.union(v.literal("mcq"), v.literal("true_false"))),
+    /** Optional: "mcq" | "true_false" | "structured" — type-specific practice when the bank has that format. */
+    questionType: v.optional(v.union(v.literal("mcq"), v.literal("true_false"), v.literal("structured"))),
   },
   handler: async (ctx, args) => {
     const email = await requireSession(args.sessionToken, ctx);
@@ -327,7 +328,9 @@ export const startTechPracticeSession = mutation({
       throw new Error(
         questionType === "true_false"
           ? "True/False practice is not yet available for this rank. Multiple-choice items may still be available."
-          : "Multiple-choice practice is not yet available for this selection."
+          : questionType === "structured"
+            ? "Structured-response practice is not yet available for this selection."
+            : "Multiple-choice practice is not yet available for this selection."
       );
     }
     const resolved = resolveExamPracticeSessionCount({
@@ -551,7 +554,8 @@ export const saveTechPracticeAnswer = mutation({
     ...sessionArgs,
     sessionId: v.id("gigaLearnTechSessions"),
     questionId: v.string(),
-    selectedIndex: v.number(),
+    selectedIndex: v.optional(v.number()),
+    textAnswer: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const email = await requireSession(args.sessionToken, ctx);
@@ -568,20 +572,30 @@ export const saveTechPracticeAnswer = mutation({
       throw new Error("Question is not part of this session.");
     }
     const bankQuestion = getTechBankQuestionById(session.courseSlug, args.questionId);
-    const maxOptionIndex = Math.max(0, (bankQuestion?.options.length ?? 4) - 1);
-    if (
-      !Number.isInteger(args.selectedIndex) ||
-      args.selectedIndex < 0 ||
-      args.selectedIndex > maxOptionIndex
-    ) {
-      throw new Error("Invalid answer selection.");
+    if (!bankQuestion) throw new Error("Question is unavailable.");
+    let answerValue: number | string;
+    if (bankQuestion.questionType === "structured") {
+      if (typeof args.textAnswer !== "string") throw new Error("Enter a written response.");
+      const textAnswer = args.textAnswer.trim();
+      if (textAnswer.length < 2 || textAnswer.length > 5000) {
+        throw new Error("Written responses must contain 2–5,000 characters.");
+      }
+      answerValue = textAnswer;
+    } else {
+      const maxOptionIndex = Math.max(0, bankQuestion.options.length - 1);
+      if (
+        typeof args.selectedIndex !== "number" ||
+        !Number.isInteger(args.selectedIndex) ||
+        args.selectedIndex < 0 ||
+        args.selectedIndex > maxOptionIndex
+      ) throw new Error("Invalid answer selection.");
+      answerValue = args.selectedIndex;
     }
 
     const now = Date.now();
     const answers = parseAnswers(session.answersJson);
-    // Idempotent overwrite — repeated saves do not award duplicate score points
-    // (scoring runs once in finalizeSession / submit).
-    answers[args.questionId] = args.selectedIndex;
+    // Idempotent overwrite — repeated saves do not award duplicate score points.
+    answers[args.questionId] = answerValue;
     await ctx.db.patch(session._id, {
       answersJson: JSON.stringify(answers),
       updatedAt: now,
@@ -596,6 +610,20 @@ export const saveTechPracticeAnswer = mutation({
         "timer"
       );
       return { saved: true, feedback: null, autoSubmitted: graded };
+    }
+
+    if (bankQuestion.questionType === "structured") {
+      return {
+        saved: true,
+        feedback: {
+          correct: false,
+          pendingReview: false,
+          selfAssessment: true,
+          provisionalMatch: false,
+          explanation: "Written response saved. It will not be automatically scored. Submit the session to reveal the self-assessment marking points.",
+          correctIndex: null as number | null,
+        },
+      };
     }
 
     // Learn + practice_test: immediate per-answer feedback (premium Full pack

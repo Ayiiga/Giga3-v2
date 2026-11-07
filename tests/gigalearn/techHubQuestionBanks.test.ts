@@ -163,13 +163,50 @@ describe("Technology Learning Hub question banks", () => {
     const beceMeta = getExamBankMeta("exam-bece-prep");
     const teacherMeta = getExamBankMeta("exam-teacher-promotion");
     const ad2Meta = getExamBankMeta("exam-ad2-study-guide");
-    expect(beceMeta?.approvedQuestionCount).toBe(468);
+    expect(beceMeta?.approvedQuestionCount).toBe(419);
+    expect(beceMeta?.pendingQuestionCount).toBe(300);
+    expect(beceMeta?.topics.find((t) => t.id === "ghanaian-language-culture")?.label).toBe("Asante Twi");
     expect(teacherMeta?.approvedQuestionCount).toBe(238);
     expect(teacherMeta?.pendingQuestionCount).toBe(58);
     expect(ad2Meta?.approvedQuestionCount).toBe(0);
 
     const bece = getTechBankQuestions("exam-bece-prep");
-    expect(bece.length).toBe(468);
+    // The shared loader includes 419 approved + 300 pending-review items (649 MCQ + 70 structured).
+    expect(bece.length).toBe(719);
+    const asanteTwi = getTechBankQuestions("exam-bece-prep", { topicId: "ghanaian-language-culture" });
+    expect(asanteTwi).toHaveLength(300);
+    expect(asanteTwi.every((q) => q.reviewStatus === "pending_review")).toBe(true);
+    expect(asanteTwi.every((q) => q.sourceType === "original_practice" && q.verificationStatus === "awaiting_verification")).toBe(true);
+    const structured = asanteTwi.filter((q) => q.questionType === "structured");
+    expect(structured).toHaveLength(70);
+    expect(structured.every((q) => q.options.length === 0 && q.maxMarks && q.maxMarks > 0 && q.markingGuide?.length)).toBe(true);
+    const structuredPublic = toPublicTechQuestion(structured[0]!);
+    expect(structuredPublic.questionType).toBe("structured");
+    expect(structuredPublic).not.toHaveProperty("markingGuide");
+    const written = gradeTechAnswers({
+      courseSlug: "exam-bece-prep",
+      questionIds: [structured[0]!.questionId],
+      answers: { [structured[0]!.questionId]: "Me din de Ama. Mefiri Kumasi." },
+    });
+    expect(written.score).toBe(0);
+    expect(written.maxScore).toBe(0);
+    expect(written.results[0]?.requiresSelfAssessment).toBe(true);
+    expect(written.results[0]?.writtenAnswer).toBe("Me din de Ama. Mefiri Kumasi.");
+    expect(written.results[0]?.markingGuide?.length).toBeGreaterThan(0);
+    expect(getTechBankQuestions("exam-bece-prep", { approvedOnly: false, topicId: "ghanaian-language-culture" })).toHaveLength(300);
+    expect(asanteTwi.filter((q) => q.questionType !== "structured" && !q.tags.includes("application"))).toHaveLength(200);
+    expect(asanteTwi.filter((q) => q.tags.includes("application"))).toHaveLength(30);
+    const structuredIds = selectTechQuestionIds({
+      courseSlug: "exam-bece-prep",
+      mode: "random",
+      topicId: "ghanaian-language-culture",
+      questionType: "structured",
+      count: 50,
+      seed: 144,
+    });
+    // The selector honors the requested session size (50), while the bank retains all 70 structured items.
+    expect(structuredIds).toHaveLength(50);
+    expect(asanteTwi.filter((q) => structuredIds.includes(q.questionId)).every((q) => q.questionType === "structured")).toBe(true);
     expect(getTechCourseMeta("exam-bece-prep")?.awaitingMaterials).toBe(false);
     expect(new Set(bece.map((q) => q.topicId)).size).toBe(10);
 
@@ -310,9 +347,10 @@ describe("Technology Learning Hub question banks", () => {
     expect(saveBlock).toContain('session.mode === "learn"');
     expect(saveBlock).toContain('session.mode === "practice_test"');
     expect(saveBlock).toContain("feedback: null");
-    expect(read("web/components/gigalearn/academy/TechHubPractice.tsx")).toContain(
-      "startTechPracticeSession"
-    );
+    const practiceUi = read("web/components/gigalearn/academy/TechHubPractice.tsx");
+    expect(practiceUi).toContain("startTechPracticeSession");
+    expect(practiceUi).toContain('label: "Structured response"');
+    expect(practiceUi).toContain('urlQType === "structured"');
     expect(read("web/app/(marketing)/gigalearn/academy/tech/page.tsx")).toContain(
       "Technology Learning Hub"
     );

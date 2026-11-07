@@ -109,7 +109,7 @@ export function getTechBankQuestions(
     /** When true, drop premium-only items (backend entitlement gate). */
     freeTierOnly?: boolean;
     /** Filter to MCQ or True/False only. */
-    questionType?: "mcq" | "true_false";
+    questionType?: "mcq" | "true_false" | "structured";
   }
 ): TechBankQuestion[] {
   const slug = courseSlug.trim().toLowerCase();
@@ -174,7 +174,8 @@ export function toPublicTechQuestion(q: TechBankQuestion): TechPublicQuestion {
     difficulty: q.difficulty,
     sourceQuestionNumber: q.sourceQuestionNumber,
     reviewStatus: q.reviewStatus,
-    questionType: q.questionType === "true_false" ? "true_false" : "mcq",
+    questionType: q.questionType,
+    maxMarks: q.questionType === "structured" ? q.maxMarks ?? 0 : undefined,
   };
 }
 
@@ -212,6 +213,10 @@ export function buildSessionOptionPermutations(
   const out: OptionPermutationMap = {};
   for (const q of questions) {
     // Never shuffle True/False — presentation must stay [TRUE] [FALSE].
+    if (q.questionType === "structured") {
+      out[q.questionId] = [];
+      continue;
+    }
     if (isTrueFalseQuestion(q)) {
       out[q.questionId] = q.options.map((_, i) => i);
       continue;
@@ -258,8 +263,8 @@ export function selectTechQuestionIds(args: {
   revisionQuestionIds?: string[];
   /** When false, exclude premium-only items from the selection pool. */
   premiumAccess?: boolean;
-  /** Optional MCQ / True-False filter for type-specific practice. */
-  questionType?: "mcq" | "true_false";
+  /** Optional question-format filter for type-specific practice. */
+  questionType?: "mcq" | "true_false" | "structured";
 }): string[] {
   // Exam Practice packs allow up to 500; Technology Hub courses stay within 50.
   // Also clamp here when premiumAccess is false so free callers never receive
@@ -334,7 +339,7 @@ export function gradeTechAnswers(args: {
   courseSlug: string;
   questionIds: string[];
   /** Display indices as chosen by the learner (after option shuffle). */
-  answers: Record<string, number>;
+  answers: Record<string, number | string>;
   /** Optional display→original permutations stored on the session. */
   optionPermutations?: OptionPermutationMap;
 }): {
@@ -344,6 +349,10 @@ export function gradeTechAnswers(args: {
   results: Array<{
     questionId: string;
     selectedIndex: number | null;
+    writtenAnswer?: string | null;
+    markingGuide?: string[];
+    maxMarks?: number;
+    requiresSelfAssessment?: boolean;
     correctIndex: number;
     correct: boolean;
     explanation: string;
@@ -365,6 +374,7 @@ export function gradeTechAnswers(args: {
       typeof args.answers[id] === "number" && Number.isInteger(args.answers[id])
         ? args.answers[id]
         : null;
+    const writtenAnswer = typeof args.answers[id] === "string" ? args.answers[id].slice(0, 5000) : null;
     const selectedOriginal =
       selectedDisplay == null ? null : toOriginalOptionIndex(selectedDisplay, perm);
     const presented = q ? presentTechQuestion(q, perm) : null;
@@ -376,6 +386,16 @@ export function gradeTechAnswers(args: {
     const cleanExplanation = q
       ? sanitizePracticeExplanation(q.explanation)
       : "";
+    if (q?.questionType === "structured") {
+      return {
+        questionId: id, selectedIndex: null, writtenAnswer,
+        markingGuide: q.markingGuide?.map((point) => sanitizePracticeExplanation(point)) ?? [],
+        maxMarks: q.maxMarks ?? 0, requiresSelfAssessment: true, correctIndex: -1,
+        correct: false,
+        explanation: "Written response saved. Compare your work with the marking points below. This response has not been automatically or teacher graded.",
+        questionText: cleanStem, options: [], scored: false,
+      };
+    }
     if (!q || !isScorableReviewStatus(q.reviewStatus)) {
       return {
         questionId: id,

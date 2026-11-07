@@ -46,6 +46,7 @@ type LearnFeedback = {
   explanation: string;
   correctIndex: number | null;
   pendingReview?: boolean;
+  selfAssessment?: boolean;
   /** Matched provisional key — never drives verified praise rewards. */
   provisionalMatch?: boolean;
   optionExplanations?: string[];
@@ -73,7 +74,7 @@ function TechHubInner() {
   const urlCount = Number(params.get("count") || "");
   const urlQType = (params.get("qtype") || "").trim().toLowerCase();
   const initialQuestionType: TechQuestionType | "" =
-    urlQType === "true_false" || urlQType === "mcq" ? urlQType : "";
+    urlQType === "true_false" || urlQType === "mcq" || urlQType === "structured" ? urlQType : "";
   const sessionToken = getSessionToken();
   const course = useMemo(
     () => (courseSlug ? getBuiltinAcademyCourse(courseSlug) : undefined),
@@ -145,10 +146,12 @@ function TechHubInner() {
       options: string[];
       difficulty: string;
       questionType?: TechQuestionType;
+      maxMarks?: number;
     }>
   >([]);
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [textAnswers, setTextAnswers] = useState<Record<string, string>>({});
   const [reward, setReward] = useState<string | null>(null);
   const [streak, setStreak] = useState(0);
   const [learnFeedback, setLearnFeedback] = useState<LearnFeedback | null>(null);
@@ -185,6 +188,10 @@ function TechHubInner() {
       explanation: string;
       questionText: string;
       options: string[];
+      writtenAnswer?: string | null;
+      markingGuide?: string[];
+      maxMarks?: number;
+      requiresSelfAssessment?: boolean;
       optionExplanations?: string[];
       provisional?: boolean;
       provisionalMatch?: boolean;
@@ -299,14 +306,16 @@ function TechHubInner() {
             options: string[];
             difficulty: string;
             questionType?: TechQuestionType;
+            maxMarks?: number;
           }) => ({
             ...q,
-            questionType: q.questionType === "true_false" ? "true_false" : "mcq",
+            questionType: q.questionType === "true_false" ? "true_false" : q.questionType === "structured" ? "structured" : "mcq",
           })
         )
       );
       setIndex(0);
       setAnswers({});
+      setTextAnswers({});
       setFeedbackByQuestion({});
       setLearnFeedback(null);
       setReward(null);
@@ -383,6 +392,45 @@ function TechHubInner() {
     }
   }
 
+  async function onSubmitTextAnswer() {
+    if (!sessionToken || !sessionId || !current || current.questionType !== "structured") return;
+    const response = (textAnswers[current.questionId] ?? "").trim();
+    if (response.length < 2) {
+      setError("Write your response before saving it.");
+      return;
+    }
+    if (response.length > 5000) {
+      setError("Your response must be 5,000 characters or fewer.");
+      return;
+    }
+    if (immediateFeedback && feedbackByQuestion[current.questionId] != null) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await saveAnswer({
+        sessionToken,
+        sessionId,
+        questionId: current.questionId,
+        textAnswer: response,
+      });
+      setFeedbackByQuestion((prev) => ({
+        ...prev,
+        [current.questionId]: (res.feedback as LearnFeedback) ?? {
+          correct: false,
+          pendingReview: true,
+          explanation: "Written response saved; it is not automatically scored.",
+          correctIndex: null,
+        },
+      }));
+      setLearnFeedback((res.feedback as LearnFeedback) ?? null);
+      setAnswers((prev) => ({ ...prev, [current.questionId]: -1 }));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not save written response.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   function goToQuestion(nextIndex: number) {
     const q = localQuestions[nextIndex];
     setIndex(nextIndex);
@@ -425,7 +473,7 @@ function TechHubInner() {
           courseSlug.includes("director")
         ? ("teacher_promotion" as const)
         : null;
-    const incorrect = results.results.filter((r) => !r.correct && !r.provisional);
+    const incorrect = results.results.filter((r) => !r.correct && !r.provisional && !r.requiresSelfAssessment);
     const reviewRows = showIncorrectOnly ? incorrect : results.results;
     return (
       <AcademyChrome active="course" title={`${course.title} · Results`}>
@@ -439,6 +487,9 @@ function TechHubInner() {
               {sessionPraise}
             </p>
           ) : null}
+          <p className="text-sm text-slate-600">
+            Written-response items are excluded from the automatic score; use their marking points for self-assessment. They have not been teacher graded.
+          </p>
           <p className="text-sm text-slate-600">
             {results.maxScore > 0
               ? `Verified score ${results.score}/${results.maxScore}${
@@ -486,14 +537,18 @@ function TechHubInner() {
                 </p>
                 <p
                   className={
-                    r.provisional
+                    r.requiresSelfAssessment
+                      ? "mt-1 text-blue-800"
+                      : r.provisional
                       ? "mt-1 text-amber-800"
                       : r.correct
                         ? "mt-1 text-emerald-700"
                         : "mt-1 text-rose-700"
                   }
                 >
-                  {r.provisional
+                  {r.requiresSelfAssessment
+                    ? "Written response · self-assessment required"
+                    : r.provisional
                     ? r.provisionalMatch
                       ? "Answer under review · matched provisional key"
                       : "Answer under review · provisional key differs"
@@ -507,6 +562,8 @@ function TechHubInner() {
                       : ""}
                 </p>
                 <p className="mt-1 text-slate-600">{r.explanation}</p>
+                {r.writtenAnswer != null ? <div className="mt-2 rounded-lg bg-slate-50 p-3"><p className="text-xs font-semibold uppercase text-slate-500">Your written response</p><p className="mt-1 whitespace-pre-wrap">{r.writtenAnswer || "No response saved."}</p></div> : null}
+                {r.markingGuide?.length ? <div className="mt-2 rounded-lg border border-blue-200 bg-blue-50 p-3"><p className="text-xs font-semibold uppercase text-blue-900">Self-assessment marking points · up to {r.maxMarks ?? 0} marks</p><ul className="mt-1 list-disc space-y-1 pl-5 text-slate-700">{r.markingGuide.map((point, pi) => <li key={pi}>{point}</li>)}</ul></div> : null}
                 {r.optionExplanations && r.optionExplanations.length === r.options.length ? (
                   <ul className="exam-session-option-notes mt-2 space-y-1.5">
                     {r.options.map((opt, oi) => {
@@ -596,6 +653,7 @@ function TechHubInner() {
 
   if (sessionId && current) {
     const selected = answers[current.questionId];
+    const currentTextAnswer = textAnswers[current.questionId] ?? "";
     const activeFeedback = learnFeedback ?? feedbackByQuestion[current.questionId] ?? null;
     const revealed = immediateFeedback && activeFeedback != null;
     const isTrueFalse =
@@ -667,6 +725,31 @@ function TechHubInner() {
                 {isTrueFalse ? "Statement" : "Question"} {index + 1}
               </p>
               <h2 className="exam-session-stem">{current.questionText}</h2>
+              {current.questionType === "structured" ? (
+                <div className="space-y-3">
+                  <label htmlFor="structured-response" className="block text-sm font-semibold text-slate-800">
+                    Your written response {current.maxMarks ? `(up to ${current.maxMarks} marks)` : ""}
+                  </label>
+                  <textarea
+                    id="structured-response"
+                    value={currentTextAnswer}
+                    onChange={(event) => setTextAnswers((prev) => ({ ...prev, [current.questionId]: event.target.value }))}
+                    maxLength={5000}
+                    rows={8}
+                    disabled={busy || revealed}
+                    placeholder="Write your answer here. Explain your points clearly and use examples where needed."
+                    className="min-h-40 w-full rounded-xl border border-slate-300 bg-white p-3 text-base text-slate-900 outline-none focus:border-violet-600 focus:ring-2 focus:ring-violet-200 disabled:bg-slate-50"
+                    data-testid="structured-response-input"
+                  />
+                  <div className="flex items-center justify-between gap-3 text-xs text-slate-500">
+                    <span>Written answers are saved securely with your practice session.</span>
+                    <span>{currentTextAnswer.length}/5000</span>
+                  </div>
+                  <button type="button" onClick={() => void onSubmitTextAnswer()} disabled={busy || revealed || currentTextAnswer.trim().length < 2} className="min-h-11 rounded-xl bg-violet-700 px-5 py-2 font-semibold text-white disabled:opacity-50" data-testid="save-structured-response">
+                    {busy ? "Saving…" : revealed ? "Response saved" : "Save written response"}
+                  </button>
+                </div>
+              ) : (
               <ul
                 className={cn(
                   "exam-session-options",
@@ -749,6 +832,7 @@ function TechHubInner() {
                   );
                 })}
               </ul>
+              )}
               {revealed && reward ? (
                 <p className="exam-session-reward" role="status" data-testid="exam-reward">
                   {reward}
@@ -758,7 +842,9 @@ function TechHubInner() {
                 <div className="exam-session-explain" role="status">
                   <p>
                     <span className="exam-session-explain-label">
-                      {activeFeedback.pendingReview
+                      {activeFeedback.selfAssessment
+                        ? "Response saved — "
+                        : activeFeedback.pendingReview
                         ? "Provisional feedback — "
                         : activeFeedback.correct
                           ? "Correct — "
@@ -960,6 +1046,7 @@ function TechHubInner() {
                     { id: "" as const, label: "Mixed (recommended)" },
                     { id: "mcq" as const, label: "Multiple choice" },
                     { id: "true_false" as const, label: "True / False" },
+                    { id: "structured" as const, label: "Structured response" },
                   ]).map((opt) => (
                     <button key={opt.id || "mixed"} type="button" onClick={() => setQuestionType(opt.id)} aria-pressed={questionType === opt.id}
                       className={cn("min-h-11 rounded-xl border px-3 py-2 text-left text-sm font-semibold",
