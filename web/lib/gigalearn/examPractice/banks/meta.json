@@ -6,8 +6,8 @@
       "title": "Ghana BECE Preparation",
       "sourceDocument": "Ghana_BECE_Preparation_500_Objective_Questions_Explained_c887.pdf",
       "approvedQuestionCount": 419,
-      "pendingQuestionCount": 163,
-      "mcqCount": 537,
+      "pendingQuestionCount": 183,
+      "mcqCount": 552,
       "trueFalseCount": 0,
       "topics": [
         {
@@ -58,10 +58,10 @@
         {
           "id": "ghanaian-language-culture",
           "label": "Asante Twi",
-          "questionCount": 163
+          "questionCount": 183
         }
       ],
-      "structuredCount": 45
+      "structuredCount": 50
     },
     {
       "bankId": "teacher-promotion",
