@@ -609,7 +609,7 @@ function MarketplaceSellInner() {
               : verificationStatus === "rejected"
                 ? "Needs resubmission"
                 : verificationStatus === "pending"
-                  ? "Incomplete — resubmit required"
+                  ? "Under review"
                   : "Not started"}
             {profile?.verificationSubmittedAt
               ? ` · last attempt ${formatTimestampDateTime(profile.verificationSubmittedAt)}`
@@ -628,11 +628,10 @@ function MarketplaceSellInner() {
 
           {verificationStatus === "pending" && (
             <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950">
-              Your identity submission is awaiting manual review. Your signed-in email is captured automatically; document format and GPS checks do not prove identity. Listings remain restricted until an authorized reviewer approves your application. For help, email{" "}
+              Your identity submission is awaiting manual review. Your signed-in account email is captured from your authenticated session; document format and GPS checks do not prove identity. Listings remain restricted until an authorized reviewer approves your application. For help, email{" "}
               <a className="font-semibold underline" href="mailto:support@giga3ai.com">
                 support@giga3ai.com
-              </a>{" "}
-              for help. We never mark creators verified without a successful server-side check.
+              </a>.
             </p>
           )}
 
@@ -644,7 +643,7 @@ function MarketplaceSellInner() {
                 Full legal name
                 <input value={legalFullName} onChange={(e) => setLegalFullName(e.target.value)} placeholder="Name as shown on your ID" className="min-h-11 rounded-xl border px-4 py-3" autoComplete="name" maxLength={120} />
               </label>
-              <p className="text-sm text-muted">Signed-in account email: {profile?.userId ?? "Loading account email…"} (captured securely from your session)</p>
+              <p className="text-sm text-muted">Signed-in account email: {profile?.userId ?? "Loading account email…"} (captured from your authenticated session)</p>
               <input
                 value={nationalIdNumber}
                 onChange={(e) => setNationalIdNumber(e.target.value)}
