@@ -4,6 +4,20 @@ import { formatVideoTime, trimVideoFile, type VideoTrimRange } from "@/lib/gigas
 export const SOCIAL_EPISODE_SPLIT_COUNT = 3;
 /** Prefer episode split when the file is oversized and long enough to cut into parts. */
 export const SOCIAL_EPISODE_SPLIT_MIN_DURATION_SEC = 45;
+export const SOCIAL_EPISODE_SPLIT_MAX_COUNT = 24;
+
+/** Choose enough parts to keep each episode within both duration and upload-size limits. */
+export function getRecommendedEpisodeCount(
+  durationSec: number,
+  sizeBytes: number,
+  maxBytes = SOCIAL_MAX_VIDEO_BYTES,
+  maxEpisodeSec = SOCIAL_MAX_VIDEO_DURATION_SEC
+): number {
+  if (!Number.isFinite(durationSec) || durationSec <= 0) return 2;
+  const byDuration = Math.ceil(durationSec / maxEpisodeSec);
+  const bySize = Number.isFinite(sizeBytes) && sizeBytes > 0 ? Math.ceil(sizeBytes / maxBytes) : 1;
+  return Math.max(2, Math.min(SOCIAL_EPISODE_SPLIT_MAX_COUNT, byDuration, Math.max(byDuration, bySize)));
+}
 
 export type VideoEpisodePlanItem = {
   index: number;
@@ -103,7 +117,7 @@ export function shouldOfferEpisodeSplit(
   if (!Number.isFinite(durationSec) || durationSec < SOCIAL_EPISODE_SPLIT_MIN_DURATION_SEC) {
     return false;
   }
-  return isVideoOverSizeLimit(sizeBytes, maxBytes);
+  return durationSec > SOCIAL_MAX_VIDEO_DURATION_SEC || isVideoOverSizeLimit(sizeBytes, maxBytes);
 }
 
 export function canOptionalEpisodeSplit(durationSec: number): boolean {
@@ -122,7 +136,7 @@ export function planVideoEpisodes(args: {
   episodeCount?: number;
   maxEpisodeSec?: number;
 }): VideoEpisodePlan {
-  const episodeCount = Math.max(2, Math.min(6, args.episodeCount ?? SOCIAL_EPISODE_SPLIT_COUNT));
+  const episodeCount = Math.max(2, Math.min(SOCIAL_EPISODE_SPLIT_MAX_COUNT, args.episodeCount ?? getRecommendedEpisodeCount(args.durationSec, args.sizeBytes, SOCIAL_MAX_VIDEO_BYTES, args.maxEpisodeSec ?? SOCIAL_MAX_VIDEO_DURATION_SEC)));
   const maxEpisodeSec = args.maxEpisodeSec ?? SOCIAL_MAX_VIDEO_DURATION_SEC;
   const sourceDurationSec = Math.max(0, args.durationSec);
   if (sourceDurationSec < SOCIAL_EPISODE_SPLIT_MIN_DURATION_SEC) {
