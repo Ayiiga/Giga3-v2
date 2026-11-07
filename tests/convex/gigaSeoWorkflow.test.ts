@@ -56,8 +56,8 @@ describe("GigaSEO Convex workflow", () => {
         markdown: [
           "## Getting started",
           "## Practical classroom examples",
-          "## Using Giga3 AI to support teaching and learning",
-          "Giga3 AI brings together GigaLearn curriculum-aligned learning resources and exam practice to help Ghanaian teachers and students explore digital learning. Explore the platform at https://www.giga3ai.com/.",
+          "## **Using Giga3 AI to support teaching and learning**",
+          "Giga3 AI brings together GigaLearn curriculum-aligned learning resources and exam practice to help Ghanaian teachers and students explore digital learning. [Explore Giga3 AI](https://www.giga3ai.com/).",
           "## Responsible use and limitations",
           "## Conclusion",
           Array.from({ length: 240 }, (_, index) => `Useful classroom guidance example ${index + 1} for Ghanaian teachers and learners.`).join(" "),
