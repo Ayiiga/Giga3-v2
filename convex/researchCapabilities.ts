@@ -64,7 +64,14 @@ const NEWS_CAPABILITIES = new Set<ResearchCapabilityId>([
   "breaking_news",
 ]);
 
-const STARTUP_FUNDING_INTENT_RE = /\b(funding|fundraise|fundraising|grant|grants|accelerator|incubator|investor|investment|venture capital|seed capital|startup competition|innovation challenge|pitch competition|non[- ]dilutive|capital raise)\b/i;\n\n/** Funding requests are research tasks, not requests for generic funding-monitoring software. */\nexport function detectStartupFundingIntent(query: string): boolean {\n  return STARTUP_FUNDING_INTENT_RE.test(query.trim());\n}\n\nconst TIME_SENSITIVE_RE =
+const STARTUP_FUNDING_INTENT_RE = /\b(funding|fundraise|fundraising|grant|grants|accelerator|incubator|investor|investment|venture capital|seed capital|startup competition|innovation challenge|pitch competition|non[- ]dilutive|capital raise)\b/i;
+
+/** Funding requests are research tasks, not requests for generic funding-monitoring software. */
+export function detectStartupFundingIntent(query: string): boolean {
+  return STARTUP_FUNDING_INTENT_RE.test(query.trim());
+}
+
+const TIME_SENSITIVE_RE =
   /\b(today|tonight|yesterday|this week|this month|this year|latest|current|recent|breaking|just now|right now|as of now|news|headlines|now|202[4-9]|stock price|weather|score|election|who is (the )?president|regulation|law passed|match result|final score)\b/i;
 
 /** News lookup phrasing that includes "announcement" — not user-pasted notices. */
@@ -392,6 +399,7 @@ export function queryNeedsLiveWeb(args: {
   // Pasted public URLs always attempt a safe webpage read (robots/paywall handled server-side).
   if (queryContainsPublicUrl(q)) return true;
   if (isConversationalChatQuery(q)) return false;
+  if (detectStartupFundingIntent(q)) return true;
 
   const infoMode = classifyInformationRequest(q);
   if (infoMode === "answer_from_user_context") return false;
@@ -427,7 +435,8 @@ export function queryNeedsLiveWeb(args: {
       args.capability === "live_web" ||
       args.capability === "deep_research" ||
       args.capability === "fact_check" ||
-      args.capability === "verify_image"
+      args.capability === "verify_image" ||
+      args.capability === "startup_funding"
     );
   }
 
@@ -440,7 +449,8 @@ export function shouldRunLiveWebResearch(capability: ResearchCapabilityId): bool
     capability === "deep_research" ||
     isNewsCapability(capability) ||
     capability === "fact_check" ||
-    capability === "verify_image"
+    capability === "verify_image" ||
+    capability === "startup_funding"
   );
 }
 
@@ -506,7 +516,8 @@ export const NEWS_RESPONSE_FORMAT_GUIDANCE = [
   "- If evidence is weak or snippet-only, say so once briefly — do not repeat after every source.",
   "- If evidence is insufficient, say so clearly and briefly — do not pad with general knowledge.",
   "- Do not deflect by telling the user to check other news sites.",
-].join("\n");
+].join("
+");
 
 export function researchSystemPromptAddon(capability: ResearchCapabilityId): string {
   switch (capability) {
@@ -518,7 +529,8 @@ export function researchSystemPromptAddon(capability: ResearchCapabilityId): str
         "Prefer primary/official sources for government, election, and security stories.",
         NEWS_RESPONSE_FORMAT_GUIDANCE,
         "Never present training-data headlines as today's news.",
-      ].join("\n");
+      ].join("
+");
     case "fact_check":
     case "verify_image":
       return [
@@ -529,7 +541,8 @@ export function researchSystemPromptAddon(capability: ResearchCapabilityId): str
         "Do not label TRUE merely because one website says so.",
         "Explain the evidence behind your verdict and cite sources with dates.",
         NEWS_RESPONSE_FORMAT_GUIDANCE,
-      ].join("\n");
+      ].join("
+");
     case "breaking_news":
       return [
         "Mode: Breaking news.",
@@ -537,21 +550,39 @@ export function researchSystemPromptAddon(capability: ResearchCapabilityId): str
         "Label each item: **Verified**, **Developing**, **Unverified**, or **Disputed**.",
         "Do not present old information as breaking news. Never invent developing stories.",
         NEWS_RESPONSE_FORMAT_GUIDANCE,
-      ].join("\n");
+      ].join("
+");
     default:
       if (isNewsCapability(capability)) {
         return [
           "Mode: Current news research.",
           "Search current sources, prefer primary/official sources where appropriate, cross-check important claims.",
           NEWS_RESPONSE_FORMAT_GUIDANCE,
-        ].join("\n");
+        ].join("
+");
       }
-      if (capability === "startup_funding") {\n        return [\n          "Mode: Startup Funding Intelligence.",\n          "Interpret the startup or organisation named by the user as the funding-seeking subject, not as a funding-monitoring product or tool.",\n          "Find actionable funding opportunities for that subject: grants, accelerators, incubators, startup competitions, innovation challenges, fellowships, and suitable investment programmes.",\n          "Prioritise official programme and application pages. For every opportunity provide provider, amount or benefits only when published, eligibility, geography/stage fit, deadline (or explicitly say not published), application status, and direct official application/source link.",\n          "Separate open opportunities, upcoming/rolling opportunities, closed opportunities, and general investor leads. Do not present investor directories or monitoring software as funding opportunities.",\n          "Assess fit only from facts supplied by the user or reliable sources. Mark unknown eligibility details as unknown; do not imply the startup qualifies without evidence.",\n          "Distinguish confirmed funding already received from funding being sought. Never invent funding rounds, investors, awards, application status, amounts, dates, or partnerships.",\n          "Treat a request to monitor as a request for a current search unless an ongoing scheduled monitor is explicitly configured. State that a one-time search is not continuous monitoring.",\n          "For a named startup, search both its exact name and relevant sector/geography funding programmes. Do not assume similarly named organisations are the same entity.",\n          NEWS_RESPONSE_FORMAT_GUIDANCE,\n        ].join("\\n");\n      }\n      if (capability === "deep_research") {
+      if (capability === "startup_funding") {
+        return [
+          "Mode: Startup Funding Intelligence.",
+          "Interpret the startup or organisation named by the user as the funding-seeking subject, not as a funding-monitoring product or tool.",
+          "Find actionable funding opportunities for that subject: grants, accelerators, incubators, startup competitions, innovation challenges, fellowships, and suitable investment programmes.",
+          "Prioritise official programme and application pages. For every opportunity provide provider, amount or benefits only when published, eligibility, geography/stage fit, deadline (or explicitly say not published), application status, and direct official application/source link.",
+          "Separate open opportunities, upcoming/rolling opportunities, closed opportunities, and general investor leads. Do not present investor directories or monitoring software as funding opportunities.",
+          "Assess fit only from facts supplied by the user or reliable sources. Mark unknown eligibility details as unknown; do not imply the startup qualifies without evidence.",
+          "Distinguish confirmed funding already received from funding being sought. Never invent funding rounds, investors, awards, application status, amounts, dates, or partnerships.",
+          "Treat a request to monitor as a request for a current search unless an ongoing scheduled monitor is explicitly configured. State that a one-time search is not continuous monitoring.",
+          "For a named startup, search both its exact name and relevant sector/geography funding programmes. Do not assume similarly named organisations are the same entity.",
+          NEWS_RESPONSE_FORMAT_GUIDANCE,
+        ].join("\
+");
+      }
+      if (capability === "deep_research") {
         return [
           "Mode: Deep research.",
           "Compare multiple authoritative sources, note conflicts, and cite publication dates.",
           NEWS_RESPONSE_FORMAT_GUIDANCE,
-        ].join("\n");
+        ].join("
+");
       }
       if (capability === "live_web") {
         return [
@@ -562,7 +593,8 @@ export function researchSystemPromptAddon(capability: ResearchCapabilityId): str
           "Never pretend model knowledge is live information.",
           "- Be concise and professional. Lead with a direct answer.",
           "- Do NOT show Confidence scores, Why lines, tier numbers, or retrieval diagnostics.",
-        ].join("\n");
+        ].join("
+");
       }
       return "";
   }
