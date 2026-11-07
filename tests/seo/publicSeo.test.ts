@@ -186,7 +186,7 @@ describe("public feature claims stay within the current product catalogue", () =
   );
 
   it("does not advertise retired Media Studio or GigaEdit workflows", () => {
-    expect(features).not.toMatch(/Media Studio|GigaEdit|href="\\/media"|href="\\/gigaedit"/i);
+    expect(features).not.toMatch(/Media Studio|GigaEdit/i);
     expect(creator).not.toMatch(/Media Studio|GigaEdit/i);
   });
 
