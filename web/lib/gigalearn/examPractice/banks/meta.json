@@ -5,9 +5,9 @@
       "courseSlug": "exam-bece-prep",
       "title": "Ghana BECE Preparation",
       "sourceDocument": "Ghana_BECE_Preparation_500_Objective_Questions_Explained_c887.pdf",
-      "approvedQuestionCount": 468,
-      "pendingQuestionCount": 0,
-      "mcqCount": 468,
+      "approvedQuestionCount": 419,
+      "pendingQuestionCount": 12,
+      "mcqCount": 431,
       "trueFalseCount": 0,
       "topics": [
         {
@@ -41,11 +41,6 @@
           "questionCount": 50
         },
         {
-          "id": "ghanaian-language-culture",
-          "label": "Ghanaian Language / Culture",
-          "questionCount": 49
-        },
-        {
           "id": "mathematics",
           "label": "Mathematics",
           "questionCount": 48
@@ -59,6 +54,11 @@
           "id": "english",
           "label": "English",
           "questionCount": 31
+        },
+        {
+          "id": "ghanaian-language-culture",
+          "label": "Asante Twi",
+          "questionCount": 12
         }
       ]
     },
