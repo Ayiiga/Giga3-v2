@@ -164,20 +164,20 @@ describe("Technology Learning Hub question banks", () => {
     const teacherMeta = getExamBankMeta("exam-teacher-promotion");
     const ad2Meta = getExamBankMeta("exam-ad2-study-guide");
     expect(beceMeta?.approvedQuestionCount).toBe(419);
-    expect(beceMeta?.pendingQuestionCount).toBe(203);
+    expect(beceMeta?.pendingQuestionCount).toBe(300);
     expect(beceMeta?.topics.find((t) => t.id === "ghanaian-language-culture")?.label).toBe("Asante Twi");
     expect(teacherMeta?.approvedQuestionCount).toBe(238);
     expect(teacherMeta?.pendingQuestionCount).toBe(58);
     expect(ad2Meta?.approvedQuestionCount).toBe(0);
 
     const bece = getTechBankQuestions("exam-bece-prep");
-    expect(bece.length).toBe(562);
+    expect(bece.length).toBe(659);
     const asanteTwi = getTechBankQuestions("exam-bece-prep", { topicId: "ghanaian-language-culture" });
-    expect(asanteTwi).toHaveLength(203);
+    expect(asanteTwi).toHaveLength(300);
     expect(asanteTwi.every((q) => q.reviewStatus === "pending_review")).toBe(true);
     expect(asanteTwi.every((q) => q.sourceType === "original_practice" && q.verificationStatus === "awaiting_verification")).toBe(true);
     const structured = asanteTwi.filter((q) => q.questionType === "structured");
-    expect(structured).toHaveLength(55);
+    expect(structured).toHaveLength(70);
     expect(structured.every((q) => q.options.length === 0 && q.maxMarks && q.maxMarks > 0 && q.markingGuide?.length)).toBe(true);
     const structuredPublic = toPublicTechQuestion(structured[0]!);
     expect(structuredPublic.questionType).toBe("structured");
@@ -192,9 +192,9 @@ describe("Technology Learning Hub question banks", () => {
     expect(written.results[0]?.requiresSelfAssessment).toBe(true);
     expect(written.results[0]?.writtenAnswer).toBe("Me din de Ama. Mefiri Kumasi.");
     expect(written.results[0]?.markingGuide?.length).toBeGreaterThan(0);
-    expect(getTechBankQuestions("exam-bece-prep", { approvedOnly: false, topicId: "ghanaian-language-culture" })).toHaveLength(203);
-    expect(asanteTwi.filter((q) => q.questionType !== "structured" && !q.tags.includes("application"))).toHaveLength(123);
-    expect(asanteTwi.filter((q) => q.tags.includes("application"))).toHaveLength(25);
+    expect(getTechBankQuestions("exam-bece-prep", { approvedOnly: false, topicId: "ghanaian-language-culture" })).toHaveLength(300);
+    expect(asanteTwi.filter((q) => q.questionType !== "structured" && !q.tags.includes("application"))).toHaveLength(200);
+    expect(asanteTwi.filter((q) => q.tags.includes("application"))).toHaveLength(30);
     const structuredIds = selectTechQuestionIds({
       courseSlug: "exam-bece-prep",
       mode: "random",
@@ -203,7 +203,7 @@ describe("Technology Learning Hub question banks", () => {
       count: 50,
       seed: 144,
     });
-    expect(structuredIds).toHaveLength(55);
+    expect(structuredIds).toHaveLength(70);
     expect(asanteTwi.filter((q) => structuredIds.includes(q.questionId)).every((q) => q.questionType === "structured")).toBe(true);
     expect(getTechCourseMeta("exam-bece-prep")?.awaitingMaterials).toBe(false);
     expect(new Set(bece.map((q) => q.topicId)).size).toBe(10);
