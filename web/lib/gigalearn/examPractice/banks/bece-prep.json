@@ -12144,6 +12144,906 @@
       "verificationStatus": "awaiting_verification",
       "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
       "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q074",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Which word is a Twi pronoun meaning “I”?",
+      "options": [
+        "Me",
+        "Wo",
+        "Ɔno",
+        "Yɛn"
+      ],
+      "correctIndex": 0,
+      "explanation": "“Me” is the first-person singular pronoun; confirm orthography and usage with an Asante Twi educator.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 4",
+      "sourceQuestionNumber": 74,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "editorial_review_required",
+        "objective"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q075",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Which pronoun means “you” (singular)?",
+      "options": [
+        "Me",
+        "Wo",
+        "Yɛn",
+        "Wɔn"
+      ],
+      "correctIndex": 1,
+      "explanation": "“Wo” is the second-person singular pronoun.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 4",
+      "sourceQuestionNumber": 75,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "editorial_review_required",
+        "objective"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q076",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Which pronoun means “we”?",
+      "options": [
+        "Wɔn",
+        "Yɛn",
+        "Ɔno",
+        "Wo"
+      ],
+      "correctIndex": 1,
+      "explanation": "“Yɛn” means we/us.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 4",
+      "sourceQuestionNumber": 76,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "editorial_review_required",
+        "objective"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q077",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Which pronoun means “they”?",
+      "options": [
+        "Wɔn",
+        "Me",
+        "Wo",
+        "Yɛn"
+      ],
+      "correctIndex": 0,
+      "explanation": "“Wɔn” means they/them.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 4",
+      "sourceQuestionNumber": 77,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "editorial_review_required",
+        "objective"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q078",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Which word is commonly used for “and”?",
+      "options": [
+        "ne",
+        "anaa",
+        "efisɛ",
+        "nanso"
+      ],
+      "correctIndex": 0,
+      "explanation": "“Ne” can function as “and” in appropriate constructions.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 4",
+      "sourceQuestionNumber": 78,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "editorial_review_required",
+        "objective"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q079",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Which connector commonly means “because”?",
+      "options": [
+        "Efisɛ",
+        "Anaa",
+        "Ne",
+        "Nanso"
+      ],
+      "correctIndex": 0,
+      "explanation": "“Efisɛ” introduces a reason, meaning because.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 4",
+      "sourceQuestionNumber": 79,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "editorial_review_required",
+        "objective"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q080",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Which connector commonly means “but”?",
+      "options": [
+        "Nanso",
+        "Efisɛ",
+        "Ne",
+        "Anaa"
+      ],
+      "correctIndex": 0,
+      "explanation": "“Nanso” means but/however.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 4",
+      "sourceQuestionNumber": 80,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "editorial_review_required",
+        "objective"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q081",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Which word means “language”?",
+      "options": [
+        "Kasa",
+        "Dua",
+        "Gua",
+        "Nsuo"
+      ],
+      "correctIndex": 0,
+      "explanation": "“Kasa” means speech or language.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 4",
+      "sourceQuestionNumber": 81,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "editorial_review_required",
+        "objective"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q082",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Which word means “song”?",
+      "options": [
+        "Dwom",
+        "Nhoma",
+        "Sukuu",
+        "Ɔkwan"
+      ],
+      "correctIndex": 0,
+      "explanation": "“Dwom” means song.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 4",
+      "sourceQuestionNumber": 82,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "editorial_review_required",
+        "objective"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q083",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Which word means “story” or “tale”?",
+      "options": [
+        "Anansesɛm",
+        "Aduane",
+        "Nsuo",
+        "Efie"
+      ],
+      "correctIndex": 0,
+      "explanation": "“Anansesɛm” refers to a story or tale, often a traditional folktale.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 4",
+      "sourceQuestionNumber": 83,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "editorial_review_required",
+        "objective"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q084",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Which word means “name”?",
+      "options": [
+        "Din",
+        "Da",
+        "Kuro",
+        "Gua"
+      ],
+      "correctIndex": 0,
+      "explanation": "“Din” means name.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 4",
+      "sourceQuestionNumber": 84,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "editorial_review_required",
+        "objective"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q085",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Which word means “day”?",
+      "options": [
+        "Da",
+        "Dua",
+        "Nsuo",
+        "Kasa"
+      ],
+      "correctIndex": 0,
+      "explanation": "“Da” means day; context determines its grammatical function.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 4",
+      "sourceQuestionNumber": 85,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "editorial_review_required",
+        "objective"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q086",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Which word means “week”?",
+      "options": [
+        "Nnawɔtwe",
+        "Ɔsram",
+        "Afe",
+        "Anadwo"
+      ],
+      "correctIndex": 0,
+      "explanation": "“Nnawɔtwe” means week.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 4",
+      "sourceQuestionNumber": 86,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "editorial_review_required",
+        "objective"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q087",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Which word means “month”?",
+      "options": [
+        "Ɔsram",
+        "Afe",
+        "Da",
+        "Anɔpa"
+      ],
+      "correctIndex": 0,
+      "explanation": "“Ɔsram” means month.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 4",
+      "sourceQuestionNumber": 87,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "editorial_review_required",
+        "objective"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q088",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Which word means “year”?",
+      "options": [
+        "Afe",
+        "Da",
+        "Nnawɔtwe",
+        "Anadwo"
+      ],
+      "correctIndex": 0,
+      "explanation": "“Afe” means year.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 4",
+      "sourceQuestionNumber": 88,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "editorial_review_required",
+        "objective"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q089",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Which word means “book(s)” in common school vocabulary?",
+      "options": [
+        "Nhoma",
+        "Nnwom",
+        "Nsu",
+        "Nnipa"
+      ],
+      "correctIndex": 0,
+      "explanation": "“Nhoma” means book; plural use depends on context.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 4",
+      "sourceQuestionNumber": 89,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "editorial_review_required",
+        "objective"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q090",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Which word means “people”?",
+      "options": [
+        "Nnipa",
+        "Nhoma",
+        "Dua",
+        "Nsuo"
+      ],
+      "correctIndex": 0,
+      "explanation": "“Nnipa” means people/persons.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 4",
+      "sourceQuestionNumber": 90,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "editorial_review_required",
+        "objective"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q091",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Which word means “work” or “occupation”?",
+      "options": [
+        "Adwuma",
+        "Aduane",
+        "Anadwo",
+        "Ɔsram"
+      ],
+      "correctIndex": 0,
+      "explanation": "“Adwuma” means work or a job.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 4",
+      "sourceQuestionNumber": 91,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "editorial_review_required",
+        "objective"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q092",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Which word means “money”?",
+      "options": [
+        "Sika",
+        "Nsuo",
+        "Dua",
+        "Kasa"
+      ],
+      "correctIndex": 0,
+      "explanation": "“Sika” means money or gold depending on context.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 4",
+      "sourceQuestionNumber": 92,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "editorial_review_required",
+        "objective"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q093",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Which word means “market”?",
+      "options": [
+        "Gua",
+        "Sukuu",
+        "Efie",
+        "Kuro"
+      ],
+      "correctIndex": 0,
+      "explanation": "“Gua” means market.",
+      "difficulty": "beginner",
+      "questionType": "mcq",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 4",
+      "sourceQuestionNumber": 93,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "editorial_review_required",
+        "objective"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q094",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Ama is introducing herself and says “Me din de Ama.” What information has she given?",
+      "options": [
+        "Her name is Ama",
+        "She is going home",
+        "She wants water",
+        "She is thanking someone"
+      ],
+      "correctIndex": 0,
+      "explanation": "“Me din de Ama” gives the speaker’s name.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 4",
+      "sourceQuestionNumber": 94,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "editorial_review_required",
+        "application"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q095",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "A learner hears “Mepa wo kyɛw” before someone makes a request. What is the speaker showing?",
+      "options": [
+        "Politeness",
+        "Anger",
+        "Hunger",
+        "Disagreement"
+      ],
+      "correctIndex": 0,
+      "explanation": "The expression is a polite appeal similar to please or excuse me; check context with an educator.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 4",
+      "sourceQuestionNumber": 95,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "editorial_review_required",
+        "application"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q096",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "A friend says “Medaase” after you help. What is the friend expressing?",
+      "options": [
+        "Thanks",
+        "A greeting",
+        "A warning",
+        "A question"
+      ],
+      "correctIndex": 0,
+      "explanation": "“Medaase” expresses gratitude.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 4",
+      "sourceQuestionNumber": 96,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "editorial_review_required",
+        "application"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q097",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "A teacher asks a learner “Wo din de sɛn?” What should the learner provide?",
+      "options": [
+        "Their name",
+        "Their age only",
+        "Their home address",
+        "Their favourite food"
+      ],
+      "correctIndex": 0,
+      "explanation": "The question asks what the learner’s name is.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 4",
+      "sourceQuestionNumber": 97,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "editorial_review_required",
+        "application"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q098",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Someone asks “Worekɔ he?” Which reply best answers the question “Where are you going?”",
+      "options": [
+        "Merekɔ sukuu",
+        "Medaase",
+        "Ɛyɛ fɛ",
+        "Minnim"
+      ],
+      "correctIndex": 0,
+      "explanation": "“Merekɔ sukuu” means I am going to school and gives a destination.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 4",
+      "sourceQuestionNumber": 98,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "editorial_review_required",
+        "application"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q099",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "A classmate says “Ɔkɔm de me.” What does the classmate need?",
+      "options": [
+        "Food",
+        "A book",
+        "A pencil",
+        "A greeting"
+      ],
+      "correctIndex": 0,
+      "explanation": "The expression means I am hungry.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 4",
+      "sourceQuestionNumber": 99,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "editorial_review_required",
+        "application"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q100",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "A visitor says “Mepa wo kyɛw” before passing through a crowded space. What is the likely purpose?",
+      "options": [
+        "To politely ask people to make way",
+        "To announce a celebration",
+        "To ask for food",
+        "To say good night"
+      ],
+      "correctIndex": 0,
+      "explanation": "The phrase is a polite appeal; the exact natural expression in this situation needs educator confirmation.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 4",
+      "sourceQuestionNumber": 100,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "editorial_review_required",
+        "application"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q101",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "A learner reads “Kofi kɔ sukuu.” Which statement matches the sentence?",
+      "options": [
+        "Kofi goes to school",
+        "Kofi is at the market",
+        "Kofi is drinking water",
+        "Kofi is sleeping"
+      ],
+      "correctIndex": 0,
+      "explanation": "The sentence states that Kofi goes to school.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 4",
+      "sourceQuestionNumber": 101,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "editorial_review_required",
+        "application"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q102",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "A learner reads “Ama pɛ nsuo.” What does Ama want?",
+      "options": [
+        "Water",
+        "Food",
+        "A book",
+        "Money"
+      ],
+      "correctIndex": 0,
+      "explanation": "“Pɛ” means want and “nsuo” means water.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 4",
+      "sourceQuestionNumber": 102,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "editorial_review_required",
+        "application"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q103",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "A visitor asks “Wo ho te sɛn?” What is the visitor asking?",
+      "options": [
+        "How you are",
+        "Where you live",
+        "What you are eating",
+        "When you are leaving"
+      ],
+      "correctIndex": 0,
+      "explanation": "The phrase asks how someone is.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "Giga3 AI original Asante Twi practice set — batch 4",
+      "sourceQuestionNumber": 103,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "editorial_review_required",
+        "application"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Newly authored practice item; requires review by a competent Asante Twi language educator before approval.",
+      "publicationStatus": "published_practice"
     }
   ]
 }
