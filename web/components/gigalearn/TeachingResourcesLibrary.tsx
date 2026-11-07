@@ -14,7 +14,7 @@ const SUBJECTS = [
   "Music and Performing Arts", "English Language", "Social Studies",
 ];
 const CLASSES = ["JHS 1", "JHS 2", "JHS 3", "SHS 1", "SHS 2", "SHS 3"];
-const CATEGORIES = ["Laboratory Equipment", "Teaching Aid", "Practical Materials", "Workshop Tools", "Field Equipment", "Art Materials", "Digital Tools", "Home Economics Equipment"];
+const CATEGORIES = ["Laboratory Equipment", "Laboratory Set-ups", "Laboratory Safety", "Laboratory Symbols", "Human Biology", "Teaching Aid", "Practical Materials", "Workshop Tools", "Field Equipment", "Art Materials", "Digital Tools", "Home Economics Equipment"];
 
 type Resource = {
   _id: string; slug: string; title: string; summary: string; subject: string;
@@ -67,6 +67,7 @@ export function TeachingResourcesLibrary() {
   const admin = useQuery(api.adminAuth.isCurrentUserPlatformAdmin, sessionToken ? { sessionToken } : "skip");
   const createResource = useMutation(api.teachingResources.createResource);
   const seedStarter = useMutation(api.teachingResources.seedStarterResources);
+  const seedScienceAids = useMutation(api.teachingResources.seedScienceLearningAids);
   const listAdmin = useQuery(api.teachingResources.listAdminResources, sessionToken && admin?.isAdmin ? { sessionToken } : "skip");
   const setResourceStatus = useMutation(api.teachingResources.updateResourceStatus);
   const createUploadUrl = useMutation(api.teachingResources.createUploadUrl);
@@ -119,7 +120,8 @@ export function TeachingResourcesLibrary() {
       {admin?.isAdmin && <details className="rounded-2xl border border-amber-300 bg-amber-50 p-4"><summary className="cursor-pointer list-none font-extrabold text-amber-950"><span className="inline-flex items-center gap-2">⚙️ Manage Resources <span className="text-xs font-semibold text-amber-800">(administrator only)</span></span><p className="mt-1 text-xs font-normal text-amber-900">Add, upload and review learning materials. Open only when you need to manage the library.</p></summary><div className="mt-4 border-t border-amber-200 pt-4">
         <h2 className="font-extrabold text-amber-950">Administrator · Add a resource</h2>
         <button type="button" disabled={busy || !sessionToken} onClick={async () => {setBusy(true);try {const result=await seedStarter({sessionToken:sessionToken!});setAdminMessage(result.message);}catch(e){setAdminMessage(e instanceof Error?e.message:"Could not load starter resources.");}finally{setBusy(false);}}} className="mt-3 rounded-lg border border-amber-700 px-3 py-2 text-xs font-bold text-amber-950">Load four starter equipment guides</button>
-        <p className="mt-1 text-xs text-amber-900">The four starter guides are published as subscriber resources. New resources created below are saved as drafts until reviewed.</p>
+        <button type="button" disabled={busy || !sessionToken} onClick={async () => {setBusy(true);try {const result=await seedScienceAids({sessionToken:sessionToken!});setAdminMessage(result.message);}catch(e){setAdminMessage(e instanceof Error?e.message:"Could not load science learning aids.");}finally{setBusy(false);}}} className="mt-3 ml-2 rounded-lg bg-violet-800 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">Publish 16 Science Learning Aids</button>
+        <p className="mt-1 text-xs text-amber-900">The four starter guides are published as subscriber resources. The Science Learning Aids button publishes 16 separate, searchable JHS/SHS science records; attach the matching image to each record in the review queue. New resources created below are saved as drafts until reviewed.</p>
         <form className="mt-3 grid gap-2 sm:grid-cols-2" onSubmit={async e => {
           e.preventDefault(); if (!sessionToken) return;
           setBusy(true); setAdminMessage("");
