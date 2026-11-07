@@ -15,6 +15,12 @@ describe("GigaLearn teaching materials library", () => {
     expect(practice).toContain("Teaching Materials & Practical Resources");
     expect(practice).toContain("examPracticeHref");
     expect(practice).toContain("Teacher Promotion");
+    const examSelection = practice.indexOf('aria-labelledby="exam-select-title"');
+    const practiceStart = practice.indexOf('data-testid="start-practice-test"');
+    const materialsPreview = practice.indexOf('aria-labelledby="featured-resources-title"');
+    expect(examSelection).toBeGreaterThanOrEqual(0);
+    expect(practiceStart).toBeGreaterThan(examSelection);
+    expect(materialsPreview).toBeGreaterThan(practiceStart);
   });
 
   it("requires platform administrator authentication for publishing and uploads", () => {
