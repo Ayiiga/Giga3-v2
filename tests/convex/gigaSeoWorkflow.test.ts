@@ -180,9 +180,15 @@ describe("GigaSEO Convex workflow", () => {
       adminKey: "giga-seo-test-admin",
       planId,
     });
-    expect(generated.qualityIssues).toContain(
+    expect(generated.qualityIssues).not.toContain(
       "Add a substantive Giga3 AI section explaining relevant platform value and a contextual call to action linking to https://www.giga3ai.com/ before editorial approval."
     );
+    const savedPlans = await t.query(api.gigaSeo.listContentPlans, {
+      adminKey: "giga-seo-test-admin",
+      limit: 10,
+    });
+    expect(savedPlans[0].draftContent).toContain("## How Giga3 AI Relates to teaching digital skills African communities");
+    expect(savedPlans[0].draftContent).toContain("[Giga3 AI](https://www.giga3ai.com/)");
   });
 
   it("rejects approval when required Giga3 AI brand integration is missing", async () => {
