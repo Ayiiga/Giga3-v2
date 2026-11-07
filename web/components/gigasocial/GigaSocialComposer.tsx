@@ -301,7 +301,9 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         try {
           const durationSec = await getVideoDuration(initialMedia.video);
           if (cancelled) return;
-          if (needsVideoTrim(durationSec)) {
+          if (shouldOfferEpisodeSplit(initialMedia.video.size, durationSec)) {
+            openEpisodeSplitDraft({ file: initialMedia.video, durationSec, reason: "oversized" });
+          } else if (needsVideoTrim(durationSec)) {
             clearVideoTrimDraft();
             setVideoTrimDraft({
               file: initialMedia.video,
