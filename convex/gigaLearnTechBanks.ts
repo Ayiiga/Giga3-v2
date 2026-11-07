@@ -314,8 +314,10 @@ export const startTechPracticeSession = mutation({
     // pending-review items with explicitly provisional, non-scored feedback.
     // Do not size the session from approved-only counts; promotion banks are
     // awaiting human verification and would otherwise appear empty.
+    const selectedTopicId = args.topicId?.trim() || undefined;
     const bankSize = getTechBankQuestions(slug, {
       approvedOnly: true,
+      topicId: selectedTopicId,
       freeTierOnly: !premiumAccess,
       questionType,
     }).length;
@@ -352,7 +354,9 @@ export const startTechPracticeSession = mutation({
     let questionIds: string[];
     let journeyStage: number | null = null;
     let journeyQuestionLimit: number | null = null;
-    const topicKey = "all";
+    // Keep progressive journeys separate for each selected BECE subject.
+    // A learner selecting Asante Twi must never resume a mixed-subject stage.
+    const topicKey = selectedTopicId ?? "all";
     const journeyKey = `${slug}:${topicKey}`;
     if (progressiveFreeJourney) {
       if (!user) throw new Error("Learner account not found.");
@@ -365,7 +369,9 @@ export const startTechPracticeSession = mutation({
       const completed = new Set(current.completedQuestionIds);
       const candidates = getTechBankQuestions(slug, {
         approvedOnly: true,
+        topicId: selectedTopicId,
         freeTierOnly: true,
+        questionType,
       }).filter((q) => !completed.has(q.questionId));
       const remainingAllowance = Math.max(
         0,
@@ -788,7 +794,7 @@ async function finalizeSession(
       .first();
     if (learner) {
       const journey = parseFreeExamJourney(learner.examPracticeJourneyJson);
-      const key = `${session.courseSlug}:all`;
+      const key = `${session.courseSlug}:${session.topicId?.trim() || "all"}`;
       const current = journey[key];
       const sessionIdsMatch = Boolean(
         current &&

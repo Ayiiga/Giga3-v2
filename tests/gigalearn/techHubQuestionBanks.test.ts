@@ -263,6 +263,21 @@ describe("Technology Learning Hub question banks", () => {
     }
   });
 
+  it("keeps progressive BECE free-practice journeys isolated by selected subject", () => {
+    const convex = read("convex/gigaLearnTechBanks.ts");
+    const startBlock = convex.slice(
+      convex.indexOf("export const startTechPracticeSession"),
+      convex.indexOf("export const getTechPracticeSession")
+    );
+    expect(startBlock).toContain("const selectedTopicId = args.topicId?.trim() || undefined;");
+    expect(startBlock).toContain("topicId: selectedTopicId,");
+    expect(startBlock).toContain("const topicKey = selectedTopicId ?? \"all\";");
+    expect(startBlock).toContain("const journeyKey = `${slug}:${topicKey}`;");
+    expect(startBlock).toContain("const candidates = getTechBankQuestions(slug, {");
+    expect(startBlock).toContain("}).filter((q) => !completed.has(q.questionId));");
+    expect(startBlock).toContain("questionIds = selectTechQuestionIds({");
+  });
+
   it("allows exam packs up to 500 while tech hub stays at 50", () => {
     const examIds = selectTechQuestionIds({
       courseSlug: "exam-bece-prep",
