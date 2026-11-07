@@ -3,7 +3,7 @@ import {
   buildGhanaNewsSearchQuery,
   buildResearchSearchQuery,
   classifyInformationRequest,
-  detectFactCheckIntent,
+  detectFactCheckIntent,\n  detectStartupFundingIntent,
   detectGhanaNewsIntent,
   detectCurrentEventsIntent,
   detectNewsRetrievalIntent,
@@ -227,7 +227,34 @@ describe("research capability routing", () => {
     ).toBe("ghana_news");
   });
 
-  it("enables live web when the user pastes a public URL", () => {
+
+  it("routes startup funding requests to dedicated live funding intelligence", () => {
+    const query = "Monitor funding for Giga3 AI";
+    expect(detectStartupFundingIntent(query)).toBe(true);
+    const capability = resolveResearchCapability({ query, liveWebEnabled: true });
+    expect(capability).toBe("startup_funding");
+    expect(queryNeedsLiveWeb({ query, capability })).toBe(true);
+    expect(shouldRunLiveWebResearch(capability)).toBe(true);
+    expect(buildResearchSearchQuery(query, capability)).toContain("startup funding opportunities");
+    expect(buildResearchSearchQuery(query, capability)).toContain("Giga3 AI");
+    const prompt = researchSystemPromptAddon(capability);
+    expect(prompt).toContain("funding-seeking subject");
+    expect(prompt).toContain("not as a funding-monitoring product");
+    expect(prompt).toContain("Never invent funding rounds");
+    expect(prompt).toContain("not continuous monitoring");
+  });
+
+  it("classifies grants, accelerators and competitions as startup funding research", () => {
+    for (const query of [
+      "Find grants for my education startup",
+      "Which accelerators can fund this AI company?",
+      "Show startup competitions with open applications",
+    ]) {
+      expect(resolveResearchCapability({ query, liveWebEnabled: true })).toBe("startup_funding");
+      expect(queryNeedsLiveWeb({ query, capability: "startup_funding" })).toBe(true);
+    }
+  });
+\n  it("enables live web when the user pastes a public URL", () => {
     const query = "Summarize https://example.com/article";
     expect(queryContainsPublicUrl(query)).toBe(true);
     expect(queryNeedsLiveWeb({ query, capability: "general" })).toBe(true);
