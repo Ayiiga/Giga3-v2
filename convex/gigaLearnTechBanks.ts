@@ -223,8 +223,8 @@ export const startTechPracticeSession = mutation({
     topicId: v.optional(v.string()),
     count: v.optional(v.number()),
     timeLimitMinutes: v.optional(v.number()),
-    /** Optional: "mcq" | "true_false" — type-specific practice when the bank has that format. */
-    questionType: v.optional(v.union(v.literal("mcq"), v.literal("true_false"))),
+    /** Optional: "mcq" | "true_false" | "structured" — type-specific practice when the bank has that format. */
+    questionType: v.optional(v.union(v.literal("mcq"), v.literal("true_false"), v.literal("structured"))),
   },
   handler: async (ctx, args) => {
     const email = await requireSession(args.sessionToken, ctx);
