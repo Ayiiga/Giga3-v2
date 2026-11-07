@@ -839,6 +839,8 @@ export default defineSchema({
         v.literal("rejected")
       )
     ),
+    legalFullName: v.optional(v.string()),
+    verificationEmail: v.optional(v.string()),
     nationalIdNumber: v.optional(v.string()),
     idDocumentStorageId: v.optional(v.id("_storage")),
     idDocumentFileName: v.optional(v.string()),

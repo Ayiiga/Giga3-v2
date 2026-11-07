@@ -11,6 +11,7 @@ import type { SocialPost } from "@/lib/gigasocial/types";
 import { cn } from "@/lib/utils";
 import { Music2, Pause, Play, Volume2, VolumeX } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { GigaSocialMediaLightbox } from "@/components/gigasocial/GigaSocialMediaLightbox";
 import {
   StoriesOfflineBadge,
@@ -707,30 +708,44 @@ export const GigaSocialPendingMediaPreview = memo(function GigaSocialPendingMedi
   compact = false,
 }: PendingMediaPreviewProps) {
   const imageFilterStyle = { filter: getCameraFilterCss(imageFilterId) };
+  const [videoPreviewOpen, setVideoPreviewOpen] = useState(false);
+  useEffect(() => {
+    setVideoPreviewOpen(false);
+  }, [video?.previewUrl]);
   if (!images.length && !video && !audio) return null;
 
-  const videoMax = compact ? "max-h-36" : "max-h-64";
   const imageMax = compact ? "aspect-square max-h-28" : "aspect-[4/5] max-h-44";
 
   return (
+    <>
     <div className={cn(compact ? "mt-2 space-y-1.5" : "mt-3 space-y-2")}>
       {video ? (
         <div className="relative overflow-hidden rounded-xl border border-border bg-black">
-          <video
-            key={video.previewUrl}
-            src={video.previewUrl}
-            poster={video.thumbnailUrl}
-            controls
-            playsInline
-            preload="metadata"
-            muted
-            className={cn("w-full object-contain", videoMax)}
-            aria-label={`Preview ${video.name}`}
-            onError={(event) => {
-              const element = event.currentTarget;
-              element.pause();
-            }}
-          />
+          <button
+            type="button"
+            onClick={() => setVideoPreviewOpen(true)}
+            className="relative flex min-h-32 w-full items-center justify-center bg-black text-white"
+            aria-label={`Play preview of ${video.name}`}
+          >
+            {video.thumbnailUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={video.thumbnailUrl}
+                alt=""
+                className="max-h-40 w-full object-contain"
+                decoding="async"
+              />
+            ) : (
+              <span className="flex h-32 w-full items-center justify-center bg-zinc-900">
+                <Play className="h-10 w-10" aria-hidden />
+              </span>
+            )}
+            <span className="absolute inset-0 flex items-center justify-center bg-black/10">
+              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white/90 text-black shadow-lg">
+                <Play className="h-7 w-7 fill-current" aria-hidden />
+              </span>
+            </span>
+          </button>
           <div className="flex items-center justify-between gap-2 px-3 py-1.5 text-xs text-muted">
             <span className="truncate">{video.name}</span>
             <span>{Math.round(video.durationSec)}s</span>
@@ -790,5 +805,43 @@ export const GigaSocialPendingMediaPreview = memo(function GigaSocialPendingMedi
         </div>
       ) : null}
     </div>
+    {video && videoPreviewOpen && typeof document !== "undefined"
+      ? createPortal(
+          <div
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-3"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Video preview: ${video.name}`}
+            onClick={() => setVideoPreviewOpen(false)}
+          >
+            <div className="relative flex max-h-full w-full max-w-3xl flex-col items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setVideoPreviewOpen(false)}
+                className="self-end rounded-full bg-white/15 px-4 py-2 text-sm font-medium text-white"
+                aria-label="Close video preview"
+              >
+                Close
+              </button>
+              <video
+                key={video.previewUrl}
+                src={video.previewUrl}
+                controls
+                playsInline
+                autoPlay
+                preload="metadata"
+                muted
+                className="max-h-[78dvh] w-full rounded-lg bg-black object-contain"
+                aria-label={`Preview ${video.name}`}
+                onClick={(event) => event.stopPropagation()}
+                onError={(event) => event.currentTarget.pause()}
+              />
+              <p className="max-w-full truncate text-xs text-white/70">{video.name}</p>
+            </div>
+          </div>,
+          document.body
+        )
+      : null}
+    </>
   );
 });

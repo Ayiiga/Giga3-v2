@@ -8,7 +8,10 @@ describe("GigaSocial composer compactness", () => {
       resolve(__dirname, "../../web/components/gigasocial/GigaSocialComposerSheet.tsx"),
       "utf8"
     );
-    expect(sheet).toContain("85svh");
+    expect(sheet).toContain("85dvh");
+    expect(sheet).toContain("min-h-0");
+    expect(sheet).toContain("overflow-hidden");
+    expect(sheet).toContain("safe-area-inset-bottom");
     expect(sheet).toContain("compact");
     expect(sheet).not.toContain("92dvh");
   });

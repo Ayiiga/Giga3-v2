@@ -46,10 +46,14 @@ describe("creatorVerificationPolicy", () => {
     expect(result.ok).toBe(false);
   });
 
-  it("submitCreatorVerification auto-approves on success", () => {
+  it("submitCreatorVerification keeps format checks pending for human identity review", () => {
     const source = readFileSync(resolve(__dirname, "../../convex/creatorProfiles.ts"), "utf8");
-    expect(source).toContain('verificationStatus: "approved"');
+    expect(source).toContain('verificationStatus: "pending"');
     expect(source).toContain("evaluateCreatorVerification");
-    expect(source).not.toContain("Our team will review your national ID");
+    expect(source).toContain("legalFullName");
+    expect(source).toContain("verificationEmail: email");
+    expect(source).toContain("idDocumentMeta.contentType");
+    expect(source).toContain("idDocumentMeta.size");
+    expect(source).toContain("manual review");
   });
 });

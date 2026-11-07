@@ -117,6 +117,7 @@ function MarketplaceSellInner() {
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
   const [productFile, setProductFile] = useState<File | null>(null);
   const [publishing, setPublishing] = useState(false);
+  const [legalFullName, setLegalFullName] = useState("");
   const [nationalIdNumber, setNationalIdNumber] = useState("");
   const [idDocumentFile, setIdDocumentFile] = useState<File | null>(null);
   const [coordinates, setCoordinates] = useState<CapturedCoordinates | null>(null);
@@ -342,6 +343,10 @@ function MarketplaceSellInner() {
 
   async function handleSubmitVerification() {
     setError(null);
+    if (legalFullName.trim().length < 3) {
+      setError("Enter your full legal name.");
+      return;
+    }
     if (!nationalIdNumber.trim()) {
       setError("Enter your national ID number.");
       return;
@@ -360,6 +365,7 @@ function MarketplaceSellInner() {
       const storageId = await uploadIdDocument(idDocumentFile);
       const result = await submitCreatorVerification({
         sessionToken,
+        legalFullName,
         nationalIdNumber,
         idDocumentStorageId: storageId,
         idDocumentFileName: idDocumentFile.name,
@@ -392,7 +398,7 @@ function MarketplaceSellInner() {
                 Sell digital products
               </h1>
               <p className="mt-2 text-sm text-emerald-100/90">
-                Verify once, upload a PDF, set a price in GHS — buyers pay through Paystack and
+                Complete creator identity review, upload a PDF, set a price in GHS — buyers pay through Paystack and
                 download from their library.
               </p>
               <p className="mt-2 text-xs text-emerald-200/70">{formatCurrentDateTime()}</p>
@@ -603,7 +609,7 @@ function MarketplaceSellInner() {
               : verificationStatus === "rejected"
                 ? "Needs resubmission"
                 : verificationStatus === "pending"
-                  ? "Incomplete — resubmit required"
+                  ? "Under review"
                   : "Not started"}
             {profile?.verificationSubmittedAt
               ? ` · last attempt ${formatTimestampDateTime(profile.verificationSubmittedAt)}`
@@ -622,13 +628,10 @@ function MarketplaceSellInner() {
 
           {verificationStatus === "pending" && (
             <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950">
-              Verification is incomplete. Submit your national ID, document photo, and Ghana GPS
-              below for automatic approval — listings stay unpublished until that succeeds. If
-              automatic checks keep failing, email{" "}
+              Your identity submission is awaiting manual review. Your signed-in account email is captured from your authenticated session; document format and GPS checks do not prove identity. Listings remain restricted until an authorized reviewer approves your application. For help, email{" "}
               <a className="font-semibold underline" href="mailto:support@giga3ai.com">
                 support@giga3ai.com
-              </a>{" "}
-              for help. We never mark creators verified without a successful server-side check.
+              </a>.
             </p>
           )}
 
@@ -636,6 +639,11 @@ function MarketplaceSellInner() {
             verificationStatus === "rejected" ||
             verificationStatus === "pending") && (
             <div className="mt-4 grid gap-3">
+              <label className="grid gap-1 text-sm font-medium">
+                Full legal name
+                <input value={legalFullName} onChange={(e) => setLegalFullName(e.target.value)} placeholder="Name as shown on your ID" className="min-h-11 rounded-xl border px-4 py-3" autoComplete="name" maxLength={120} />
+              </label>
+              <p className="text-sm text-muted">Signed-in account email: {profile?.userId ?? "Loading account email…"} (captured from your authenticated session)</p>
               <input
                 value={nationalIdNumber}
                 onChange={(e) => setNationalIdNumber(e.target.value)}
@@ -681,7 +689,7 @@ function MarketplaceSellInner() {
                 onClick={handleSubmitVerification}
                 disabled={submittingVerification}
               >
-                {submittingVerification ? "Verifying…" : "Verify automatically"}
+                {submittingVerification ? "Submitting…" : "Submit for identity review"}
               </Button>
             </div>
           )}
