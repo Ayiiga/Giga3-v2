@@ -4,7 +4,7 @@ import { formatVideoTime, trimVideoFile, type VideoTrimRange } from "@/lib/gigas
 export const SOCIAL_EPISODE_SPLIT_COUNT = 3;
 /** Prefer episode split when the file is oversized and long enough to cut into parts. */
 export const SOCIAL_EPISODE_SPLIT_MIN_DURATION_SEC = 45;
-export const SOCIAL_EPISODE_SPLIT_MAX_COUNT = 24;
+export const SOCIAL_EPISODE_SPLIT_MAX_COUNT = 100;
 
 /** Choose enough parts to keep each episode within both duration and upload-size limits. */
 export function getRecommendedEpisodeCount(
