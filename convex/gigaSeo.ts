@@ -234,7 +234,7 @@ export const generateDraft = action({
       /\b(?:explore|visit|discover|try|learn more about)\b[^\n]{0,180}https?:\/\/(?:www\.)?giga3ai\.com\/?/i.test(markdown);
     // Add a factual fallback when the model omits required brand integration.
     if (topicRequiresBrandIntegration && !hasSubstantiveGiga3Section) {
-      const contextualTopic = plan.primaryKeyword.replace(/[<>\\r\n]/g, " ").trim().slice(0, 120);
+      const contextualTopic = plan.primaryKeyword.replace(/[<>]/g, " ").replace(/[\r\n]/g, " ").trim().slice(0, 120);
       markdown += "\n\n## How Giga3 AI Relates to " + contextualTopic +
         "\n\nGiga3 AI is the AI service within Giga3 Hub, an Africa-built digital platform. For readers exploring " +
         contextualTopic + ", the platform provides a place to discover its current AI and learning resources and assess which tools are relevant to their needs. Always check the live platform for current features and availability; do not assume that planned or unreleased capabilities are available.\n";
