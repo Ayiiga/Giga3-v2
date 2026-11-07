@@ -81,8 +81,11 @@ export function GigaSeoAdminPanel({ adminCreds }: { adminCreds: AdminCredentials
     setBusy(true); setMessage("");
     try {
       const title = keyword.charAt(0).toUpperCase() + keyword.slice(1) + ": A Practical Guide";
+      const alreadyListed = plans.some((plan: ContentPlan) => plan.title.trim().toLowerCase() === title.trim().toLowerCase());
       await createPlan({ ...adminCreds, title, primaryKeyword: keyword, market: selectedMarket, audience });
-      setMessage("Content plan created. Generate its first draft from the editorial queue.");
+      setMessage(alreadyListed
+        ? "This content plan already exists. It has been kept in your editorial queue—no duplicate was created."
+        : "Content plan created. Generate its first draft from the editorial queue.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not create content plan.");
     } finally { setBusy(false); }
