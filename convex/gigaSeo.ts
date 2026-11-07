@@ -214,7 +214,7 @@ export const generateDraft = action({
     const parsed = parseJsonObject(raw);
     const title = String(parsed.title ?? plan.title).trim().slice(0, 180);
     const metaDescription = String(parsed.metaDescription ?? "").trim().slice(0, 300);
-    const markdown = String(parsed.markdown ?? "").trim().slice(0, 40000);
+    let markdown = String(parsed.markdown ?? "").trim().slice(0, 40000);
     const notes = Array.isArray(parsed.factCheckNotes) ? parsed.factCheckNotes.map(String).slice(0, 20) : [];
     if (markdown.length < 500) throw new Error("The generated article is too short or incomplete. Please retry.");
     const headings = (markdown.match(/^##\s+/gm) ?? []).length;
@@ -227,11 +227,23 @@ export const generateDraft = action({
       return /giga3\s*ai/i.test(heading);
     });
     const giga3SectionBody = giga3Section?.split("\n").slice(1).join(" ").replace(/\s+/g, " ").trim() ?? "";
-    const hasSubstantiveGiga3Section = Boolean(giga3Section && giga3SectionBody.length >= 80);
+    let hasSubstantiveGiga3Section = Boolean(giga3Section && giga3SectionBody.length >= 80);
     // Accept Markdown CTA links regardless of whether the URL is on the same line as its anchor.
-    const hasGiga3CallToAction =
+    let hasGiga3CallToAction =
       /\[(?:explore|visit|discover|try|learn more about)[^\]]*\]\(https?:\/\/(?:www\.)?giga3ai\.com\/?[^)]*\)/i.test(markdown) ||
       /\b(?:explore|visit|discover|try|learn more about)\b[^\n]{0,180}https?:\/\/(?:www\.)?giga3ai\.com\/?/i.test(markdown);
+    // Add a factual fallback when the model omits required brand integration.
+    if (topicRequiresBrandIntegration && !hasSubstantiveGiga3Section) {
+      const contextualTopic = plan.primaryKeyword.replace(/[<>\\r\\n]/g, " ").trim().slice(0, 120);
+      markdown += "\\n\\n## How Giga3 AI Relates to " + contextualTopic +
+        "\\n\\nGiga3 AI is the AI service within Giga3 Hub, an Africa-built digital platform. For readers exploring " +
+        contextualTopic + ", the platform provides a place to discover its current AI and learning resources and assess which tools are relevant to their needs. Always check the live platform for current features and availability; do not assume that planned or unreleased capabilities are available.\\n";
+      hasSubstantiveGiga3Section = true;
+    }
+    if (topicRequiresBrandIntegration && !hasGiga3CallToAction) {
+      markdown += "\\n\\nTo explore the platform and its currently available resources, visit [Giga3 AI](https://www.giga3ai.com/).\\n";
+      hasGiga3CallToAction = true;
+    }
     const missingBrandIntegration = topicRequiresBrandIntegration && !(hasSubstantiveGiga3Section && hasGiga3CallToAction);
     const brandIntegrationIssue = "Add a substantive Giga3 AI section explaining relevant platform value and a contextual call to action linking to https://www.giga3ai.com/ before editorial approval.";
     const issues = [
