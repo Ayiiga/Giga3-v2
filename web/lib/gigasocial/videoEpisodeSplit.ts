@@ -6,17 +6,16 @@ export const SOCIAL_EPISODE_SPLIT_COUNT = 3;
 export const SOCIAL_EPISODE_SPLIT_MIN_DURATION_SEC = 45;
 export const SOCIAL_EPISODE_SPLIT_MAX_COUNT = 100;
 
-/** Choose enough parts to keep each episode within both duration and upload-size limits. */
+/** Recommend episode splitting only when the source exceeds the 6-minute duration cap. */
 export function getRecommendedEpisodeCount(
   durationSec: number,
-  sizeBytes: number,
-  maxBytes = SOCIAL_MAX_VIDEO_BYTES,
+  _sizeBytes: number,
+  _maxBytes = SOCIAL_MAX_VIDEO_BYTES,
   maxEpisodeSec = SOCIAL_MAX_VIDEO_DURATION_SEC
 ): number {
-  if (!Number.isFinite(durationSec) || durationSec <= 0) return 2;
-  const byDuration = Math.ceil(durationSec / maxEpisodeSec);
-  const bySize = Number.isFinite(sizeBytes) && sizeBytes > 0 ? Math.ceil(sizeBytes / maxBytes) : 1;
-  return Math.max(2, Math.min(SOCIAL_EPISODE_SPLIT_MAX_COUNT, Math.max(byDuration, bySize)));
+  if (!Number.isFinite(durationSec) || durationSec <= SOCIAL_MAX_VIDEO_DURATION_SEC) return 1;
+  const count = Math.ceil(durationSec / maxEpisodeSec);
+  return Math.max(2, Math.min(SOCIAL_EPISODE_SPLIT_MAX_COUNT, count));
 }
 
 export type VideoEpisodePlanItem = {
@@ -114,10 +113,11 @@ export function shouldOfferEpisodeSplit(
   durationSec: number,
   maxBytes = SOCIAL_MAX_VIDEO_BYTES
 ): boolean {
-  if (!Number.isFinite(durationSec) || durationSec < SOCIAL_EPISODE_SPLIT_MIN_DURATION_SEC) {
-    return false;
-  }
-  return durationSec > SOCIAL_MAX_VIDEO_DURATION_SEC || isVideoOverSizeLimit(sizeBytes, maxBytes);
+  // File size alone must never split a short video into episodes.
+  // Oversized short clips follow the normal size-limit handling instead.
+  void sizeBytes;
+  void maxBytes;
+  return Number.isFinite(durationSec) && durationSec > SOCIAL_MAX_VIDEO_DURATION_SEC;
 }
 
 export function canOptionalEpisodeSplit(durationSec: number): boolean {
