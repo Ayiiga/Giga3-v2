@@ -171,12 +171,12 @@ describe("Technology Learning Hub question banks", () => {
     expect(ad2Meta?.approvedQuestionCount).toBe(0);
 
     const bece = getTechBankQuestions("exam-bece-prep");
-    expect(bece.length).toBe(431);
+    expect(bece.length).toBe(461);
     const asanteTwi = getTechBankQuestions("exam-bece-prep", { topicId: "ghanaian-language-culture" });
-    expect(asanteTwi).toHaveLength(12);
+    expect(asanteTwi).toHaveLength(42);
     expect(asanteTwi.every((q) => q.reviewStatus === "pending_review")).toBe(true);
     expect(asanteTwi.every((q) => q.sourceType === "original_practice" && q.verificationStatus === "awaiting_verification")).toBe(true);
-    expect(getTechBankQuestions("exam-bece-prep", { approvedOnly: false, topicId: "ghanaian-language-culture" })).toHaveLength(12);
+    expect(getTechBankQuestions("exam-bece-prep", { approvedOnly: false, topicId: "ghanaian-language-culture" })).toHaveLength(42);
     expect(getTechCourseMeta("exam-bece-prep")?.awaitingMaterials).toBe(false);
     expect(new Set(bece.map((q) => q.topicId)).size).toBe(10);
 
