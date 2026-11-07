@@ -3,7 +3,8 @@ import {
   buildGhanaNewsSearchQuery,
   buildResearchSearchQuery,
   classifyInformationRequest,
-  detectFactCheckIntent,\n  detectStartupFundingIntent,
+  detectFactCheckIntent,
+  detectStartupFundingIntent,
   detectGhanaNewsIntent,
   detectCurrentEventsIntent,
   detectNewsRetrievalIntent,
@@ -227,7 +228,6 @@ describe("research capability routing", () => {
     ).toBe("ghana_news");
   });
 
-
   it("routes startup funding requests to dedicated live funding intelligence", () => {
     const query = "Monitor funding for Giga3 AI";
     expect(detectStartupFundingIntent(query)).toBe(true);
@@ -254,7 +254,7 @@ describe("research capability routing", () => {
       expect(queryNeedsLiveWeb({ query, capability: "startup_funding" })).toBe(true);
     }
   });
-\n  it("enables live web when the user pastes a public URL", () => {
+  it("enables live web when the user pastes a public URL", () => {
     const query = "Summarize https://example.com/article";
     expect(queryContainsPublicUrl(query)).toBe(true);
     expect(queryNeedsLiveWeb({ query, capability: "general" })).toBe(true);
