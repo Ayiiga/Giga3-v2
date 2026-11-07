@@ -18,7 +18,7 @@ const CATEGORIES = ["Laboratory Equipment", "Laboratory Set-ups", "Laboratory Sa
 
 type Resource = {
   _id: string; slug: string; title: string; summary: string; subject: string;
-  levelBand: "jhs" | "shs"; classes: string[]; topic: string; category: string;
+  levelBand: "jhs" | "shs" | "both"; classes: string[]; topic: string; category: string;
   activity: string; access: "free" | "subscriber"; previewText?: string | null;
   videoUrl?: string | null;
 };
