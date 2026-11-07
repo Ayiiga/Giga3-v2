@@ -234,7 +234,9 @@ const STARTUP_FUNDING_INTENT_RE = /\b(funding|fundraise|fundraising|grant|grants
 
 /** Funding requests are research tasks, not requests for generic funding-monitoring software. */
 export function detectStartupFundingIntent(query: string): boolean {
-  return STARTUP_FUNDING_INTENT_RE.test(query.trim());
+  const q = query.trim();
+  if (!STARTUP_FUNDING_INTENT_RE.test(q)) return false;
+  return /\\b(monitor|track|find|search|look for|identify|apply|eligible|opportunit(?:y|ies)|funding for|grants? for|who funds|funding status|funding rounds|raised funding|funding sources)\\b/i.test(q);
 }
 
 export function detectFactCheckIntent(query: string): boolean {
