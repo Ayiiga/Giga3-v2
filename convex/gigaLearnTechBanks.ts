@@ -794,7 +794,7 @@ async function finalizeSession(
       .first();
     if (learner) {
       const journey = parseFreeExamJourney(learner.examPracticeJourneyJson);
-      const key = `${session.courseSlug}:all`;
+      const key = `${session.courseSlug}:${session.topicId?.trim() || "all"}`;
       const current = journey[key];
       const sessionIdsMatch = Boolean(
         current &&
