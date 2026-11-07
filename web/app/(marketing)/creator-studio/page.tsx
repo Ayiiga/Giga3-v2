@@ -18,7 +18,7 @@ export const metadata = publicMetadata({
   path: "/creator-studio",
   title: "Creator Studio — Writing and Social Tools",
   description:
-    "Giga3 AI Creator Studio offers writing assistance, image generation shortcuts, and social media drafting for creators who publish to GigaSocial and beyond.",
+    "Giga3 Hub Creator Studio offers writing assistance, image generation shortcuts, and social media drafting for creators who publish to GigaSocial and beyond.",
 });
 
 export default function CreatorStudioPage() {
@@ -32,7 +32,7 @@ export default function CreatorStudioPage() {
       />
       <ProductSeoHeader
         title="Creator Studio — Draft, design, and plan content"
-        description="Plan posts, generate copy, and jump to Media Studio or GigaEdit when you need visuals or video."
+        description="Plan posts, draft copy, and prepare content for publishing through GigaSocial."
         detail="Sign in to save drafts and use Giga3 AI credits."
         showProductNav={false}
         compact

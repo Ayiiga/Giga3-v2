@@ -20,16 +20,16 @@ const PATH = "/features";
 
 export const metadata = publicMetadata({
   path: PATH,
-  title: "Giga3 AI Features — Every Product in One AI Ecosystem",
+  title: "Giga3 Hub Features — Connected Tools for Learning, Work and Creativity",
   description:
-    "All Giga3 AI products in one place: AI chat and research, GigaLearn, Media Studio, Video AI, GigaEdit, GigaSocial, Marketplace, Enterprise and developer API.",
+    "Explore Giga3 Hub: Giga3 AI chat and research, GigaLearn, Document Studio, Creator Studio, GigaSocial, Marketplace, Enterprise and developer tools.",
 });
 
 const FAQ: FaqItem[] = [
   {
-    question: "Are Giga3 AI products separate apps?",
+    question: "Are Giga3 Hub products separate apps?",
     answer:
-      "No. Every product runs inside the same Giga3 AI account and progressive web app. Your sign-in, credits and subscription are shared, and creations move between tools — for example an image from Media Studio can be edited in GigaEdit and published to GigaSocial.",
+      "No. Giga3 Hub brings its available tools together under one account. Sign-in and applicable credits are shared across supported services. Individual tools may have their own access requirements and usage limits.",
   },
   {
     question: "Do I pay separately for each product?",
@@ -38,7 +38,7 @@ const FAQ: FaqItem[] = [
   {
     question: "Which AI models power Giga3 AI?",
     answer:
-      "Requests are routed server-side through a configured provider chain such as OpenAI, Google Gemini and OpenRouter (via fal.ai), with images from fal.ai, Replicate and Google AI Studio. If one provider is unavailable the next configured provider is tried; your browser never talks to providers directly.",
+      "AI requests are routed through the providers configured for each capability. Provider availability and fallback depend on the service and current configuration; a fallback does not guarantee every request will succeed.",
   },
 ];
 
@@ -48,9 +48,9 @@ export default function FeaturesPage() {
       <JsonLd
         webPage={{
           path: PATH,
-          name: "Giga3 AI Features — Every Product in One AI Ecosystem",
+          name: "Giga3 Hub Features — Connected Tools for Learning, Work and Creativity",
           description:
-            "All Giga3 AI products in one place: AI chat and research, GigaLearn, Media Studio, Video AI, GigaEdit, GigaSocial, Marketplace, Enterprise and developer API.",
+            "Explore Giga3 Hub: Giga3 AI chat and research, GigaLearn, Document Studio, Creator Studio, GigaSocial, Marketplace, Enterprise and developer tools.",
         }}
       />
       <JsonLd
@@ -64,11 +64,11 @@ export default function FeaturesPage() {
         <Container className="section-padding">
           <div className="mx-auto max-w-4xl">
             <header className="max-w-3xl">
-              <h1 className="page-title">Giga3 AI features: one ecosystem, every tool connected</h1>
+              <h1 className="page-title">Giga3 Hub features: connected tools for learning, work and creativity</h1>
               <p className="section-lead mt-4">
-                Giga3 AI is a single account and app that brings AI chat, research, coding help,
-                learning, image and video creation, editing, a creator community and a GHS
-                marketplace together. Each product below is live today and links to its own page.
+                Giga3 Hub brings together Giga3 AI assistance, learning, document creation, creator tools,
+                community, marketplace and organisation services. The catalogue below links to
+                the relevant product pages; availability and access requirements vary by tool.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <ButtonLink href="/chat/login" size="lg">
@@ -117,18 +117,16 @@ export default function FeaturesPage() {
             <section className="mt-14 max-w-3xl space-y-4">
               <ArticleH2>How the pieces fit together</ArticleH2>
               <Prose>
-                Create an image in <ArticleLink href="/media">Media Studio</ArticleLink>, cut it into a
-                clip with captions in <ArticleLink href="/gigaedit">GigaEdit</ArticleLink>, publish it to{" "}
-                <ArticleLink href="/gigasocial">GigaSocial</ArticleLink>, and sell the finished template on
-                the <ArticleLink href="/marketplace">Marketplace</ArticleLink>. Students follow the same path
-                from a <ArticleLink href="/chat">chat</ArticleLink> explanation to{" "}
-                <ArticleLink href="/gigalearn">GigaLearn</ArticleLink> practice, while schools and teams add{" "}
-                <ArticleLink href="/enterprise">workspaces</ArticleLink> and{" "}
-                <ArticleLink href="/automation">automation</ArticleLink> on top.
+                Use <ArticleLink href="/creator-studio">Creator Studio</ArticleLink> to draft content, share supported work through
+                <ArticleLink href="/gigasocial">GigaSocial</ArticleLink>, and explore digital resources on the
+                <ArticleLink href="/marketplace">Marketplace</ArticleLink>. Students can move from an
+                <ArticleLink href="/chat">AI Chat</ArticleLink> explanation to
+                <ArticleLink href="/gigalearn">GigaLearn</ArticleLink> practice, while eligible schools and teams can explore
+                <ArticleLink href="/enterprise">workspaces</ArticleLink> and
+                <ArticleLink href="/automation">automation</ArticleLink>.
               </Prose>
               <Prose>
-                Billing is in Ghanaian cedis through Paystack, with one credit balance shared across
-                chat, research, writing and image tools. See{" "}
+                Billing is presented in Ghanaian cedis through Paystack. Credit usage and eligible services vary by tool. See{" "}
                 <ArticleLink href="/pricing">pricing</ArticleLink> for the current plans.
               </Prose>
             </section>
