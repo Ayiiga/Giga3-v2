@@ -615,7 +615,8 @@ export const saveTechPracticeAnswer = mutation({
         saved: true,
         feedback: {
           correct: false,
-          pendingReview: true,
+          pendingReview: false,
+          selfAssessment: true,
           provisionalMatch: false,
           explanation: "Written response saved. It will not be automatically scored. Submit the session to reveal the self-assessment marking points.",
           correctIndex: null as number | null,
