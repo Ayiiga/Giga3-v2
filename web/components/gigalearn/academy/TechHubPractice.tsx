@@ -488,6 +488,9 @@ function TechHubInner() {
             </p>
           ) : null}
           <p className="text-sm text-slate-600">
+            Written-response items are excluded from the automatic score; use their marking points for self-assessment. They have not been teacher graded.
+          </p>
+          <p className="text-sm text-slate-600">
             {results.maxScore > 0
               ? `Verified score ${results.score}/${results.maxScore}${
                   results.percent != null ? ` · ${results.percent}%` : ""
@@ -534,7 +537,9 @@ function TechHubInner() {
                 </p>
                 <p
                   className={
-                    r.provisional
+                    r.requiresSelfAssessment
+                      ? "mt-1 text-blue-800"
+                      : r.provisional
                       ? "mt-1 text-amber-800"
                       : r.correct
                         ? "mt-1 text-emerald-700"
