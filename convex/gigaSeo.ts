@@ -229,9 +229,9 @@ export const generateDraft = action({
     const giga3SectionBody = giga3Section?.split("\n").slice(1).join(" ").replace(/\s+/g, " ").trim() ?? "";
     const hasSubstantiveGiga3Section = Boolean(giga3Section && giga3SectionBody.length >= 80);
     // Accept Markdown CTA links regardless of whether the URL is on the same line as its anchor.
-    const hasContextualInvitation = /\b(explore|visit|discover|try|learn more about)\b/i.test(markdown);
-    const hasOfficialGiga3Url = /https?:\/\/(?:www\.)?giga3ai\.com\/?/i.test(markdown);
-    const hasGiga3CallToAction = hasContextualInvitation && hasOfficialGiga3Url;
+    const hasGiga3CallToAction =
+      /\[(?:explore|visit|discover|try|learn more about)[^\]]*\]\(https?:\/\/(?:www\.)?giga3ai\.com\/?[^)]*\)/i.test(markdown) ||
+      /\b(?:explore|visit|discover|try|learn more about)\b[^\n]{0,180}https?:\/\/(?:www\.)?giga3ai\.com\/?/i.test(markdown);
     const missingBrandIntegration = topicRequiresBrandIntegration && !(hasSubstantiveGiga3Section && hasGiga3CallToAction);
     const brandIntegrationIssue = "Add a substantive Giga3 AI section explaining relevant platform value and a contextual call to action linking to https://www.giga3ai.com/ before editorial approval.";
     const issues = [
