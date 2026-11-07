@@ -59,8 +59,8 @@ describe("free BECE and WASSCE staged practice", () => {
     const source = readFileSync(resolve(ROOT, "convex/gigaLearnTechBanks.ts"), "utf8");
     expect(source).toContain("const progressiveFreeJourney = isFreeProgressiveExamCourseSlug(slug);");
     expect(source).toContain('const journeyKey = `${slug}:${topicKey}`;');
-    expect(source).toContain('const topicKey = "all";');
-    expect(source).toContain('const key = `${session.courseSlug}:all`;');
+    expect(source).toContain('const topicKey = selectedTopicId ?? "all";');
+    expect(source).toContain('const key = `${session.courseSlug}:${session.topicId?.trim() || "all"}`;');
   });
 });
 
