@@ -34,6 +34,7 @@ import { composePhotoMusicVideo } from "@/lib/gigasocial/photoMusicVideo";
 import { needsVideoTrim, VIDEO_CLIP_LENGTH_OPTIONS_SEC } from "@/lib/gigasocial/videoTrim";
 import {
   canOptionalEpisodeSplit,
+  getRecommendedEpisodeCount,
   SOCIAL_EPISODE_SPLIT_COUNT,
   shouldOfferEpisodeSplit,
 } from "@/lib/gigasocial/videoEpisodeSplit";
@@ -559,12 +560,11 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       });
       setPostType("video");
       setError(null);
+      const episodeCount = getRecommendedEpisodeCount(args.durationSec, args.file.size);
       if (args.reason === "oversized") {
-        setSuccess(
-          `Video is over ${SOCIAL_MAX_VIDEO_MB} MB. Review the ${SOCIAL_EPISODE_SPLIT_COUNT} episode names, then confirm upload.`
-        );
+        setSuccess(`This video will be split into ${episodeCount} episodes based on its duration and file size. Review the episode names, then confirm upload.`);
       } else {
-        setSuccess(`Name your ${SOCIAL_EPISODE_SPLIT_COUNT} episodes, then confirm upload.`);
+        setSuccess(`Name your ${episodeCount} episodes, then confirm upload.`);
       }
     },
     [clearVideoTrimDraft, revokePreview]
@@ -755,7 +755,9 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
             return;
           }
         }
-        if (needsVideoTrim(durationSec)) {
+        if (shouldOfferEpisodeSplit(result.file.size, durationSec)) {
+          openEpisodeSplitDraft({ file: result.file, durationSec, reason: "oversized" });
+        } else if (needsVideoTrim(durationSec)) {
           clearVideoTrimDraft();
           setVideoTrimDraft({
             file: result.file,
@@ -766,12 +768,6 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           setSuccess(
             `This video is ${Math.ceil(durationSec)}s. Shorten it (${VIDEO_CLIP_LENGTH_OPTIONS_SEC.map((sec) => `${sec / 60} min`).join(" / ")}), then post.`
           );
-        } else if (shouldOfferEpisodeSplit(result.file.size, durationSec)) {
-          openEpisodeSplitDraft({
-            file: result.file,
-            durationSec,
-            reason: "oversized",
-          });
         } else if (isSocialVideoOverSizeLimit(result.file)) {
           setError(
             `Video is too large (maximum ${SOCIAL_MAX_VIDEO_MB} MB). Compress it, or use a longer clip so we can split it into ${SOCIAL_EPISODE_SPLIT_COUNT} episodes.`
@@ -1467,7 +1463,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
             })
           }
         >
-          Split into {SOCIAL_EPISODE_SPLIT_COUNT} episodes
+          Split into {getRecommendedEpisodeCount(pendingVideo.durationSec, pendingVideo.file.size)} episodes
         </Button>
       ) : null}
 
