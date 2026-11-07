@@ -40,6 +40,29 @@ export const getAdminOverview = query({
       .order("desc")
       .take(LISTING_SAMPLE);
 
+    const pendingVerificationProfiles = await ctx.db
+      .query("creatorProfiles")
+      .withIndex("by_verification_status", (q) =>
+        q.eq("verificationStatus", "pending")
+      )
+      .take(50);
+    const pendingVerifications = await Promise.all(
+      pendingVerificationProfiles.map(async (profile) => ({
+        _id: profile._id,
+        displayName: profile.displayName,
+        legalFullName: profile.legalFullName ?? profile.displayName,
+        verificationEmail: profile.verificationEmail ?? profile.userId,
+        handle: profile.handle,
+        userId: profile.userId,
+        idDocumentUrl: profile.idDocumentStorageId
+          ? await ctx.storage.getUrl(profile.idDocumentStorageId)
+          : null,
+        verificationSubmittedAt: profile.verificationSubmittedAt ?? null,
+        locationCapturedAt: profile.locationCapturedAt ?? null,
+        idDocumentFileName: profile.idDocumentFileName ?? null,
+      }))
+    );
+
     return {
       revenue: {
         totalRevenueGhs,
@@ -48,25 +71,7 @@ export const getAdminOverview = query({
         successfulCount: successful.length,
         sampleSize: payments.length,
       },
-      pendingVerifications: (
-        await ctx.db
-          .query("creatorProfiles")
-          .withIndex("by_verification_status", (q) =>
-            q.eq("verificationStatus", "pending")
-          )
-          .take(50)
-      ).map((p) => ({
-        _id: p._id,
-        displayName: p.displayName,
-        legalFullName: p.legalFullName ?? p.displayName,
-        verificationEmail: p.verificationEmail ?? p.userId,
-        handle: p.handle,
-        userId: p.userId,
-        idDocumentUrl: p.idDocumentStorageId ? await ctx.storage.getUrl(p.idDocumentStorageId) : null,
-        verificationSubmittedAt: p.verificationSubmittedAt ?? null,
-        locationCapturedAt: p.locationCapturedAt ?? null,
-        idDocumentFileName: p.idDocumentFileName ?? null,
-      })),
+      pendingVerifications,
       pendingPayouts: pendingPayouts.map((p) => ({
         _id: p._id,
         creatorId: p.creatorId,
