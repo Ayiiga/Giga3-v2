@@ -74,7 +74,7 @@ function TechHubInner() {
   const urlCount = Number(params.get("count") || "");
   const urlQType = (params.get("qtype") || "").trim().toLowerCase();
   const initialQuestionType: TechQuestionType | "" =
-    urlQType === "true_false" || urlQType === "mcq" ? urlQType : "";
+    urlQType === "true_false" || urlQType === "mcq" || urlQType === "structured" ? urlQType : "";
   const sessionToken = getSessionToken();
   const course = useMemo(
     () => (courseSlug ? getBuiltinAcademyCourse(courseSlug) : undefined),
@@ -1047,6 +1047,7 @@ function TechHubInner() {
                     { id: "" as const, label: "Mixed (recommended)" },
                     { id: "mcq" as const, label: "Multiple choice" },
                     { id: "true_false" as const, label: "True / False" },
+                    { id: "structured" as const, label: "Structured response" },
                   ]).map((opt) => (
                     <button key={opt.id || "mixed"} type="button" onClick={() => setQuestionType(opt.id)} aria-pressed={questionType === opt.id}
                       className={cn("min-h-11 rounded-xl border px-3 py-2 text-left text-sm font-semibold",
