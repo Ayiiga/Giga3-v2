@@ -90,7 +90,7 @@ describe("Technology Learning Hub question banks", () => {
     expect(report.missingSources[0]?.status).toBe("not_uploaded");
     expect(report.missingSources[0]?.expectedRepoImportPath).toContain("mobile-app.json");
     expect(report.totals.techExtracted).toBe(2000);
-    expect(report.totals.techUniqueApproved).toBe(1092);
+    expect(report.totals.techUniqueApproved).toBe(1055);
     expect(report.totals.aiExtracted).toBe(500);
     expect(report.totals.aiNearDuplicatesRemoved).toBe(227);
     expect(report.totals.aiUniqueApproved).toBe(273);
@@ -163,13 +163,20 @@ describe("Technology Learning Hub question banks", () => {
     const beceMeta = getExamBankMeta("exam-bece-prep");
     const teacherMeta = getExamBankMeta("exam-teacher-promotion");
     const ad2Meta = getExamBankMeta("exam-ad2-study-guide");
-    expect(beceMeta?.approvedQuestionCount).toBe(468);
+    expect(beceMeta?.approvedQuestionCount).toBe(419);
+    expect(beceMeta?.pendingQuestionCount).toBe(12);
+    expect(beceMeta?.topics.find((t) => t.id === "ghanaian-language-culture")?.label).toBe("Asante Twi");
     expect(teacherMeta?.approvedQuestionCount).toBe(238);
     expect(teacherMeta?.pendingQuestionCount).toBe(58);
     expect(ad2Meta?.approvedQuestionCount).toBe(0);
 
     const bece = getTechBankQuestions("exam-bece-prep");
-    expect(bece.length).toBe(468);
+    expect(bece.length).toBe(431);
+    const asanteTwi = getTechBankQuestions("exam-bece-prep", { topicId: "ghanaian-language-culture" });
+    expect(asanteTwi).toHaveLength(12);
+    expect(asanteTwi.every((q) => q.reviewStatus === "pending_review")).toBe(true);
+    expect(asanteTwi.every((q) => q.sourceType === "original_practice" && q.verificationStatus === "awaiting_verification")).toBe(true);
+    expect(getTechBankQuestions("exam-bece-prep", { approvedOnly: false, topicId: "ghanaian-language-culture" })).toHaveLength(12);
     expect(getTechCourseMeta("exam-bece-prep")?.awaitingMaterials).toBe(false);
     expect(new Set(bece.map((q) => q.topicId)).size).toBe(10);
 
