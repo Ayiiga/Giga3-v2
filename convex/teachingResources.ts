@@ -51,7 +51,7 @@ function publicResource(row: any) {
 export const listPublished = query({
   args: {
     search: v.optional(v.string()), subject: v.optional(v.string()),
-    levelBand: v.optional(v.union(v.literal("jhs"), v.literal("shs"))),
+    levelBand: v.optional(v.union(v.literal("jhs"), v.literal("shs"), v.literal("both"))),
     className: v.optional(v.string()), category: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -59,7 +59,7 @@ export const listPublished = query({
       .withIndex("by_status_updated", q => q.eq("status", "published"))
       .order("desc").collect();
     if (args.subject) rows = rows.filter(r => r.subject === args.subject);
-    if (args.levelBand) rows = rows.filter(r => r.levelBand === args.levelBand);
+    if (args.levelBand) rows = rows.filter(r => r.levelBand === args.levelBand || r.levelBand === "both");
     if (args.className) rows = rows.filter(r => r.classes.includes(args.className!));
     if (args.category) rows = rows.filter(r => r.category === args.category);
     const q = args.search?.trim().toLowerCase();
@@ -167,7 +167,7 @@ export const seedScienceLearningAids = mutation({
     if (!isPlatformAdminEmail(email)) throw new Error("Administrator access required.");
     const allClasses = ["JHS 1", "JHS 2", "JHS 3", "SHS 1", "SHS 2", "SHS 3"];
     const make = (slug: string, title: string, topic: string, category: string, summary: string, description: string, components: string[], activity: string, safety: string[] = []) => ({
-      slug, title, subject: "Integrated Science", levelBand: "jhs" as const, classes: allClasses,
+      slug, title, subject: "Integrated Science", levelBand: "both" as const, classes: allClasses,
       topic, category, activity, summary, description, components,
       instructions: ["Study the labelled illustration and identify each part or stage.", "Explain the function of each labelled part in your own words.", "Complete the related class activity and compare answers with a partner."],
       activities: [activity], safety, mistakes: [],
