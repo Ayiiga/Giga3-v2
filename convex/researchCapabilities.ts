@@ -66,7 +66,7 @@ const NEWS_CAPABILITIES = new Set<ResearchCapabilityId>([
 
 const STARTUP_FUNDING_INTENT_RE = /\b(funding|fundraise|fundraising|grant|grants|accelerator|incubator|investor|investment|venture capital|seed capital|startup competition|innovation challenge|pitch competition|non[- ]dilutive|capital raise)\b/i;
 
-/** Funding requests are research tasks, not requests for generic funding-monitoring software. */
+/** Funding requests concern the named startup, not generic monitoring software. */
 export function detectStartupFundingIntent(query: string): boolean {
   return STARTUP_FUNDING_INTENT_RE.test(query.trim());
 }
@@ -357,6 +357,8 @@ export function resolveResearchCapability(args: {
     return "general";
   }
 
+  if (detectStartupFundingIntent(q)) return "startup_funding";
+
   if (detectVerifyImageIntent(args.query, Boolean(args.hasImageAttachment))) {
     return "verify_image";
   }
@@ -415,6 +417,7 @@ export function queryNeedsLiveWeb(args: {
     );
   }
 
+  if (detectStartupFundingIntent(q)) return true;
   if (detectVerifyImageIntent(q, true)) return true;
   if (detectFactCheckIntent(q)) return true;
   if (detectCurrentEventsIntent(q)) return true;
@@ -469,6 +472,9 @@ export function buildResearchSearchQuery(
   capability: ResearchCapabilityId
 ): string {
   const trimmed = query.trim();
+  if (capability === "startup_funding") {
+    return trimmed + " startup funding opportunities grants accelerators incubators startup competitions eligibility application deadlines official application pages investors Ghana Africa international";
+  }
   const ghanaScoped =
     mentionsGhanaPlace(trimmed) || detectGhanaNewsIntent(trimmed);
   if (capability === "ghana_news" || (capability === "africa_news" && ghanaScoped)) {
@@ -516,8 +522,7 @@ export const NEWS_RESPONSE_FORMAT_GUIDANCE = [
   "- If evidence is weak or snippet-only, say so once briefly — do not repeat after every source.",
   "- If evidence is insufficient, say so clearly and briefly — do not pad with general knowledge.",
   "- Do not deflect by telling the user to check other news sites.",
-].join("
-");
+].join("\n");
 
 export function researchSystemPromptAddon(capability: ResearchCapabilityId): string {
   switch (capability) {
@@ -529,8 +534,7 @@ export function researchSystemPromptAddon(capability: ResearchCapabilityId): str
         "Prefer primary/official sources for government, election, and security stories.",
         NEWS_RESPONSE_FORMAT_GUIDANCE,
         "Never present training-data headlines as today's news.",
-      ].join("
-");
+      ].join("\n");
     case "fact_check":
     case "verify_image":
       return [
@@ -541,8 +545,7 @@ export function researchSystemPromptAddon(capability: ResearchCapabilityId): str
         "Do not label TRUE merely because one website says so.",
         "Explain the evidence behind your verdict and cite sources with dates.",
         NEWS_RESPONSE_FORMAT_GUIDANCE,
-      ].join("
-");
+      ].join("\n");
     case "breaking_news":
       return [
         "Mode: Breaking news.",
@@ -550,39 +553,35 @@ export function researchSystemPromptAddon(capability: ResearchCapabilityId): str
         "Label each item: **Verified**, **Developing**, **Unverified**, or **Disputed**.",
         "Do not present old information as breaking news. Never invent developing stories.",
         NEWS_RESPONSE_FORMAT_GUIDANCE,
-      ].join("
-");
+      ].join("\n");
     default:
       if (isNewsCapability(capability)) {
         return [
           "Mode: Current news research.",
           "Search current sources, prefer primary/official sources where appropriate, cross-check important claims.",
           NEWS_RESPONSE_FORMAT_GUIDANCE,
-        ].join("
-");
+        ].join("\n");
       }
       if (capability === "startup_funding") {
         return [
           "Mode: Startup Funding Intelligence.",
-          "Interpret the startup or organisation named by the user as the funding-seeking subject, not as a funding-monitoring product or tool.",
-          "Find actionable funding opportunities for that subject: grants, accelerators, incubators, startup competitions, innovation challenges, fellowships, and suitable investment programmes.",
-          "Prioritise official programme and application pages. For every opportunity provide provider, amount or benefits only when published, eligibility, geography/stage fit, deadline (or explicitly say not published), application status, and direct official application/source link.",
-          "Separate open opportunities, upcoming/rolling opportunities, closed opportunities, and general investor leads. Do not present investor directories or monitoring software as funding opportunities.",
-          "Assess fit only from facts supplied by the user or reliable sources. Mark unknown eligibility details as unknown; do not imply the startup qualifies without evidence.",
-          "Distinguish confirmed funding already received from funding being sought. Never invent funding rounds, investors, awards, application status, amounts, dates, or partnerships.",
-          "Treat a request to monitor as a request for a current search unless an ongoing scheduled monitor is explicitly configured. State that a one-time search is not continuous monitoring.",
-          "For a named startup, search both its exact name and relevant sector/geography funding programmes. Do not assume similarly named organisations are the same entity.",
+          "Interpret the named startup or organisation as the funding-seeking subject, not as a funding-monitoring product or tool.",
+          "Find actionable grants, accelerators, incubators, startup competitions, innovation challenges, fellowships, and suitable investment programmes.",
+          "Prioritise official programme and application pages. For each opportunity provide provider, published amount or benefits, eligibility, geography/stage fit, deadline (or say not published), application status, and direct official application/source link.",
+          "Separate open opportunities, upcoming/rolling opportunities, closed opportunities, and investor leads. Do not present investor directories or monitoring software as funding opportunities.",
+          "Assess fit only from user-provided facts or reliable sources. Mark unknown eligibility details as unknown; do not imply qualification without evidence.",
+          "Distinguish confirmed funding received from funding being sought. Never invent funding rounds, investors, awards, amounts, dates, or partnerships.",
+          "Treat monitor as a current search unless an ongoing scheduled monitor is explicitly configured. A one-time search is not continuous monitoring.",
+          "Search the exact startup name and relevant sector/geography programmes. Do not conflate similarly named organisations.",
           NEWS_RESPONSE_FORMAT_GUIDANCE,
-        ].join("\
-");
+        ].join("\n");
       }
       if (capability === "deep_research") {
         return [
           "Mode: Deep research.",
           "Compare multiple authoritative sources, note conflicts, and cite publication dates.",
           NEWS_RESPONSE_FORMAT_GUIDANCE,
-        ].join("
-");
+        ].join("\n");
       }
       if (capability === "live_web") {
         return [
@@ -593,8 +592,7 @@ export function researchSystemPromptAddon(capability: ResearchCapabilityId): str
           "Never pretend model knowledge is live information.",
           "- Be concise and professional. Lead with a direct answer.",
           "- Do NOT show Confidence scores, Why lines, tier numbers, or retrieval diagnostics.",
-        ].join("
-");
+        ].join("\n");
       }
       return "";
   }
@@ -634,6 +632,7 @@ export const RESEARCH_CAPABILITY_LABELS: Record<ResearchCapabilityId, string> = 
   fact_check: "Fact Check",
   verify_image: "Verify Image",
   deep_research: "Deep Research",
+  startup_funding: "Startup Funding Intelligence",
 };
 
 export function liveSearchUnavailableNewsFallback(capability: ResearchCapabilityId): string {
