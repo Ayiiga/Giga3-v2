@@ -328,7 +328,9 @@ export const startTechPracticeSession = mutation({
       throw new Error(
         questionType === "true_false"
           ? "True/False practice is not yet available for this rank. Multiple-choice items may still be available."
-          : "Multiple-choice practice is not yet available for this selection."
+          : questionType === "structured"
+            ? "Structured-response practice is not yet available for this selection."
+            : "Multiple-choice practice is not yet available for this selection."
       );
     }
     const resolved = resolveExamPracticeSessionCount({
