@@ -40,11 +40,17 @@ export const getMyProfile = query({
       .withIndex("by_user", (q) => q.eq("userId", email))
       .first();
     if (!profile) return null;
+    const {
+      nationalIdNumber,
+      idDocumentStorageId: _idDocumentStorageId,
+      idDocumentFileName: _idDocumentFileName,
+      ...safeProfile
+    } = profile;
     return {
-      ...profile,
+      ...safeProfile,
       verificationStatus: verificationStatusOf(profile),
-      nationalIdMasked: profile.nationalIdNumber
-        ? `••••${profile.nationalIdNumber.slice(-4)}`
+      nationalIdMasked: nationalIdNumber
+        ? `••••${nationalIdNumber.slice(-4)}`
         : null,
     };
   },
