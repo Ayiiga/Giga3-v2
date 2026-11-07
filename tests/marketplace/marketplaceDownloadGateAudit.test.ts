@@ -134,7 +134,7 @@ describe("release audit: Paystack marketplace fulfillment path", () => {
 });
 
 describe("release audit: identity verification UI vs backend", () => {
-  it("submit path auto-approves only after evaluateCreatorVerification succeeds", () => {
+  it("submission captures legal identity and remains pending for admin review", () => {
     const body = sliceExport(creatorSrc, "submitCreatorVerification", 3200);
     expect(body).toContain("evaluateCreatorVerification");
     expect(body).toContain("if (!autoCheck.ok)");
@@ -144,12 +144,20 @@ describe("release audit: identity verification UI vs backend", () => {
     const patchApprovedIdx = body.indexOf("verificationStatus: \"approved\",\n      verified: true");
     expect(failGateIdx).toBeGreaterThan(-1);
     expect(patchApprovedIdx).toBeGreaterThan(failGateIdx);
+    expect(body).toContain("legalFullName");
+    expect(body).toContain("verificationEmail: email");
+    expect(body).toContain("idDocumentMeta.contentType");
+    expect(body).toContain("idDocumentMeta.size");
+    expect(body).toContain("verified: false");
   });
 
   it("sell UI pending/rejected copy offers support path and no fake verified claim", () => {
-    expect(sellSrc).toContain("Incomplete — resubmit required");
+    expect(sellSrc).toContain("Under review");
+    expect(sellSrc).toContain("Full legal name");
+    expect(sellSrc).toContain("profile?.userId");
+    expect(sellSrc).toContain("Submit for identity review");
     expect(sellSrc).toContain("support@giga3ai.com");
-    expect(sellSrc).toContain("never mark creators verified without a successful server-side check");
+    expect(sellSrc).not.toContain("Verify automatically");
     expect(sellSrc).not.toContain("Status: Pending review");
     // Must not show contradictory “pending review” + “failed” together as success
     expect(sellSrc).not.toMatch(/Status:\s*Verified[\s\S]{0,80}Automatic verification did not finish/);
