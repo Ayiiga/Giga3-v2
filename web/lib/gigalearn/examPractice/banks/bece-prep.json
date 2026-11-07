@@ -13651,6 +13651,619 @@
       "verificationStatus": "awaiting_verification",
       "verificationNotes": "Newly authored structured practice item; language, expected response and marking guide require review by a competent Asante Twi language educator.",
       "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q124",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Write a short Asante Twi conversation in which you ask a visitor where they are going and respond politely to their answer.",
+      "options": [],
+      "correctIndex": -1,
+      "explanation": "Structured response — compare your work with the marking points after submission. This item is not automatically scored.",
+      "difficulty": "intermediate",
+      "questionType": "structured",
+      "markingGuide": [
+        "1 mark for a natural opening",
+        "1 mark for a clear question",
+        "1 mark for a relevant answer",
+        "1 mark for polite closing."
+      ],
+      "maxMarks": 4,
+      "sourceDocument": "Giga3 AI original Asante Twi structured-response practice — batch 6",
+      "sourceQuestionNumber": 124,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "structured_response",
+        "editorial_review_required"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original structured practice; an Asante Twi educator must verify language, expected responses and marking points.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q125",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Explain the meaning of “Meda wo ase” and write two situations in which you may use it.",
+      "options": [],
+      "correctIndex": -1,
+      "explanation": "Structured response — compare your work with the marking points after submission. This item is not automatically scored.",
+      "difficulty": "intermediate",
+      "questionType": "structured",
+      "markingGuide": [
+        "1 mark for meaning",
+        "1 mark for each suitable situation."
+      ],
+      "maxMarks": 3,
+      "sourceDocument": "Giga3 AI original Asante Twi structured-response practice — batch 6",
+      "sourceQuestionNumber": 125,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "structured_response",
+        "editorial_review_required"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original structured practice; an Asante Twi educator must verify language, expected responses and marking points.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q126",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Write five Asante Twi sentences about activities you do at home after school.",
+      "options": [],
+      "correctIndex": -1,
+      "explanation": "Structured response — compare your work with the marking points after submission. This item is not automatically scored.",
+      "difficulty": "intermediate",
+      "questionType": "structured",
+      "markingGuide": [
+        "Award 1 mark per relevant, understandable sentence",
+        "check natural word order with educator."
+      ],
+      "maxMarks": 5,
+      "sourceDocument": "Giga3 AI original Asante Twi structured-response practice — batch 6",
+      "sourceQuestionNumber": 126,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "structured_response",
+        "editorial_review_required"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original structured practice; an Asante Twi educator must verify language, expected responses and marking points.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q127",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Translate a short message to a friend inviting them to study with you after school. Write the message in Asante Twi.",
+      "options": [],
+      "correctIndex": -1,
+      "explanation": "Structured response — compare your work with the marking points after submission. This item is not automatically scored.",
+      "difficulty": "intermediate",
+      "questionType": "structured",
+      "markingGuide": [
+        "1 mark for greeting",
+        "1 mark for invitation",
+        "1 mark for time/place",
+        "1 mark for suitable closing."
+      ],
+      "maxMarks": 4,
+      "sourceDocument": "Giga3 AI original Asante Twi structured-response practice — batch 6",
+      "sourceQuestionNumber": 127,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "structured_response",
+        "editorial_review_required"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original structured practice; an Asante Twi educator must verify language, expected responses and marking points.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q128",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Describe the steps involved in buying an item at a market, using six or more Asante Twi sentences.",
+      "options": [],
+      "correctIndex": -1,
+      "explanation": "Structured response — compare your work with the marking points after submission. This item is not automatically scored.",
+      "difficulty": "intermediate",
+      "questionType": "structured",
+      "markingGuide": [
+        "1 mark for introduction",
+        "3 marks for logical steps",
+        "1 mark for polite expressions",
+        "1 mark for clarity."
+      ],
+      "maxMarks": 6,
+      "sourceDocument": "Giga3 AI original Asante Twi structured-response practice — batch 6",
+      "sourceQuestionNumber": 128,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "structured_response",
+        "editorial_review_required"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original structured practice; an Asante Twi educator must verify language, expected responses and marking points.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q129",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Write a paragraph in Asante Twi about your favourite school subject and give two reasons for liking it.",
+      "options": [],
+      "correctIndex": -1,
+      "explanation": "Structured response — compare your work with the marking points after submission. This item is not automatically scored.",
+      "difficulty": "intermediate",
+      "questionType": "structured",
+      "markingGuide": [
+        "1 mark for subject",
+        "2 marks for reasons",
+        "1 mark for organization",
+        "1 mark for understandable language."
+      ],
+      "maxMarks": 5,
+      "sourceDocument": "Giga3 AI original Asante Twi structured-response practice — batch 6",
+      "sourceQuestionNumber": 129,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "structured_response",
+        "editorial_review_required"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original structured practice; an Asante Twi educator must verify language, expected responses and marking points.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q130",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Explain the meaning of the proverb “Obi nnim a, obi kyere” and give a school-based example.",
+      "options": [],
+      "correctIndex": -1,
+      "explanation": "Structured response — compare your work with the marking points after submission. This item is not automatically scored.",
+      "difficulty": "intermediate",
+      "questionType": "structured",
+      "markingGuide": [
+        "2 marks for explaining the idea of learning from others",
+        "1 mark for a relevant example."
+      ],
+      "maxMarks": 3,
+      "sourceDocument": "Giga3 AI original Asante Twi structured-response practice — batch 6",
+      "sourceQuestionNumber": 130,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "structured_response",
+        "editorial_review_required"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original structured practice; an Asante Twi educator must verify language, expected responses and marking points.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q131",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Write four sentences using the pronouns me, wo, yɛn, and wɔn in meaningful contexts.",
+      "options": [],
+      "correctIndex": -1,
+      "explanation": "Structured response — compare your work with the marking points after submission. This item is not automatically scored.",
+      "difficulty": "intermediate",
+      "questionType": "structured",
+      "markingGuide": [
+        "Award 1 mark for each correctly used pronoun in an understandable sentence."
+      ],
+      "maxMarks": 4,
+      "sourceDocument": "Giga3 AI original Asante Twi structured-response practice — batch 6",
+      "sourceQuestionNumber": 131,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "structured_response",
+        "editorial_review_required"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original structured practice; an Asante Twi educator must verify language, expected responses and marking points.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q132",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Write a short Asante Twi note to your teacher explaining why you were absent from school yesterday.",
+      "options": [],
+      "correctIndex": -1,
+      "explanation": "Structured response — compare your work with the marking points after submission. This item is not automatically scored.",
+      "difficulty": "intermediate",
+      "questionType": "structured",
+      "markingGuide": [
+        "1 mark for respectful address",
+        "1 mark for stating absence",
+        "1 mark for a reason",
+        "1 mark for polite closing."
+      ],
+      "maxMarks": 4,
+      "sourceDocument": "Giga3 AI original Asante Twi structured-response practice — batch 6",
+      "sourceQuestionNumber": 132,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "structured_response",
+        "editorial_review_required"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original structured practice; an Asante Twi educator must verify language, expected responses and marking points.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q133",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Translate into Asante Twi: “My mother is at home”, “The children are going to school”, and “We are reading a book”.",
+      "options": [],
+      "correctIndex": -1,
+      "explanation": "Structured response — compare your work with the marking points after submission. This item is not automatically scored.",
+      "difficulty": "intermediate",
+      "questionType": "structured",
+      "markingGuide": [
+        "Award up to 2 marks per sentence for accurate vocabulary and sentence construction."
+      ],
+      "maxMarks": 6,
+      "sourceDocument": "Giga3 AI original Asante Twi structured-response practice — batch 6",
+      "sourceQuestionNumber": 133,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "structured_response",
+        "editorial_review_required"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original structured practice; an Asante Twi educator must verify language, expected responses and marking points.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q134",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Write a dialogue between a parent and child about preparing for school in the morning.",
+      "options": [],
+      "correctIndex": -1,
+      "explanation": "Structured response — compare your work with the marking points after submission. This item is not automatically scored.",
+      "difficulty": "intermediate",
+      "questionType": "structured",
+      "markingGuide": [
+        "1 mark each for appropriate roles, greeting, two relevant exchanges, and coherent closing."
+      ],
+      "maxMarks": 5,
+      "sourceDocument": "Giga3 AI original Asante Twi structured-response practice — batch 6",
+      "sourceQuestionNumber": 134,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "structured_response",
+        "editorial_review_required"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original structured practice; an Asante Twi educator must verify language, expected responses and marking points.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q135",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Explain the difference between “Ɛnnɛ”, “Ɛnnora”, and “Ɔkyena”, and use each in a sentence.",
+      "options": [],
+      "correctIndex": -1,
+      "explanation": "Structured response — compare your work with the marking points after submission. This item is not automatically scored.",
+      "difficulty": "intermediate",
+      "questionType": "structured",
+      "markingGuide": [
+        "1 mark for each correct meaning and 1 mark for each suitable sentence."
+      ],
+      "maxMarks": 6,
+      "sourceDocument": "Giga3 AI original Asante Twi structured-response practice — batch 6",
+      "sourceQuestionNumber": 135,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "structured_response",
+        "editorial_review_required"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original structured practice; an Asante Twi educator must verify language, expected responses and marking points.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q136",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Describe how you would welcome a new learner to your class in Asante Twi.",
+      "options": [],
+      "correctIndex": -1,
+      "explanation": "Structured response — compare your work with the marking points after submission. This item is not automatically scored.",
+      "difficulty": "intermediate",
+      "questionType": "structured",
+      "markingGuide": [
+        "1 mark for greeting",
+        "1 mark for introduction",
+        "1 mark for offering help",
+        "1 mark for polite language."
+      ],
+      "maxMarks": 4,
+      "sourceDocument": "Giga3 AI original Asante Twi structured-response practice — batch 6",
+      "sourceQuestionNumber": 136,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "structured_response",
+        "editorial_review_required"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original structured practice; an Asante Twi educator must verify language, expected responses and marking points.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q137",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Write a short story in Asante Twi about a learner who returns a lost book to its owner.",
+      "options": [],
+      "correctIndex": -1,
+      "explanation": "Structured response — compare your work with the marking points after submission. This item is not automatically scored.",
+      "difficulty": "intermediate",
+      "questionType": "structured",
+      "markingGuide": [
+        "1 mark for title",
+        "2 marks for events",
+        "1 mark for resolution",
+        "1 mark for clear language."
+      ],
+      "maxMarks": 5,
+      "sourceDocument": "Giga3 AI original Asante Twi structured-response practice — batch 6",
+      "sourceQuestionNumber": 137,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "structured_response",
+        "editorial_review_required"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original structured practice; an Asante Twi educator must verify language, expected responses and marking points.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q138",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Explain why proverbs and stories are important in preserving language and culture. Give one example known to you.",
+      "options": [],
+      "correctIndex": -1,
+      "explanation": "Structured response — compare your work with the marking points after submission. This item is not automatically scored.",
+      "difficulty": "intermediate",
+      "questionType": "structured",
+      "markingGuide": [
+        "2 marks for relevant explanation",
+        "1 mark for a suitable example."
+      ],
+      "maxMarks": 3,
+      "sourceDocument": "Giga3 AI original Asante Twi structured-response practice — batch 6",
+      "sourceQuestionNumber": 138,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "structured_response",
+        "editorial_review_required"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original structured practice; an Asante Twi educator must verify language, expected responses and marking points.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q139",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Write five polite requests in Asante Twi that you might use at home or school.",
+      "options": [],
+      "correctIndex": -1,
+      "explanation": "Structured response — compare your work with the marking points after submission. This item is not automatically scored.",
+      "difficulty": "intermediate",
+      "questionType": "structured",
+      "markingGuide": [
+        "Award 1 mark for each appropriate and understandable polite request."
+      ],
+      "maxMarks": 5,
+      "sourceDocument": "Giga3 AI original Asante Twi structured-response practice — batch 6",
+      "sourceQuestionNumber": 139,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "structured_response",
+        "editorial_review_required"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original structured practice; an Asante Twi educator must verify language, expected responses and marking points.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q140",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Translate a short set of classroom instructions into Asante Twi: open your book, listen carefully, write your name, and sit down.",
+      "options": [],
+      "correctIndex": -1,
+      "explanation": "Structured response — compare your work with the marking points after submission. This item is not automatically scored.",
+      "difficulty": "intermediate",
+      "questionType": "structured",
+      "markingGuide": [
+        "Award 1 mark for each accurate instruction."
+      ],
+      "maxMarks": 4,
+      "sourceDocument": "Giga3 AI original Asante Twi structured-response practice — batch 6",
+      "sourceQuestionNumber": 140,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "structured_response",
+        "editorial_review_required"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original structured practice; an Asante Twi educator must verify language, expected responses and marking points.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q141",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Describe a community celebration you know, using Asante Twi. Include what people do and why they gather.",
+      "options": [],
+      "correctIndex": -1,
+      "explanation": "Structured response — compare your work with the marking points after submission. This item is not automatically scored.",
+      "difficulty": "intermediate",
+      "questionType": "structured",
+      "markingGuide": [
+        "1 mark for naming the event",
+        "2 marks for activities",
+        "1 mark for purpose",
+        "1 mark for organization."
+      ],
+      "maxMarks": 5,
+      "sourceDocument": "Giga3 AI original Asante Twi structured-response practice — batch 6",
+      "sourceQuestionNumber": 141,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "structured_response",
+        "editorial_review_required"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original structured practice; an Asante Twi educator must verify language, expected responses and marking points.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q142",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Write a paragraph comparing two ways of greeting people respectfully in different situations.",
+      "options": [],
+      "correctIndex": -1,
+      "explanation": "Structured response — compare your work with the marking points after submission. This item is not automatically scored.",
+      "difficulty": "intermediate",
+      "questionType": "structured",
+      "markingGuide": [
+        "1 mark for each greeting",
+        "2 marks for explaining the contexts",
+        "1 mark for clarity."
+      ],
+      "maxMarks": 5,
+      "sourceDocument": "Giga3 AI original Asante Twi structured-response practice — batch 6",
+      "sourceQuestionNumber": 142,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "structured_response",
+        "editorial_review_required"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original structured practice; an Asante Twi educator must verify language, expected responses and marking points.",
+      "publicationStatus": "published_practice"
+    },
+    {
+      "questionId": "exam-bece-asante-twi-q143",
+      "courseSlug": "exam-bece-prep",
+      "topicId": "ghanaian-language-culture",
+      "topicLabel": "Asante Twi",
+      "questionText": "Prepare a short Asante Twi speech encouraging classmates to keep the school environment clean.",
+      "options": [],
+      "correctIndex": -1,
+      "explanation": "Structured response — compare your work with the marking points after submission. This item is not automatically scored.",
+      "difficulty": "intermediate",
+      "questionType": "structured",
+      "markingGuide": [
+        "1 mark for suitable opening",
+        "2 marks for practical reasons/actions",
+        "1 mark for encouragement",
+        "1 mark for closing."
+      ],
+      "maxMarks": 5,
+      "sourceDocument": "Giga3 AI original Asante Twi structured-response practice — batch 6",
+      "sourceQuestionNumber": 143,
+      "reviewStatus": "pending_review",
+      "tags": [
+        "asante_twi",
+        "original_practice",
+        "structured_response",
+        "editorial_review_required"
+      ],
+      "sourceType": "original_practice",
+      "verificationStatus": "awaiting_verification",
+      "verificationNotes": "Original structured practice; an Asante Twi educator must verify language, expected responses and marking points.",
+      "publicationStatus": "published_practice"
     }
   ]
 }
