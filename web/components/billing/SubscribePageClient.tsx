@@ -54,7 +54,9 @@ function SubscribePageClientInner() {
           Paystack · Credits refill on renewal
         </p>
         <p className="mt-1 text-sm text-muted">
-          Renews automatically every 30 days · cancel anytime from your wallet
+          Plans last 30 days. Automatic renewal is available for eligible saved
+          payment authorizations; mobile money payments require manual renewal
+          from your wallet. You can turn off automatic renewal at any time.
         </p>
         <div className="mt-3 flex justify-center">
           <PaystackModeBadge mode={paystackMode} inlineEnabled={inlineEnabled} />
