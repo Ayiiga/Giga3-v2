@@ -610,6 +610,19 @@ export const saveTechPracticeAnswer = mutation({
       return { saved: true, feedback: null, autoSubmitted: graded };
     }
 
+    if (bankQuestion.questionType === "structured") {
+      return {
+        saved: true,
+        feedback: {
+          correct: false,
+          pendingReview: true,
+          provisionalMatch: false,
+          explanation: "Written response saved. It will not be automatically scored. Submit the session to reveal the self-assessment marking points.",
+          correctIndex: null as number | null,
+        },
+      };
+    }
+
     // Learn + practice_test: immediate per-answer feedback (premium Full pack
     // and mode-picker Practice test). Timed exams still withhold until finish.
     if (session.mode === "learn" || session.mode === "practice_test") {
