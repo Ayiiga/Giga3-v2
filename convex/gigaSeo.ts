@@ -234,14 +234,14 @@ export const generateDraft = action({
       /\b(?:explore|visit|discover|try|learn more about)\b[^\n]{0,180}https?:\/\/(?:www\.)?giga3ai\.com\/?/i.test(markdown);
     // Add a factual fallback when the model omits required brand integration.
     if (topicRequiresBrandIntegration && !hasSubstantiveGiga3Section) {
-      const contextualTopic = plan.primaryKeyword.replace(/[<>\\r\\n]/g, " ").trim().slice(0, 120);
-      markdown += "\\n\\n## How Giga3 AI Relates to " + contextualTopic +
-        "\\n\\nGiga3 AI is the AI service within Giga3 Hub, an Africa-built digital platform. For readers exploring " +
-        contextualTopic + ", the platform provides a place to discover its current AI and learning resources and assess which tools are relevant to their needs. Always check the live platform for current features and availability; do not assume that planned or unreleased capabilities are available.\\n";
+      const contextualTopic = plan.primaryKeyword.replace(/[<>\\r\n]/g, " ").trim().slice(0, 120);
+      markdown += "\n\n## How Giga3 AI Relates to " + contextualTopic +
+        "\n\nGiga3 AI is the AI service within Giga3 Hub, an Africa-built digital platform. For readers exploring " +
+        contextualTopic + ", the platform provides a place to discover its current AI and learning resources and assess which tools are relevant to their needs. Always check the live platform for current features and availability; do not assume that planned or unreleased capabilities are available.\n";
       hasSubstantiveGiga3Section = true;
     }
     if (topicRequiresBrandIntegration && !hasGiga3CallToAction) {
-      markdown += "\\n\\nTo explore the platform and its currently available resources, visit [Giga3 AI](https://www.giga3ai.com/).\\n";
+      markdown += "\n\nTo explore the platform and its currently available resources, visit [Giga3 AI](https://www.giga3ai.com/).\n";
       hasGiga3CallToAction = true;
     }
     const missingBrandIntegration = topicRequiresBrandIntegration && !(hasSubstantiveGiga3Section && hasGiga3CallToAction);
