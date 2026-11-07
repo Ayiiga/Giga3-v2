@@ -14,7 +14,7 @@ import { api } from "convex/_generated/api";
 import { useAction, useQuery } from "convex/react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 type ConnectorCard = {
   id: string;
@@ -154,6 +154,12 @@ export function ConnectorsPanel() {
   const cards = data.cards as ConnectorCard[];
   const moodleConnecting = busyId === "moodle";
 
+  useEffect(() => {
+    const restore = () => setBusyId(null);
+    window.addEventListener("pageshow", restore);
+    return () => window.removeEventListener("pageshow", restore);
+  }, []);
+
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted">
@@ -228,8 +234,7 @@ export function ConnectorsPanel() {
               ) : null}
               {card.mayNeedProviderApproval ? (
                 <p className="mt-1 text-[11px] text-muted">
-                  Restricted provider scopes may require Google verification before
-                  non-test users can connect.
+                  Google may block accounts that are not on the OAuth consent-screen test-user list while this app is in Testing. Add your Google account under Google Cloud Console → Google Auth Platform → Audience → Test users, or complete Google verification before opening access to everyone.
                 </p>
               ) : null}
               {card.setupNotes ? (
