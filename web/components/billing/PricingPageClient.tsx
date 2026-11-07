@@ -60,8 +60,10 @@ function PricingPageClientInner() {
       <section>
         <h2 className="text-center text-2xl font-semibold">Subscription plans</h2>
         <p className="mx-auto mt-2 max-w-xl text-center text-sm text-muted">
-          Pay with Paystack (GHS). Plans renew automatically every 30 days and
-          credits refill each period — cancel anytime from your wallet.
+          Pay with Paystack (GHS). Plans last 30 days. Automatic renewal is
+          available for eligible saved payment authorizations; mobile money
+          payments require you to renew manually. You can turn off automatic
+          renewal from your wallet.
         </p>
         <div className="mt-3 flex justify-center">
           <PaystackModeBadge mode={paystackMode} inlineEnabled={inlineEnabled} />
