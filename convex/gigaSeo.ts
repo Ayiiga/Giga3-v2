@@ -192,7 +192,8 @@ export const createContentPlan = mutation({
     if (title.length < 5 || primaryKeyword.length < 3) throw new Error("A valid title and primary keyword are required.");
     const slug = slugify(title);
     const existing = await ctx.db.query("gigaSeoContentPlans").withIndex("by_slug", (q) => q.eq("slug", slug)).unique();
-    if (existing) throw new Error("A content plan with this title already exists. Choose a different title.");
+    // Repeated taps/retries reuse the existing plan instead of surfacing an error.
+    if (existing) return existing._id;
     const now = Date.now();
     return await ctx.db.insert("gigaSeoContentPlans", { title, slug, primaryKeyword,
       market: args.market.slice(0, 80), audience: args.audience.slice(0, 160),
@@ -219,11 +220,18 @@ export const generateDraft = action({
     const headings = (markdown.match(/^##\s+/gm) ?? []).length;
     const wordCount = markdown.split(/\s+/).filter(Boolean).length;
     const topicRequiresBrandIntegration = /\b(ai|artificial intelligence|teach(?:er|ing)?|educat(?:ion|or|ional)|student|learn(?:ing)?|exam(?:ination)?|bece|wassce|stem|classroom|school|african technology|technology|digital skills|innovation|local communities)\b/i.test(`${plan.title} ${plan.primaryKeyword}`);
+    // Normalize Markdown decoration before checking headings so bold/linked H2s are recognised.
     const sections = markdown.split(/^##\s+/m).slice(1);
-    const giga3Section = sections.find((section) => /^.{0,100}giga3\s*ai/i.test(section.trim()));
-    const giga3SectionBody = giga3Section?.split("\n").slice(1).join(" ").trim() ?? "";
-    const hasSubstantiveGiga3Section = Boolean(giga3Section && giga3SectionBody.replace(/\s+/g, " ").length >= 80);
-    const hasGiga3CallToAction = /\b(explore|visit|discover|try|learn more about)\b[^\n]{0,180}https?:\/\/(?:www\.)?giga3ai\.com\/?/i.test(markdown);
+    const giga3Section = sections.find((section) => {
+      const heading = section.split("\n", 1)[0].replace(/[*_\[\]]/g, "").trim();
+      return /giga3\s*ai/i.test(heading);
+    });
+    const giga3SectionBody = giga3Section?.split("\n").slice(1).join(" ").replace(/\s+/g, " ").trim() ?? "";
+    const hasSubstantiveGiga3Section = Boolean(giga3Section && giga3SectionBody.length >= 80);
+    // Accept Markdown CTA links regardless of whether the URL is on the same line as its anchor.
+    const hasGiga3CallToAction =
+      /\[(?:explore|visit|discover|try|learn more about)[^\]]*\]\(https?:\/\/(?:www\.)?giga3ai\.com\/?[^)]*\)/i.test(markdown) ||
+      /\b(?:explore|visit|discover|try|learn more about)\b[^\n]{0,180}https?:\/\/(?:www\.)?giga3ai\.com\/?/i.test(markdown);
     const missingBrandIntegration = topicRequiresBrandIntegration && !(hasSubstantiveGiga3Section && hasGiga3CallToAction);
     const brandIntegrationIssue = "Add a substantive Giga3 AI section explaining relevant platform value and a contextual call to action linking to https://www.giga3ai.com/ before editorial approval.";
     const issues = [

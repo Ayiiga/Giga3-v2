@@ -82,7 +82,7 @@ export function GigaSeoAdminPanel({ adminCreds }: { adminCreds: AdminCredentials
     try {
       const title = keyword.charAt(0).toUpperCase() + keyword.slice(1) + ": A Practical Guide";
       await createPlan({ ...adminCreds, title, primaryKeyword: keyword, market: selectedMarket, audience });
-      setMessage("Content plan created. Generate its first draft from the editorial queue.");
+      setMessage("Content plan saved. If this title already existed, the existing plan was reused—no duplicate was created.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not create content plan.");
     } finally { setBusy(false); }

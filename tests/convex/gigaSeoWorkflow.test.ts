@@ -56,8 +56,8 @@ describe("GigaSEO Convex workflow", () => {
         markdown: [
           "## Getting started",
           "## Practical classroom examples",
-          "## Using Giga3 AI to support teaching and learning",
-          "Giga3 AI brings together GigaLearn curriculum-aligned learning resources and exam practice to help Ghanaian teachers and students explore digital learning. Explore the platform at https://www.giga3ai.com/.",
+          "## **Using Giga3 AI to support teaching and learning**",
+          "Giga3 AI brings together GigaLearn curriculum-aligned learning resources and exam practice to help Ghanaian teachers and students explore digital learning. [Explore Giga3 AI](https://www.giga3ai.com/).",
           "## Responsible use and limitations",
           "## Conclusion",
           Array.from({ length: 240 }, (_, index) => `Useful classroom guidance example ${index + 1} for Ghanaian teachers and learners.`).join(" "),
@@ -107,6 +107,14 @@ describe("GigaSEO Convex workflow", () => {
       market: "Ghana",
       audience: "Teachers",
     });
+    const repeatedPlanId = await t.mutation(api.gigaSeo.createContentPlan, {
+      adminKey: "giga-seo-test-admin",
+      title: "AI Tools for Teachers in Ghana: A Practical Guide",
+      primaryKeyword: "AI tools for teachers in Ghana",
+      market: "Ghana",
+      audience: "Teachers",
+    });
+    expect(repeatedPlanId).toBe(planId);
 
     const generated = await t.action(api.gigaSeo.generateDraft, {
       adminKey: "giga-seo-test-admin",
