@@ -27,6 +27,7 @@ export const RESEARCH_CAPABILITY_IDS = [
   "fact_check",
   "verify_image",
   "deep_research",
+  "startup_funding",
 ] as const;
 
 export type ResearchCapabilityId = (typeof RESEARCH_CAPABILITY_IDS)[number];
@@ -62,6 +63,13 @@ const NEWS_CAPABILITIES = new Set<ResearchCapabilityId>([
   "politics",
   "breaking_news",
 ]);
+
+const STARTUP_FUNDING_INTENT_RE = /\b(funding|fundraise|fundraising|grant|grants|accelerator|incubator|investor|investment|venture capital|seed capital|startup competition|innovation challenge|pitch competition|non[- ]dilutive|capital raise)\b/i;
+
+/** Funding requests concern the named startup, not generic monitoring software. */
+export function detectStartupFundingIntent(query: string): boolean {
+  return STARTUP_FUNDING_INTENT_RE.test(query.trim());
+}
 
 const TIME_SENSITIVE_RE =
   /\b(today|tonight|yesterday|this week|this month|this year|latest|current|recent|breaking|just now|right now|as of now|news|headlines|now|202[4-9]|stock price|weather|score|election|who is (the )?president|regulation|law passed|match result|final score)\b/i;
@@ -349,6 +357,8 @@ export function resolveResearchCapability(args: {
     return "general";
   }
 
+  if (detectStartupFundingIntent(q)) return "startup_funding";
+
   if (detectVerifyImageIntent(args.query, Boolean(args.hasImageAttachment))) {
     return "verify_image";
   }
@@ -391,6 +401,7 @@ export function queryNeedsLiveWeb(args: {
   // Pasted public URLs always attempt a safe webpage read (robots/paywall handled server-side).
   if (queryContainsPublicUrl(q)) return true;
   if (isConversationalChatQuery(q)) return false;
+  if (detectStartupFundingIntent(q)) return true;
 
   const infoMode = classifyInformationRequest(q);
   if (infoMode === "answer_from_user_context") return false;
@@ -406,6 +417,7 @@ export function queryNeedsLiveWeb(args: {
     );
   }
 
+  if (detectStartupFundingIntent(q)) return true;
   if (detectVerifyImageIntent(q, true)) return true;
   if (detectFactCheckIntent(q)) return true;
   if (detectCurrentEventsIntent(q)) return true;
@@ -426,7 +438,8 @@ export function queryNeedsLiveWeb(args: {
       args.capability === "live_web" ||
       args.capability === "deep_research" ||
       args.capability === "fact_check" ||
-      args.capability === "verify_image"
+      args.capability === "verify_image" ||
+      args.capability === "startup_funding"
     );
   }
 
@@ -439,7 +452,8 @@ export function shouldRunLiveWebResearch(capability: ResearchCapabilityId): bool
     capability === "deep_research" ||
     isNewsCapability(capability) ||
     capability === "fact_check" ||
-    capability === "verify_image"
+    capability === "verify_image" ||
+    capability === "startup_funding"
   );
 }
 
@@ -458,6 +472,9 @@ export function buildResearchSearchQuery(
   capability: ResearchCapabilityId
 ): string {
   const trimmed = query.trim();
+  if (capability === "startup_funding") {
+    return trimmed + " startup funding opportunities grants accelerators incubators startup competitions eligibility application deadlines official application pages investors Ghana Africa international";
+  }
   const ghanaScoped =
     mentionsGhanaPlace(trimmed) || detectGhanaNewsIntent(trimmed);
   if (capability === "ghana_news" || (capability === "africa_news" && ghanaScoped)) {
@@ -545,6 +562,20 @@ export function researchSystemPromptAddon(capability: ResearchCapabilityId): str
           NEWS_RESPONSE_FORMAT_GUIDANCE,
         ].join("\n");
       }
+      if (capability === "startup_funding") {
+        return [
+          "Mode: Startup Funding Intelligence.",
+          "Interpret the named startup or organisation as the funding-seeking subject, not as a funding-monitoring product or tool.",
+          "Find actionable grants, accelerators, incubators, startup competitions, innovation challenges, fellowships, and suitable investment programmes.",
+          "Prioritise official programme and application pages. For each opportunity provide provider, published amount or benefits, eligibility, geography/stage fit, deadline (or say not published), application status, and direct official application/source link.",
+          "Separate open opportunities, upcoming/rolling opportunities, closed opportunities, and investor leads. Do not present investor directories or monitoring software as funding opportunities.",
+          "Assess fit only from user-provided facts or reliable sources. Mark unknown eligibility details as unknown; do not imply qualification without evidence.",
+          "Distinguish confirmed funding received from funding being sought. Never invent funding rounds, investors, awards, amounts, dates, or partnerships.",
+          "Treat monitor as a current search unless an ongoing scheduled monitor is explicitly configured. A one-time search is not continuous monitoring.",
+          "Search the exact startup name and relevant sector/geography programmes. Do not conflate similarly named organisations.",
+          NEWS_RESPONSE_FORMAT_GUIDANCE,
+        ].join("\n");
+      }
       if (capability === "deep_research") {
         return [
           "Mode: Deep research.",
@@ -601,6 +632,7 @@ export const RESEARCH_CAPABILITY_LABELS: Record<ResearchCapabilityId, string> = 
   fact_check: "Fact Check",
   verify_image: "Verify Image",
   deep_research: "Deep Research",
+  startup_funding: "Startup Funding Intelligence",
 };
 
 export function liveSearchUnavailableNewsFallback(capability: ResearchCapabilityId): string {
