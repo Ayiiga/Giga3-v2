@@ -164,18 +164,34 @@ describe("Technology Learning Hub question banks", () => {
     const teacherMeta = getExamBankMeta("exam-teacher-promotion");
     const ad2Meta = getExamBankMeta("exam-ad2-study-guide");
     expect(beceMeta?.approvedQuestionCount).toBe(419);
-    expect(beceMeta?.pendingQuestionCount).toBe(103);
+    expect(beceMeta?.pendingQuestionCount).toBe(123);
     expect(beceMeta?.topics.find((t) => t.id === "ghanaian-language-culture")?.label).toBe("Asante Twi");
     expect(teacherMeta?.approvedQuestionCount).toBe(238);
     expect(teacherMeta?.pendingQuestionCount).toBe(58);
     expect(ad2Meta?.approvedQuestionCount).toBe(0);
 
     const bece = getTechBankQuestions("exam-bece-prep");
-    expect(bece.length).toBe(522);
+    expect(bece.length).toBe(542);
     const asanteTwi = getTechBankQuestions("exam-bece-prep", { topicId: "ghanaian-language-culture" });
-    expect(asanteTwi).toHaveLength(103);
+    expect(asanteTwi).toHaveLength(123);
     expect(asanteTwi.every((q) => q.reviewStatus === "pending_review")).toBe(true);
     expect(asanteTwi.every((q) => q.sourceType === "original_practice" && q.verificationStatus === "awaiting_verification")).toBe(true);
+    const structured = asanteTwi.filter((q) => q.questionType === "structured");
+    expect(structured).toHaveLength(20);
+    expect(structured.every((q) => q.options.length === 0 && q.maxMarks && q.maxMarks > 0 && q.markingGuide?.length)).toBe(true);
+    const structuredPublic = toPublicTechQuestion(structured[0]!);
+    expect(structuredPublic.questionType).toBe("structured");
+    expect(structuredPublic).not.toHaveProperty("markingGuide");
+    const written = gradeTechAnswers({
+      courseSlug: "exam-bece-prep",
+      questionIds: [structured[0]!.questionId],
+      answers: { [structured[0]!.questionId]: "Me din de Ama. Mefiri Kumasi." },
+    });
+    expect(written.score).toBe(0);
+    expect(written.maxScore).toBe(0);
+    expect(written.results[0]?.requiresSelfAssessment).toBe(true);
+    expect(written.results[0]?.writtenAnswer).toBe("Me din de Ama. Mefiri Kumasi.");
+    expect(written.results[0]?.markingGuide?.length).toBeGreaterThan(0);
     expect(getTechBankQuestions("exam-bece-prep", { approvedOnly: false, topicId: "ghanaian-language-culture" })).toHaveLength(103);
     expect(getTechCourseMeta("exam-bece-prep")?.awaitingMaterials).toBe(false);
     expect(new Set(bece.map((q) => q.topicId)).size).toBe(10);
