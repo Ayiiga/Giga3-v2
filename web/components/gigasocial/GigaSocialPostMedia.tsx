@@ -715,7 +715,7 @@ export const GigaSocialPendingMediaPreview = memo(function GigaSocialPendingMedi
   return (
     <div className={cn(compact ? "mt-2 space-y-1.5" : "mt-3 space-y-2")}>
       {video ? (
-        <div className="relative overflow-hidden rounded-xl border border-border bg-black">
+        <div className="gigasocial-local-video-preview relative overflow-hidden rounded-xl border border-border bg-black">
           <video
             key={video.previewUrl}
             src={video.previewUrl}

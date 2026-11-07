@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   getGigaCreateFabItems,
@@ -34,5 +36,25 @@ describe("GigaSocial upload FAB menu", () => {
     expect(getGigaCreateFabItems({ enableLive: false }).some((i) => i.id === "live-content")).toBe(
       false
     );
+  });
+});
+
+describe("GigaSocial Android video preview compositor guard", () => {
+  it("isolates local video previews from adjacent mobile layers", () => {
+    const css = readFileSync(resolve(__dirname, "../../web/styles/globals.css"), "utf8");
+    const media = readFileSync(
+      resolve(__dirname, "../../web/components/gigasocial/GigaSocialPostMedia.tsx"),
+      "utf8"
+    );
+    const review = readFileSync(
+      resolve(__dirname, "../../web/components/gigasocial/studio/GigaSocialMediaReview.tsx"),
+      "utf8"
+    );
+    expect(css).toContain(".gigasocial-local-video-preview");
+    expect(css).toContain("isolation: isolate");
+    expect(css).toContain("contain: paint");
+    expect(css).toContain("backface-visibility: hidden");
+    expect(media).toContain("gigasocial-local-video-preview");
+    expect(review).toContain("gigasocial-local-video-preview");
   });
 });
