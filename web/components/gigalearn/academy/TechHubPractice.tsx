@@ -831,9 +831,8 @@ function TechHubInner() {
                     </li>
                   );
                 })}
-     
+              </ul>
               )}
-         </ul>
               {revealed && reward ? (
                 <p className="exam-session-reward" role="status" data-testid="exam-reward">
                   {reward}
