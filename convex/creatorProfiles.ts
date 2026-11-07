@@ -224,8 +224,6 @@ export const submitCreatorVerification = mutation({
       longitude: args.longitude,
       locationAccuracyMeters: args.locationAccuracyMeters,
       locationCapturedAt: now,
-      legalFullName,
-      verificationEmail: email,
       verificationStatus: "pending",
       verified: false,
       verificationSubmittedAt: now,
