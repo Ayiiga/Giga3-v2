@@ -20,13 +20,13 @@ type Resource = {
   _id: string; slug: string; title: string; summary: string; subject: string;
   levelBand: "jhs" | "shs" | "both"; classes: string[]; topic: string; category: string;
   activity: string; access: "free" | "subscriber"; previewText?: string | null;
-  videoUrl?: string | null;
+  videoUrl?: string | null; imageUrl?: string | null;
 };
 type Detail = Resource & {
   description: string; components: string[]; instructions: string[]; activities: string[];
   safety: string[]; commonMistakes: string[]; teacherGuidance: string;
   studentExercises: string; curriculumReference: string;
-  hasImage: boolean; hasDiagram: boolean; hasGuide: boolean; hasWorksheet: boolean; fullAccess: boolean;
+  hasImage: boolean; imageUrl?: string | null; hasDiagram: boolean; hasGuide: boolean; hasWorksheet: boolean; fullAccess: boolean;
 };
 
 export function TeachingResourcesLibrary() {
@@ -120,8 +120,33 @@ export function TeachingResourcesLibrary() {
       {admin?.isAdmin && <details className="rounded-2xl border border-amber-300 bg-amber-50 p-4"><summary className="cursor-pointer list-none font-extrabold text-amber-950"><span className="inline-flex items-center gap-2">⚙️ Manage Resources <span className="text-xs font-semibold text-amber-800">(administrator only)</span></span><p className="mt-1 text-xs font-normal text-amber-900">Add, upload and review learning materials. Open only when you need to manage the library.</p></summary><div className="mt-4 border-t border-amber-200 pt-4">
         <h2 className="font-extrabold text-amber-950">Administrator · Add a resource</h2>
         <button type="button" disabled={busy || !sessionToken} onClick={async () => {setBusy(true);try {const result=await seedStarter({sessionToken:sessionToken!});setAdminMessage(result.message);}catch(e){setAdminMessage(e instanceof Error?e.message:"Could not load starter resources.");}finally{setBusy(false);}}} className="mt-3 rounded-lg border border-amber-700 px-3 py-2 text-xs font-bold text-amber-950">Load four starter equipment guides</button>
-        <button type="button" disabled={busy || !sessionToken} onClick={async () => {setBusy(true);try {const result=await seedScienceAids({sessionToken:sessionToken!});setAdminMessage(result.message);}catch(e){setAdminMessage(e instanceof Error?e.message:"Could not load science learning aids.");}finally{setBusy(false);}}} className="mt-3 ml-2 rounded-lg bg-violet-800 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">Publish 16 Science Learning Aids</button>
-        <p className="mt-1 text-xs text-amber-900">The four starter guides are published as subscriber resources. The Science Learning Aids button publishes 16 separate, searchable JHS/SHS science records; attach the matching image to each record in the review queue. New resources created below are saved as drafts until reviewed.</p>
+        <button type="button" disabled={busy || !sessionToken} onClick={async () => {setBusy(true);try {const result=await seedScienceAids({sessionToken:sessionToken!});setAdminMessage(result.message);}catch(e){setAdminMessage(e instanceof Error?e.message:"Could not load science learning aids.");}finally{setBusy(false);}}} className="mt-3 ml-2 rounded-lg bg-violet-800 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">Publish Individual Science Learning Aids</button>
+        <p className="mt-1 text-xs text-amber-900">The four starter guides are published as subscriber resources. The Science Learning Aids button publishes separate, searchable JHS/SHS resources. Upload the matching individual JPG files below; filenames must match each resource slug. New resources created below are saved as drafts until reviewed.</p>
+
+        <div className="mt-3 rounded-xl border border-violet-200 bg-violet-50 p-3">
+          <p className="text-sm font-bold text-violet-950">Bulk attach individual learning-aid images</p>
+          <p className="mt-1 text-xs text-violet-900">Unzip the individual-images pack, select all JPGs here, and the uploader will match each filename to its resource slug and attach it as the resource image.</p>
+          <input type="file" accept="image/jpeg,image/png,image/webp" multiple className="mt-2 block w-full text-xs text-slate-700" onChange={async e => {
+            const files = Array.from(e.target.files ?? []);
+            if (!files.length || !sessionToken || !listAdmin) return;
+            setBusy(true); let uploaded = 0; const skipped: string[] = [];
+            try {
+              for (const file of files) {
+                const slug = file.name.replace(/\.[^.]+$/, "").toLowerCase();
+                const resource = listAdmin.find((r: any) => r.slug === slug);
+                if (!resource) { skipped.push(file.name); continue; }
+                const uploadUrl = await createUploadUrl({ sessionToken });
+                const response = await fetch(uploadUrl, { method: "POST", headers: { "Content-Type": file.type }, body: file });
+                if (!response.ok) throw new Error(`Upload failed for ${file.name}.`);
+                const { storageId } = await response.json();
+                await attachFile({ sessionToken, resourceId: resource._id, fileKind: "image", storageId });
+                uploaded++;
+              }
+              setAdminMessage(`Attached ${uploaded} individual images.${skipped.length ? ` Skipped ${skipped.length} unmatched files: ${skipped.slice(0, 5).join(", ")}.` : ""}`);
+            } catch (err) { setAdminMessage(err instanceof Error ? err.message : "Bulk image upload failed."); }
+            finally { setBusy(false); e.target.value = ""; }
+          }} />
+        </div>
         <form className="mt-3 grid gap-2 sm:grid-cols-2" onSubmit={async e => {
           e.preventDefault(); if (!sessionToken) return;
           setBusy(true); setAdminMessage("");
@@ -180,6 +205,7 @@ export function TeachingResourcesLibrary() {
       {selected && <section className="rounded-3xl border border-violet-200 bg-white p-4 shadow-sm print-resource" aria-live="polite">
         {!sessionReady || detail === undefined ? <p className="text-sm text-slate-500">Checking your subscription and loading resource details…</p> : !detail ? <p className="text-sm text-slate-500">This resource is no longer available. Refresh the library and try again.</p> : <>
           <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-wide text-violet-700">{detail.subject} · {detail.classes.join(", ")}</p><h2 className="mt-1 text-xl font-black text-slate-950">{detail.title}</h2><p className="mt-1 text-sm text-slate-600">{detail.summary}</p></div><button onClick={() => setSelected(null)} className="rounded-full border px-3 py-2 text-sm">Close</button></div>
+          {detail.imageUrl && <img src={detail.imageUrl} alt={detail.title} className="mt-4 max-h-[520px] w-full rounded-xl border border-slate-200 bg-slate-50 object-contain" loading="lazy" />}
           <p className="mt-4 text-sm leading-6 text-slate-700">{detail.description}</p>
           {!detail.fullAccess && <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">You are viewing a free preview. Sign in with an active Giga3 AI subscription to unlock the complete practical instructions, teacher notes and student exercises.</div>}
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -209,7 +235,7 @@ export function TeachingResourcesLibrary() {
         <div className="mb-3 flex items-center justify-between gap-3"><h2 className="text-lg font-black text-slate-950">Explore learning resources</h2><span className="text-xs text-slate-500">{resources?.length ?? 0} resources</span></div>
         {resources === undefined ? <p className="rounded-2xl bg-slate-50 p-5 text-sm text-slate-500">Loading resource library…</p> :
           resources.length === 0 ? <div className="rounded-2xl border border-dashed p-7 text-center"><BookOpen className="mx-auto h-8 w-8 text-violet-500" /><h3 className="mt-2 font-bold">No matching resources yet</h3><p className="mt-1 text-sm text-slate-500">Try another subject or search term. New approved practical guides will appear here.</p></div> :
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{resources.map(r => <article key={r._id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><div className="flex items-center justify-between gap-2"><span className="rounded-full bg-violet-50 px-2.5 py-1 text-[10px] font-bold text-violet-800">{r.subject}</span><span className={r.access === "free" ? "text-xs font-bold text-emerald-700" : "text-xs font-bold text-amber-700"}>{r.access === "free" ? "Free preview" : "Subscriber"}</span></div><h3 className="mt-3 font-extrabold text-slate-950">{r.title}</h3><p className="mt-1 text-sm leading-5 text-slate-600">{r.summary}</p><p className="mt-3 text-xs text-slate-500">{r.classes.join(" · ")} · {r.category}</p><button onClick={() => {setSelected(r.slug);setNotice("");}} className="mt-4 min-h-11 w-full rounded-xl bg-violet-700 px-4 py-2 text-sm font-bold text-white">Explore resource</button></article>)}</div>}
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{resources.map(r => <article key={r._id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><div className="flex items-center justify-between gap-2"><span className="rounded-full bg-violet-50 px-2.5 py-1 text-[10px] font-bold text-violet-800">{r.subject}</span><span className={r.access === "free" ? "text-xs font-bold text-emerald-700" : "text-xs font-bold text-amber-700"}>{r.access === "free" ? "Free preview" : "Subscriber"}</span></div>{r.imageUrl && <img src={r.imageUrl} alt={r.title} className="mt-3 h-40 w-full rounded-lg bg-slate-50 object-contain" loading="lazy" />}<h3 className="mt-3 font-extrabold text-slate-950">{r.title}</h3><p className="mt-1 text-sm leading-5 text-slate-600">{r.summary}</p><p className="mt-3 text-xs text-slate-500">{r.classes.join(" · ")} · {r.category}</p><button onClick={() => {setSelected(r.slug);setNotice("");}} className="mt-4 min-h-11 w-full rounded-xl bg-violet-700 px-4 py-2 text-sm font-bold text-white">Explore resource</button></article>)}</div>}
       </section>
       <style jsx global>{`@media print { body * { visibility: hidden !important; } .print-resource, .print-resource * { visibility: visible !important; } .print-resource { position: absolute; inset: 0; width: 100%; border: 0 !important; box-shadow: none !important; } .print-resource button, .print-resource a { display: none !important; } }`}</style>
     </main>
