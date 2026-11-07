@@ -40,12 +40,10 @@ export const getMyProfile = query({
       .withIndex("by_user", (q) => q.eq("userId", email))
       .first();
     if (!profile) return null;
-    const {
-      nationalIdNumber,
-      idDocumentStorageId: _idDocumentStorageId,
-      idDocumentFileName: _idDocumentFileName,
-      ...safeProfile
-    } = profile;
+    const safeProfile = { ...profile };
+    delete safeProfile.nationalIdNumber;
+    delete safeProfile.idDocumentStorageId;
+    delete safeProfile.idDocumentFileName;
     return {
       ...safeProfile,
       verificationStatus: verificationStatusOf(profile),
