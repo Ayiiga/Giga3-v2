@@ -22,32 +22,72 @@ type Resource = {
   activity: string; access: "free" | "subscriber"; previewText?: string | null;
   videoUrl?: string | null; imageUrl?: string | null;
 };
-function resourceVisual(title: string, category: string) {
-  const value = `${title} ${category}`.toLowerCase();
-  if (value.includes("microscope")) return "🔬";
-  if (value.includes("beaker")) return "🧪";
-  if (value.includes("thermometer")) return "🌡️";
-  if (value.includes("multimeter") || value.includes("electric")) return "⚡";
-  if (value.includes("flask")) return "⚗️";
-  if (value.includes("human") || value.includes("body") || value.includes("organ")) return "🫀";
-  if (value.includes("plant") || value.includes("leaf")) return "🌱";
-  if (value.includes("safety") || value.includes("symbol")) return "⚠️";
-  if (value.includes("set-up") || value.includes("setup")) return "🧫";
-  return "📘";
+function ResourceDiagram({ title, category }: { title: string; category: string }) {
+  const value = (title + " " + category).toLowerCase();
+  const microscope = value.includes("microscope");
+  const thermometer = value.includes("thermometer");
+  const beaker = value.includes("beaker");
+  const multimeter = value.includes("multimeter") || value.includes("electric");
+  const heading = microscope ? "COMPOUND LIGHT MICROSCOPE" : thermometer ? "LABORATORY THERMOMETER" : beaker ? "LABORATORY BEAKER" : multimeter ? "DIGITAL MULTIMETER" : title.toUpperCase();
+  return (
+    <svg viewBox="0 0 360 640" role="img" aria-label={"9 by 16 labelled educational diagram: " + title} className="block h-auto w-full bg-[#f8f7ff]">
+      <defs><linearGradient id="diagBg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#f5f0ff"/><stop offset="1" stopColor="#e8e5ff"/></linearGradient><linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#f8fafc"/><stop offset="1" stopColor="#94a3b8"/></linearGradient></defs>
+      <rect width="360" height="640" rx="22" fill="url(#diagBg)"/>
+      <text x="180" y="38" textAnchor="middle" fontSize="13" fontWeight="800" letterSpacing="1.2" fill="#5b21b6">GIGALEARN • VISUAL STUDY GUIDE</text>
+      <text x="180" y="66" textAnchor="middle" fontSize={heading.length > 24 ? 13 : 16} fontWeight="900" fill="#17133b">{heading}</text>
+      {microscope && <>
+        <g stroke="#26345c" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M142 130 L177 105 L218 168 L193 187 Z" fill="url(#metal)"/><path d="M165 112 L185 98 L230 160 L211 174 Z" fill="#64748b"/>
+          <path d="M207 169 Q250 190 241 245 Q234 280 197 286" fill="none" stroke="#5b7cba" strokeWidth="20"/>
+          <path d="M191 285 L116 285 Q92 285 92 308 L92 321 L263 321 Q275 321 275 309 L275 303 Q275 285 256 285 L225 285" fill="none" stroke="#334b83" strokeWidth="18"/>
+          <path d="M119 285 L151 225 L205 225" fill="none" stroke="#334b83" strokeWidth="16"/><path d="M139 225 L215 225" stroke="#111827" strokeWidth="7"/><path d="M123 210 L215 210" stroke="#64748b" strokeWidth="7"/>
+          <circle cx="208" cy="191" r="12" fill="#f8fafc"/><path d="M174 228 L174 246" stroke="#f59e0b" strokeWidth="6"/><path d="M142 249 L210 249" stroke="#f8fafc" strokeWidth="8"/><path d="M176 249 L176 269" stroke="#0f172a" strokeWidth="5"/>
+        </g>
+        <g fill="none" stroke="#7c3aed" strokeWidth="2"><path d="M170 117 L85 112 L45 112"/><path d="M220 191 L286 160 L320 160"/><path d="M180 228 L75 220 L40 220"/><path d="M170 250 L285 270 L325 270"/><path d="M200 300 L95 355 L38 355"/><path d="M255 315 L290 385 L325 385"/></g>
+        <g fill="#24134f" fontSize="11" fontWeight="800"><text x="12" y="102">Eyepiece</text><text x="286" y="148">Focus knob</text><text x="10" y="210">Objective lens</text><text x="286" y="258">Stage</text><text x="10" y="370">Arm</text><text x="286" y="402">Base</text></g>
+        <text x="180" y="465" textAnchor="middle" fontSize="12" fontWeight="800" fill="#4c1d95">LIGHT PATH & PARTS</text><text x="180" y="490" textAnchor="middle" fontSize="11" fill="#312e81">Light passes through the specimen</text><text x="180" y="510" textAnchor="middle" fontSize="11" fill="#312e81">and lenses to magnify the image.</text>
+      </>}
+      {thermometer && <>
+        <rect x="154" y="125" width="52" height="260" rx="26" fill="#fff" stroke="#334155" strokeWidth="5"/><rect x="176" y="165" width="9" height="205" rx="5" fill="#ef4444"/><circle cx="180" cy="385" r="39" fill="#ef4444" stroke="#334155" strokeWidth="5"/><circle cx="180" cy="385" r="25" fill="#fb7185"/>
+        {Array.from({length:8},(_,i)=><g key={i}><path d={"M207 " + (170+i*24) + " h18"} stroke="#334155" strokeWidth="3"/><text x="233" y={174+i*24} fontSize="10" fill="#334155">{100-i*10}°</text></g>)}
+        <path d="M154 180 L92 150 L30 150 M207 285 L268 260 L330 260 M180 420 L180 470" stroke="#7c3aed" strokeWidth="2" fill="none"/><g fill="#24134f" fontSize="12" fontWeight="800"><text x="10" y="138">Scale</text><text x="272" y="248">Liquid column</text><text x="180" y="492" textAnchor="middle">Bulb / reservoir</text></g><text x="180" y="540" textAnchor="middle" fontSize="12" fill="#4c1d95">Read at eye level • °C</text>
+      </>}
+      {beaker && <>
+        <path d="M110 140 L250 140 L235 430 Q180 455 125 430 Z" fill="#dbeafe" fillOpacity=".75" stroke="#2563eb" strokeWidth="6"/><path d="M117 300 Q180 285 243 300 L236 427 Q180 449 126 427 Z" fill="#38bdf8" fillOpacity=".6"/><path d="M110 140 L250 140 L250 160 L110 160 Z" fill="#94a3b8" stroke="#334155" strokeWidth="3"/>
+        {Array.from({length:6},(_,i)=><path key={i} d={"M220 " + (205+i*28) + " h20"} stroke="#1e40af" strokeWidth="3"/>)}
+        <path d="M120 165 L50 130 L20 130 M235 300 L300 280 L340 280 M235 430 L295 460 L340 460" stroke="#7c3aed" strokeWidth="2" fill="none"/><g fill="#24134f" fontSize="12" fontWeight="800"><text x="8" y="118">Rim & spout</text><text x="270" y="266">Graduations</text><text x="272" y="482">Flat base</text></g><text x="180" y="520" textAnchor="middle" fontSize="12" fill="#4c1d95">For holding, mixing & heating</text><text x="180" y="542" textAnchor="middle" fontSize="11" fill="#4c1d95">Graduations show approximate volume</text>
+      </>}
+      {multimeter && <>
+        <rect x="102" y="120" width="156" height="300" rx="24" fill="#25334c" stroke="#111827" strokeWidth="5"/><rect x="126" y="148" width="108" height="70" rx="8" fill="#d9f99d" stroke="#111827" strokeWidth="4"/><text x="180" y="193" textAnchor="middle" fontSize="28" fontWeight="900" fill="#1f2937">12.0</text><circle cx="180" cy="294" r="48" fill="#475569" stroke="#cbd5e1" strokeWidth="6"/><path d="M180 294 L204 263" stroke="#f8fafc" strokeWidth="7" strokeLinecap="round"/><circle cx="180" cy="294" r="8" fill="#f8fafc"/><circle cx="145" cy="376" r="10" fill="#111827" stroke="#ef4444" strokeWidth="4"/><circle cx="215" cy="376" r="10" fill="#111827" stroke="#0f172a" strokeWidth="4"/>
+        <path d="M126 180 L62 160 L20 160 M226 295 L295 270 L340 270 M145 376 L70 430 L20 430 M215 376 L285 460 L340 460" stroke="#7c3aed" strokeWidth="2" fill="none"/><g fill="#24134f" fontSize="12" fontWeight="800"><text x="8" y="148">Display</text><text x="278" y="255">Selector dial</text><text x="8" y="448">COM socket</text><text x="278" y="480">V / Ω socket</text></g><text x="180" y="530" textAnchor="middle" fontSize="12" fill="#4c1d95">Measures voltage, current & resistance</text>
+      </>}
+      {!microscope && !thermometer && !beaker && !multimeter && <><rect x="55" y="145" width="250" height="260" rx="20" fill="#ede9fe" stroke="#7c3aed" strokeWidth="3"/><text x="180" y="260" textAnchor="middle" fontSize="54">📘</text><text x="180" y="310" textAnchor="middle" fontSize="13" fontWeight="800" fill="#312e81">{category}</text><text x="180" y="340" textAnchor="middle" fontSize="11" fill="#4338ca">Study the description and key points</text></>}
+      <rect x="18" y="570" width="324" height="48" rx="12" fill="#4c1d95"/><text x="180" y="590" textAnchor="middle" fontSize="10" fontWeight="800" fill="#fff">GIGALEARN • LABELLED DIAGRAM</text><text x="180" y="605" textAnchor="middle" fontSize="9" fill="#ede9fe">Tap image to zoom • 9:16 portrait</text>
+    </svg>
+  );
 }
 
 function ResourceVisual({ title, category, imageUrl, large = false }: {
   title: string; category: string; imageUrl?: string | null; large?: boolean;
 }) {
+  const [zoomed, setZoomed] = useState(false);
+  const visual = imageUrl
+    ? <img src={imageUrl} alt={"Learning material: " + title} className="block h-full w-full bg-white object-contain" loading="lazy" />
+    : <ResourceDiagram title={title} category={category} />;
   return (
-    <div className={`relative flex w-full items-center justify-center overflow-hidden rounded-xl border border-violet-100 bg-gradient-to-br from-violet-50 via-white to-indigo-50 ${large ? "min-h-56 sm:min-h-72" : "h-36"}`} role="img" aria-label={`Learning illustration for ${title}`}>
-      {imageUrl ? <img src={imageUrl} alt={title} className="absolute inset-0 h-full w-full bg-white object-contain" loading="lazy" onError={e => { e.currentTarget.style.display = "none"; }} /> : null}
-      <div className="flex flex-col items-center gap-2 px-4 py-5 text-center">
-        <span className={large ? "text-7xl" : "text-6xl"} aria-hidden>{resourceVisual(title, category)}</span>
-        <span className="max-w-full rounded-full bg-white/90 px-3 py-1 text-xs font-bold text-violet-900 shadow-sm">{category}</span>
-        <span className="text-xs font-semibold text-slate-600">Illustrated learning aid</span>
-      </div>
-    </div>
+    <>
+      <button type="button" onClick={() => setZoomed(true)} aria-label={"Zoom labelled diagram for " + title} className={"group relative mx-auto block w-full overflow-hidden rounded-2xl border border-violet-200 bg-[#f8f7ff] text-left shadow-sm focus:outline-none focus:ring-4 focus:ring-violet-300 " + (large ? "max-w-[420px]" : "max-w-[260px]")}>
+        <div className="relative aspect-[9/16] w-full">{visual}</div>
+        <span className="absolute bottom-3 right-3 rounded-full bg-slate-950/85 px-3 py-1.5 text-xs font-bold text-white shadow">⌕ Tap to zoom</span>
+      </button>
+      {zoomed && <div role="dialog" aria-modal="true" aria-label={"Zoomed learning diagram: " + title} className="fixed inset-0 z-[100] flex items-center justify-center overflow-auto bg-slate-950/95 p-3" onClick={() => setZoomed(false)}>
+        <button type="button" onClick={() => setZoomed(false)} className="fixed right-4 top-4 z-[101] rounded-full bg-white px-4 py-2 text-sm font-bold text-slate-950 shadow-lg">Close ✕</button>
+        <div className="my-12 w-full max-w-[520px]" onClick={e => e.stopPropagation()} style={{touchAction:"pinch-zoom pan-y"}}>
+          <div className="aspect-[9/16] w-full overflow-hidden rounded-xl bg-white shadow-2xl">{visual}</div>
+          <p className="mt-3 text-center text-xs font-semibold text-white">Pinch with two fingers to zoom • Tap outside to close</p>
+        </div>
+      </div>}
+    </>
   );
 }
 
