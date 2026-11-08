@@ -33,6 +33,9 @@ describe("GigaLearn teaching materials library", () => {
     expect(backend).toContain('q.eq("userId", email).eq("status", "active")');
     expect(backend).toContain("subscription.periodEnd > now");
     expect(backend).toContain("issueDownloadToken = mutation");
+    expect(backend).toContain("isSubscriber: active");
+    expect(backend).toContain("Viewing remains free");
+    expect(backend).toContain("const fullAccess = true");
     expect(backend).toContain("consumeDownloadToken = internalMutation");
     expect(backend).toContain("row.expiresAt <= Date.now()");
     expect(backend).toContain("row.consumedAt");
@@ -45,6 +48,8 @@ describe("GigaLearn teaching materials library", () => {
     expect(ui).toContain("api.teachingResources.getPublicDetail");
     expect(ui).toContain("api.teachingResources.issueDownloadToken");
     expect(ui).toContain("window.print()");
+    expect(ui).toContain("detail.isSubscriber");
+    expect(ui).toContain("Viewing is free for everyone");
     expect(ui).toContain("sessionReady");
     expect(ui).toContain("Checking your subscription and loading resource details");
     expect(ui).not.toContain("</p>\\n          {!detail.fullAccess");
