@@ -1164,7 +1164,8 @@ export default defineSchema({
   })
     .index("by_created", ["createdAt"])
     .index("by_author_created", ["authorId", "createdAt"])
-    .index("by_community_created", ["communitySlug", "createdAt"]),
+    .index("by_community_created", ["communitySlug", "createdAt"])
+    .index("by_copyright_status_created", ["copyrightScreeningStatus", "createdAt"]),
 
   /** Creator appeals against a possible copyright match; immutable submission history. */
   socialContentAppeals: defineTable({
