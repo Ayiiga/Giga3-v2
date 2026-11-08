@@ -66,7 +66,7 @@ export const listPublished = query({
     if (q) rows = rows.filter(r =>
       [r.title, r.summary, r.subject, r.topic, r.category, r.activity].join(" ").toLowerCase().includes(q)
     );
-    return await Promise.all(rows.slice(0, 300).map(async row => ({ ...publicResource(row), imageUrl: row.access === "free" && row.imageStorageId ? await ctx.storage.getUrl(row.imageStorageId) : null })));
+    return await Promise.all(rows.slice(0, 300).map(async row => ({ ...publicResource(row), imageUrl: row.imageStorageId ? await ctx.storage.getUrl(row.imageStorageId) : null })));
   },
 });
 
@@ -84,7 +84,8 @@ export const getPublicDetail = query({
         active = await hasActiveSubscriptionAccess(ctx, email, user);
       } catch { active = false; }
     }
-    const fullAccess = active || row.access === "free";
+    // Published teaching content is open to every visitor. Subscription status gates only file downloads and printing.
+    const fullAccess = true;
     const components = JSON.parse(row.componentsJson);
     const instructions = JSON.parse(row.instructionsJson);
     const activities = JSON.parse(row.activitiesJson);
@@ -92,18 +93,19 @@ export const getPublicDetail = query({
     const mistakes = JSON.parse(row.mistakesJson);
     return {
       ...publicResource(row),
-      description: fullAccess ? row.description : (row.previewText ?? row.summary),
-      components: fullAccess ? components : components.slice(0, 2),
-      instructions: fullAccess ? instructions : instructions.slice(0, 1),
-      activities: fullAccess ? activities : activities.slice(0, 1),
-      safety: fullAccess ? safety : safety.slice(0, 1),
-      commonMistakes: fullAccess ? mistakes : [],
-      teacherGuidance: fullAccess ? row.teacherGuidance ?? "" : "",
-      studentExercises: fullAccess ? row.studentExercises ?? "" : "",
+      description: row.description,
+      components,
+      instructions,
+      activities,
+      safety,
+      commonMistakes: mistakes,
+      teacherGuidance: row.teacherGuidance ?? "",
+      studentExercises: row.studentExercises ?? "",
       curriculumReference: row.curriculumReference ?? "",
-      hasImage: Boolean(row.imageStorageId), imageUrl: fullAccess && row.imageStorageId ? await ctx.storage.getUrl(row.imageStorageId) : null, hasDiagram: Boolean(row.diagramStorageId),
+      hasImage: Boolean(row.imageStorageId), imageUrl: row.imageStorageId ? await ctx.storage.getUrl(row.imageStorageId) : null, hasDiagram: Boolean(row.diagramStorageId),
       hasGuide: Boolean(row.guideStorageId), hasWorksheet: Boolean(row.worksheetStorageId),
       fullAccess,
+      isSubscriber: active,
     };
   },
 });
@@ -304,8 +306,7 @@ export const issueDownloadToken = mutation({
     if (!resource || resource.status !== "published") throw new Error("Resource is unavailable.");
     const user = await ctx.db.query("users").withIndex("by_email", q => q.eq("email", email)).first();
     const active = await hasActiveSubscriptionAccess(ctx, email, user);
-    const freeAccess = resource.access === "free";
-    if (!freeAccess && !active) throw new Error("An active subscription is required to access this resource file.");
+    if (!active) throw new Error("An active Giga3 AI subscription is required to download or print teaching materials. Viewing remains free.");
     const storageId = args.fileKind === "guide" ? resource.guideStorageId
       : args.fileKind === "worksheet" ? resource.worksheetStorageId
       : args.fileKind === "image" ? resource.imageStorageId : resource.diagramStorageId;
@@ -330,7 +331,7 @@ export const consumeDownloadToken = internalMutation({
     const user = await ctx.db.query("users").withIndex("by_email", q => q.eq("email", row.userEmail)).first();
     if (!resource || resource.status !== "published" || !user) return null;
     const active = await hasActiveSubscriptionAccess(ctx, row.userEmail, user);
-    if (resource.access !== "free" && !active) return null;
+    if (!active) return null;
     const storageId = row.fileKind === "guide" ? resource.guideStorageId
       : row.fileKind === "worksheet" ? resource.worksheetStorageId
       : row.fileKind === "image" ? resource.imageStorageId : resource.diagramStorageId;
