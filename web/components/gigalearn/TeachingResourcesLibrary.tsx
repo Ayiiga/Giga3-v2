@@ -159,6 +159,7 @@ export function TeachingResourcesLibrary() {
   const [adminExercises, setAdminExercises] = useState("");
   const [adminAccess, setAdminAccess] = useState<"free" | "subscriber">("subscriber");
   const [adminMessage, setAdminMessage] = useState("");
+  const [uploadResourceId, setUploadResourceId] = useState("");
   useEffect(() => {
     // Resolve the persisted browser session before showing subscriber detail.
     setSessionToken(getSessionToken());
@@ -221,26 +222,44 @@ export function TeachingResourcesLibrary() {
         <div className="mt-3 flex items-center gap-2 rounded-xl border border-slate-300 bg-slate-50 p-3 text-slate-950"><Search className="h-5 w-5 shrink-0 text-violet-800" /><input aria-label="Search teaching materials" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search microscope, beaker or topic…" className="min-w-0 flex-1 bg-transparent text-sm text-slate-950 placeholder:text-slate-500 outline-none" /></div>
         {suggestions.length > 0 && <div className="mt-2 flex flex-wrap gap-2">{suggestions.map(s => <button key={s} onClick={() => setSearch(s)} className="rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-900">{s}</button>)}</div>}
       </header>
-
-
+      <section aria-label="Quick science collections" className="rounded-2xl border border-violet-200 bg-violet-50 p-3">
+        <h2 className="text-sm font-extrabold text-violet-950">Quick access · Science collections</h2>
+        <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
+          <button type="button" onClick={()=>{setSearch("");setLevel("jhs");setClassName("JHS 1");setCategory("Laboratory Equipment");setSubject("all");setSelected(null);}} className="rounded-xl bg-white px-3 py-3 text-left text-sm font-bold text-violet-900 shadow-sm">🧪 Laboratory equipment <span className="block text-xs font-normal text-slate-600">JHS & SHS apparatus</span></button>
+          <button type="button" onClick={()=>{setSearch("");setLevel("jhs");setClassName("JHS 1");setCategory("Laboratory Set-ups");setSubject("all");setSelected(null);}} className="rounded-xl bg-white px-3 py-3 text-left text-sm font-bold text-violet-900 shadow-sm">⚗️ JHS laboratory set-ups <span className="block text-xs font-normal text-slate-600">Practical arrangements</span></button>
+          <button type="button" onClick={()=>{setSearch("");setLevel("jhs");setClassName("JHS 1");setCategory("Human Biology");setSubject("all");setSelected(null);}} className="rounded-xl bg-white px-3 py-3 text-left text-sm font-bold text-violet-900 shadow-sm">🫀 9 human body systems <span className="block text-xs font-normal text-slate-600">Organs, labels and functions</span></button>
+        </div>
+      </section>
 
       {admin?.isAdmin && <details className="rounded-2xl border border-amber-300 bg-amber-50 p-4"><summary className="cursor-pointer list-none font-extrabold text-amber-950"><span className="inline-flex items-center gap-2">⚙️ Manage Resources <span className="text-xs font-semibold text-amber-800">(administrator only)</span></span><p className="mt-1 text-xs font-normal text-amber-900">Add, upload and review learning materials. Open only when you need to manage the library.</p></summary><div className="mt-4 border-t border-amber-200 pt-4">
         <h2 className="font-extrabold text-amber-950">Administrator · Add a resource</h2>
         <button type="button" disabled={busy || !sessionToken} onClick={async () => {setBusy(true);try {const result=await seedStarter({sessionToken:sessionToken!});setAdminMessage(result.message);}catch(e){setAdminMessage(e instanceof Error?e.message:"Could not load starter resources.");}finally{setBusy(false);}}} className="mt-3 rounded-lg border border-amber-700 px-3 py-2 text-xs font-bold text-amber-950">Load four starter equipment guides</button>
-        <button type="button" disabled={busy || !sessionToken} onClick={async () => {setBusy(true);try {const result=await seedScienceAids({sessionToken:sessionToken!});setAdminMessage(result.message);}catch(e){setAdminMessage(e instanceof Error?e.message:"Could not load science learning aids.");}finally{setBusy(false);}}} className="mt-3 ml-2 rounded-lg bg-violet-800 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">Publish Individual Science Learning Aids</button>
-        <p className="mt-1 text-xs text-amber-900">The four starter guides are published as subscriber resources. The Science Learning Aids button publishes separate, searchable JHS/SHS resources. Upload the matching individual JPG files below; filenames must match each resource slug. New resources created below are saved as drafts until reviewed.</p>
+        <button type="button" disabled={busy || !sessionToken} onClick={async () => {setBusy(true);try {const result=await seedScienceAids({sessionToken:sessionToken!});setAdminMessage(result.message);}catch(e){setAdminMessage(e instanceof Error?e.message:"Could not load science learning aids.");}finally{setBusy(false);}}} className="mt-3 w-full rounded-xl bg-violet-800 px-4 py-3 text-sm font-extrabold text-white disabled:opacity-50">Publish / update complete Science Aids Library</button>
+        <p className="mt-2 text-xs leading-5 text-amber-950">This single action publishes individual searchable resources for laboratory equipment, JHS practical set-ups and all nine human body systems. Existing resources are kept; only missing records are added. Resources are free to view.</p>
 
         <div className="mt-3 rounded-xl border border-violet-200 bg-violet-50 p-3">
-          <p className="text-sm font-bold text-violet-950">Bulk attach individual learning-aid images</p>
-          <p className="mt-1 text-xs text-violet-900">Unzip the individual-images pack, select all JPGs here, and the uploader will match each filename to its resource slug and attach it as the resource image.</p>
+          <p className="text-sm font-bold text-violet-950">Easy image upload — choose the resource, then choose its photo</p>
+          <p className="mt-1 text-xs text-violet-900">No filename matching needed. Select a resource from the list and attach one JPG, PNG or WebP image.</p>
+          <select aria-label="Choose resource for image upload" value={uploadResourceId} onChange={e=>setUploadResourceId(e.target.value)} className="mt-2 min-h-11 w-full rounded-lg border border-violet-200 bg-white px-3 text-sm text-slate-900">
+            <option value="">Choose a learning resource…</option>
+            {(listAdmin ?? []).map((r:any)=><option key={r._id} value={r._id}>{r.title} · {r.status}</option>)}
+          </select>
+          <label className="mt-2 block rounded-lg border border-violet-300 bg-white p-3 text-sm font-semibold text-violet-900">Choose image for selected resource
+            <input type="file" accept="image/jpeg,image/png,image/webp" className="mt-2 block w-full text-xs" disabled={!uploadResourceId || busy} onChange={async e=>{const file=e.target.files?.[0];if(!file||!sessionToken||!uploadResourceId)return;setBusy(true);try{const uploadUrl=await createUploadUrl({sessionToken});const response=await fetch(uploadUrl,{method:"POST",headers:{"Content-Type":file.type},body:file});if(!response.ok)throw new Error("Image upload failed.");const {storageId}=await response.json();await attachFile({sessionToken,resourceId:uploadResourceId as any,fileKind:"image",storageId});setAdminMessage("Image attached successfully.");}catch(err){setAdminMessage(err instanceof Error?err.message:"Image upload failed.");}finally{setBusy(false);e.target.value="";}}}/>
+          </label>
+        </div>
+        <details className="mt-3 rounded-xl border border-violet-200 bg-white p-3">
+          <summary className="cursor-pointer text-sm font-bold text-violet-950">Advanced: bulk upload a folder of named images</summary>
+          <p className="mt-2 text-xs text-violet-900">Filenames can match either the resource slug or its title. Spaces, underscores and hyphens are treated as equivalent.</p>
           <input type="file" accept="image/jpeg,image/png,image/webp" multiple className="mt-2 block w-full text-xs text-slate-700" onChange={async e => {
             const files = Array.from(e.target.files ?? []);
             if (!files.length || !sessionToken || !listAdmin) return;
             setBusy(true); let uploaded = 0; const skipped: string[] = [];
             try {
               for (const file of files) {
-                const slug = file.name.replace(/\.[^.]+$/, "").toLowerCase();
-                const resource = listAdmin.find((r: any) => r.slug === slug);
+                const normalise = (value: string) => value.toLowerCase().replace(/\.[^.]+$/, "").replace(/[^a-z0-9]+/g, "");
+                const fileKey = normalise(file.name);
+                const resource = listAdmin.find((r: any) => normalise(r.slug) === fileKey || normalise(r.title) === fileKey);
                 if (!resource) { skipped.push(file.name); continue; }
                 const uploadUrl = await createUploadUrl({ sessionToken });
                 const response = await fetch(uploadUrl, { method: "POST", headers: { "Content-Type": file.type }, body: file });
@@ -249,11 +268,12 @@ export function TeachingResourcesLibrary() {
                 await attachFile({ sessionToken, resourceId: resource._id, fileKind: "image", storageId });
                 uploaded++;
               }
-              setAdminMessage(`Attached ${uploaded} individual images.${skipped.length ? ` Skipped ${skipped.length} unmatched files: ${skipped.slice(0, 5).join(", ")}.` : ""}`);
+              setAdminMessage(`Attached ${uploaded} images.${skipped.length ? ` Could not match: ${skipped.slice(0, 8).join(", ")}.` : " All selected images were matched."}`);
             } catch (err) { setAdminMessage(err instanceof Error ? err.message : "Bulk image upload failed."); }
             finally { setBusy(false); e.target.value = ""; }
           }} />
-        </div>
+        </details>
+        <details className="mt-3 rounded-xl border border-amber-200 bg-white p-3"><summary className="cursor-pointer text-sm font-bold text-amber-950">Advanced: create a new resource manually</summary>
         <form className="mt-3 grid gap-2 sm:grid-cols-2" onSubmit={async e => {
           e.preventDefault(); if (!sessionToken) return;
           setBusy(true); setAdminMessage("");
@@ -291,6 +311,7 @@ export function TeachingResourcesLibrary() {
           <select value={adminAccess} onChange={e => setAdminAccess(e.target.value as "free"|"subscriber")} className="min-h-11 rounded-lg border bg-white px-3 text-sm"><option value="free">Free resource</option><option value="subscriber">Subscriber-only resource</option></select>
           <button disabled={busy} className="min-h-11 rounded-lg bg-amber-900 px-4 text-sm font-bold text-white disabled:opacity-50">Save draft resource</button>
         </form>
+        </details>
         {adminMessage && <p role="status" className="mt-3 text-sm text-amber-950">{adminMessage}</p>}
         <div className="mt-5 border-t border-amber-200 pt-4">
           <h3 className="font-bold text-amber-950">Resource review queue</h3>
