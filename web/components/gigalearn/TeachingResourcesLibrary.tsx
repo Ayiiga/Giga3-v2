@@ -67,12 +67,43 @@ function ResourceDiagram({ title, category }: { title: string; category: string 
   );
 }
 
+type CommonsImage = { thumb: string; original: string; page: string; license: string; artist: string };
+
+function useCommonsImage(title: string, category: string, enabled: boolean) {
+  const [image, setImage] = useState<CommonsImage | null>(null);
+  useEffect(() => {
+    if (!enabled || !title) return;
+    let active = true;
+    const query = (title + " " + category).replace(/[<>]/g, " ").slice(0, 140);
+    const endpoint = "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrlimit=1&gsrsearch=" +
+      encodeURIComponent("filetype:bitmap " + query) +
+      "&prop=imageinfo&iiprop=url%7Cextmetadata&iiurlwidth=900&format=json&origin=*";
+    fetch(endpoint).then(r => { if (!r.ok) throw new Error("Commons image lookup failed"); return r.json(); })
+      .then(data => {
+        const page = Object.values(data?.query?.pages ?? {})[0] as any;
+        const info = page?.imageinfo?.[0];
+        if (!active || !info?.thumburl || !info?.descriptionurl) return;
+        const meta = info.extmetadata ?? {};
+        const clean = (value: any) => String(value?.value ?? "").replace(/<[^>]*>/g, "").trim();
+        setImage({
+          thumb: info.thumburl, original: info.url ?? info.thumburl, page: info.descriptionurl,
+          license: clean(meta.LicenseShortName) || "See source page for licence",
+          artist: clean(meta.Artist) || clean(meta.Credit) || "See source page",
+        });
+      }).catch(() => { if (active) setImage(null); });
+    return () => { active = false; };
+  }, [title, category, enabled]);
+  return image;
+}
+
 function ResourceVisual({ title, category, imageUrl, large = false }: {
   title: string; category: string; imageUrl?: string | null; large?: boolean;
 }) {
   const [zoomed, setZoomed] = useState(false);
-  const visual = imageUrl
-    ? <img src={imageUrl} alt={"Learning material: " + title} className="block h-full w-full bg-white object-contain" loading="lazy" />
+  const commons = useCommonsImage(title, category, !imageUrl);
+  const resolvedImage = imageUrl || commons?.thumb;
+  const visual = resolvedImage
+    ? <img src={resolvedImage} alt={"Photograph of " + title} className="block h-full w-full bg-white object-contain" loading="lazy" />
     : <ResourceDiagram title={title} category={category} />;
   return (
     <>
@@ -80,6 +111,10 @@ function ResourceVisual({ title, category, imageUrl, large = false }: {
         <div className="relative aspect-[9/16] w-full">{visual}</div>
         <span className="absolute bottom-3 right-3 rounded-full bg-slate-950/85 px-3 py-1.5 text-xs font-bold text-white shadow">⌕ Tap to zoom</span>
       </button>
+      {commons && !imageUrl && <div className="mx-auto mt-1 max-w-[420px] text-[10px] leading-4 text-slate-600">
+        Photo: {commons.artist} · {commons.license} · <a href={commons.page} target="_blank" rel="noreferrer" className="font-semibold text-violet-800 underline">Source & licence</a>
+        {" · "}<a href={commons.original} target="_blank" rel="noreferrer" download className="font-semibold text-violet-800 underline">Download original</a>
+      </div>}
       {zoomed && <div role="dialog" aria-modal="true" aria-label={"Zoomed learning diagram: " + title} className="fixed inset-0 z-[100] flex items-center justify-center overflow-auto bg-slate-950/95 p-3" onClick={() => setZoomed(false)}>
         <button type="button" onClick={() => setZoomed(false)} className="fixed right-4 top-4 z-[101] rounded-full bg-white px-4 py-2 text-sm font-bold text-slate-950 shadow-lg">Close ✕</button>
         <div className="my-12 w-full max-w-[520px]" onClick={e => e.stopPropagation()} style={{touchAction:"pinch-zoom pan-y"}}>

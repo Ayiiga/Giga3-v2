@@ -51,6 +51,10 @@ describe("GigaLearn teaching materials library", () => {
     expect(ui).toContain("Pinch with two fingers to zoom");
     expect(ui).toContain("COMPOUND LIGHT MICROSCOPE");
     expect(ui).toContain("Liquid column");
+    expect(ui).toContain("https://commons.wikimedia.org/w/api.php");
+    expect(ui).toContain("Source & licence");
+    expect(ui).toContain("Download original");
+    expect(ui).toContain("useCommonsImage");
     expect(ui).toContain("Open full material & illustration");
     expect(ui).toContain("api.teachingResources.getPublicDetail");
     expect(ui).toContain("api.teachingResources.issueDownloadToken");
