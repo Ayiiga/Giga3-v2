@@ -83,7 +83,7 @@ describe("sendCreatorGift policy", () => {
       resolve(__dirname, "../../web/components/gigasocial/economy/GigaSocialCreatorDashboard.tsx"),
       "utf8"
     );
-    expect(client).toContain("500 fans");
+    expect(client).toContain("15 genuine fans");
     expect(client).not.toContain("100 fans");
     expect(affiliate).not.toContain("500 fans");
     expect(dashboard).not.toContain("100 fans");
