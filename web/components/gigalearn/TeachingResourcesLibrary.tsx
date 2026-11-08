@@ -154,7 +154,7 @@ function CommonsImage({ title, searchTerm, imageUrl, large = false }: {
     return () => { cancelled = true; observer?.disconnect(); };
   }, [imageUrl, searchTerm, title]);
 
-  const src = imageUrl || asset?.thumb;
+  async function downloadOriginal() {\n    if (!asset?.allowedDownload) return;\n    try {\n      const response = await fetch(asset.original);\n      if (!response.ok) throw new Error("Download unavailable");\n      const blob = await response.blob();\n      const objectUrl = URL.createObjectURL(blob);\n      const anchor = document.createElement("a");\n      anchor.href = objectUrl;\n      anchor.download = asset.fileTitle.replace(/[^a-z0-9._-]+/gi, "-");\n      document.body.appendChild(anchor); anchor.click(); anchor.remove();\n      URL.revokeObjectURL(objectUrl);\n    } catch { window.open(asset.page, "_blank", "noopener,noreferrer"); }\n  }\n\n  const src = imageUrl || asset?.thumb;
   const visual = src
     ? <img src={src} alt={title + " educational image"} className="block h-full w-full bg-white object-contain" loading="lazy" />
     : <ResourceDiagram title={title} category="Science learning aid" />;
@@ -166,7 +166,7 @@ function CommonsImage({ title, searchTerm, imageUrl, large = false }: {
         {!src && loading && <span className="absolute left-3 top-3 rounded-full bg-white/95 px-2 py-1 text-[10px] font-bold text-violet-900">Finding a real image…</span>}
       </button>
       {asset && !imageUrl && <div className="mt-1 flex flex-wrap items-center justify-center gap-x-2 text-[10px] text-slate-500"><span>Source: Wikimedia Commons · {asset.license}</span><a href={asset.page} target="_blank" rel="noopener noreferrer" className="font-semibold text-violet-700 underline">Attribution & licence</a></div>}
-      {asset && !imageUrl && asset.allowedDownload && <a href={asset.original} target="_blank" rel="noopener noreferrer" className="mt-1 block text-center text-xs font-bold text-violet-700 underline">Open original image · reuse under listed licence</a>}
+      {asset && !imageUrl && asset.allowedDownload && <button type="button" onClick={downloadOriginal} className="mt-1 block w-full text-center text-xs font-bold text-violet-700 underline">Download original image · {asset.license}</button>}
       {zoomed && <div role="dialog" aria-modal="true" aria-label={"Full-screen image: " + title} className="fixed inset-0 z-[100] flex items-center justify-center overflow-auto bg-slate-950/95 p-3" onClick={() => setZoomed(false)}>
         <button type="button" onClick={() => setZoomed(false)} className="fixed right-4 top-4 z-[101] rounded-full bg-white px-4 py-2 text-sm font-bold text-slate-950 shadow-lg">Close ✕</button>
         <div className="my-12 w-full max-w-[620px]" onClick={e => e.stopPropagation()} style={{ touchAction: "pinch-zoom pan-y" }}>
@@ -273,7 +273,7 @@ export function TeachingResourcesLibrary() {
     <main className="mx-auto w-full max-w-6xl space-y-5 pb-12" data-testid="teaching-resources-library">
       <header className="overflow-hidden rounded-2xl border border-violet-200 bg-white p-4 text-slate-950 shadow-sm sm:p-5">
         <div className="flex items-center gap-3"><span className="rounded-xl bg-violet-100 p-2.5 text-violet-800"><FlaskConical className="h-6 w-6" /></span><div><p className="text-[10px] font-bold uppercase tracking-widest text-violet-700">GigaLearn · Learning library</p><h1 className="text-xl font-black text-slate-950 sm:text-2xl">Teaching & Practical Materials</h1></div></div>
-        <p className="mt-2 max-w-3xl text-sm leading-5 text-slate-700">Explore equipment, practical guides and learning aids for JHS and SHS.</p>
+        <p className="mt-2 max-w-3xl text-sm leading-5 text-slate-700">Explore 30 individually searchable JHS/SHS visual resources. Images include source credits and licence details; downloadable originals are offered when the licence permits reuse.</p>
         <div className="mt-3 flex items-center gap-2 rounded-xl border border-slate-300 bg-slate-50 p-3 text-slate-950"><Search className="h-5 w-5 shrink-0 text-violet-800" /><input aria-label="Search teaching materials" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search microscope, beaker or topic…" className="min-w-0 flex-1 bg-transparent text-sm text-slate-950 placeholder:text-slate-500 outline-none" /></div>
         {suggestions.length > 0 && <div className="mt-2 flex flex-wrap gap-2">{suggestions.map(s => <button key={s} onClick={() => setSearch(s)} className="rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-900">{s}</button>)}</div>}
       </header>
@@ -395,7 +395,7 @@ export function TeachingResourcesLibrary() {
       </section>}
 
       <section>
-        <div className="mb-3 flex items-center justify-between gap-3"><h2 className="text-lg font-black text-slate-950">Explore learning resources</h2><span className="text-xs text-slate-500">{resources?.length ?? 0} resources</span></div>
+        <div className="mb-3 flex items-center justify-between gap-3"><h2 className="text-lg font-black text-slate-950">Explore the first 30 visual resources</h2><span className="text-xs text-slate-500">{resources?.length ?? 0} / 30 resources</span></div>
         {resources === undefined ? <p className="rounded-2xl bg-slate-50 p-5 text-sm text-slate-500">Loading resource library…</p> :
           resources.length === 0 ? <div className="rounded-2xl border border-dashed p-7 text-center"><BookOpen className="mx-auto h-8 w-8 text-violet-500" /><h3 className="mt-2 font-bold">No matching resources yet</h3><p className="mt-1 text-sm text-slate-500">Try another subject or search term. New approved practical guides will appear here.</p></div> :
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{resources.map(r => <article key={r._id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><div className="flex items-center justify-between gap-2"><span className="rounded-full bg-violet-50 px-2.5 py-1 text-[10px] font-bold text-violet-800">{r.subject}</span><span className="text-xs font-bold text-emerald-700">Free viewing</span></div><div className="mt-3"><CommonsImage title={r.title} searchTerm={CURATED_IMAGE_RESOURCES[r.slug] ?? r.title + " science education"} imageUrl={r.imageUrl} /></div><h3 className="mt-3 font-extrabold text-slate-950">{r.title}</h3><p className="mt-1 text-sm leading-5 text-slate-600">{r.summary}</p><p className="mt-3 text-xs text-slate-500">{r.classes.join(" · ")} · {r.category}</p><button onClick={() => {setSelected(r.slug);setNotice("");}} className="mt-4 min-h-11 w-full rounded-xl bg-violet-700 px-4 py-2 text-sm font-bold text-white">Open full material & illustration</button></article>)}</div>}
