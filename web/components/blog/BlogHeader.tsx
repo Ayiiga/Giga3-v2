@@ -105,15 +105,30 @@ export function BlogArticleLayout({ post, toc, children, cta }: BlogArticleLayou
 
       <aside
         aria-label="Explore Giga3 AI"
-        className="mt-12 rounded-2xl border border-violet-200 bg-gradient-to-br from-violet-50 via-white to-indigo-50 p-6 sm:p-7"
+        className="mt-12 rounded-2xl border border-violet-200 p-6 sm:p-7"
+        style={{
+          backgroundColor: "#ffffff",
+          backgroundImage: "linear-gradient(135deg, #f5f3ff 0%, #ffffff 52%, #eef2ff 100%)",
+          color: "#111827",
+          colorScheme: "light",
+        }}
       >
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-violet-700">
+        <p
+          className="text-xs font-bold uppercase tracking-[0.16em]"
+          style={{ color: "#5b21b6" }}
+        >
           Keep exploring with Giga3
         </p>
-        <h2 className="mt-2 text-xl font-bold text-slate-950 sm:text-2xl">
+        <h2
+          className="mt-2 text-xl font-bold sm:text-2xl"
+          style={{ color: "#111827" }}
+        >
           Turn what you have read into something you can do.
         </h2>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-700">
+        <p
+          className="mt-2 max-w-2xl text-sm leading-6"
+          style={{ color: "#374151" }}
+        >
           Ask Giga3 AI Chat to explain an idea, plan a project or help you think through your next
           step. And discover the GigaSocial Awards — a space celebrating creators across Ghana and
           Africa, with free nominations and free voting.
