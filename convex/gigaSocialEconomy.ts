@@ -253,7 +253,8 @@ async function getOriginalPostProgress(ctx: DbCtx, creatorId: string, now = Date
 export async function getMonetizationEligibility(
   ctx: DbCtx,
   profile: Doc<"socialProfiles">,
-  settings?: EconomySettings
+  settings?: EconomySettings,
+  includeOriginality = false
 ): Promise<{
   fanCount: number;
   fansRequired: number;
@@ -287,7 +288,10 @@ export async function getMonetizationEligibility(
     defaultRequired: config.minFansForMonetization,
   });
   const fanEligible = fanCount >= fansRequired;
-  const originalPosts = await getOriginalPostProgress(ctx, profile.userId);
+  // Fan-only mutations (including new-fan notifications) do not scan creator posts.
+  const originalPosts = includeOriginality
+    ? await getOriginalPostProgress(ctx, profile.userId)
+    : { required: MIN_ORIGINAL_POSTS_FOR_MONETIZATION, windowDays: ORIGINAL_POST_WINDOW_DAYS, count: 0, eligible: false, pendingReviewCount: 0 };
   const legacyUnlockOnly =
     !accepted &&
     typeof economy.monetizationUnlockedAt === "number" &&
@@ -420,7 +424,7 @@ export const getCreatorDashboard = query({
 
     const settings = await loadEconomySettings(ctx);
     const supportingCount = await getSupportingCount(ctx, userId);
-    const eligibility = await getMonetizationEligibility(ctx, profile, settings);
+    const eligibility = await getMonetizationEligibility(ctx, profile, settings, true);
     const { fanCount, unlocked } = eligibility;
     const gamification = parseGamification(profile.gamificationJson);
 
@@ -1304,21 +1308,25 @@ export const declarePostContentRights = mutation({
 
 /** Admin-only queue of declared posts requiring independent screening. */
 export const listCopyrightReviewQueue = query({
-  args: { sessionToken: v.string() },
+  args: { sessionToken: v.string(), paginationOpts: paginationOptsValidator },
   handler: async (ctx, args) => {
     const adminEmail = await requireSession(args.sessionToken, ctx);
     if (!isPlatformAdminEmail(adminEmail)) throw new Error("Administrator access required.");
-    const statuses = ["pending", "appealed", "possible_match"] as const;
-    const groups = await Promise.all(statuses.map((status) =>
-      ctx.db.query("socialPosts")
-        .withIndex("by_copyright_status_created", (q) => q.eq("copyrightScreeningStatus", status))
-        .order("desc")
-        .collect()
-    ));
-    return groups.flat()
-      .filter((p) => !p.deletedAt && Boolean(p.contentRightsDeclaration))
-      .sort((a, b) => b.createdAt - a.createdAt)
-      .map((p) => ({ postId: p._id, creatorId: p.authorId, body: p.body.slice(0, 300), declaration: p.contentRightsDeclaration ?? null, licenseReference: p.contentRightsLicenseReference, status: p.copyrightScreeningStatus, createdAt: p.createdAt }));
+    // Bound each read even when the review backlog grows. Filtering after pagination
+    // may yield a short/empty page, but the cursor always advances through all posts.
+    const page = await ctx.db.query("socialPosts")
+      .withIndex("by_created")
+      .order("desc")
+      .paginate(args.paginationOpts);
+    return {
+      ...page,
+      page: page.page
+        .filter((p) => !p.deletedAt && Boolean(p.contentRightsDeclaration) &&
+          (p.copyrightScreeningStatus === "pending" ||
+           p.copyrightScreeningStatus === "appealed" ||
+           p.copyrightScreeningStatus === "possible_match"))
+        .map((p) => ({ postId: p._id, creatorId: p.authorId, body: p.body.slice(0, 300), declaration: p.contentRightsDeclaration ?? null, licenseReference: p.contentRightsLicenseReference, status: p.copyrightScreeningStatus, createdAt: p.createdAt })),
+    };
   },
 });
 
