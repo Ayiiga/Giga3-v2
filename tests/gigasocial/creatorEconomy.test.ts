@@ -99,8 +99,8 @@ describe("creatorEconomy eligibility", () => {
     ).toMatch(/withdrawals|Available balance/i);
   });
 
-  it("publishes a stable monetisation policy version", () => {
-    expect(CREATOR_MONETIZATION_POLICY_VERSION).toBe("giga-creator-monetisation-v2");
+  it("publishes the versioned five-post originality policy", () => {
+    expect(CREATOR_MONETIZATION_POLICY_VERSION).toBe("giga-creator-monetisation-v3");
   });
 });
 
