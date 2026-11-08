@@ -25,7 +25,7 @@ export default function GigaSocialEarningsPage() {
       <ProductSeoHeader
         compact
         title="Creator Earnings Centre"
-        description="Transparent GH₵ earnings, eligibility from 15 verified African fans (500 elsewhere), rewards, and awards. Sign in to open your live dashboard."
+        description="Transparent GH₵ earnings, eligibility from 15 genuine fans globally, rewards, and awards. Sign in to open your live dashboard."
         showProductNav={false}
       />
       <main className="gigasocial-page-shell marketing-stable w-full px-3 pb-10 pt-4 sm:px-6">
