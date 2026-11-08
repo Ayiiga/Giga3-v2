@@ -19,10 +19,11 @@ const TOC = [
 ] as const;
 
 export const PLAIN_TEXT = `
-Africa does not need more AI hype. We need AI that solves real problems for students teachers
-entrepreneurs researchers creators everyday users. African needs and experiences should shape
-AI development. Responsible AI verification privacy human judgment. Giga3 AI built in Africa
-powered by AI designed for everyone. Chat GigaLearn Creator Studio creative productivity.
+Giga3 AI is an Africa-built AI platform for learning, exam preparation, research, creativity,
+technology skills, and everyday productivity. It brings AI Assistant, GigaLearn, Exam Practice,
+Technology Hub, Creator Studio, GigaSocial, and Marketplace into one connected experience.
+Practical AI must respect local education needs, mobile access, affordability, privacy,
+verification, and human judgment. Built in Africa. Powered by AI. Designed for Everyone. Chat GigaLearn Creator Studio creative productivity.
 `.trim();
 
 function ArticleContent() {
@@ -35,10 +36,11 @@ function ArticleContent() {
         when they open an app on a phone with limited data and real deadlines.
       </Prose>
       <Prose>
-        Africa does not need more AI hype. We need AI that helps someone finish a lesson plan,
-        revise for an exam, draft a clearer business message, check a suspicious WhatsApp
-        screenshot, or turn an idea into a shareable image — without pretending the machine has
-        replaced human judgment.
+        Africa does not need more AI hype. We need useful tools that help a Ghanaian student understand
+        a difficult concept, prepare for BECE or WASSCE, help a teacher plan a lesson, help a small
+        business communicate clearly, help a creator develop an idea, or help a curious learner
+        build technology skills. That is the practical direction behind Giga3 AI — with people,
+        not machines, remaining responsible for decisions and final work.
       </Prose>
 
       <ArticleH2 id="beyond-hype">Beyond the hype</ArticleH2>
@@ -72,14 +74,18 @@ function ArticleContent() {
         be verified.
       </Prose>
       <Prose>
-        On Giga3 AI, that direction shows up across{" "}
-        <ArticleLink href="/chat/">AI Chat</ArticleLink> for learning, research, writing, and
-        everyday questions;{" "}
-        <ArticleLink href="/gigalearn/">GigaLearn</ArticleLink> for structured study and exam
-        preparation; and creative tools such as{" "}
-        <ArticleLink href="/creator-studio/">Creator Studio</ArticleLink> for image generation and editing.
-        None of these replace teachers, professionals, or personal responsibility. They are meant
-        to assist people who already carry the hard work.
+        Giga3 AI connects several practical areas in one platform. The
+        <ArticleLink href="/chat/">AI Assistant</ArticleLink> supports questions, explanations,
+        research, writing, and problem-solving. <ArticleLink href="/gigalearn/">GigaLearn</ArticleLink>
+        supports curriculum-focused learning, while <ArticleLink href="/exam-practice/">Exam
+        Practice</ArticleLink> helps learners prepare with BECE and WASSCE-style practice.
+        <ArticleLink href="/technology-hub/">Technology Hub</ArticleLink> gives learners a place
+        to explore digital and technology skills. <ArticleLink href="/creator-studio/">Creator
+        Studio</ArticleLink> supports creative work, and <ArticleLink href="/gigasocial/">GigaSocial</ArticleLink>
+        and the <ArticleLink href="/marketplace/">Marketplace</ArticleLink> connect community
+        and useful resources. Features evolve, so users should check the platform for current
+        availability. These tools assist people; they do not replace teachers, professionals,
+        or personal responsibility.
       </Prose>
 
       <ArticleH2 id="african-context">Why African context matters</ArticleH2>
@@ -117,18 +123,20 @@ function ArticleContent() {
 
       <ArticleH2 id="why-giga3">Why I am building Giga3 AI</ArticleH2>
       <Prose>
-        I am building Giga3 AI because I want people here — students, educators, creators, and
-        small businesses — to have a coherent place to learn, create, and work with AI without
-        needing a stack of disconnected apps and foreign payment friction. As a basic school
-        educationist in Ghana, I see daily how much time is lost to busywork and how much potential
-        opens when tools are clear and accessible.
+        I am building Giga3 AI because students, educators, creators, entrepreneurs, and communities
+        deserve technology that understands the realities they work in. As a basic-school
+        educationist in Ghana, I see the need for learning resources that are easier to access,
+        practice that builds understanding, and tools that give teachers more room to focus on
+        learners. I also see creators and small businesses who need practical digital tools without
+        juggling too many disconnected services. Giga3 AI is being developed to bring these
+        experiences together in one accessible platform.
       </Prose>
       <Prose>
-        Giga3 AI is an evolving platform. Capabilities grow as we harden reliability, improve
-        creative workflows, and listen to what users actually ask for. It is not a claim that we
-        have solved every problem in African technology. It is a commitment to keep building toward
-        practical usefulness — chat assistance, learning support, and creative productivity —
-        with honesty about the journey.
+        Giga3 AI is an evolving product, and its work is not finished. We continue improving reliability,
+        learning experiences, exam preparation, creative workflows, technology education, and the
+        wider platform experience. We do not claim to have solved every challenge facing African
+        technology. Our commitment is to build, test, listen, and improve — prioritising features
+        that solve real problems and being honest about what is available today.
       </Prose>
 
       
@@ -144,9 +152,10 @@ function ArticleContent() {
         Your answers help us prioritise what to improve next.
       </Prose>
       <Prose>
-        Giga3 AI Chat is also open to learning from you — share corrections, clearer local
-        context, and better ways to explain something when an answer misses the mark. Useful
-        feedback makes the product more honest and more helpful for the next person.
+        Giga3 AI grows through real feedback. Tell us what works, what is confusing, which learning
+        resources are missing, and what would make the platform more useful in your school,
+        business, creative work, or community. Report inaccurate answers and share local context
+        so we can keep improving the experience.
       </Prose>
       <Prose>
         When you are ready to explore, start at{" "}
