@@ -7,7 +7,8 @@ const read = (path: string) => readFileSync(resolve(process.cwd(), path), "utf8"
 describe("GigaLearn teaching materials library", () => {
   it("adds a separate JHS/SHS resource catalogue without replacing exam banks", () => {
     const schema = read("convex/schema.ts");
-    expect(schema).toContain("teachingResources: defineTable");\n    expect(schema).toContain("subjects: v.optional(v.array(v.string()))");
+    expect(schema).toContain("teachingResources: defineTable");
+    expect(schema).toContain("subjects: v.optional(v.array(v.string()))");
     expect(schema).toContain("teachingResourceDownloadTokens: defineTable");
     expect(schema).toContain('v.literal("jhs")');
     expect(schema).toContain('v.literal("shs")');
@@ -23,7 +24,9 @@ describe("GigaLearn teaching materials library", () => {
     expect(backend).toContain("createResource = mutation");
     expect(backend).toContain("createUploadUrl = mutation");
     expect(backend).toContain("attachResourceFile = mutation");
-    expect(backend).toContain("seedStarterResources = mutation");\n    expect(backend).toContain("CURRICULUM_IMAGE_ALIGNMENT");\n    expect(backend).toContain("NaCCA Science Curriculum B7–B9");
+    expect(backend).toContain("seedStarterResources = mutation");
+    expect(backend).toContain("CURRICULUM_IMAGE_ALIGNMENT");
+    expect(backend).toContain("NaCCA Science Curriculum B7–B9");
   });
 
   it("rechecks subscription validity before issuing and consuming protected download tokens", () => {
@@ -45,13 +48,23 @@ describe("GigaLearn teaching materials library", () => {
   it("keeps the resource page connected to server catalogue queries", () => {
     const ui = read("web/components/gigalearn/TeachingResourcesLibrary.tsx");
     expect(ui).toContain("api.teachingResources.listPublished");
-    expect(ui).toContain("function CommonsImage");\n    expect(ui).toContain("CURATED_IMAGE_RESOURCES");\n    expect(ui).toContain("Wikimedia Commons");\n    expect(ui).toContain("Attribution & licence");\n    expect(ui).toContain("Download original image");\n    expect(ui).toContain("aspect-[9/16]");
+    expect(ui).toContain("function CommonsImage");
+    expect(ui).toContain("CURATED_IMAGE_RESOURCES");
+    expect(ui).toContain("Wikimedia Commons");
+    expect(ui).toContain("Attribution & licence");
+    expect(ui).toContain("Download original image");
+    expect(ui).toContain("aspect-[9/16]");
     expect(ui).toContain("function ResourceDiagram");
     expect(ui).toContain("aspect-[9/16]");
     expect(ui).toContain("Pinch with two fingers to zoom");
     expect(ui).toContain("COMPOUND LIGHT MICROSCOPE");
     expect(ui).toContain("Liquid column");
-    expect(ui).toContain("Open full material & illustration");\n    expect(ui).toContain("first 30 visual resources");\n    expect(ui).toContain("NaCCA JHS Science curriculum");\n    expect(ui).toContain("University of Ghana · practical science enrichment");\n    expect(ui).toContain("CURATED_IMAGE_SLUGS");\n    expect(ui).toContain("Pinch with two fingers to zoom");
+    expect(ui).toContain("Open full material & illustration");
+    expect(ui).toContain("first 30 visual resources");
+    expect(ui).toContain("NaCCA JHS Science curriculum");
+    expect(ui).toContain("University of Ghana · practical science enrichment");
+    expect(ui).toContain("CURATED_IMAGE_SLUGS");
+    expect(ui).toContain("Pinch with two fingers to zoom");
     expect(ui).toContain("api.teachingResources.getPublicDetail");
     expect(ui).toContain("api.teachingResources.issueDownloadToken");
     expect(ui).toContain("window.print()");
@@ -59,6 +72,7 @@ describe("GigaLearn teaching materials library", () => {
     expect(ui).toContain("Viewing is free for everyone");
     expect(ui).toContain("sessionReady");
     expect(ui).toContain("Checking your subscription and loading resource details");
-    expect(ui).not.toContain("</p>\\n          {!detail.fullAccess");
+    expect(ui).not.toContain("</p>\
+          {!detail.fullAccess");
   });
 });
