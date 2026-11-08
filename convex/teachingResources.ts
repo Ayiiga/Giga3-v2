@@ -18,7 +18,7 @@ addAlignment(["parts-of-a-compound-microscope"], "Biology", ["Biology","Integrat
 addAlignment(["human-digestive-system-organs-and-functions","human-respiratory-system-organs-and-functions","human-circulatory-system-organs-and-functions","human-nervous-system-organs-and-functions","human-skeletal-system-organs-and-functions","human-muscular-system-organs-and-functions","human-excretory-system-organs-and-functions","human-reproductive-system-organs-and-functions","human-endocrine-system-glands-and-functions"], "Biology", ["Biology","Integrated Science"], "both", ["JHS 2","JHS 3","SHS 1","SHS 2","SHS 3"], "NaCCA Science (JHS) and Biology / General Science (SHS): human body systems, structure, function and coordination.");
 addAlignment(["setup-filtration-set-up","setup-heating-set-up"], "Integrated Science", ["Integrated Science","Chemistry"], "both", ["JHS 2","JHS 3","SHS 1"], jhsScience + " " + shsGeneral);
 addAlignment(["setup-distillation-set-up","setup-simple-titration-set-up","setup-electrolysis-of-water"], "Chemistry", ["Chemistry","Integrated Science"], "shs", ["SHS 1","SHS 2","SHS 3"], "NaCCA Chemistry Curriculum (SHS 1–3): separation techniques, quantitative analysis and electrochemistry.");
-\nconst fileKind = v.union(v.literal("guide"), v.literal("worksheet"), v.literal("image"), v.literal("diagram"));
+const fileKind = v.union(v.literal("guide"), v.literal("worksheet"), v.literal("image"), v.literal("diagram"));
 const accessKind = v.union(v.literal("free"), v.literal("subscriber"));
 const statusKind = v.union(v.literal("draft"), v.literal("pending"), v.literal("published"), v.literal("archived"));
 
