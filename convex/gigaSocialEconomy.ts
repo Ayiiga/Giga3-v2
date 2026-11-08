@@ -1332,6 +1332,15 @@ export const reviewCopyrightDeclaration = mutation({
     if (note.length < 5) throw new Error("Add a brief reviewer rationale.");
     const now = Date.now();
     await ctx.db.patch(post._id, { copyrightScreeningStatus: args.decision, copyrightScreenedAt: now, copyrightScreenedBy: reviewer, copyrightScreeningNote: note });
+    const openAppeals = await ctx.db.query("socialContentAppeals").withIndex("by_post", (q) => q.eq("postId", post._id)).collect();
+    for (const appeal of openAppeals.filter((row) => row.status === "open")) {
+      await ctx.db.patch(appeal._id, {
+        status: args.decision === "clear" ? "cleared" : "reviewed",
+        reviewedAt: now,
+        reviewedBy: reviewer,
+        reviewerNote: note,
+      });
+    }
     return { ok: true as const, decision: args.decision };
   },
 });
