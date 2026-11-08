@@ -245,7 +245,8 @@ async function getOriginalPostProgress(ctx: DbCtx, creatorId: string, now = Date
     count: eligible.length,
     eligible: eligible.length >= MIN_ORIGINAL_POSTS_FOR_MONETIZATION,
     pendingReviewCount: recent.filter((p) => p.copyrightScreeningStatus === "pending" || p.copyrightScreeningStatus === "appealed").length,
-    recentPosts: recent.slice(0, 10).map((p) => ({
+    // Include the complete rolling window so older qualifying posts remain declarable.
+    recentPosts: recent.map((p) => ({
       postId: p._id, body: p.body.slice(0, 100), createdAt: p.createdAt,
       declaration: p.contentRightsDeclaration ?? null,
       screeningStatus: p.copyrightScreeningStatus ?? "not_declared",
