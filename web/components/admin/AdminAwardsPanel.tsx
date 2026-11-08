@@ -14,6 +14,8 @@ export function AdminAwardsPanel({
   const overview = useQuery(api.gigaSocialAwardsAdmin.getAdminSeasonOverview, creds);
   const bootstrap = useMutation(api.gigaSocialAwardsAdmin.bootstrapSeason);
   const setStatus = useMutation(api.gigaSocialAwardsAdmin.setSeasonStatus);
+  const setPromoPaymentsEnabled = useMutation(api.gigaSocialAwardsAdmin.setPromoPaymentsEnabled);
+  const setTipsEnabled = useMutation(api.gigaSocialAwardsAdmin.setTipsEnabled);
   const approve = useMutation(api.gigaSocialAwardsAdmin.approveNomination);
   const reject = useMutation(api.gigaSocialAwardsAdmin.rejectNomination);
   const publishAnnouncement = useMutation(api.gigaSocialAwardsAdmin.publishAnnouncement);
@@ -139,11 +141,59 @@ export function AdminAwardsPanel({
       ) : null}
 
       {overview.season ? (
-        <p className="text-sm text-muted">
-          Active: {overview.season.title} · {overview.season.status} · promoPayments=
-          {String(overview.season.promoPaymentsEnabled)} · tips=
-          {String(overview.season.tipsEnabled)}
-        </p>
+        <>
+          <p className="text-sm text-muted">
+            Active: {overview.season.title} · {overview.season.status} · promoPayments=
+            {String(overview.season.promoPaymentsEnabled)} · tips=
+            {String(overview.season.tipsEnabled)}
+          </p>
+          <div className="grid gap-3 rounded-xl border border-border p-3 sm:grid-cols-2">
+            <div>
+              <h3 className="font-semibold text-foreground">Candidate promotion payments</h3>
+              <p className="mt-1 text-xs text-muted">Paid visibility packages only. Never buys votes, changes scores or guarantees awards.</p>
+              <Button
+                type="button"
+                size="sm"
+                variant={overview.season.promoPaymentsEnabled ? "outline" : "primary"}
+                disabled={busy !== null}
+                onClick={() => void run(
+                  "promo-payments",
+                  () => setPromoPaymentsEnabled({
+                    ...creds,
+                    seasonId: overview.season!.seasonId,
+                    enabled: !overview.season!.promoPaymentsEnabled,
+                    confirm: true,
+                  }),
+                  overview.season.promoPaymentsEnabled ? "Candidate promotion payments disabled." : "Candidate promotion payments enabled."
+                )}
+              >
+                {overview.season.promoPaymentsEnabled ? "Disable promotion payments" : "Enable promotion payments"}
+              </Button>
+            </div>
+            <div>
+              <h3 className="font-semibold text-foreground">Candidate tips</h3>
+              <p className="mt-1 text-xs text-muted">Voluntary creator support. Tips never affect votes, rankings or judging.</p>
+              <Button
+                type="button"
+                size="sm"
+                variant={overview.season.tipsEnabled ? "outline" : "primary"}
+                disabled={busy !== null}
+                onClick={() => void run(
+                  "candidate-tips",
+                  () => setTipsEnabled({
+                    ...creds,
+                    seasonId: overview.season!.seasonId,
+                    enabled: !overview.season!.tipsEnabled,
+                    confirm: true,
+                  }),
+                  overview.season.tipsEnabled ? "Candidate tips disabled." : "Candidate tips enabled."
+                )}
+              >
+                {overview.season.tipsEnabled ? "Disable candidate tips" : "Enable candidate tips"}
+              </Button>
+            </div>
+          </div>
+        </>
       ) : (
         <p className="text-sm text-muted">No seasons yet.</p>
       )}
