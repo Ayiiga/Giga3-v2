@@ -1152,10 +1152,31 @@ export default defineSchema({
       )
     ),
     templateUseCount: v.optional(v.number()),
+    /** Creator declaration is an auditable claim, never a reviewer decision. */
+    contentRightsDeclaration: v.optional(v.union(v.literal("original"), v.literal("licensed"))),
+    contentRightsDeclaredAt: v.optional(v.number()),
+    contentRightsLicenseReference: v.optional(v.string()),
+    /** Only an authorised reviewer may change this screening state. */
+    copyrightScreeningStatus: v.optional(v.union(v.literal("pending"), v.literal("clear"), v.literal("possible_match"), v.literal("rejected"), v.literal("appealed"))),
+    copyrightScreenedAt: v.optional(v.number()),
+    copyrightScreenedBy: v.optional(v.string()),
+    copyrightScreeningNote: v.optional(v.string()),
   })
     .index("by_created", ["createdAt"])
     .index("by_author_created", ["authorId", "createdAt"])
     .index("by_community_created", ["communitySlug", "createdAt"]),
+
+  /** Creator appeals against a possible copyright match; immutable submission history. */
+  socialContentAppeals: defineTable({
+    postId: v.id("socialPosts"),
+    creatorId: v.string(),
+    statement: v.string(),
+    status: v.union(v.literal("open"), v.literal("reviewed"), v.literal("upheld"), v.literal("cleared")),
+    submittedAt: v.number(),
+    reviewedAt: v.optional(v.number()),
+    reviewedBy: v.optional(v.string()),
+    reviewerNote: v.optional(v.string()),
+  }).index("by_post", ["postId"]).index("by_creator", ["creatorId"]).index("by_status", ["status"]),
 
   /** Cached GigaSocial post template analysis — avoids re-processing media. */
   socialTemplateCache: defineTable({
