@@ -14,7 +14,6 @@ export function AdminAwardsPanel({
   const overview = useQuery(api.gigaSocialAwardsAdmin.getAdminSeasonOverview, creds);
   const bootstrap = useMutation(api.gigaSocialAwardsAdmin.bootstrapSeason);
   const setStatus = useMutation(api.gigaSocialAwardsAdmin.setSeasonStatus);
-  const setPromoPaymentsEnabled = useMutation(api.gigaSocialAwardsAdmin.setPromoPaymentsEnabled);
   const setTipsEnabled = useMutation(api.gigaSocialAwardsAdmin.setTipsEnabled);
   const approve = useMutation(api.gigaSocialAwardsAdmin.approveNomination);
   const reject = useMutation(api.gigaSocialAwardsAdmin.rejectNomination);
@@ -148,27 +147,14 @@ export function AdminAwardsPanel({
             {String(overview.season.tipsEnabled)}
           </p>
           <div className="grid gap-3 rounded-xl border border-border p-3 sm:grid-cols-2">
-            <div>
+            <div className="sm:col-span-2">
               <h3 className="font-semibold text-foreground">Candidate promotion payments</h3>
-              <p className="mt-1 text-xs text-muted">Paid visibility packages only. Never buys votes, changes scores or guarantees awards.</p>
-              <Button
-                type="button"
-                size="sm"
-                variant={overview.season.promoPaymentsEnabled ? "outline" : "default"}
-                disabled={busy !== null}
-                onClick={() => void run(
-                  "promo-payments",
-                  () => setPromoPaymentsEnabled({
-                    ...creds,
-                    seasonId: overview.season!.seasonId,
-                    enabled: !overview.season!.promoPaymentsEnabled,
-                    confirm: true,
-                  }),
-                  overview.season.promoPaymentsEnabled ? "Candidate promotion payments disabled." : "Candidate promotion payments enabled."
-                )}
-              >
-                {overview.season.promoPaymentsEnabled ? "Disable promotion payments" : "Enable promotion payments"}
-              </Button>
+              <p className="mt-1 text-xs text-muted">
+                Disabled until package checkout, signed Paystack verification/webhooks, idempotent fulfilment and refunds are implemented and tested. This control must not expose a paid checkout prematurely.
+              </p>
+              <span className="mt-2 inline-flex rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800">
+                Not available — payment integration pending
+              </span>
             </div>
             <div>
               <h3 className="font-semibold text-foreground">Candidate tips</h3>
