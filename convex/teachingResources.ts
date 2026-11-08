@@ -201,10 +201,28 @@ export const seedScienceLearningAids = mutation({
       if (legacy && legacy.status !== "archived") await ctx.db.patch(legacy._id, { status: "archived", updatedAt: Date.now() });
     }
     let created = 0;
+    let restored = 0;
     for (const item of items) {
       const existing = await ctx.db.query("teachingResources").withIndex("by_slug", q => q.eq("slug", item.slug)).first();
-      if (existing) continue;
       const now = Date.now();
+      if (existing) {
+        // Make the admin publish/update action repair previously archived or draft catalogue entries.
+        // Preserve attached storage IDs and original creation metadata.
+        await ctx.db.patch(existing._id, {
+          title: item.title, summary: item.summary, description: item.description,
+          subject: item.subject, levelBand: item.levelBand, classes: item.classes,
+          topic: item.topic, category: item.category, activity: item.activity,
+          componentsJson: JSON.stringify(item.components), instructionsJson: JSON.stringify(item.instructions),
+          activitiesJson: JSON.stringify(item.activities), safetyJson: JSON.stringify(item.safety),
+          mistakesJson: JSON.stringify(item.mistakes),
+          teacherGuidance: "Use the labelled learning aid for teacher-led explanation, learner discussion and a short formative assessment. Adapt the activity to the approved class scheme of learning.",
+          studentExercises: "Label the relevant parts, explain their functions and answer the activity questions in your own words.",
+          previewText: item.summary, access: "free", status: "published",
+          reviewedBy: email, reviewedAt: now, updatedAt: now,
+        });
+        restored++;
+        continue;
+      }
       await ctx.db.insert("teachingResources", {
         slug: item.slug, title: item.title, summary: item.summary, description: item.description,
         subject: item.subject, levelBand: item.levelBand, classes: item.classes, topic: item.topic,
@@ -219,7 +237,7 @@ export const seedScienceLearningAids = mutation({
       });
       created++;
     }
-    return { created, total: items.length, message: created ? `Published ${created} of ${items.length} science learning resources. Upload the matching individual JPGs using the administrator bulk image uploader.` : `All ${items.length} science learning resources are already present.` };
+    return { created, restored, total: items.length, message: `Science aids library ready: ${created} new resources added and ${restored} existing resources refreshed/published (of ${items.length}). Laboratory equipment, practical set-ups and all nine body systems are included.` };
   },
 });
 
