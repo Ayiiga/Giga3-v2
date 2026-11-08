@@ -57,7 +57,10 @@ describe("GigaLearn teaching materials library", () => {
     expect(backend).toContain('"Human Biology"');
     expect(backend).toContain("human-endocrine-system-glands-and-functions");
     expect(backend).toContain("human-reproductive-system-organs-and-functions");
-    expect(backend).toContain("setup-filtration-set-up");
+    expect(backend).toContain('["Filtration set-up","filtration-set-up"');
+    expect(backend).toContain("let restored = 0");
+    expect(backend).toContain("status: \"published\"");
+    expect(backend).toContain("existing resources refreshed/published");
     expect(ui).toContain("function ResourceVisual");
     expect(ui).toContain("function ResourceDiagram");
     expect(ui).toContain("aspect-[9/16]");
