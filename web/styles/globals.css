@@ -2836,3 +2836,18 @@ html.giga-lite-saver .chat-composer-surface,
 html.giga-lite-extreme .chat-composer-surface {
   backdrop-filter: none !important;
 }
+
+
+/* Day-and-time chat wallpapers: the content area stays readable and controls remain unchanged. */
+.chat-keyboard-shell.chat-scheduled-background .chat-message-list {
+  background-color: transparent !important;
+  background-image:
+    linear-gradient(rgba(8, 12, 28, 0.42), rgba(8, 12, 28, 0.52)),
+    var(--chat-scheduled-background) !important;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+.chat-keyboard-shell.chat-scheduled-background .chat-message-scroll-region {
+  background: transparent !important;
+}
