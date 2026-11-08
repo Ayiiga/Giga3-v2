@@ -33,7 +33,7 @@ import { FAN_LABELS } from "@/lib/gigasocial/fanBranding";
 import { formatCompactCount } from "@/lib/gigasocial/ogMeta";
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation, usePaginatedQuery, useQuery } from "convex/react";
 import {
   Award,
   BookOpen,
@@ -53,6 +53,11 @@ export const GigaSocialEarningsCentre = memo(function GigaSocialEarningsCentre({
   sessionToken: string;
 }) {
   const dashboard = useQuery(api.gigaSocialEconomy.getCreatorDashboard, { sessionToken });
+  const rightsPosts = usePaginatedQuery(
+    api.gigaSocialEconomy.getCreatorRightsPostsPage,
+    { sessionToken },
+    { initialNumItems: 20 }
+  );
   const submitApplication = useMutation(api.gigaSocialEconomy.submitMonetizationApplication);
   const submitAppeal = useMutation(api.gigaSocialEconomy.submitMonetizationAppeal);
   const declareRights = useMutation(api.gigaSocialEconomy.declarePostContentRights);
@@ -265,7 +270,7 @@ export const GigaSocialEarningsCentre = memo(function GigaSocialEarningsCentre({
               </p>
               <p className="mt-1 text-xs text-muted">Declare ownership or provide a licence reference for each post. A declaration is not approval; only an authorised reviewer can clear it.</p>
               <div className="mt-3 space-y-2">
-                {(dashboard.recentRightsPosts ?? []).map((post: { postId: string; body: string; declaration: string | null; screeningStatus: string; createdAt: number }) => (
+                {rightsPosts.results.map((post) => (
                   <div key={post.postId} className="rounded-lg border border-border px-3 py-2 text-sm">
                     <p className="line-clamp-2 text-foreground">{post.body || "Media post"}</p>
                     <p className="mt-1 text-xs text-muted">Status: {post.screeningStatus.replaceAll("_", " ")} · {post.declaration ?? "not declared"}</p>
@@ -278,6 +283,12 @@ export const GigaSocialEarningsCentre = memo(function GigaSocialEarningsCentre({
                     </div>
                   </div>
                 ))}
+                {rightsPosts.status === "CanLoadMore" ? (
+                  <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => rightsPosts.loadMore(20)}>
+                    Load more posts
+                  </Button>
+                ) : null}
+                {rightsPosts.status === "LoadingMore" ? <p className="text-xs text-muted">Loading more posts…</p> : null}
                 <label className="block text-xs font-medium text-muted">Licence / permission reference (required for licensed posts)
                   <input value={licenseReference} onChange={(e) => setLicenseReference(e.target.value)} maxLength={500} className="mt-1 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground" placeholder="Agreement, licence URL or permission details" />
                 </label>
