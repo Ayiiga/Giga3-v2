@@ -4,6 +4,7 @@ import {
   buildResearchSearchQuery,
   classifyInformationRequest,
   detectFactCheckIntent,
+  detectStartupFundingIntent,
   detectGhanaNewsIntent,
   detectCurrentEventsIntent,
   detectNewsRetrievalIntent,
@@ -15,6 +16,7 @@ import {
   queryNeedsLiveWeb,
   resolveResearchCapability,
   researchSystemPromptAddon,
+  RESEARCH_CAPABILITY_LABELS,
   responseBasisForCapability,
   shouldAutoEnableLiveWeb,
   shouldRunLiveWebResearch,
@@ -44,6 +46,19 @@ describe("research capability routing", () => {
   it("detects current-events phrasing", () => {
     expect(detectCurrentEventsIntent("What is happening in Ghana and Nepal")).toBe(true);
     expect(detectCurrentEventsIntent("Hello")).toBe(false);
+  });
+
+  it("routes startup funding requests to dedicated funding intelligence", () => {
+    const query = "Monitor funding opportunities for Giga3 AI";
+    expect(detectStartupFundingIntent(query)).toBe(true);
+    expect(detectStartupFundingIntent("Explain how venture capital works")).toBe(false);
+    expect(resolveResearchCapability({ query, liveWebEnabled: true })).toBe("startup_funding");
+    expect(queryNeedsLiveWeb({ query, capability: "startup_funding" })).toBe(true);
+    expect(buildResearchSearchQuery(query, "startup_funding")).toContain("official startup funding grants");
+    expect(researchSystemPromptAddon("startup_funding")).toContain("funding-seeking subject");
+    expect(researchSystemPromptAddon("startup_funding")).toContain("not continuous monitoring");
+    expect(RESEARCH_CAPABILITY_LABELS.startup_funding).toBe("Startup Funding Intelligence");
+    expect(responseBasisForCapability("startup_funding", true)).toBe("live_web");
   });
 
   it("detects fact-check and verify-image intents", () => {
