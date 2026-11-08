@@ -154,7 +154,7 @@ export function AdminAwardsPanel({
               <Button
                 type="button"
                 size="sm"
-                variant={overview.season.promoPaymentsEnabled ? "outline" : "primary"}
+                variant={overview.season.promoPaymentsEnabled ? "outline" : "default"}
                 disabled={busy !== null}
                 onClick={() => void run(
                   "promo-payments",
@@ -176,7 +176,7 @@ export function AdminAwardsPanel({
               <Button
                 type="button"
                 size="sm"
-                variant={overview.season.tipsEnabled ? "outline" : "primary"}
+                variant={overview.season.tipsEnabled ? "outline" : "default"}
                 disabled={busy !== null}
                 onClick={() => void run(
                   "candidate-tips",
