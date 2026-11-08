@@ -257,8 +257,9 @@ export function TeachingResourcesLibrary() {
             setBusy(true); let uploaded = 0; const skipped: string[] = [];
             try {
               for (const file of files) {
-                const slug = file.name.replace(/\.[^.]+$/, "").toLowerCase();
-                const resource = listAdmin.find((r: any) => r.slug === slug);
+                const normalise = (value: string) => value.toLowerCase().replace(/\.[^.]+$/, "").replace(/[^a-z0-9]+/g, "");
+                const fileKey = normalise(file.name);
+                const resource = listAdmin.find((r: any) => normalise(r.slug) === fileKey || normalise(r.title) === fileKey);
                 if (!resource) { skipped.push(file.name); continue; }
                 const uploadUrl = await createUploadUrl({ sessionToken });
                 const response = await fetch(uploadUrl, { method: "POST", headers: { "Content-Type": file.type }, body: file });
