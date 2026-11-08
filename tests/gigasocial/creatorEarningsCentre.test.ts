@@ -25,10 +25,10 @@ import {
 const root = resolve(__dirname, "../..");
 
 describe("creator earnings centre — pure rules", () => {
-  it("keeps the 500-fan monetisation threshold", () => {
-    expect(MIN_FANS_FOR_MONETIZATION).toBe(500);
+  it("uses the definitive 15-fan monetisation threshold", () => {
+    expect(MIN_FANS_FOR_MONETIZATION).toBe(15);
     const economy = readFileSync(resolve(root, "convex/gigaSocialEconomy.ts"), "utf8");
-    expect(economy).toContain("MIN_FANS_FOR_MONETIZATION = 500");
+    expect(economy).toContain("MIN_FANS_FOR_MONETIZATION = 15");
     expect(economy).not.toMatch(/minFansForMonetization >= 100/);
   });
 
@@ -110,8 +110,8 @@ describe("creator earnings centre — pure rules", () => {
 
   it("builds an eligibility checklist without inventing private fraud signals", () => {
     const rows = eligibilityChecklist({
-      fanCount: 120,
-      fansRequired: 500,
+      fanCount: 8,
+      fansRequired: 15,
       accepted: false,
       accountStandingOk: true,
       hasSocialProfile: true,
