@@ -22,6 +22,35 @@ type Resource = {
   activity: string; access: "free" | "subscriber"; previewText?: string | null;
   videoUrl?: string | null; imageUrl?: string | null;
 };
+function resourceVisual(title: string, category: string) {
+  const value = `${title} ${category}`.toLowerCase();
+  if (value.includes("microscope")) return "🔬";
+  if (value.includes("beaker")) return "🧪";
+  if (value.includes("thermometer")) return "🌡️";
+  if (value.includes("multimeter") || value.includes("electric")) return "⚡";
+  if (value.includes("flask")) return "⚗️";
+  if (value.includes("human") || value.includes("body") || value.includes("organ")) return "🫀";
+  if (value.includes("plant") || value.includes("leaf")) return "🌱";
+  if (value.includes("safety") || value.includes("symbol")) return "⚠️";
+  if (value.includes("set-up") || value.includes("setup")) return "🧫";
+  return "📘";
+}
+
+function ResourceVisual({ title, category, imageUrl, large = false }: {
+  title: string; category: string; imageUrl?: string | null; large?: boolean;
+}) {
+  return (
+    <div className={`relative flex w-full items-center justify-center overflow-hidden rounded-xl border border-violet-100 bg-gradient-to-br from-violet-50 via-white to-indigo-50 ${large ? "min-h-56 sm:min-h-72" : "h-36"}`} role="img" aria-label={`Learning illustration for ${title}`}>
+      {imageUrl ? <img src={imageUrl} alt={title} className="absolute inset-0 h-full w-full bg-white object-contain" loading="lazy" onError={e => { e.currentTarget.style.display = "none"; }} /> : null}
+      <div className="flex flex-col items-center gap-2 px-4 py-5 text-center">
+        <span className={large ? "text-7xl" : "text-6xl"} aria-hidden>{resourceVisual(title, category)}</span>
+        <span className="max-w-full rounded-full bg-white/90 px-3 py-1 text-xs font-bold text-violet-900 shadow-sm">{category}</span>
+        <span className="text-xs font-semibold text-slate-600">Illustrated learning aid</span>
+      </div>
+    </div>
+  );
+}
+
 type Detail = Resource & {
   description: string; components: string[]; instructions: string[]; activities: string[];
   safety: string[]; commonMistakes: string[]; teacherGuidance: string;
@@ -208,7 +237,7 @@ export function TeachingResourcesLibrary() {
       {selected && <section className="rounded-3xl border border-violet-200 bg-white p-4 shadow-sm print-resource" aria-live="polite">
         {!sessionReady || detail === undefined ? <p className="text-sm text-slate-500">Checking your subscription and loading resource details…</p> : !detail ? <p className="text-sm text-slate-500">This resource is no longer available. Refresh the library and try again.</p> : <>
           <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-wide text-violet-700">{detail.subject} · {detail.classes.join(", ")}</p><h2 className="mt-1 text-xl font-black text-slate-950">{detail.title}</h2><p className="mt-1 text-sm text-slate-600">{detail.summary}</p></div><button onClick={() => setSelected(null)} className="rounded-full border px-3 py-2 text-sm">Close</button></div>
-          {detail.imageUrl && <img src={detail.imageUrl} alt={detail.title} className="mt-4 max-h-[520px] w-full rounded-xl border border-slate-200 bg-slate-50 object-contain" loading="lazy" />}
+          <div className="mt-4"><ResourceVisual title={detail.title} category={detail.category} imageUrl={detail.imageUrl} large /></div>
           <p className="mt-4 text-sm leading-6 text-slate-700">{detail.description}</p>
           {!detail.fullAccess && <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">You are viewing a free preview. Sign in with an active Giga3 AI subscription to unlock the complete practical instructions, teacher notes and student exercises.</div>}
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -238,7 +267,7 @@ export function TeachingResourcesLibrary() {
         <div className="mb-3 flex items-center justify-between gap-3"><h2 className="text-lg font-black text-slate-950">Explore learning resources</h2><span className="text-xs text-slate-500">{resources?.length ?? 0} resources</span></div>
         {resources === undefined ? <p className="rounded-2xl bg-slate-50 p-5 text-sm text-slate-500">Loading resource library…</p> :
           resources.length === 0 ? <div className="rounded-2xl border border-dashed p-7 text-center"><BookOpen className="mx-auto h-8 w-8 text-violet-500" /><h3 className="mt-2 font-bold">No matching resources yet</h3><p className="mt-1 text-sm text-slate-500">Try another subject or search term. New approved practical guides will appear here.</p></div> :
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{resources.map(r => <article key={r._id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><div className="flex items-center justify-between gap-2"><span className="rounded-full bg-violet-50 px-2.5 py-1 text-[10px] font-bold text-violet-800">{r.subject}</span><span className="text-xs font-bold text-emerald-700">Free viewing</span></div>{r.imageUrl && <img src={r.imageUrl} alt={r.title} className="mt-3 h-40 w-full rounded-lg bg-slate-50 object-contain" loading="lazy" />}<h3 className="mt-3 font-extrabold text-slate-950">{r.title}</h3><p className="mt-1 text-sm leading-5 text-slate-600">{r.summary}</p><p className="mt-3 text-xs text-slate-500">{r.classes.join(" · ")} · {r.category}</p><button onClick={() => {setSelected(r.slug);setNotice("");}} className="mt-4 min-h-11 w-full rounded-xl bg-violet-700 px-4 py-2 text-sm font-bold text-white">Explore resource</button></article>)}</div>}
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{resources.map(r => <article key={r._id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><div className="flex items-center justify-between gap-2"><span className="rounded-full bg-violet-50 px-2.5 py-1 text-[10px] font-bold text-violet-800">{r.subject}</span><span className="text-xs font-bold text-emerald-700">Free viewing</span></div><div className="mt-3"><ResourceVisual title={r.title} category={r.category} imageUrl={r.imageUrl} /></div><h3 className="mt-3 font-extrabold text-slate-950">{r.title}</h3><p className="mt-1 text-sm leading-5 text-slate-600">{r.summary}</p><p className="mt-3 text-xs text-slate-500">{r.classes.join(" · ")} · {r.category}</p><button onClick={() => {setSelected(r.slug);setNotice("");}} className="mt-4 min-h-11 w-full rounded-xl bg-violet-700 px-4 py-2 text-sm font-bold text-white">Open full material & illustration</button></article>)}</div>}
       </section>
       <style jsx global>{`@media print { body * { visibility: hidden !important; } .print-resource, .print-resource * { visibility: visible !important; } .print-resource { position: absolute; inset: 0; width: 100%; border: 0 !important; box-shadow: none !important; } .print-resource button, .print-resource a { display: none !important; } }`}</style>
     </main>

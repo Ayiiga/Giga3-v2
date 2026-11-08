@@ -45,6 +45,9 @@ describe("GigaLearn teaching materials library", () => {
   it("keeps the resource page connected to server catalogue queries", () => {
     const ui = read("web/components/gigalearn/TeachingResourcesLibrary.tsx");
     expect(ui).toContain("api.teachingResources.listPublished");
+    expect(ui).toContain("function ResourceVisual");
+    expect(ui).toContain("Illustrated learning aid");
+    expect(ui).toContain("Open full material & illustration");
     expect(ui).toContain("api.teachingResources.getPublicDetail");
     expect(ui).toContain("api.teachingResources.issueDownloadToken");
     expect(ui).toContain("window.print()");
