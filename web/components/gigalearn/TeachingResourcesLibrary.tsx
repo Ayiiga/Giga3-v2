@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "convex/_generated/api";
 import { getSessionToken } from "@/lib/auth";
@@ -15,6 +15,40 @@ const SUBJECTS = [
 ];
 const CLASSES = ["JHS 1", "JHS 2", "JHS 3", "SHS 1", "SHS 2", "SHS 3"];
 const CATEGORIES = ["Laboratory Equipment", "Laboratory Set-ups", "Laboratory Safety", "Laboratory Symbols", "Human Biology", "Teaching Aid", "Practical Materials", "Workshop Tools", "Field Equipment", "Art Materials", "Digital Tools", "Home Economics Equipment"];
+
+const CURATED_IMAGE_RESOURCES: Record<string, string> = {
+  "equipment-beaker": "laboratory beaker glassware",
+  "equipment-conical-flask": "Erlenmeyer conical flask laboratory",
+  "equipment-measuring-cylinder": "graduated measuring cylinder laboratory",
+  "equipment-test-tube": "laboratory test tube glassware",
+  "equipment-test-tube-rack": "test tube rack laboratory",
+  "equipment-bunsen-burner": "Bunsen burner laboratory",
+  "equipment-tripod-stand": "laboratory tripod stand",
+  "equipment-wire-gauze": "laboratory wire gauze",
+  "equipment-evaporating-dish": "laboratory evaporating dish",
+  "equipment-crucible-with-lid": "laboratory crucible with lid",
+  "equipment-mortar-and-pestle": "laboratory mortar and pestle",
+  "equipment-funnel": "laboratory glass funnel",
+  "equipment-thermometer": "laboratory thermometer",
+  "equipment-weighing-balance": "digital laboratory balance",
+  "digital-multimeter": "digital multimeter electrical measurement",
+  "parts-of-a-compound-microscope": "compound light microscope laboratory",
+  "human-digestive-system-organs-and-functions": "human digestive system anatomy diagram",
+  "human-respiratory-system-organs-and-functions": "human respiratory system anatomy diagram",
+  "human-circulatory-system-organs-and-functions": "human circulatory system heart blood vessels diagram",
+  "human-nervous-system-organs-and-functions": "human nervous system anatomy diagram",
+  "human-skeletal-system-organs-and-functions": "human skeleton anatomy diagram",
+  "human-muscular-system-organs-and-functions": "human muscular system anatomy diagram",
+  "human-excretory-system-organs-and-functions": "human urinary excretory system anatomy diagram",
+  "human-reproductive-system-organs-and-functions": "human reproductive system anatomy diagram",
+  "human-endocrine-system-glands-and-functions": "human endocrine system glands anatomy diagram",
+  "setup-filtration-set-up": "laboratory filtration apparatus funnel filter paper conical flask",
+  "setup-heating-set-up": "laboratory heating apparatus tripod Bunsen burner wire gauze",
+  "setup-distillation-set-up": "simple distillation laboratory apparatus",
+  "setup-simple-titration-set-up": "acid base titration burette conical flask laboratory",
+  "setup-electrolysis-of-water": "electrolysis of water laboratory experiment apparatus",
+};
+const CURATED_IMAGE_SLUGS = new Set(Object.keys(CURATED_IMAGE_RESOURCES));
 
 type Resource = {
   _id: string; slug: string; title: string; summary: string; subject: string;
@@ -67,29 +101,85 @@ function ResourceDiagram({ title, category }: { title: string; category: string 
   );
 }
 
-function ResourceVisual({ title, category, imageUrl, large = false }: {
-  title: string; category: string; imageUrl?: string | null; large?: boolean;
+type CommonsAsset = { thumb: string; original: string; page: string; fileTitle: string; license: string; artist: string; allowedDownload: boolean };
+
+function CommonsImage({ title, searchTerm, imageUrl, large = false }: {
+  title: string; searchTerm: string; imageUrl?: string | null; large?: boolean;
 }) {
+  const hostRef = useRef<HTMLDivElement>(null);
+  const [asset, setAsset] = useState<CommonsAsset | null>(null);
+  const [loading, setLoading] = useState(!imageUrl);
   const [zoomed, setZoomed] = useState(false);
-  const visual = imageUrl
-    ? <img src={imageUrl} alt={"Learning material: " + title} className="block h-full w-full bg-white object-contain" loading="lazy" />
-    : <ResourceDiagram title={title} category={category} />;
+
+  useEffect(() => {
+    if (imageUrl) { setLoading(false); return; }
+    let cancelled = false;
+    let observer: IntersectionObserver | null = null;
+    const load = async () => {
+      setLoading(true);
+      try {
+        const url = new URL("https://commons.wikimedia.org/w/api.php");
+        url.search = new URLSearchParams({
+          action: "query", generator: "search", gsrsearch: "filetype:bitmap " + searchTerm,
+          gsrnamespace: "6", gsrlimit: "6", prop: "imageinfo",
+          iiprop: "url|extmetadata", iiurlwidth: "1000", format: "json", origin: "*",
+        }).toString();
+        const response = await fetch(url.toString(), { signal: AbortSignal.timeout(12000) });
+        if (!response.ok) throw new Error("Image search unavailable");
+        const data = await response.json();
+        const pages = Object.values(data?.query?.pages ?? {}) as any[];
+        const page = pages.find(p => p.imageinfo?.[0]?.thumburl && p.imageinfo?.[0]?.url);
+        if (!page || cancelled) return;
+        const info = page.imageinfo[0];
+        const meta = info.extmetadata ?? {};
+        const plain = (value: any) => String(value?.value ?? "").replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").replace(/&#160;/g, " ").replace(/&amp;/g, "&").replace(/\s+/g, " ").trim();
+        const license = plain(meta.LicenseShortName) || "See source page";
+        const allowedDownload = /CC0|CC BY|CC-BY|Public domain|\bPD\b|GFDL|Free Art License/i.test(license);
+        setAsset({
+          thumb: info.thumburl, original: info.url, page: info.descriptionurl,
+          fileTitle: String(page.title ?? title).replace(/^File:/, ""),
+          license, artist: plain(meta.Artist) || plain(meta.Credit) || "See source page",
+          allowedDownload,
+        });
+      } catch { /* Keep the labelled in-app fallback when Commons is unavailable. */ }
+      finally { if (!cancelled) setLoading(false); }
+    };
+    const node = hostRef.current;
+    if (node && "IntersectionObserver" in window) {
+      observer = new IntersectionObserver(entries => {
+        if (entries.some(entry => entry.isIntersecting)) { observer?.disconnect(); void load(); }
+      }, { rootMargin: "240px" });
+      observer.observe(node);
+    } else { void load(); }
+    return () => { cancelled = true; observer?.disconnect(); };
+  }, [imageUrl, searchTerm, title]);
+
+  const src = imageUrl || asset?.thumb;
+  const visual = src
+    ? <img src={src} alt={title + " educational image"} className="block h-full w-full bg-white object-contain" loading="lazy" />
+    : <ResourceDiagram title={title} category="Science learning aid" />;
   return (
-    <>
-      <button type="button" onClick={() => setZoomed(true)} aria-label={"Zoom labelled diagram for " + title} className={"group relative mx-auto block w-full overflow-hidden rounded-2xl border border-violet-200 bg-[#f8f7ff] text-left shadow-sm focus:outline-none focus:ring-4 focus:ring-violet-300 " + (large ? "max-w-[420px]" : "max-w-[260px]")}>
+    <div ref={hostRef} className="w-full">
+      <button type="button" onClick={() => setZoomed(true)} aria-label={"Open full-screen image for " + title} className={"group relative mx-auto block w-full overflow-hidden rounded-2xl border border-violet-200 bg-[#f8f7ff] text-left shadow-sm focus:outline-none focus:ring-4 focus:ring-violet-300 " + (large ? "max-w-[520px]" : "max-w-[260px]")}>
         <div className="relative aspect-[9/16] w-full">{visual}</div>
         <span className="absolute bottom-3 right-3 rounded-full bg-slate-950/85 px-3 py-1.5 text-xs font-bold text-white shadow">⌕ Tap to zoom</span>
+        {!src && loading && <span className="absolute left-3 top-3 rounded-full bg-white/95 px-2 py-1 text-[10px] font-bold text-violet-900">Finding a real image…</span>}
       </button>
-      {zoomed && <div role="dialog" aria-modal="true" aria-label={"Zoomed learning diagram: " + title} className="fixed inset-0 z-[100] flex items-center justify-center overflow-auto bg-slate-950/95 p-3" onClick={() => setZoomed(false)}>
+      {asset && !imageUrl && <div className="mt-1 flex flex-wrap items-center justify-center gap-x-2 text-[10px] text-slate-500"><span>Source: Wikimedia Commons · {asset.license}</span><a href={asset.page} target="_blank" rel="noopener noreferrer" className="font-semibold text-violet-700 underline">Attribution & licence</a></div>}
+      {asset && !imageUrl && asset.allowedDownload && <a href={asset.original} target="_blank" rel="noopener noreferrer" className="mt-1 block text-center text-xs font-bold text-violet-700 underline">Open original image · reuse under listed licence</a>}
+      {zoomed && <div role="dialog" aria-modal="true" aria-label={"Full-screen image: " + title} className="fixed inset-0 z-[100] flex items-center justify-center overflow-auto bg-slate-950/95 p-3" onClick={() => setZoomed(false)}>
         <button type="button" onClick={() => setZoomed(false)} className="fixed right-4 top-4 z-[101] rounded-full bg-white px-4 py-2 text-sm font-bold text-slate-950 shadow-lg">Close ✕</button>
-        <div className="my-12 w-full max-w-[520px]" onClick={e => e.stopPropagation()} style={{touchAction:"pinch-zoom pan-y"}}>
+        <div className="my-12 w-full max-w-[620px]" onClick={e => e.stopPropagation()} style={{ touchAction: "pinch-zoom pan-y" }}>
           <div className="aspect-[9/16] w-full overflow-hidden rounded-xl bg-white shadow-2xl">{visual}</div>
-          <p className="mt-3 text-center text-xs font-semibold text-white">Pinch with two fingers to zoom • Tap outside to close</p>
+          <p className="mt-3 text-center text-xs font-semibold text-white">Pinch with two fingers to zoom · Tap outside to close</p>
+          {asset && <p className="mt-1 text-center text-[11px] text-white/80">{asset.fileTitle} · {asset.license} · {asset.artist}</p>}
+          {asset && <a href={asset.page} target="_blank" rel="noopener noreferrer" className="mt-2 block text-center text-xs font-bold text-white underline">View original source and attribution</a>}
         </div>
       </div>}
-    </>
+    </div>
   );
 }
+
 
 type Detail = Resource & {
   description: string; components: string[]; instructions: string[]; activities: string[];
@@ -141,12 +231,13 @@ export function TeachingResourcesLibrary() {
   const setResourceStatus = useMutation(api.teachingResources.updateResourceStatus);
   const createUploadUrl = useMutation(api.teachingResources.createUploadUrl);
   const attachFile = useMutation(api.teachingResources.attachResourceFile);
-  const resources = useQuery(api.teachingResources.listPublished, {
+  const allResources = useQuery(api.teachingResources.listPublished, {
     search: search || undefined, subject: subject === "all" ? undefined : subject,
     levelBand: level === "all" ? undefined : level as "jhs" | "shs",
     className: className === "all" ? undefined : className,
     category: category === "all" ? undefined : category,
   }) as Resource[] | undefined;
+  const resources = useMemo(() => (allResources ?? []).filter(r => CURATED_IMAGE_SLUGS.has(r.slug)), [allResources]);
   const detail = useQuery(api.teachingResources.getPublicDetail,
     selected && sessionReady ? { slug: selected, sessionToken: sessionToken ?? undefined } : "skip") as Detail | null | undefined;
   const issueDownload = useMutation(api.teachingResources.issueDownloadToken);
@@ -277,7 +368,7 @@ export function TeachingResourcesLibrary() {
       {selected && <section className="rounded-3xl border border-violet-200 bg-white p-4 shadow-sm print-resource" aria-live="polite">
         {!sessionReady || detail === undefined ? <p className="text-sm text-slate-500">Checking your subscription and loading resource details…</p> : !detail ? <p className="text-sm text-slate-500">This resource is no longer available. Refresh the library and try again.</p> : <>
           <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-wide text-violet-700">{detail.subject} · {detail.classes.join(", ")}</p><h2 className="mt-1 text-xl font-black text-slate-950">{detail.title}</h2><p className="mt-1 text-sm text-slate-600">{detail.summary}</p></div><button onClick={() => setSelected(null)} className="rounded-full border px-3 py-2 text-sm">Close</button></div>
-          <div className="mt-4"><ResourceVisual title={detail.title} category={detail.category} imageUrl={detail.imageUrl} large /></div>
+          <div className="mt-4"><CommonsImage title={detail.title} searchTerm={CURATED_IMAGE_RESOURCES[detail.slug] ?? detail.title + " science education"} imageUrl={detail.imageUrl} large /></div>
           <p className="mt-4 text-sm leading-6 text-slate-700">{detail.description}</p>
           {!detail.fullAccess && <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">You are viewing a free preview. Sign in with an active Giga3 AI subscription to unlock the complete practical instructions, teacher notes and student exercises.</div>}
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -307,7 +398,7 @@ export function TeachingResourcesLibrary() {
         <div className="mb-3 flex items-center justify-between gap-3"><h2 className="text-lg font-black text-slate-950">Explore learning resources</h2><span className="text-xs text-slate-500">{resources?.length ?? 0} resources</span></div>
         {resources === undefined ? <p className="rounded-2xl bg-slate-50 p-5 text-sm text-slate-500">Loading resource library…</p> :
           resources.length === 0 ? <div className="rounded-2xl border border-dashed p-7 text-center"><BookOpen className="mx-auto h-8 w-8 text-violet-500" /><h3 className="mt-2 font-bold">No matching resources yet</h3><p className="mt-1 text-sm text-slate-500">Try another subject or search term. New approved practical guides will appear here.</p></div> :
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{resources.map(r => <article key={r._id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><div className="flex items-center justify-between gap-2"><span className="rounded-full bg-violet-50 px-2.5 py-1 text-[10px] font-bold text-violet-800">{r.subject}</span><span className="text-xs font-bold text-emerald-700">Free viewing</span></div><div className="mt-3"><ResourceVisual title={r.title} category={r.category} imageUrl={r.imageUrl} /></div><h3 className="mt-3 font-extrabold text-slate-950">{r.title}</h3><p className="mt-1 text-sm leading-5 text-slate-600">{r.summary}</p><p className="mt-3 text-xs text-slate-500">{r.classes.join(" · ")} · {r.category}</p><button onClick={() => {setSelected(r.slug);setNotice("");}} className="mt-4 min-h-11 w-full rounded-xl bg-violet-700 px-4 py-2 text-sm font-bold text-white">Open full material & illustration</button></article>)}</div>}
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{resources.map(r => <article key={r._id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><div className="flex items-center justify-between gap-2"><span className="rounded-full bg-violet-50 px-2.5 py-1 text-[10px] font-bold text-violet-800">{r.subject}</span><span className="text-xs font-bold text-emerald-700">Free viewing</span></div><div className="mt-3"><CommonsImage title={r.title} searchTerm={CURATED_IMAGE_RESOURCES[r.slug] ?? r.title + " science education"} imageUrl={r.imageUrl} /></div><h3 className="mt-3 font-extrabold text-slate-950">{r.title}</h3><p className="mt-1 text-sm leading-5 text-slate-600">{r.summary}</p><p className="mt-3 text-xs text-slate-500">{r.classes.join(" · ")} · {r.category}</p><button onClick={() => {setSelected(r.slug);setNotice("");}} className="mt-4 min-h-11 w-full rounded-xl bg-violet-700 px-4 py-2 text-sm font-bold text-white">Open full material & illustration</button></article>)}</div>}
       </section>
       <style jsx global>{`@media print { body * { visibility: hidden !important; } .print-resource, .print-resource * { visibility: visible !important; } .print-resource { position: absolute; inset: 0; width: 100%; border: 0 !important; box-shadow: none !important; } .print-resource button, .print-resource a { display: none !important; } }`}</style>
     </main>
