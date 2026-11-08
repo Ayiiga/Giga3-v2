@@ -51,8 +51,8 @@ export const REWARD_CATALOGUE: RewardDefinition[] = [
   },
   {
     id: "badge_500_fans",
-    name: "500 fans — monetisation milestone",
-    description: "Badge for reaching the monetisation fan threshold.",
+    name: "500 fans — community growth milestone",
+    description: "Badge for reaching a community growth milestone.",
     category: "creator_development",
     rewardType: "badge",
     cashAmountGhs: null,
