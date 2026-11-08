@@ -45,6 +45,19 @@ describe("GigaLearn teaching materials library", () => {
   it("keeps the resource page connected to server catalogue queries", () => {
     const ui = read("web/components/gigalearn/TeachingResourcesLibrary.tsx");
     expect(ui).toContain("api.teachingResources.listPublished");
+    expect(ui).toContain("Quick access · Science collections");
+    expect(ui).toContain("JHS laboratory set-ups");
+    expect(ui).toContain("9 human body systems");
+    expect(ui).toContain("Easy image upload — choose the resource, then choose its photo");
+    expect(ui).toContain("Choose resource for image upload");
+    expect(ui).toContain("normalise(r.title) === fileKey");
+    expect(ui).toContain("Publish / update complete Science Aids Library");
+    const backend = read("convex/teachingResources.ts");
+    expect(backend).toContain('"Laboratory Set-ups"');
+    expect(backend).toContain('"Human Biology"');
+    expect(backend).toContain("human-endocrine-system-glands-and-functions");
+    expect(backend).toContain("human-reproductive-system-organs-and-functions");
+    expect(backend).toContain("setup-filtration-set-up");
     expect(ui).toContain("function ResourceVisual");
     expect(ui).toContain("function ResourceDiagram");
     expect(ui).toContain("aspect-[9/16]");
