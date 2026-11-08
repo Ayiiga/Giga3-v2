@@ -8,7 +8,7 @@ export const metadata = publicMetadata({
   path: "/gigasocial/earnings",
   title: "Creator Earnings Centre — GigaSocial",
   description:
-    "GigaSocial Creator Earnings Centre: eligibility, verified GH₵ earnings, rewards, awards, and the annual goal planner. Sign in to open your dashboard.",
+    "GigaSocial Creator Earnings Centre: global eligibility from 15 genuine fans, separate 50-fan withdrawal safeguards, verified GH₵ earnings, rewards, and awards. Sign in to open your dashboard.",
   index: true,
 });
 
@@ -25,7 +25,7 @@ export default function GigaSocialEarningsPage() {
       <ProductSeoHeader
         compact
         title="Creator Earnings Centre"
-        description="Transparent GH₵ earnings, eligibility from 15 genuine fans globally, rewards, and awards. Sign in to open your live dashboard."
+        description="Transparent GH₵ earnings, creator monetisation eligibility from 15 genuine fans worldwide, and a separate 50-genuine-fan withdrawal safeguard. Sign in to open your live dashboard."
         showProductNav={false}
       />
       <main className="gigasocial-page-shell marketing-stable w-full px-3 pb-10 pt-4 sm:px-6">
@@ -36,9 +36,9 @@ export default function GigaSocialEarningsPage() {
             revenue share and unfunded cash prizes stay unavailable until real programmes launch.
           </p>
           <ul className="mt-6 max-w-xl list-disc space-y-2 pl-5 text-sm text-foreground">
-            <li>15 genuine fans for verified African creators; 500 for creators elsewhere</li>
-            <li>Verified tips and Marketplace sales only in withdrawable balance</li>
-            <li>Payouts stay pending until Paystack Transfer confirmation is available</li>
+            <li>15 genuine fans worldwide to become eligible to apply for creator monetisation</li>
+            <li>At least 50 genuine fans, accepted monetisation rules, and payment checks are required for withdrawals</li>
+            <li>Verified tips and Marketplace sales only in withdrawable balance; payouts remain pending until Paystack Transfer confirmation</li>
           </ul>
           <div className="mt-8 flex flex-wrap gap-3">
             <ButtonLink href="/gigasocial/?tab=creator&creatorTab=earnings" className="min-h-11">
