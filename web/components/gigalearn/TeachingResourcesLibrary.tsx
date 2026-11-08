@@ -26,7 +26,7 @@ type Detail = Resource & {
   description: string; components: string[]; instructions: string[]; activities: string[];
   safety: string[]; commonMistakes: string[]; teacherGuidance: string;
   studentExercises: string; curriculumReference: string;
-  hasImage: boolean; imageUrl?: string | null; hasDiagram: boolean; hasGuide: boolean; hasWorksheet: boolean; fullAccess: boolean;
+  hasImage: boolean; imageUrl?: string | null; hasDiagram: boolean; hasGuide: boolean; hasWorksheet: boolean; fullAccess: boolean; isSubscriber: boolean;
 };
 
 export function TeachingResourcesLibrary() {
@@ -89,7 +89,8 @@ export function TeachingResourcesLibrary() {
 
   async function download(kind: "guide" | "worksheet" | "image" | "diagram") {
     const token = sessionToken;
-    if (!token || !detail) { setNotice("Please sign in to access resource downloads."); return; }
+    if (!token || !detail) { setNotice("Sign in with an active Giga3 AI subscription to download this resource."); return; }
+    if (!detail.isSubscriber) { setNotice("Downloads are reserved for active Giga3 AI subscribers. You can continue viewing this resource for free."); return; }
     setBusy(true); setNotice("");
     try {
       const result = await issueDownload({ sessionToken: token, resourceId: detail._id as any, fileKind: kind });
@@ -103,6 +104,8 @@ export function TeachingResourcesLibrary() {
 
   function printResource() {
     if (!detail) return;
+    if (!detail.isSubscriber) { setNotice("Printing is reserved for active Giga3 AI subscribers. You can continue viewing this resource for free."); return; }
+    setNotice("");
     window.print();
   }
 
@@ -224,9 +227,9 @@ export function TeachingResourcesLibrary() {
             {detail.hasWorksheet && <button disabled={busy} onClick={() => download("worksheet")} className="inline-flex items-center gap-2 rounded-xl border border-violet-300 px-4 py-3 text-sm font-bold text-violet-800">Download worksheet</button>}
             {detail.hasImage && <button onClick={() => download("image")} className="rounded-xl border px-3 py-3 text-sm">Material photo</button>}
             {detail.hasDiagram && <button onClick={() => download("diagram")} className="rounded-xl border px-3 py-3 text-sm">Labelled diagram</button>}
-            <button disabled={!detail.fullAccess} onClick={printResource} className="inline-flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-40"><Printer className="h-4 w-4" /> Print resource</button>
+            <button onClick={printResource} className="inline-flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-bold"><Printer className="h-4 w-4" /> Print resource</button>
           </div>
-          {detail.access === "subscriber" && <p className="mt-3 flex items-center gap-2 text-xs text-amber-800"><ShieldCheck className="h-4 w-4" /> Complete files require an active Giga3 AI subscription. Access is verified when downloading.</p>}
+          {<p className="mt-3 flex items-center gap-2 text-xs text-amber-800"><ShieldCheck className="h-4 w-4" /> Viewing is free for everyone. Active Giga3 AI subscribers can download and print these materials.</p>}
           {notice && <p role="alert" className="mt-3 rounded-xl bg-amber-50 p-3 text-sm text-amber-900">{notice}</p>}
         </>}
       </section>}
@@ -235,7 +238,7 @@ export function TeachingResourcesLibrary() {
         <div className="mb-3 flex items-center justify-between gap-3"><h2 className="text-lg font-black text-slate-950">Explore learning resources</h2><span className="text-xs text-slate-500">{resources?.length ?? 0} resources</span></div>
         {resources === undefined ? <p className="rounded-2xl bg-slate-50 p-5 text-sm text-slate-500">Loading resource library…</p> :
           resources.length === 0 ? <div className="rounded-2xl border border-dashed p-7 text-center"><BookOpen className="mx-auto h-8 w-8 text-violet-500" /><h3 className="mt-2 font-bold">No matching resources yet</h3><p className="mt-1 text-sm text-slate-500">Try another subject or search term. New approved practical guides will appear here.</p></div> :
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{resources.map(r => <article key={r._id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><div className="flex items-center justify-between gap-2"><span className="rounded-full bg-violet-50 px-2.5 py-1 text-[10px] font-bold text-violet-800">{r.subject}</span><span className={r.access === "free" ? "text-xs font-bold text-emerald-700" : "text-xs font-bold text-amber-700"}>{r.access === "free" ? "Free preview" : "Subscriber"}</span></div>{r.imageUrl && <img src={r.imageUrl} alt={r.title} className="mt-3 h-40 w-full rounded-lg bg-slate-50 object-contain" loading="lazy" />}<h3 className="mt-3 font-extrabold text-slate-950">{r.title}</h3><p className="mt-1 text-sm leading-5 text-slate-600">{r.summary}</p><p className="mt-3 text-xs text-slate-500">{r.classes.join(" · ")} · {r.category}</p><button onClick={() => {setSelected(r.slug);setNotice("");}} className="mt-4 min-h-11 w-full rounded-xl bg-violet-700 px-4 py-2 text-sm font-bold text-white">Explore resource</button></article>)}</div>}
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{resources.map(r => <article key={r._id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><div className="flex items-center justify-between gap-2"><span className="rounded-full bg-violet-50 px-2.5 py-1 text-[10px] font-bold text-violet-800">{r.subject}</span><span className={r.access === "free" ? "text-xs font-bold text-emerald-700" : "text-xs font-bold text-amber-700"}>"Free viewing"</span></div>{r.imageUrl && <img src={r.imageUrl} alt={r.title} className="mt-3 h-40 w-full rounded-lg bg-slate-50 object-contain" loading="lazy" />}<h3 className="mt-3 font-extrabold text-slate-950">{r.title}</h3><p className="mt-1 text-sm leading-5 text-slate-600">{r.summary}</p><p className="mt-3 text-xs text-slate-500">{r.classes.join(" · ")} · {r.category}</p><button onClick={() => {setSelected(r.slug);setNotice("");}} className="mt-4 min-h-11 w-full rounded-xl bg-violet-700 px-4 py-2 text-sm font-bold text-white">Explore resource</button></article>)}</div>}
       </section>
       <style jsx global>{`@media print { body * { visibility: hidden !important; } .print-resource, .print-resource * { visibility: visible !important; } .print-resource { position: absolute; inset: 0; width: 100%; border: 0 !important; box-shadow: none !important; } .print-resource button, .print-resource a { display: none !important; } }`}</style>
     </main>
