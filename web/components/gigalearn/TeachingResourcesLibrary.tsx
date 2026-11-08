@@ -147,18 +147,9 @@ export function TeachingResourcesLibrary() {
   const [sessionReady, setSessionReady] = useState(false);
   const [adminTitle, setAdminTitle] = useState("");
   const [adminSubject, setAdminSubject] = useState("Integrated Science");
-  const [adminLevel, setAdminLevel] = useState<"jhs" | "shs">("jhs");
-  const [adminClass, setAdminClass] = useState("JHS 1");
   const [adminSummary, setAdminSummary] = useState("");
-  const [adminDescription, setAdminDescription] = useState("");
-  const [adminTopic, setAdminTopic] = useState("");
-  const [adminCategory, setAdminCategory] = useState("Laboratory Equipment");
-  const [adminActivity, setAdminActivity] = useState("");
-  const [adminInstructions, setAdminInstructions] = useState("");
-  const [adminComponents, setAdminComponents] = useState("");
-  const [adminSafety, setAdminSafety] = useState("");
-  const [adminExercises, setAdminExercises] = useState("");
-  const [adminAccess, setAdminAccess] = useState<"free" | "subscriber">("subscriber");
+  const [adminImage, setAdminImage] = useState<File | null>(null);
+  const [adminImagePreview, setAdminImagePreview] = useState("");
   const [adminMessage, setAdminMessage] = useState("");
   const [uploadResourceId, setUploadResourceId] = useState("");
   useEffect(() => {
@@ -275,44 +266,46 @@ export function TeachingResourcesLibrary() {
           }} />
         </details>
         <details className="mt-3 rounded-xl border border-amber-200 bg-white p-3"><summary className="cursor-pointer text-sm font-bold text-amber-950">Advanced: create a new resource manually</summary>
-        <form className="mt-3 grid gap-2 sm:grid-cols-2" onSubmit={async e => {
-          e.preventDefault(); if (!sessionToken) return;
+        <form className="mt-3 grid gap-3" onSubmit={async e => {
+          e.preventDefault();
+          if (!sessionToken || !adminImage) { setAdminMessage("Choose one image before saving."); return; }
           setBusy(true); setAdminMessage("");
           try {
             const slug = adminTitle.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-            await createResource({
-              sessionToken, slug, title: adminTitle, summary: adminSummary, description: adminDescription,
-              subject: adminSubject, levelBand: adminLevel, classes: [adminClass], topic: adminTopic,
-              category: adminCategory, activity: adminActivity,
-              componentsJson: JSON.stringify(adminComponents.split("\n").map(x => x.trim()).filter(Boolean)),
-              instructionsJson: JSON.stringify(adminInstructions.split("\n").map(x => x.trim()).filter(Boolean)),
-              activitiesJson: JSON.stringify(adminActivity ? [adminActivity] : []),
-              safetyJson: JSON.stringify(adminSafety.split("\n").map(x => x.trim()).filter(Boolean)),
-              mistakesJson: JSON.stringify([]), studentExercises: adminExercises,
-              previewText: adminSummary, access: adminAccess, status: "draft",
+            const resourceId = await createResource({
+              sessionToken, slug, title: adminTitle.trim(), summary: adminSummary.trim(),
+              description: adminSummary.trim(), subject: adminSubject, levelBand: "jhs",
+              classes: ["JHS 1", "JHS 2", "JHS 3"], topic: "General learning material",
+              category: "Teaching Aid", activity: "", componentsJson: "[]",
+              instructionsJson: "[]", activitiesJson: "[]", safetyJson: "[]",
+              mistakesJson: "[]", studentExercises: "", previewText: adminSummary.trim(),
+              access: "free", status: "draft",
             });
-            setAdminMessage("Draft saved. Upload its files and complete review before publishing.");
-            setAdminTitle(""); setAdminSummary(""); setAdminDescription("");
-          } catch (error) { setAdminMessage(error instanceof Error ? error.message : "Could not save resource."); }
+            const uploadUrl = await createUploadUrl({ sessionToken });
+            const response = await fetch(uploadUrl, { method: "POST", headers: { "Content-Type": adminImage.type }, body: adminImage });
+            if (!response.ok) throw new Error("Image upload failed. Please try again.");
+            const { storageId } = await response.json();
+            await attachFile({ sessionToken, resourceId, fileKind: "image", storageId });
+            setAdminMessage("Resource saved and image attached. It is now in the review queue.");
+            setAdminTitle(""); setAdminSummary(""); setAdminImage(null); setAdminImagePreview("");
+            const picker = document.getElementById("learning-resource-image") as HTMLInputElement | null;
+            if (picker) picker.value = "";
+          } catch (error) { setAdminMessage(error instanceof Error ? error.message : "Could not save the resource."); }
           finally { setBusy(false); }
         }}>
-          <input required value={adminTitle} onChange={e => setAdminTitle(e.target.value)} placeholder="Resource / equipment name" className="min-h-11 rounded-lg border border-amber-300 bg-white px-3 text-sm text-slate-950 placeholder:text-slate-500" />
-          <select value={adminSubject} onChange={e => setAdminSubject(e.target.value)} className="min-h-11 rounded-lg border border-amber-300 bg-white px-3 text-sm text-slate-950">{SUBJECTS.map(s => <option key={s}>{s}</option>)}</select>
-          <select value={adminLevel} onChange={e => {setAdminLevel(e.target.value as "jhs"|"shs");setAdminClass(e.target.value === "jhs" ? "JHS 1" : "SHS 1");}} className="min-h-11 rounded-lg border bg-white px-3 text-sm"><option value="jhs">JHS</option><option value="shs">SHS</option></select>
-          <select value={adminClass} onChange={e => setAdminClass(e.target.value)} className="min-h-11 rounded-lg border bg-white px-3 text-sm">{CLASSES.filter(x => x.toLowerCase().startsWith(adminLevel)).map(x => <option key={x}>{x}</option>)}</select>
-          <input required value={adminSummary} onChange={e => setAdminSummary(e.target.value)} placeholder="Short summary" className="min-h-11 rounded-lg border px-3 text-sm sm:col-span-2" />
-          <input value={adminTopic} onChange={e => setAdminTopic(e.target.value)} placeholder="Curriculum topic" className="min-h-11 rounded-lg border px-3 text-sm" />
-          <select value={adminCategory} onChange={e => setAdminCategory(e.target.value)} className="min-h-11 rounded-lg border bg-white px-3 text-sm">{CATEGORIES.map(x => <option key={x}>{x}</option>)}</select>
-          <textarea required value={adminDescription} onChange={e => setAdminDescription(e.target.value)} placeholder="Description and educational purpose" className="min-h-20 rounded-lg border border-amber-300 bg-white p-3 text-sm text-slate-950 placeholder:text-slate-500 sm:col-span-2" />
-          <textarea value={adminComponents} onChange={e => setAdminComponents(e.target.value)} placeholder="Components and functions (one per line)" className="min-h-20 rounded-lg border p-3 text-sm" />
-          <textarea value={adminInstructions} onChange={e => setAdminInstructions(e.target.value)} placeholder="Step-by-step instructions (one per line)" className="min-h-20 rounded-lg border p-3 text-sm" />
-          <textarea value={adminActivity} onChange={e => setAdminActivity(e.target.value)} placeholder="Practical activity" className="min-h-16 rounded-lg border border-amber-300 bg-white p-3 text-sm text-slate-950 placeholder:text-slate-500" />
-          <textarea value={adminSafety} onChange={e => setAdminSafety(e.target.value)} placeholder="Safety precautions (one per line)" className="min-h-20 rounded-lg border p-3 text-sm" />
-          <textarea value={adminExercises} onChange={e => setAdminExercises(e.target.value)} placeholder="Student exercises / teacher notes" className="min-h-20 rounded-lg border p-3 text-sm" />
-          <select value={adminAccess} onChange={e => setAdminAccess(e.target.value as "free"|"subscriber")} className="min-h-11 rounded-lg border bg-white px-3 text-sm"><option value="free">Free resource</option><option value="subscriber">Subscriber-only resource</option></select>
-          <button disabled={busy} className="min-h-11 rounded-lg bg-amber-900 px-4 text-sm font-bold text-white disabled:opacity-50">Save draft resource</button>
+          <input required value={adminTitle} onChange={e => setAdminTitle(e.target.value)} placeholder="Resource name" aria-label="Resource name" className="min-h-12 rounded-xl border border-amber-300 bg-white px-3 text-base text-slate-950 placeholder:text-slate-500" />
+          <select value={adminSubject} onChange={e => setAdminSubject(e.target.value)} aria-label="Subject" className="min-h-12 rounded-xl border border-amber-300 bg-white px-3 text-base text-slate-950">{SUBJECTS.map(subjectName => <option key={subjectName}>{subjectName}</option>)}</select>
+          <textarea required value={adminSummary} onChange={e => setAdminSummary(e.target.value)} placeholder="Short description" aria-label="Short description" rows={3} className="rounded-xl border border-amber-300 bg-white p-3 text-base text-slate-950 placeholder:text-slate-500" />
+          <label className="rounded-xl border border-violet-200 bg-violet-50 p-3 text-sm font-bold text-violet-950">
+            One learning-aid image (JPG, PNG or WebP)
+            <input id="learning-resource-image" required type="file" accept="image/jpeg,image/png,image/webp" className="mt-2 block w-full text-sm" onChange={e => {
+              const file = e.target.files?.[0] ?? null;
+              setAdminImage(file); setAdminImagePreview(file ? URL.createObjectURL(file) : "");
+            }} />
+          </label>
+          {adminImagePreview && <div className="rounded-xl border border-violet-200 bg-white p-2"><img src={adminImagePreview} alt="Selected learning aid preview" className="mx-auto max-h-64 w-auto rounded-lg object-contain" /><p className="mt-1 text-center text-xs text-slate-600">{adminImage?.name}</p></div>}
+          <button type="submit" disabled={busy || !adminImage || !adminTitle.trim() || !adminSummary.trim()} className="min-h-12 rounded-xl bg-violet-800 px-4 text-base font-bold text-white disabled:opacity-50">{busy ? "Saving resource and image…" : "Save resource with image"}</button>
         </form>
-        </details>
         {adminMessage && <p role="status" className="mt-3 text-sm text-amber-950">{adminMessage}</p>}
         <div className="mt-5 border-t border-amber-200 pt-4">
           <h3 className="font-bold text-amber-950">Resource review queue</h3>
