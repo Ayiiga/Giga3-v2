@@ -7,7 +7,7 @@ export const CREATOR_EARNINGS_GUIDE: GuideSection[] = [
     id: "qualify",
     title: "How creators qualify",
     paragraphs: [
-      "You need a GigaSocial profile, at least 15 genuine fans if your African creator region is verified (500 otherwise), and an account in good standing.",
+      "You need a GigaSocial profile, at least 15 genuine fans globally, and an account in good standing.",
       "When you meet the applicable fan count, you can accept the creator monetisation rules and apply. Reaching the threshold does not guarantee approval.",
       "Giga3 AI may still review originality, policy compliance, and payment readiness before activating monetisation.",
     ],
