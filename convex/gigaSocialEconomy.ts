@@ -1314,8 +1314,16 @@ export const listCopyrightReviewQueue = query({
   handler: async (ctx, args) => {
     const adminEmail = await requireSession(args.sessionToken, ctx);
     if (!isPlatformAdminEmail(adminEmail)) throw new Error("Administrator access required.");
-    const rows = await ctx.db.query("socialPosts").order("desc").take(200);
-    return rows.filter((p) => !p.deletedAt && (p.copyrightScreeningStatus === "pending" || p.copyrightScreeningStatus === "appealed" || p.copyrightScreeningStatus === "possible_match"))
+    const statuses = ["pending", "appealed", "possible_match"] as const;
+    const groups = await Promise.all(statuses.map((status) =>
+      ctx.db.query("socialPosts")
+        .withIndex("by_copyright_status_created", (q) => q.eq("copyrightScreeningStatus", status))
+        .order("desc")
+        .collect()
+    ));
+    return groups.flat()
+      .filter((p) => !p.deletedAt && Boolean(p.contentRightsDeclaration))
+      .sort((a, b) => b.createdAt - a.createdAt)
       .map((p) => ({ postId: p._id, creatorId: p.authorId, body: p.body.slice(0, 300), declaration: p.contentRightsDeclaration ?? null, licenseReference: p.contentRightsLicenseReference, status: p.copyrightScreeningStatus, createdAt: p.createdAt }));
   },
 });
