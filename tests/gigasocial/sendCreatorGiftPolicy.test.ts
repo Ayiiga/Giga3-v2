@@ -38,7 +38,7 @@ describe("sendCreatorGift policy", () => {
     );
     expect(src).not.toContain("Affiliate program unlocks at 500 Fans.");
     expect(src).toContain("No fan-count gate");
-    expect(src).toContain("MIN_FANS_FOR_MONETIZATION = 500");
+    expect(src).toContain("MIN_FANS_FOR_MONETIZATION = 15");
     expect(src).toContain("MIN_FANS_FOR_WITHDRAWAL = 50");
     expect(src).toContain("acceptMonetizationTerms");
     expect(src).not.toContain("Boost campaigns unlock at 500 Fans.");
@@ -70,7 +70,7 @@ describe("sendCreatorGift policy", () => {
     expect(src).toContain("enablePostTips");
   });
 
-  it("keeps affiliate open while monetisation uses the 500-fan product rule", () => {
+  it("keeps affiliate open while monetisation uses the 15-fan product rule", () => {
     const client = readFileSync(
       resolve(__dirname, "../../web/components/gigasocial/GigaSocialClient.tsx"),
       "utf8"
