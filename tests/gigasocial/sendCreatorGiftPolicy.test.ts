@@ -89,4 +89,15 @@ describe("sendCreatorGift policy", () => {
     expect(dashboard).not.toContain("100 fans");
     expect(affiliate).toContain("Open to everyone");
   });
+  it("offers candidate-page support through the existing credit gift flow", () => {
+    const candidate = readFileSync(
+      resolve(__dirname, "../../web/components/gigasocial/awards/AwardsCandidateClient.tsx"),
+      "utf8"
+    );
+    expect(candidate).toContain("api.gigaSocialEconomy.sendCreatorGift");
+    expect(candidate).toContain("candidate.supportCreatorUserId");
+    expect(candidate).toContain("Send ${credits} credits");
+    expect(candidate).toContain("Support never affects votes, rankings or judging");
+  });
+
 });
