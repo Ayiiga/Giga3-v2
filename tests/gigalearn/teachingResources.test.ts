@@ -51,7 +51,7 @@ describe("GigaLearn teaching materials library", () => {
     expect(ui).toContain("Pinch with two fingers to zoom");
     expect(ui).toContain("COMPOUND LIGHT MICROSCOPE");
     expect(ui).toContain("Liquid column");
-    expect(ui).toContain("Open full material & illustration");
+    expect(ui).toContain("Open full material & illustration");\n    expect(ui).toContain("first 30 visual resources");\n    expect(ui).toContain("NaCCA JHS Science curriculum");\n    expect(ui).toContain("University of Ghana · practical science enrichment");\n    expect(ui).toContain("CURATED_IMAGE_SLUGS");\n    expect(ui).toContain("Pinch with two fingers to zoom");
     expect(ui).toContain("api.teachingResources.getPublicDetail");
     expect(ui).toContain("api.teachingResources.issueDownloadToken");
     expect(ui).toContain("window.print()");
