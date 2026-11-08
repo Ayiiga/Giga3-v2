@@ -7,7 +7,7 @@ const read = (path: string) => readFileSync(resolve(process.cwd(), path), "utf8"
 describe("GigaLearn teaching materials library", () => {
   it("adds a separate JHS/SHS resource catalogue without replacing exam banks", () => {
     const schema = read("convex/schema.ts");
-    expect(schema).toContain("teachingResources: defineTable");
+    expect(schema).toContain("teachingResources: defineTable");\n    expect(schema).toContain("subjects: v.optional(v.array(v.string()))");
     expect(schema).toContain("teachingResourceDownloadTokens: defineTable");
     expect(schema).toContain('v.literal("jhs")');
     expect(schema).toContain('v.literal("shs")');
@@ -23,7 +23,7 @@ describe("GigaLearn teaching materials library", () => {
     expect(backend).toContain("createResource = mutation");
     expect(backend).toContain("createUploadUrl = mutation");
     expect(backend).toContain("attachResourceFile = mutation");
-    expect(backend).toContain("seedStarterResources = mutation");
+    expect(backend).toContain("seedStarterResources = mutation");\n    expect(backend).toContain("CURRICULUM_IMAGE_ALIGNMENT");\n    expect(backend).toContain("NaCCA Science Curriculum B7–B9");
   });
 
   it("rechecks subscription validity before issuing and consuming protected download tokens", () => {
@@ -45,7 +45,7 @@ describe("GigaLearn teaching materials library", () => {
   it("keeps the resource page connected to server catalogue queries", () => {
     const ui = read("web/components/gigalearn/TeachingResourcesLibrary.tsx");
     expect(ui).toContain("api.teachingResources.listPublished");
-    expect(ui).toContain("function ResourceVisual");
+    expect(ui).toContain("function CommonsImage");\n    expect(ui).toContain("CURATED_IMAGE_RESOURCES");\n    expect(ui).toContain("Wikimedia Commons");\n    expect(ui).toContain("Attribution & licence");\n    expect(ui).toContain("Download original image");\n    expect(ui).toContain("aspect-[9/16]");
     expect(ui).toContain("function ResourceDiagram");
     expect(ui).toContain("aspect-[9/16]");
     expect(ui).toContain("Pinch with two fingers to zoom");
