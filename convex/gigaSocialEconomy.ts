@@ -1,4 +1,5 @@
 import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
+import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
 import { requireSession } from "./auth";
 import { isPlatformAdminEmail } from "./platformAdmin";
@@ -230,28 +231,22 @@ export async function isMonetizationUnlocked(
 
 async function getOriginalPostProgress(ctx: DbCtx, creatorId: string, now = Date.now()) {
   const cutoff = now - ORIGINAL_POST_WINDOW_MS;
+  // This is intentionally count-only: follow/fan mutations must never build UI rows.
   const recent = (await ctx.db.query("socialPosts")
     .withIndex("by_author_created", (q) => q.eq("authorId", creatorId).gte("createdAt", cutoff))
     .order("desc").collect())
     .filter((p) => !p.deletedAt && p.createdAt <= now);
-  const eligible = recent.filter((p) =>
+  const eligibleCount = recent.filter((p) =>
     (p.contentRightsDeclaration === "original" || p.contentRightsDeclaration === "licensed") &&
     (p.contentRightsDeclaration !== "licensed" || Boolean(p.contentRightsLicenseReference?.trim())) &&
     p.copyrightScreeningStatus === "clear"
-  );
+  ).length;
   return {
     required: MIN_ORIGINAL_POSTS_FOR_MONETIZATION,
     windowDays: ORIGINAL_POST_WINDOW_DAYS,
-    count: eligible.length,
-    eligible: eligible.length >= MIN_ORIGINAL_POSTS_FOR_MONETIZATION,
+    count: eligibleCount,
+    eligible: eligibleCount >= MIN_ORIGINAL_POSTS_FOR_MONETIZATION,
     pendingReviewCount: recent.filter((p) => p.copyrightScreeningStatus === "pending" || p.copyrightScreeningStatus === "appealed").length,
-    // Include the complete rolling window so older qualifying posts remain declarable.
-    recentPosts: recent.map((p) => ({
-      postId: p._id, body: p.body.slice(0, 100), createdAt: p.createdAt,
-      declaration: p.contentRightsDeclaration ?? null,
-      screeningStatus: p.copyrightScreeningStatus ?? "not_declared",
-      hasOpenAppeal: false,
-    })),
   };
 }
 
@@ -427,7 +422,6 @@ export const getCreatorDashboard = query({
     const supportingCount = await getSupportingCount(ctx, userId);
     const eligibility = await getMonetizationEligibility(ctx, profile, settings);
     const { fanCount, unlocked } = eligibility;
-    const originality = await getOriginalPostProgress(ctx, userId);
     const gamification = parseGamification(profile.gamificationJson);
 
     const posts = await ctx.db
@@ -555,12 +549,11 @@ export const getCreatorDashboard = query({
       withdrawalFansRequired: settings.minFansForWithdrawal,
       minWithdrawalGhs: settings.minWithdrawalGhs,
       fanEligible: eligibility.fanEligible,
-      originalPostsRequired: originality.required,
-      originalPostsWindowDays: originality.windowDays,
-      originalPostsCount: originality.count,
-      originalPostsEligible: originality.eligible,
-      originalPostsPendingReview: originality.pendingReviewCount,
-      recentRightsPosts: originality.recentPosts,
+      originalPostsRequired: eligibility.originalPostsRequired,
+      originalPostsWindowDays: eligibility.originalPostsWindowDays,
+      originalPostsCount: eligibility.originalPostsCount,
+      originalPostsEligible: eligibility.originalPostsEligible,
+      originalPostsPendingReview: eligibility.originalPostsPendingReview,
       withdrawalFanEligible: eligibility.withdrawalFanEligible,
       monetizationAccepted: eligibility.accepted,
       policyVersion: eligibility.policyVersion,
@@ -1351,6 +1344,31 @@ export const reviewCopyrightDeclaration = mutation({
       });
     }
     return { ok: true as const, decision: args.decision };
+  },
+});
+
+/** Creator-only, paginated declaration list for the rolling 45-day window. */
+export const getCreatorRightsPostsPage = query({
+  args: { sessionToken: v.string(), paginationOpts: paginationOptsValidator },
+  handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken, ctx);
+    const cutoff = Date.now() - ORIGINAL_POST_WINDOW_MS;
+    const page = await ctx.db.query("socialPosts")
+      .withIndex("by_author_created", (q) => q.eq("authorId", userId).gte("createdAt", cutoff))
+      .order("desc")
+      .paginate(args.paginationOpts);
+    return {
+      ...page,
+      page: page.page
+        .filter((post) => !post.deletedAt && post.createdAt <= Date.now())
+        .map((post) => ({
+          postId: post._id,
+          body: post.body.slice(0, 100),
+          createdAt: post.createdAt,
+          declaration: post.contentRightsDeclaration ?? null,
+          screeningStatus: post.copyrightScreeningStatus ?? "not_declared",
+        })),
+    };
   },
 });
 
