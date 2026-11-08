@@ -1539,6 +1539,15 @@ export const updatePost = mutation({
       ...(args.templatePolicy !== undefined
         ? { templatePolicy: args.templatePolicy }
         : {}),
+      // Any material text/type edit invalidates the prior reviewer clearance.
+      ...(body !== post.body || nextPostType !== post.postType
+        ? {
+            copyrightScreeningStatus: post.contentRightsDeclaration ? "pending" as const : undefined,
+            copyrightScreenedAt: undefined,
+            copyrightScreenedBy: undefined,
+            copyrightScreeningNote: undefined,
+          }
+        : {}),
       updatedAt: Date.now(),
     });
 
