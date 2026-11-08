@@ -5,7 +5,20 @@ import { requireSession } from "./auth";
 import { isPlatformAdminEmail } from "./platformAdmin";
 import { isSubscriptionActive } from "./creditsConfig";
 
-const fileKind = v.union(v.literal("guide"), v.literal("worksheet"), v.literal("image"), v.literal("diagram"));
+const CURRICULUM_IMAGE_ALIGNMENT: Record<string, { subject: string; subjects: string[]; levelBand: "jhs" | "shs" | "both"; classes: string[]; curriculumReference: string }> = {};
+const addAlignment = (slugs: string[], subject: string, subjects: string[], levelBand: "jhs" | "shs" | "both", classes: string[], reference: string) => {
+  for (const slug of slugs) CURRICULUM_IMAGE_ALIGNMENT[slug] = { subject, subjects, levelBand, classes, curriculumReference: reference };
+};
+const jhsScience = "NaCCA Science Curriculum B7–B9 (JHS): experimental and process skills, equipment handling, observation and measurement.";
+const shsGeneral = "NaCCA General Science Curriculum (SHS 1–3): scientific investigation, practical measurement and laboratory methods.";
+const jhsEquipment = ["equipment-beaker","equipment-conical-flask","equipment-measuring-cylinder","equipment-test-tube","equipment-test-tube-rack","equipment-bunsen-burner","equipment-tripod-stand","equipment-wire-gauze","equipment-evaporating-dish","equipment-crucible-with-lid","equipment-mortar-and-pestle","equipment-funnel","equipment-thermometer","equipment-weighing-balance"];
+addAlignment(jhsEquipment, "Integrated Science", ["Integrated Science","Chemistry"], "both", ["JHS 1","JHS 2","JHS 3","SHS 1","SHS 2","SHS 3"], jhsScience + " " + shsGeneral);
+addAlignment(["digital-multimeter"], "Physics", ["Physics","Integrated Science"], "shs", ["SHS 1","SHS 2","SHS 3"], "NaCCA Physics Curriculum (SHS 1–3): electricity, electrical quantities and practical measurement.");
+addAlignment(["parts-of-a-compound-microscope"], "Biology", ["Biology","Integrated Science"], "both", ["JHS 2","JHS 3","SHS 1","SHS 2","SHS 3"], "NaCCA Science (JHS) and Biology (SHS): cells, microscopy, observation and biological investigation.");
+addAlignment(["human-digestive-system-organs-and-functions","human-respiratory-system-organs-and-functions","human-circulatory-system-organs-and-functions","human-nervous-system-organs-and-functions","human-skeletal-system-organs-and-functions","human-muscular-system-organs-and-functions","human-excretory-system-organs-and-functions","human-reproductive-system-organs-and-functions","human-endocrine-system-glands-and-functions"], "Biology", ["Biology","Integrated Science"], "both", ["JHS 2","JHS 3","SHS 1","SHS 2","SHS 3"], "NaCCA Science (JHS) and Biology / General Science (SHS): human body systems, structure, function and coordination.");
+addAlignment(["setup-filtration-set-up","setup-heating-set-up"], "Integrated Science", ["Integrated Science","Chemistry"], "both", ["JHS 2","JHS 3","SHS 1"], jhsScience + " " + shsGeneral);
+addAlignment(["setup-distillation-set-up","setup-simple-titration-set-up","setup-electrolysis-of-water"], "Chemistry", ["Chemistry","Integrated Science"], "shs", ["SHS 1","SHS 2","SHS 3"], "NaCCA Chemistry Curriculum (SHS 1–3): separation techniques, quantitative analysis and electrochemistry.");
+\nconst fileKind = v.union(v.literal("guide"), v.literal("worksheet"), v.literal("image"), v.literal("diagram"));
 const accessKind = v.union(v.literal("free"), v.literal("subscriber"));
 const statusKind = v.union(v.literal("draft"), v.literal("pending"), v.literal("published"), v.literal("archived"));
 
@@ -58,7 +71,7 @@ export const listPublished = query({
     let rows = await ctx.db.query("teachingResources")
       .withIndex("by_status_updated", q => q.eq("status", "published"))
       .order("desc").collect();
-    if (args.subject) rows = rows.filter(r => r.subject === args.subject);
+    if (args.subject) rows = rows.filter(r => r.subject === args.subject || (r.subjects ?? []).includes(args.subject!));
     if (args.levelBand) rows = rows.filter(r => r.levelBand === args.levelBand || r.levelBand === "both");
     if (args.className) rows = rows.filter(r => r.classes.includes(args.className!));
     if (args.category) rows = rows.filter(r => r.category === args.category);
@@ -203,11 +216,18 @@ export const seedScienceLearningAids = mutation({
     let created = 0;
     for (const item of items) {
       const existing = await ctx.db.query("teachingResources").withIndex("by_slug", q => q.eq("slug", item.slug)).first();
-      if (existing) continue;
+      const alignment = CURRICULUM_IMAGE_ALIGNMENT[item.slug];
+      if (existing) {
+        if (alignment) await ctx.db.patch(existing._id, { ...alignment, updatedAt: Date.now() });
+        continue;
+      }
       const now = Date.now();
       await ctx.db.insert("teachingResources", {
         slug: item.slug, title: item.title, summary: item.summary, description: item.description,
-        subject: item.subject, levelBand: item.levelBand, classes: item.classes, topic: item.topic,
+        subject: alignment?.subject ?? item.subject, subjects: alignment?.subjects ?? [item.subject],
+        levelBand: alignment?.levelBand ?? item.levelBand, classes: alignment?.classes ?? item.classes,
+        curriculumReference: alignment?.curriculumReference,
+        topic: item.topic,
         category: item.category, activity: item.activity,
         componentsJson: JSON.stringify(item.components), instructionsJson: JSON.stringify(item.instructions),
         activitiesJson: JSON.stringify(item.activities), safetyJson: JSON.stringify(item.safety),
