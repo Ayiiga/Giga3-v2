@@ -2481,7 +2481,7 @@ export default defineSchema({
     summary: v.string(),
     description: v.string(),
     subject: v.string(),
-    levelBand: v.union(v.literal("jhs"), v.literal("shs")),
+    levelBand: v.union(v.literal("jhs"), v.literal("shs"), v.literal("both")),
     classes: v.array(v.string()),
     topic: v.string(),
     category: v.string(),
