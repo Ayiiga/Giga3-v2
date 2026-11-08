@@ -258,7 +258,6 @@ export const createResource = mutation({
     const slug = args.slug.trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-|-$/g, "");
     if (!slug || slug.length > 100) throw new Error("Enter a valid resource slug.");
     const existing = await ctx.db.query("teachingResources").withIndex("by_slug", q => q.eq("slug", slug)).first();
-    if (existing) throw new Error("A resource with this slug already exists.");
     const now = Date.now();
     parseStringArray(args.componentsJson, "Components");
     parseStringArray(args.instructionsJson, "Instructions");
@@ -266,6 +265,15 @@ export const createResource = mutation({
     parseStringArray(args.safetyJson, "Safety precautions");
     parseStringArray(args.mistakesJson, "Common mistakes");
     const { sessionToken: _token, ...data } = args;
+    if (existing) {
+      // Reuse the existing resource instead of failing when an administrator
+      // uploads an image for a title that is already in the review queue.
+      // Keep its review state and any previously attached files unchanged.
+      await ctx.db.patch(existing._id, {
+        ...data, slug, updatedAt: now,
+      });
+      return existing._id;
+    }
     return await ctx.db.insert("teachingResources", {
       ...data, slug, createdBy: email, createdAt: now, updatedAt: now,
     });
