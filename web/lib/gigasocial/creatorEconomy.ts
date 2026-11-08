@@ -1,11 +1,8 @@
 /** Client helpers for GigaSocial creator economy eligibility and formatting. */
 
-/**
- * Fans required before a creator may accept monetisation terms and start earning.
- * Default global rule: 500 genuine fans. Verified African creators use a
- * server-calculated 15-fan threshold; clients must display the server value.
- */
-export const MIN_FANS_FOR_MONETIZATION = 500;
+/** Definitive product rule: 15 genuine fans to apply for creator monetisation. */
+export const MIN_FANS_FOR_MONETIZATION = 15;
+/** Kept as a compatibility alias; the 15-fan rule now applies to every region. */
 export const MIN_FANS_FOR_AFRICAN_MONETIZATION = 15;
 
 /** Fans required before a creator may request a withdrawal (still requires acceptance + balance). */
@@ -14,14 +11,12 @@ export const MIN_FANS_FOR_WITHDRAWAL = 50;
 /** @deprecated Use MIN_FANS_FOR_MONETIZATION — kept for older imports. */
 export const DEFAULT_MIN_FANS_FOR_MONETIZATION = MIN_FANS_FOR_MONETIZATION;
 
-/** Server-reported regional eligibility; never infer Africa from IP or language. */
-export function creatorMonetizationFanThreshold(args: {
+/** Server eligibility uses one published threshold globally; region is not inferred. */
+export function creatorMonetizationFanThreshold(_args: {
   verifiedAfricanCreator: boolean;
   defaultRequired?: number;
 }): number {
-  return args.verifiedAfricanCreator
-    ? MIN_FANS_FOR_AFRICAN_MONETIZATION
-    : Math.max(1, Math.floor(args.defaultRequired ?? MIN_FANS_FOR_MONETIZATION));
+  return MIN_FANS_FOR_MONETIZATION;
 }
 
 export function formatGhs(amount: number): string {

@@ -41,10 +41,10 @@ export function getCreatorTipTier(giftType: string) {
 type DbCtx = { db: import("./_generated/server").QueryCtx["db"] };
 
 /**
- * Fans required to accept monetisation terms and start earning.
- * Product rule (Earnings Centre brief): 500 genuine fans — do not lower without approval.
+ * Fans required to apply for creator monetisation and accept the current rules.
+ * Definitive product policy: 15 genuine fans globally.
  */
-export const MIN_FANS_FOR_MONETIZATION = 500;
+export const MIN_FANS_FOR_MONETIZATION = 15;
 /** Fans required to request a withdrawal (balance/payment checks still apply). */
 export const MIN_FANS_FOR_WITHDRAWAL = 50;
 
@@ -162,13 +162,9 @@ export async function loadEconomySettings(ctx: DbCtx): Promise<EconomySettings> 
     (settings as Record<string, number>)[field] = num;
   }
 
-  // Guard against accidental test values that undercut the product 500-fan rule.
-  if (
-    !Number.isFinite(settings.minFansForMonetization) ||
-    settings.minFansForMonetization < MIN_FANS_FOR_MONETIZATION
-  ) {
-    settings.minFansForMonetization = MIN_FANS_FOR_MONETIZATION;
-  }
+  // Enforce the published 15-fan policy even when an older remote-config row
+  // still contains the retired 500-fan threshold.
+  settings.minFansForMonetization = MIN_FANS_FOR_MONETIZATION;
   // Missing key, or prior interim default of 20 → current product rule (50).
   if (!sawWithdrawalKey || settings.minFansForWithdrawal === 20) {
     settings.minFansForWithdrawal = MIN_FANS_FOR_WITHDRAWAL;

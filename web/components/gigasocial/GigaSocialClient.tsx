@@ -372,7 +372,7 @@ function GigaSocialContent() {
           <>
             <SectionIntro
               title="Creator economy"
-              description="Earnings Centre with transparent GH₵ figures. Tips and boosts use Paystack. Monetisation unlocks at 500 fans (accept rules + application); withdrawals need balance checks. Affiliate is open to everyone."
+              description="Earnings Centre with transparent GH₵ figures. Tips and boosts use Paystack. Creator monetisation eligibility starts at 15 genuine fans (accept rules + application); withdrawals require at least 50 genuine fans, accepted rules and balance/payment checks. Affiliate is open to everyone."
             />
             {sessionToken ? (
               <GigaSocialPanelErrorBoundary panelName="Creator">

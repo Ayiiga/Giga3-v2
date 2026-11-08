@@ -28,6 +28,7 @@ function CandidateInner() {
     shareToken: params.token || undefined,
   });
   const castVote = useMutation(api.gigaSocialAwards.castVote);
+  const sendCreatorGift = useMutation(api.gigaSocialEconomy.sendCreatorGift);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
@@ -58,6 +59,30 @@ function CandidateInner() {
           displayCode: candidate.displayCode,
           shareToken: candidate.shareToken,
         });
+
+  const onSupport = async (credits: number) => {
+    if (!sessionToken) {
+      setMsg("Sign in to support this creator with GigaSocial credits.");
+      return;
+    }
+    if (!candidate || candidate.unavailable || !candidate.supportCreatorUserId) return;
+    setBusy(true);
+    setMsg(null);
+    try {
+      await sendCreatorGift({
+        sessionToken,
+        creatorId: candidate.supportCreatorUserId,
+        giftType: "awards_candidate_support",
+        credits,
+        message: "Support from GigaSocial Awards",
+      });
+      setMsg("Your creator support was sent. Thank you!");
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : "Could not send creator support.");
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const onVote = async () => {
     if (!sessionToken) {
@@ -156,8 +181,22 @@ function CandidateInner() {
           <h2 className="text-sm font-semibold">Support the creator</h2>
           <p className="mt-1 text-xs text-muted">{TIP_DISCLAIMER}</p>
           <p className="mt-2 text-sm text-muted">
-            Use GigaSocial creator tip tools when available. Tips never affect rankings.
+            Send voluntary support using GigaSocial credits. This is not a cash/Paystack tip; creator crediting follows the existing Gifts policy. Support never affects votes, rankings or judging.
           </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {[10, 25, 50].map((credits) => (
+              <Button
+                key={credits}
+                type="button"
+                size="sm"
+                disabled={busy || !candidate.supportCreatorUserId}
+                onClick={() => void onSupport(credits)}
+              >
+                {busy ? "Sending…" : `Send ${credits} credits`}
+              </Button>
+            ))}
+          </div>
+          {msg ? <p className="mt-2 text-sm text-muted">{msg}</p> : null}
         </section>
       ) : (
         <p className="text-xs text-muted">Creator tips are not enabled for this season.</p>

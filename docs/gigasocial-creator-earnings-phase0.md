@@ -28,9 +28,9 @@ Access date for all URLs below: **2026-10-24** (Africa/Accra).
 
 ### Threshold conflict (resolved for this initiative)
 
-- Product brief (2026-10-24): preserve **500-fan** monetisation unlock.
-- Code previously used **5** fans (with in-memory clamp that forced remote values ≥100 down to 5).
-- This initiative restores **`MIN_FANS_FOR_MONETIZATION = 500`**, keeps **`MIN_FANS_FOR_WITHDRAWAL = 50`** as a secondary check (always satisfied once monetisation fans are met), and removes the ≥100 clamp.
+- Historical product brief (2026-10-24): proposed a **500-fan** monetisation unlock; this was superseded by the definitive global policy approved on 2026-11-08.
+- Current policy: **`MIN_FANS_FOR_MONETIZATION = 15`** genuine fans globally, with **`MIN_FANS_FOR_WITHDRAWAL = 50`** genuine fans as a separate withdrawal safeguard.
+- The server enforces the 15-fan eligibility threshold regardless of legacy remote configuration. Consent, good standing, application review, balance and payment checks remain required.
 - **Money gate today:** withdrawals require current-policy consent + withdrawal fan check + balance (not application `approved`). Application/appeal is the review queue UI; admin approve tooling is not yet wired into `assertWithdrawalEligibility`. Documented intentional until Stage D/E.
 - **Convex deploy required** before production use: new table `socialMonetizationApplications` and optional field `socialCreatorGifts.creditedToPayoutAt`.
 
@@ -79,6 +79,6 @@ Access date for all URLs below: **2026-10-24** (Africa/Accra).
 
 ## Implementation plan (stages)
 
-1. **B** — Restore 500-fan gate; honest earnings summary; Earnings Centre UI; empty states; credit Paystack tip share into `payoutBalanceGhs`.  
+1. **Historical (superseded)** — The original 500-fan gate was replaced by the global 15-fan eligibility policy; the 50-fan withdrawal safeguard remains.  
 2. **C** — Application status model; goal planner; non-cash rewards/awards catalogue; guide + notifications hooks.  
 3. **D/E** — Transfer payouts, admin finance dashboard with real ledger, fraud tooling — blocked on provider/business readiness (documented, not faked).

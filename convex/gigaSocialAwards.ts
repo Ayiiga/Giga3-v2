@@ -278,7 +278,8 @@ export const getPublicSeason = query({
         priceGhs: p.priceGhs,
         benefits: parseLinks(p.benefitsJson),
         influencesCompetition: false as const,
-        checkoutAvailable: season.promoPaymentsEnabled && p.priceGhs > 0,
+        // Paid packages remain unavailable until a verified Paystack order + webhook fulfilment path ships.
+        checkoutAvailable: false,
       }));
 
     return {

@@ -38,7 +38,7 @@ describe("sendCreatorGift policy", () => {
     );
     expect(src).not.toContain("Affiliate program unlocks at 500 Fans.");
     expect(src).toContain("No fan-count gate");
-    expect(src).toContain("MIN_FANS_FOR_MONETIZATION = 500");
+    expect(src).toContain("MIN_FANS_FOR_MONETIZATION = 15");
     expect(src).toContain("MIN_FANS_FOR_WITHDRAWAL = 50");
     expect(src).toContain("acceptMonetizationTerms");
     expect(src).not.toContain("Boost campaigns unlock at 500 Fans.");
@@ -70,7 +70,7 @@ describe("sendCreatorGift policy", () => {
     expect(src).toContain("enablePostTips");
   });
 
-  it("keeps affiliate open while monetisation uses the 500-fan product rule", () => {
+  it("keeps affiliate open while monetisation uses the 15-fan product rule", () => {
     const client = readFileSync(
       resolve(__dirname, "../../web/components/gigasocial/GigaSocialClient.tsx"),
       "utf8"
@@ -83,10 +83,21 @@ describe("sendCreatorGift policy", () => {
       resolve(__dirname, "../../web/components/gigasocial/economy/GigaSocialCreatorDashboard.tsx"),
       "utf8"
     );
-    expect(client).toContain("500 fans");
+    expect(client).toContain("15 genuine fans");
     expect(client).not.toContain("100 fans");
     expect(affiliate).not.toContain("500 fans");
     expect(dashboard).not.toContain("100 fans");
     expect(affiliate).toContain("Open to everyone");
   });
+  it("offers candidate-page support through the existing credit gift flow", () => {
+    const candidate = readFileSync(
+      resolve(__dirname, "../../web/components/gigasocial/awards/AwardsCandidateClient.tsx"),
+      "utf8"
+    );
+    expect(candidate).toContain("api.gigaSocialEconomy.sendCreatorGift");
+    expect(candidate).toContain("candidate.supportCreatorUserId");
+    expect(candidate).toContain("Send ${credits} credits");
+    expect(candidate).toContain("Support never affects votes, rankings or judging");
+  });
+
 });

@@ -14,6 +14,7 @@ export function AdminAwardsPanel({
   const overview = useQuery(api.gigaSocialAwardsAdmin.getAdminSeasonOverview, creds);
   const bootstrap = useMutation(api.gigaSocialAwardsAdmin.bootstrapSeason);
   const setStatus = useMutation(api.gigaSocialAwardsAdmin.setSeasonStatus);
+  const setTipsEnabled = useMutation(api.gigaSocialAwardsAdmin.setTipsEnabled);
   const approve = useMutation(api.gigaSocialAwardsAdmin.approveNomination);
   const reject = useMutation(api.gigaSocialAwardsAdmin.rejectNomination);
   const publishAnnouncement = useMutation(api.gigaSocialAwardsAdmin.publishAnnouncement);
@@ -139,11 +140,46 @@ export function AdminAwardsPanel({
       ) : null}
 
       {overview.season ? (
-        <p className="text-sm text-muted">
-          Active: {overview.season.title} · {overview.season.status} · promoPayments=
-          {String(overview.season.promoPaymentsEnabled)} · tips=
-          {String(overview.season.tipsEnabled)}
-        </p>
+        <>
+          <p className="text-sm text-muted">
+            Active: {overview.season.title} · {overview.season.status} · promoPayments=
+            {String(overview.season.promoPaymentsEnabled)} · tips=
+            {String(overview.season.tipsEnabled)}
+          </p>
+          <div className="grid gap-3 rounded-xl border border-border p-3 sm:grid-cols-2">
+            <div className="sm:col-span-2">
+              <h3 className="font-semibold text-foreground">Candidate promotion payments</h3>
+              <p className="mt-1 text-xs text-muted">
+                Disabled until package checkout, signed Paystack verification/webhooks, idempotent fulfilment and refunds are implemented and tested. This control must not expose a paid checkout prematurely.
+              </p>
+              <span className="mt-2 inline-flex rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800">
+                Not available — payment integration pending
+              </span>
+            </div>
+            <div>
+              <h3 className="font-semibold text-foreground">Candidate tips</h3>
+              <p className="mt-1 text-xs text-muted">Voluntary creator support. Tips never affect votes, rankings or judging.</p>
+              <Button
+                type="button"
+                size="sm"
+                variant={overview.season.tipsEnabled ? "outline" : "default"}
+                disabled={busy !== null}
+                onClick={() => void run(
+                  "candidate-tips",
+                  () => setTipsEnabled({
+                    ...creds,
+                    seasonId: overview.season!.seasonId,
+                    enabled: !overview.season!.tipsEnabled,
+                    confirm: true,
+                  }),
+                  overview.season.tipsEnabled ? "Candidate tips disabled." : "Candidate tips enabled."
+                )}
+              >
+                {overview.season.tipsEnabled ? "Disable candidate tips" : "Enable candidate tips"}
+              </Button>
+            </div>
+          </div>
+        </>
       ) : (
         <p className="text-sm text-muted">No seasons yet.</p>
       )}
