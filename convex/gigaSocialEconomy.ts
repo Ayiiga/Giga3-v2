@@ -229,11 +229,11 @@ export async function isMonetizationUnlocked(
 }
 
 async function getOriginalPostProgress(ctx: DbCtx, creatorId: string, now = Date.now()) {
-  const posts = await ctx.db.query("socialPosts")
-    .withIndex("by_author_created", (q) => q.eq("authorId", creatorId))
-    .order("desc").take(200);
   const cutoff = now - ORIGINAL_POST_WINDOW_MS;
-  const recent = posts.filter((p) => !p.deletedAt && p.createdAt >= cutoff && p.createdAt <= now);
+  const recent = (await ctx.db.query("socialPosts")
+    .withIndex("by_author_created", (q) => q.eq("authorId", creatorId).gte("createdAt", cutoff))
+    .order("desc").collect())
+    .filter((p) => !p.deletedAt && p.createdAt <= now);
   const eligible = recent.filter((p) =>
     (p.contentRightsDeclaration === "original" || p.contentRightsDeclaration === "licensed") &&
     (p.contentRightsDeclaration !== "licensed" || Boolean(p.contentRightsLicenseReference?.trim())) &&
