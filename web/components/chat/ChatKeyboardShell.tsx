@@ -1,6 +1,7 @@
 "use client";
 
 import { ChatBundlePrefetch } from "@/components/chat/ChatBundlePrefetch";
+import { ScheduledChatBackground } from "@/components/chat/ScheduledChatBackground";
 import { CHAT_VIEWPORT_SYNC_EVENT, type ChatViewportSyncDetail } from "@/lib/chat/chatViewportEvents";
 import {
   COMPOSER_VISIBILITY_MAX_FRAMES,
@@ -346,6 +347,7 @@ export function ChatKeyboardShell({ children }: { children: React.ReactNode }) {
       ref={shellRef}
       className="chat-stable chat-keyboard-shell chat-app-shell flex h-full w-full max-w-full flex-col overflow-x-clip overflow-y-hidden bg-background text-foreground max-lg:fixed max-lg:inset-0 max-lg:z-[1] max-lg:h-[100dvh] max-lg:max-h-[100dvh] lg:static lg:z-auto"
     >
+      <ScheduledChatBackground />
       <ChatBundlePrefetch />
       <div className="flex min-h-0 min-w-0 max-w-full flex-1 flex-col overflow-hidden">
         {children}
