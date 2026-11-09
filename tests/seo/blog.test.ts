@@ -243,6 +243,16 @@ describe("blog accessibility (source)", () => {
   });
 });
 
+describe("FreeStartupDirectories recognition", () => {
+  it("shows the verified listing badge in the global site footer", () => {
+    const footer = readFileSync(resolve(WEB_ROOT, "components/layout/Footer.tsx"), "utf8");
+    expect(footer).toContain('https://freestartupdirectories.com/tools/giga3-ai');
+    expect(footer).toContain('https://freestartupdirectories.com/badges/featured-on-fsd.svg');
+    expect(footer).toContain('alt="Featured on FreeStartupDirectories"');
+    expect(footer).toContain('rel="noopener noreferrer"');
+  });
+});
+
 describe("blog navigation", () => {
   it("includes Blog in header nav and footer links", () => {
     const site = readFileSync(resolve(WEB_ROOT, "lib/site.ts"), "utf8");
