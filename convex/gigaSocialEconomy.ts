@@ -1338,6 +1338,8 @@ export const reviewCopyrightDeclaration = mutation({
     if (!isPlatformAdminEmail(reviewer)) throw new Error("Authorised reviewer access required.");
     const post = await ctx.db.get(args.postId);
     if (!post || post.deletedAt || !post.contentRightsDeclaration) throw new Error("Declared post not found.");
+    // Independent review is mandatory: a creator cannot approve their own content.
+    if (post.authorId === reviewer) throw new Error("A different administrator must review this creator’s post.");
     const note = args.note.trim().slice(0, 1000);
     if (note.length < 5) throw new Error("Add a brief reviewer rationale.");
     const now = Date.now();
