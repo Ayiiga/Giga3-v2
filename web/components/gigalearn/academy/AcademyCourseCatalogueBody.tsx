@@ -1,8 +1,6 @@
 "use client";
 
 import {
-  ACADEMY_CATEGORIES,
-  ACADEMY_SUBJECTS,
   filterAcademyCourses,
   getBuiltinAcademyCourse,
   listBuiltinAcademyCourses,
@@ -33,13 +31,11 @@ function formatDuration(mins: number): string {
 export function AcademyCourseCatalogueBody() {
   const [query, setQuery] = useState("");
   const [subject, setSubject] = useState("all");
-  const [category, setCategory] = useState("all");
   const [difficulty, setDifficulty] = useState("all");
 
   const remoteCourses = useQuery(api.gigaLearnAcademy.listPublishedCourses, {
     query: query.trim() || undefined,
     subject: subject === "all" ? undefined : subject,
-    category: category === "all" ? undefined : category,
     difficulty: difficulty === "all" ? undefined : difficulty,
   });
 
@@ -48,12 +44,22 @@ export function AcademyCourseCatalogueBody() {
       filterAcademyCourses(listBuiltinAcademyCourses().map(toAcademyListItem), {
         query,
         subject,
-        category,
         difficulty,
       }),
-    [query, subject, category, difficulty]
+    [query, subject, difficulty]
   );
-  const courses = remoteCourses ?? builtinCourses;
+  // Academy is a professional-skills catalogue; general school subjects belong in Learn/Practice.
+  const academySubjects = [
+    "Teaching", "Artificial Intelligence", "Web & PWA",
+    "Mobile Development", "Robotics", "Digital Technologies",
+  ] as const;
+  const allowed = new Set<string>(academySubjects);
+  const courses = (remoteCourses ?? builtinCourses).filter((course) =>
+    allowed.has(course.subject) &&
+    (subject === "all" || course.subject === subject) &&
+    (difficulty === "all" || course.difficulty === difficulty) &&
+    (!query.trim() || `${course.title} ${course.description} ${course.subject}`.toLowerCase().includes(query.trim().toLowerCase()))
+  );
 
   const selectClass =
     "min-h-11 w-full rounded-xl border border-border bg-white px-3 text-sm text-foreground";
@@ -77,7 +83,7 @@ export function AcademyCourseCatalogueBody() {
                 type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search courses, subjects, exam prep…"
+                placeholder="Search professional and technology courses…"
                 className="min-h-11 w-full rounded-xl border border-border bg-white py-2 pl-10 pr-3 text-sm text-foreground"
               />
             </span>
@@ -90,24 +96,9 @@ export function AcademyCourseCatalogueBody() {
               onChange={(e) => setSubject(e.target.value)}
             >
               <option value="all">All subjects</option>
-              {ACADEMY_SUBJECTS.map((s) => (
+              {academySubjects.map((s) => (
                 <option key={s} value={s}>
                   {s}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="block">
-            <span className="mb-1 block text-xs font-medium text-muted">Category</span>
-            <select
-              className={selectClass}
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-            >
-              <option value="all">All categories</option>
-              {ACADEMY_CATEGORIES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
                 </option>
               ))}
             </select>
