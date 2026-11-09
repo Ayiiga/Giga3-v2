@@ -1,6 +1,6 @@
 /** Creator monetisation policy — versioned for server-side acceptance records. */
 
-export const CREATOR_MONETIZATION_POLICY_VERSION = "giga-creator-monetisation-v2";
+export const CREATOR_MONETIZATION_POLICY_VERSION = "giga-creator-monetisation-v3";
 
 export const CREATOR_MONETIZATION_POLICY_TITLE =
   "GigaSocial Creator Monetisation Rules";
@@ -11,11 +11,11 @@ export const CREATOR_MONETIZATION_POLICY_SECTIONS: {
 }[] = [
   {
     heading: "Original content and intellectual property",
-    body: "You must only monetise content you own or are licensed to use. Do not upload or sell others’ work without permission.",
+    body: "To apply, you need at least 5 active posts from the previous rolling 45 days. Declare whether each is your original work or licensed with permission evidence. A declaration is recorded but does not itself verify ownership.",
   },
   {
     heading: "Copyright and prohibited content",
-    body: "Content that infringes copyright, promotes illegal activity, or violates Giga3 community standards may be removed and earnings withheld.",
+    body: "Declared posts undergo independent screening. Possible matches are flagged for human review, not automatically treated as proven infringement. You may appeal a screening decision; only posts cleared by an authorised reviewer count toward eligibility.",
   },
   {
     heading: "Authentic engagement",

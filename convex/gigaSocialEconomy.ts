@@ -1,6 +1,8 @@
 import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
+import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
 import { requireSession } from "./auth";
+import { isPlatformAdminEmail } from "./platformAdmin";
 import { sessionArgs } from "./validators";
 import { parseGamification } from "./gigaSocialViews";
 import { creatorMonetizationFanThreshold } from "../web/lib/gigasocial/creatorEconomy";
@@ -47,6 +49,9 @@ type DbCtx = { db: import("./_generated/server").QueryCtx["db"] };
 export const MIN_FANS_FOR_MONETIZATION = 15;
 /** Fans required to request a withdrawal (balance/payment checks still apply). */
 export const MIN_FANS_FOR_WITHDRAWAL = 50;
+export const MIN_ORIGINAL_POSTS_FOR_MONETIZATION = 5;
+export const ORIGINAL_POST_WINDOW_DAYS = 45;
+const ORIGINAL_POST_WINDOW_MS = ORIGINAL_POST_WINDOW_DAYS * 24 * 60 * 60 * 1000;
 
 export type EconomySettings = {
   minFansForMonetization: number;
@@ -224,10 +229,32 @@ export async function isMonetizationUnlocked(
   return hasValidMonetizationConsent(economy, profile.userId);
 }
 
+async function getOriginalPostProgress(ctx: DbCtx, creatorId: string, now = Date.now()) {
+  const cutoff = now - ORIGINAL_POST_WINDOW_MS;
+  // This is intentionally count-only: follow/fan mutations must never build UI rows.
+  const recent = (await ctx.db.query("socialPosts")
+    .withIndex("by_author_created", (q) => q.eq("authorId", creatorId).gte("createdAt", cutoff))
+    .order("desc").collect())
+    .filter((p) => !p.deletedAt && p.createdAt <= now);
+  const eligibleCount = recent.filter((p) =>
+    (p.contentRightsDeclaration === "original" || p.contentRightsDeclaration === "licensed") &&
+    (p.contentRightsDeclaration !== "licensed" || Boolean(p.contentRightsLicenseReference?.trim())) &&
+    p.copyrightScreeningStatus === "clear"
+  ).length;
+  return {
+    required: MIN_ORIGINAL_POSTS_FOR_MONETIZATION,
+    windowDays: ORIGINAL_POST_WINDOW_DAYS,
+    count: eligibleCount,
+    eligible: eligibleCount >= MIN_ORIGINAL_POSTS_FOR_MONETIZATION,
+    pendingReviewCount: recent.filter((p) => p.copyrightScreeningStatus === "pending" || p.copyrightScreeningStatus === "appealed").length,
+  };
+}
+
 export async function getMonetizationEligibility(
   ctx: DbCtx,
   profile: Doc<"socialProfiles">,
-  settings?: EconomySettings
+  settings?: EconomySettings,
+  includeOriginality = false
 ): Promise<{
   fanCount: number;
   fansRequired: number;
@@ -239,6 +266,11 @@ export async function getMonetizationEligibility(
   policyVersion: string;
   showEligibleInvite: boolean;
   requiresPolicyReacceptance: boolean;
+  originalPostsRequired: number;
+  originalPostsWindowDays: number;
+  originalPostsCount: number;
+  originalPostsEligible: boolean;
+  originalPostsPendingReview: number;
 }> {
   const config = settings ?? (await loadEconomySettings(ctx));
   const fanCount = await getFanCount(ctx, profile.userId);
@@ -256,6 +288,10 @@ export async function getMonetizationEligibility(
     defaultRequired: config.minFansForMonetization,
   });
   const fanEligible = fanCount >= fansRequired;
+  // Fan-only mutations (including new-fan notifications) do not scan creator posts.
+  const originalPosts = includeOriginality
+    ? await getOriginalPostProgress(ctx, profile.userId)
+    : { required: MIN_ORIGINAL_POSTS_FOR_MONETIZATION, windowDays: ORIGINAL_POST_WINDOW_DAYS, count: 0, eligible: false, pendingReviewCount: 0 };
   const legacyUnlockOnly =
     !accepted &&
     typeof economy.monetizationUnlockedAt === "number" &&
@@ -265,6 +301,11 @@ export async function getMonetizationEligibility(
     fansRequired,
     withdrawalFansRequired: config.minFansForWithdrawal,
     fanEligible,
+    originalPostsRequired: originalPosts.required,
+    originalPostsWindowDays: originalPosts.windowDays,
+    originalPostsCount: originalPosts.count,
+    originalPostsEligible: originalPosts.eligible,
+    originalPostsPendingReview: originalPosts.pendingReviewCount,
     withdrawalFanEligible: fanCount >= config.minFansForWithdrawal,
     accepted,
     unlocked: accepted,
@@ -383,7 +424,7 @@ export const getCreatorDashboard = query({
 
     const settings = await loadEconomySettings(ctx);
     const supportingCount = await getSupportingCount(ctx, userId);
-    const eligibility = await getMonetizationEligibility(ctx, profile, settings);
+    const eligibility = await getMonetizationEligibility(ctx, profile, settings, true);
     const { fanCount, unlocked } = eligibility;
     const gamification = parseGamification(profile.gamificationJson);
 
@@ -512,6 +553,11 @@ export const getCreatorDashboard = query({
       withdrawalFansRequired: settings.minFansForWithdrawal,
       minWithdrawalGhs: settings.minWithdrawalGhs,
       fanEligible: eligibility.fanEligible,
+      originalPostsRequired: eligibility.originalPostsRequired,
+      originalPostsWindowDays: eligibility.originalPostsWindowDays,
+      originalPostsCount: eligibility.originalPostsCount,
+      originalPostsEligible: eligibility.originalPostsEligible,
+      originalPostsPendingReview: eligibility.originalPostsPendingReview,
       withdrawalFanEligible: eligibility.withdrawalFanEligible,
       monetizationAccepted: eligibility.accepted,
       policyVersion: eligibility.policyVersion,
@@ -1141,6 +1187,10 @@ export const submitMonetizationApplication = mutation({
     if (!eligibility.accepted) {
       throw new Error("Accept the creator monetisation rules before submitting an application.");
     }
+    const originality = await getOriginalPostProgress(ctx, userId);
+    if (!originality.eligible) {
+      throw new Error(`Need ${originality.required} independently cleared original/licensed posts within the last ${originality.windowDays} days. You have ${originality.count}; ${originality.pendingReviewCount} awaiting review.`);
+    }
 
     const existing = await ctx.db
       .query("socialMonetizationApplications")
@@ -1225,6 +1275,127 @@ export const submitMonetizationAppeal = mutation({
     });
 
     return { ok: true as const, status: "under_review" as const };
+  },
+});
+
+
+/** Creator records an auditable ownership/licence declaration for an existing post. */
+export const declarePostContentRights = mutation({
+  args: {
+    sessionToken: v.string(), postId: v.id("socialPosts"),
+    declaration: v.union(v.literal("original"), v.literal("licensed")),
+    licenseReference: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken, ctx);
+    const post = await ctx.db.get(args.postId);
+    if (!post || post.deletedAt || post.authorId !== userId) throw new Error("Post not found or not owned by you.");
+    const licenseReference = args.licenseReference?.trim().slice(0, 500);
+    if (args.declaration === "licensed" && !licenseReference) throw new Error("Provide a licence or permission reference for licensed content.");
+    const now = Date.now();
+    await ctx.db.patch(post._id, {
+      contentRightsDeclaration: args.declaration,
+      contentRightsDeclaredAt: now,
+      contentRightsLicenseReference: args.declaration === "licensed" ? licenseReference : undefined,
+      copyrightScreeningStatus: "pending",
+      copyrightScreenedAt: undefined,
+      copyrightScreenedBy: undefined,
+      copyrightScreeningNote: undefined,
+    });
+    return { ok: true as const, screeningStatus: "pending" as const };
+  },
+});
+
+/** Admin-only queue of declared posts requiring independent screening. */
+export const listCopyrightReviewQueue = query({
+  args: { sessionToken: v.string(), paginationOpts: paginationOptsValidator },
+  handler: async (ctx, args) => {
+    const adminEmail = await requireSession(args.sessionToken, ctx);
+    if (!isPlatformAdminEmail(adminEmail)) throw new Error("Administrator access required.");
+    // Bound each read even when the review backlog grows. Filtering after pagination
+    // may yield a short/empty page, but the cursor always advances through all posts.
+    const page = await ctx.db.query("socialPosts")
+      .withIndex("by_created")
+      .order("desc")
+      .paginate(args.paginationOpts);
+    return {
+      ...page,
+      page: page.page
+        .filter((p) => !p.deletedAt && Boolean(p.contentRightsDeclaration) &&
+          (p.copyrightScreeningStatus === "pending" ||
+           p.copyrightScreeningStatus === "appealed" ||
+           p.copyrightScreeningStatus === "possible_match"))
+        .map((p) => ({ postId: p._id, creatorId: p.authorId, body: p.body.slice(0, 300), declaration: p.contentRightsDeclaration ?? null, licenseReference: p.contentRightsLicenseReference, status: p.copyrightScreeningStatus, createdAt: p.createdAt })),
+    };
+  },
+});
+
+/** Reviewer-only screening decision. A possible match is not a finding of infringement. */
+export const reviewCopyrightDeclaration = mutation({
+  args: { sessionToken: v.string(), postId: v.id("socialPosts"), decision: v.union(v.literal("clear"), v.literal("possible_match"), v.literal("rejected")), note: v.string() },
+  handler: async (ctx, args) => {
+    const reviewer = await requireSession(args.sessionToken, ctx);
+    if (!isPlatformAdminEmail(reviewer)) throw new Error("Authorised reviewer access required.");
+    const post = await ctx.db.get(args.postId);
+    if (!post || post.deletedAt || !post.contentRightsDeclaration) throw new Error("Declared post not found.");
+    // Independent review is mandatory: a creator cannot approve their own content.
+    if (post.authorId === reviewer) throw new Error("A different administrator must review this creator’s post.");
+    const note = args.note.trim().slice(0, 1000);
+    if (note.length < 5) throw new Error("Add a brief reviewer rationale.");
+    const now = Date.now();
+    await ctx.db.patch(post._id, { copyrightScreeningStatus: args.decision, copyrightScreenedAt: now, copyrightScreenedBy: reviewer, copyrightScreeningNote: note });
+    const openAppeals = await ctx.db.query("socialContentAppeals").withIndex("by_post", (q) => q.eq("postId", post._id)).collect();
+    for (const appeal of openAppeals.filter((row) => row.status === "open")) {
+      await ctx.db.patch(appeal._id, {
+        status: args.decision === "clear" ? "cleared" : "reviewed",
+        reviewedAt: now,
+        reviewedBy: reviewer,
+        reviewerNote: note,
+      });
+    }
+    return { ok: true as const, decision: args.decision };
+  },
+});
+
+/** Creator-only, paginated declaration list for the rolling 45-day window. */
+export const getCreatorRightsPostsPage = query({
+  args: { sessionToken: v.string(), paginationOpts: paginationOptsValidator },
+  handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken, ctx);
+    const cutoff = Date.now() - ORIGINAL_POST_WINDOW_MS;
+    const page = await ctx.db.query("socialPosts")
+      .withIndex("by_author_created", (q) => q.eq("authorId", userId).gte("createdAt", cutoff))
+      .order("desc")
+      .paginate(args.paginationOpts);
+    return {
+      ...page,
+      page: page.page
+        .filter((post) => !post.deletedAt && post.createdAt <= Date.now())
+        .map((post) => ({
+          postId: post._id,
+          body: post.body.slice(0, 100),
+          createdAt: post.createdAt,
+          declaration: post.contentRightsDeclaration ?? null,
+          screeningStatus: post.copyrightScreeningStatus ?? "not_declared",
+        })),
+    };
+  },
+});
+
+/** Creator appeal of a possible match or rejection; screening is suspended pending review. */
+export const appealCopyrightScreening = mutation({
+  args: { sessionToken: v.string(), postId: v.id("socialPosts"), statement: v.string() },
+  handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken, ctx);
+    const post = await ctx.db.get(args.postId);
+    if (!post || post.deletedAt || post.authorId !== userId) throw new Error("Post not found or not owned by you.");
+    if (post.copyrightScreeningStatus !== "possible_match" && post.copyrightScreeningStatus !== "rejected") throw new Error("This post has no appealable screening decision.");
+    const statement = args.statement.trim().slice(0, 1500);
+    if (statement.length < 20) throw new Error("Please explain your appeal in at least 20 characters.");
+    const now = Date.now();
+    await ctx.db.insert("socialContentAppeals", { postId: post._id, creatorId: userId, statement, status: "open", submittedAt: now });
+    await ctx.db.patch(post._id, { copyrightScreeningStatus: "appealed" });
+    return { ok: true as const, status: "open" as const };
   },
 });
 

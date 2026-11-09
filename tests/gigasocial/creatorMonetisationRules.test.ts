@@ -101,6 +101,55 @@ describe("creator monetisation server rules", () => {
     expect(handler).toContain("self_referral");
   });
 
+  it("keeps fan eligibility independent from originality post scans", () => {
+    const src = readFileSync(resolve(__dirname, "../../convex/gigaSocialEconomy.ts"), "utf8");
+    const eligibilityStart = src.indexOf("export async function getMonetizationEligibility");
+    const eligibilityEnd = src.indexOf("/**", eligibilityStart + 10);
+    const eligibility = src.slice(eligibilityStart, eligibilityEnd);
+    expect(eligibility).toContain("includeOriginality = false");
+    expect(eligibility).toContain("includeOriginality");
+    expect(eligibility).toContain("getOriginalPostProgress");
+    const unlockStart = src.indexOf("export async function ensureMonetizationUnlock");
+    const unlockEnd = src.indexOf("export async function assertWithdrawalEligibility", unlockStart);
+    const unlock = src.slice(unlockStart, unlockEnd);
+    expect(unlock).toContain("getMonetizationEligibility(ctx, profile, settings)");
+    expect(unlock).not.toContain("getOriginalPostProgress");
+  });
+
+  it("uses bounded pagination for both creator declarations and reviewer queue", () => {
+    const src = readFileSync(resolve(__dirname, "../../convex/gigaSocialEconomy.ts"), "utf8");
+    const creatorStart = src.indexOf("export const getCreatorRightsPostsPage");
+    const creatorEnd = src.indexOf("export const appealCopyrightScreening", creatorStart);
+    const creatorQuery = src.slice(creatorStart, creatorEnd);
+    expect(creatorQuery).toContain("paginationOptsValidator");
+    expect(creatorQuery).toContain(".paginate(args.paginationOpts)");
+    const queueStart = src.indexOf("export const listCopyrightReviewQueue");
+    const queueEnd = src.indexOf("export const reviewCopyrightDeclaration", queueStart);
+    const queueQuery = src.slice(queueStart, queueEnd);
+    expect(queueQuery).toContain("paginationOptsValidator");
+    expect(queueQuery).toContain(".paginate(args.paginationOpts)");
+    expect(queueQuery).not.toContain(".collect()");
+  });
+
+  it("enforces server-side session revocation on rights workflows", () => {
+    const src = readFileSync(resolve(__dirname, "../../convex/gigaSocialEconomy.ts"), "utf8");
+    for (const name of ["declarePostContentRights", "listCopyrightReviewQueue", "reviewCopyrightDeclaration", "getCreatorRightsPostsPage", "appealCopyrightScreening"]) {
+      const start = src.indexOf(`export const ${name}`);
+      const next = src.indexOf("export const ", start + 10);
+      const handler = src.slice(start, next === -1 ? undefined : next);
+      expect(handler).toContain("requireSession(args.sessionToken, ctx)");
+    }
+  });
+
+  it("requires independent copyright screening rather than creator self-approval", () => {
+    const src = readFileSync(resolve(__dirname, "../../convex/gigaSocialEconomy.ts"), "utf8");
+    const start = src.indexOf("export const reviewCopyrightDeclaration");
+    const next = src.indexOf("export const ", start + 10);
+    const handler = src.slice(start, next === -1 ? undefined : next);
+    expect(handler).toContain("post.authorId === reviewer");
+    expect(handler).toContain("A different administrator must review");
+  });
+
   it("validates boost ownership before Paystack checkout", () => {
     const src = readFileSync(
       resolve(__dirname, "../../convex/gigaSocialEconomy.ts"),

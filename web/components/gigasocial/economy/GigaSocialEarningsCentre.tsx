@@ -33,7 +33,7 @@ import { FAN_LABELS } from "@/lib/gigasocial/fanBranding";
 import { formatCompactCount } from "@/lib/gigasocial/ogMeta";
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation, usePaginatedQuery, useQuery } from "convex/react";
 import {
   Award,
   BookOpen,
@@ -53,8 +53,15 @@ export const GigaSocialEarningsCentre = memo(function GigaSocialEarningsCentre({
   sessionToken: string;
 }) {
   const dashboard = useQuery(api.gigaSocialEconomy.getCreatorDashboard, { sessionToken });
+  const rightsPosts = usePaginatedQuery(
+    api.gigaSocialEconomy.getCreatorRightsPostsPage,
+    { sessionToken },
+    { initialNumItems: 20 }
+  );
   const submitApplication = useMutation(api.gigaSocialEconomy.submitMonetizationApplication);
   const submitAppeal = useMutation(api.gigaSocialEconomy.submitMonetizationAppeal);
+  const declareRights = useMutation(api.gigaSocialEconomy.declarePostContentRights);
+  const appealCopyright = useMutation(api.gigaSocialEconomy.appealCopyrightScreening);
   const [tab, setTab] = useState<CentreTab>("overview");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -67,6 +74,8 @@ export const GigaSocialEarningsCentre = memo(function GigaSocialEarningsCentre({
     sponsorships: 0,
   });
   const [appealText, setAppealText] = useState("");
+  const [licenseReference, setLicenseReference] = useState("");
+  const [copyrightAppealText, setCopyrightAppealText] = useState("");
 
   const statusId = useMemo(() => {
     if (!dashboard) return "not_yet_eligible" as const;
@@ -253,10 +262,47 @@ export const GigaSocialEarningsCentre = memo(function GigaSocialEarningsCentre({
                 />
               </div>
             ) : null}
-            {statusId === "eligible_to_apply" && dashboard.monetizationAccepted ? (
+            <section className="mt-4 rounded-xl border border-border p-3">
+              <h4 className="text-sm font-semibold text-foreground">Original content eligibility</h4>
+              <p className="mt-1 text-sm text-muted">
+                {dashboard.originalPostsCount ?? 0} / {dashboard.originalPostsRequired ?? 5} independently cleared posts in the last {dashboard.originalPostsWindowDays ?? 45} days.
+                {dashboard.originalPostsPendingReview ? ` ${dashboard.originalPostsPendingReview} awaiting review.` : ""}
+              </p>
+              <p className="mt-1 text-xs text-muted">Declare ownership or provide a licence reference for each post. A declaration is not approval; only an authorised reviewer can clear it.</p>
+              <div className="mt-3 space-y-2">
+                {rightsPosts.results.map((post) => (
+                  <div key={post.postId} className="rounded-lg border border-border px-3 py-2 text-sm">
+                    <p className="line-clamp-2 text-foreground">{post.body || "Media post"}</p>
+                    <p className="mt-1 text-xs text-muted">Status: {post.screeningStatus.replaceAll("_", " ")} · {post.declaration ?? "not declared"}</p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <Button type="button" size="sm" variant="outline" disabled={busy} onClick={async () => { setBusy(true); setError(null); try { await declareRights({ sessionToken, postId: post.postId as never, declaration: "original" }); setNotice("Original-work declaration recorded; screening is pending."); } catch (e) { setError(e instanceof Error ? e.message : "Could not record declaration."); } finally { setBusy(false); } }}>I created this</Button>
+                      <Button type="button" size="sm" variant="outline" disabled={busy || !licenseReference.trim()} onClick={async () => { setBusy(true); setError(null); try { await declareRights({ sessionToken, postId: post.postId as never, declaration: "licensed", licenseReference }); setNotice("Licence declaration recorded; screening is pending."); setLicenseReference(""); } catch (e) { setError(e instanceof Error ? e.message : "Could not record licence."); } finally { setBusy(false); } }}>Declare licensed</Button>
+                      {post.screeningStatus === "possible_match" || post.screeningStatus === "rejected" ? (
+                        <Button type="button" size="sm" variant="outline" disabled={busy || copyrightAppealText.trim().length < 20} onClick={async () => { setBusy(true); setError(null); try { await appealCopyright({ sessionToken, postId: post.postId as never, statement: copyrightAppealText }); setNotice("Copyright screening appeal submitted for review."); setCopyrightAppealText(""); } catch (e) { setError(e instanceof Error ? e.message : "Could not submit appeal."); } finally { setBusy(false); } }}>Appeal decision</Button>
+                      ) : null}
+                    </div>
+                  </div>
+                ))}
+                {rightsPosts.status === "CanLoadMore" ? (
+                  <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => rightsPosts.loadMore(20)}>
+                    Load more posts
+                  </Button>
+                ) : null}
+                {rightsPosts.status === "LoadingMore" ? <p className="text-xs text-muted">Loading more posts…</p> : null}
+                <label className="block text-xs font-medium text-muted">Licence / permission reference (required for licensed posts)
+                  <input value={licenseReference} onChange={(e) => setLicenseReference(e.target.value)} maxLength={500} className="mt-1 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground" placeholder="Agreement, licence URL or permission details" />
+                </label>
+                <label className="block text-xs font-medium text-muted">Copyright appeal explanation
+                  <textarea value={copyrightAppealText} onChange={(e) => setCopyrightAppealText(e.target.value)} rows={2} className="mt-1 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground" placeholder="Explain why the match or decision is incorrect (20 characters minimum)" />
+                </label>
+              </div>
+            </section>
+            {statusId === "eligible_to_apply" && dashboard.monetizationAccepted && dashboard.originalPostsEligible ? (
               <Button type="button" className="mt-3" disabled={busy} onClick={() => void onApply()}>
                 Submit monetisation application
               </Button>
+            ) : dashboard.fanEligible && dashboard.monetizationAccepted && !dashboard.originalPostsEligible ? (
+              <p className="mt-3 text-sm text-muted">Your fan threshold and consent are confirmed. Complete the independently reviewed 5-post requirement to apply.</p>
             ) : null}
             {(statusId === "monetization_rejected" || statusId === "appeal_available") &&
             dashboard.application?.rejectionReason ? (

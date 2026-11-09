@@ -3,7 +3,7 @@
  * Used by gigaSocialEconomy mutations and unit tests.
  */
 
-export const CREATOR_MONETIZATION_POLICY_VERSION = "giga-creator-monetisation-v2";
+export const CREATOR_MONETIZATION_POLICY_VERSION = "giga-creator-monetisation-v3";
 
 export type MonetizationConsentRecord = {
   monetizationAcceptedAt?: number;
