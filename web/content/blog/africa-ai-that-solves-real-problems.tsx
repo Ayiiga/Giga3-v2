@@ -79,7 +79,7 @@ function ArticleContent() {
         research, writing, and problem-solving. <ArticleLink href="/gigalearn/">GigaLearn</ArticleLink>
         supports curriculum-focused learning, while <ArticleLink href="/exam-practice/">Exam
         Practice</ArticleLink> helps learners prepare with BECE and WASSCE-style practice.
-        <ArticleLink href="/technology-hub/">Technology Hub</ArticleLink> gives learners a place
+        <ArticleLink href="/gigalearn/academy/tech/">Technology Hub</ArticleLink> gives learners a place
         to explore digital and technology skills. <ArticleLink href="/creator-studio/">Creator
         Studio</ArticleLink> supports creative work, and <ArticleLink href="/gigasocial/">GigaSocial</ArticleLink>
         and the <ArticleLink href="/marketplace/">Marketplace</ArticleLink> connect community
