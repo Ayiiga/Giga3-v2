@@ -13,17 +13,18 @@ const TOC = [
   { id: "beyond-hype", label: "Beyond the hype" },
   { id: "who-ai-helps", label: "Who practical AI should help" },
   { id: "african-context", label: "Why African context matters" },
+  { id: "giga3-in-practice", label: "How Giga3 AI puts this into practice" },
   { id: "responsibility", label: "Responsibility still comes first" },
   { id: "why-giga3", label: "Why I am building Giga3 AI" },
   { id: "invitation", label: "An invitation" },
 ] as const;
 
 export const PLAIN_TEXT = `
-Giga3 AI is an Africa-built AI platform for learning, exam preparation, research, creativity,
-technology skills, and everyday productivity. It brings AI Assistant, GigaLearn, Exam Practice,
-Technology Hub, Creator Studio, GigaSocial, and Marketplace into one connected experience.
-Practical AI must respect local education needs, mobile access, affordability, privacy,
-verification, and human judgment. Built in Africa. Powered by AI. Designed for Everyone. Chat GigaLearn Creator Studio creative productivity.
+Africa does not need more AI hype. We need AI that solves real problems for students, teachers,
+entrepreneurs, researchers, creators and everyday users. African needs and experiences should
+shape AI development. Responsible AI, verification, privacy and human judgment matter. Giga3 AI
+brings AI chat, GigaLearn, exam practice, a technology learning hub, creator tools, GigaSocial
+and a marketplace into one mobile-ready platform built in Africa.
 `.trim();
 
 function ArticleContent() {
@@ -36,134 +37,140 @@ function ArticleContent() {
         when they open an app on a phone with limited data and real deadlines.
       </Prose>
       <Prose>
-        Africa does not need more AI hype. We need useful tools that help a Ghanaian student understand
-        a difficult concept, prepare for BECE or WASSCE, help a teacher plan a lesson, help a small
-        business communicate clearly, help a creator develop an idea, or help a curious learner
-        build technology skills. That is the practical direction behind Giga3 AI — with people,
-        not machines, remaining responsible for decisions and final work.
+        Africa does not need more AI hype. We need AI that helps someone understand a difficult
+        lesson, prepare for an examination, plan a class, research a business idea, create useful
+        media, or make a better-informed decision — without pretending that a machine has replaced
+        human judgment.
       </Prose>
 
       <ArticleH2 id="beyond-hype">Beyond the hype</ArticleH2>
       <Prose>
         Hype sells novelty. Practical AI earns trust. The difference shows up in small moments:
-        Does the answer make sense for a WASSCE topic? Can a teacher adapt it to their class? Will
-        a small business owner understand the next step? If the tool only impresses in a launch
-        video, it has not yet earned a place in people&apos;s daily work.
+        Does an explanation help a learner understand a topic? Can a teacher adapt a lesson
+        resource to the class? Can a creator turn an idea into a useful piece of content? Can a
+        small business owner organise information and communicate more clearly? If a tool only
+        impresses in a launch video, it has not yet earned a place in people's daily work.
       </Prose>
       <Prose>
         I care less about whether a product claims to be the smartest model, and more about whether
-        it is reachable, understandable, and honest about what it can and cannot do. That standard
-        is how I evaluate Giga3 AI as we build it — and how I hope readers will evaluate every AI
-        tool they try.
+        it is reachable, understandable, dependable and honest about its limitations. That is the
+        standard I want Giga3 AI to meet — and the standard I encourage readers to apply to every
+        AI tool they use.
       </Prose>
 
-      
       <ArticleFigure
         src="/images/blog/africa-ai-solves-real-problems.jpg"
         alt="Mentor and students solving a practical study problem with a laptop"
-        caption="Beyond hype: AI should help finish real homework and real work."
+        caption="AI should help people make progress on real learning and work."
       />
-<ArticleH2 id="who-ai-helps">Who practical AI should help</ArticleH2>
+
+      <ArticleH2 id="who-ai-helps">Who practical AI should help</ArticleH2>
       <Prose>
-        Students need explanations they can follow, practice they can revise with, and clear
-        boundaries around academic integrity. Teachers need help drafting plans and worksheets —
-        then time to review every line for accuracy and curriculum fit. Entrepreneurs need drafting
-        and research support that respects local language, pricing, and customer reality.
-        Researchers and creators need tools that speed first drafts without erasing their voice.
-        Everyday users need answers that are careful with privacy and clear when something should
-        be verified.
+        Students need explanations they can follow, relevant practice and opportunities to check
+        their understanding. Teachers need support preparing lesson materials, activities and
+        assessments — with time to review every resource for accuracy and curriculum fit.
+        Entrepreneurs need help researching, planning and communicating with customers. Researchers
+        need support organising ideas and examining information. Creators need tools that help
+        them develop visual and written content without erasing their own voice.
       </Prose>
       <Prose>
-        Giga3 AI connects several practical areas in one platform. The
-        <ArticleLink href="/chat/">AI Assistant</ArticleLink> supports questions, explanations,
-        research, writing, and problem-solving. <ArticleLink href="/gigalearn/">GigaLearn</ArticleLink>
-        supports curriculum-focused learning, while <ArticleLink href="/exam-practice/">Exam
-        Practice</ArticleLink> helps learners prepare with BECE and WASSCE-style practice.
-        <ArticleLink href="/gigalearn/academy/tech/">Technology Hub</ArticleLink> gives learners a place
-        to explore digital and technology skills. <ArticleLink href="/creator-studio/">Creator
-        Studio</ArticleLink> supports creative work, and <ArticleLink href="/gigasocial/">GigaSocial</ArticleLink>
-        and the <ArticleLink href="/marketplace/">Marketplace</ArticleLink> connect community
-        and useful resources. Features evolve, so users should check the platform for current
-        availability. These tools assist people; they do not replace teachers, professionals,
-        or personal responsibility.
+        These needs are not unique to one country, but the context matters. Connectivity, data costs,
+        local payment options, school curricula, language and the devices people actually own all
+        influence whether an AI product is useful in everyday life.
       </Prose>
 
       <ArticleH2 id="african-context">Why African context matters</ArticleH2>
       <Prose>
-        Too many AI products are designed for environments with always-on broadband, card-first
-        billing, and curricula that do not match ours. When African needs help shape the product —
-        mobile-first use, local billing options, education systems people recognise, and community
-        spaces where creators can share — the result is more usable software, not just a translated
-        landing page.
+        Too many digital products are designed around assumptions that do not fit every community:
+        always-on broadband, international card payments, expensive devices and education systems
+        that differ from ours. Products built with African users in mind should take mobile access,
+        affordability, local learning needs and community realities seriously from the beginning.
       </Prose>
       <Prose>
-        Built in Africa. Powered by AI. Designed for Everyone. That positioning is not a slogan for
-        me; it is a design constraint. If a feature only works for people abroad, it is unfinished
-        for the users I care about most. Context does not mean isolation from global innovation. It
-        means we refuse to treat African users as an afterthought.
+        Built in Africa. Powered by AI. Designed for Everyone. That positioning is not simply a
+        slogan for me; it is a design responsibility. It means making useful technology more
+        accessible while remaining connected to global innovation. African users should help shape
+        the products they use, not be treated as an afterthought.
       </Prose>
+
+      <ArticleH2 id="giga3-in-practice">How Giga3 AI puts this into practice</ArticleH2>
+      <Prose>
+        Giga3 AI is being developed as a connected, mobile-ready platform rather than a single-purpose
+        chatbot. Its AI Assistant brings together conversational help for questions, writing,
+        research and problem-solving. The aim is to make AI support easier to reach while being clear
+        that important answers still need human checking.
+      </Prose>
+      <Prose>
+        <ArticleLink href="/gigalearn/">GigaLearn</ArticleLink> focuses on learning. It brings
+        curriculum-oriented study support and examination practice closer to learners, including
+        BECE, WASSCE and teacher-promotion preparation. The purpose is not to replace teachers or
+        independent study, but to give learners more ways to practise, revisit difficult topics and
+        build understanding.
+      </Prose>
+      <Prose>
+        The Technology Learning Hub supports people who want to build digital knowledge and skills.
+        <ArticleLink href="/creator-studio/">Creator Studio</ArticleLink> provides creative
+        workflows for developing visual and other media. <ArticleLink href="/gigasocial/">
+        GigaSocial</ArticleLink> gives creators and communities a place to share and discover
+        content, while the Marketplace provides a route for discovering digital offerings.
+        Availability and capabilities can evolve as the platform is improved, so users should
+        always check the live product for current features and terms.
+      </Prose>
+      <Prose>
+        These parts reflect one idea: useful technology should connect learning, creativity,
+        communication and practical work. It should also be developed responsibly, with attention
+        to reliability, privacy, accessibility and user feedback.
+      </Prose>
+
+      <ArticleFigure
+        src="/images/blog/support-coding-mentorship.jpg"
+        alt="Mentor and learner reviewing work on a laptop"
+        caption="Technology matters when people can use it to learn, create and solve problems."
+      />
 
       <ArticleH2 id="responsibility">Responsibility still comes first</ArticleH2>
       <Prose>
-        AI can draft confidently and still be wrong. That is why verification, privacy, and human
-        judgment remain essential. Students should not submit unchecked answers. Teachers should
-        not publish unreviewed materials. Creators should label AI-assisted work when honesty
-        requires it. Families should treat sensational forwards with caution — habits we outline in
-        our{" "}
-        <ArticleLink href="/blog/facebook-tiktok-whatsapp-fact-checking/">
-          social media fact-checking guide
-        </ArticleLink>
-        .
+        AI can sound confident and still be wrong. Users should verify important facts, protect
+        personal information and apply their own judgment. Students should use AI to understand
+        concepts rather than submit unchecked answers. Teachers should review generated materials
+        before using them in class. Creators should respect rights and be transparent when the
+        situation calls for it. Families should treat sensational forwards with caution — habits
+        explored in our <ArticleLink href="/blog/facebook-tiktok-whatsapp-fact-checking/">
+        social media fact-checking guide</ArticleLink>.
       </Prose>
       <Prose>
         Responsible AI is not a marketing appendix. It is the difference between a tool that
-        strengthens communities and one that spreads confusion faster. I would rather ship fewer
-        promises and keep trust than chase every trend that cannot survive scrutiny.
+        strengthens communities and one that spreads confusion faster. Trust is earned through
+        useful results, honest limitations, careful design and continuous improvement.
       </Prose>
 
       <ArticleH2 id="why-giga3">Why I am building Giga3 AI</ArticleH2>
       <Prose>
-        I am building Giga3 AI because students, educators, creators, entrepreneurs, and communities
-        deserve technology that understands the realities they work in. As a basic-school
-        educationist in Ghana, I see the need for learning resources that are easier to access,
-        practice that builds understanding, and tools that give teachers more room to focus on
-        learners. I also see creators and small businesses who need practical digital tools without
-        juggling too many disconnected services. Giga3 AI is being developed to bring these
-        experiences together in one accessible platform.
+        I am building Giga3 AI because I want students, educators, creators and small businesses
+        across Ghana and Africa to have more accessible ways to learn, create and work with AI.
+        As a basic-school educationist in Ghana, I see how much time goes into preparing learning
+        resources and how much potential can be unlocked when technology is clear, relevant and
+        affordable to explore.
       </Prose>
       <Prose>
-        Giga3 AI is an evolving product, and its work is not finished. We continue improving reliability,
-        learning experiences, exam preparation, creative workflows, technology education, and the
-        wider platform experience. We do not claim to have solved every challenge facing African
-        technology. Our commitment is to build, test, listen, and improve — prioritising features
-        that solve real problems and being honest about what is available today.
+        Giga3 AI is an evolving project, and I do not claim that it has solved every challenge in
+        African technology. We are building, testing, learning from users and improving the
+        platform step by step. The commitment is to practical usefulness: tools that help people
+        make progress, with honesty about what works today and what still needs work.
       </Prose>
 
-      
-      <ArticleFigure
-        src="/images/blog/support-coding-mentorship.jpg"
-        alt="Mentor and learner reviewing work on a laptop"
-        caption="Builders should ship tools people can use on everyday phones."
-      />
-<ArticleH2 id="invitation">An invitation</ArticleH2>
+      <ArticleH2 id="invitation">An invitation</ArticleH2>
       <Prose>
-        If you have read this far, I would like to hear from you. Which real-world problem would
-        you most like AI to help solve — in your classroom, business, creative work, or daily life?
-        Your answers help us prioritise what to improve next.
+        Which real-world problem would you most like AI to help solve — in your classroom, studies,
+        business, creative work or community? The best products grow by listening to the people who
+        use them. Your questions, corrections and feedback can help shape what we improve next.
       </Prose>
       <Prose>
-        Giga3 AI grows through real feedback. Tell us what works, what is confusing, which learning
-        resources are missing, and what would make the platform more useful in your school,
-        business, creative work, or community. Report inaccurate answers and share local context
-        so we can keep improving the experience.
-      </Prose>
-      <Prose>
-        When you are ready to explore, start at{" "}
-        <ArticleLink href="/">giga3ai.com</ArticleLink>, browse the{" "}
-        <ArticleLink href="/features/">feature overview</ArticleLink>, or open{" "}
-        <ArticleLink href="/chat/">AI Chat</ArticleLink> and try a genuine question from your week.
-        Bring curiosity. Keep your judgment. Help us build AI that earns its place by solving real
-        problems.
+        When you are ready to explore, visit <ArticleLink href="/">Giga3 AI</ArticleLink>, browse
+        the <ArticleLink href="/features/">feature overview</ArticleLink>, or open
+        <ArticleLink href="/chat/">AI Chat</ArticleLink> with a genuine question from your day.
+        Bring curiosity, keep your judgment and help us build technology that earns its place by
+        solving real problems.
       </Prose>
 
       <RelatedReading
@@ -195,7 +202,7 @@ function Body({ post }: BlogArticleBodyProps) {
       cta={
         <BlogProductCta
           title="Explore Giga3 AI"
-          description="Built in Africa. Powered by AI. Designed for Everyone. Start with chat, GigaLearn, or the feature overview — then tell us which real problem you want AI to help solve."
+          description="Built in Africa. Powered by AI. Designed for Everyone. Explore AI assistance, GigaLearn, creator tools and more — then tell us which real problem you want AI to help solve."
           href="/"
           label="Visit Giga3 AI"
         />
