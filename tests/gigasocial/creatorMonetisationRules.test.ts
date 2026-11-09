@@ -141,6 +141,15 @@ describe("creator monetisation server rules", () => {
     }
   });
 
+  it("requires independent copyright screening rather than creator self-approval", () => {
+    const src = readFileSync(resolve(__dirname, "../../convex/gigaSocialEconomy.ts"), "utf8");
+    const start = src.indexOf("export const reviewCopyrightDeclaration");
+    const next = src.indexOf("export const ", start + 10);
+    const handler = src.slice(start, next === -1 ? undefined : next);
+    expect(handler).toContain("post.authorId === reviewer");
+    expect(handler).toContain("A different administrator must review");
+  });
+
   it("validates boost ownership before Paystack checkout", () => {
     const src = readFileSync(
       resolve(__dirname, "../../convex/gigaSocialEconomy.ts"),
