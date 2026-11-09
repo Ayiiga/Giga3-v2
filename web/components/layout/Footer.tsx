@@ -76,6 +76,28 @@ export function Footer() {
           </div>
         </div>
 
+        <div className="mt-10 flex flex-col items-center gap-3 border-t border-border pt-8" aria-label="Startup directory recognition">
+          <p className="text-xs font-medium uppercase tracking-wide text-muted">
+            Featured on FreeStartupDirectories
+          </p>
+          <a
+            href="https://freestartupdirectories.com/tools/giga3-ai"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="View Giga3 AI on FreeStartupDirectories"
+            className="inline-flex items-center justify-center rounded-md transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
+            <img
+              src="https://freestartupdirectories.com/badges/featured-on-fsd.svg"
+              alt="Featured on FreeStartupDirectories"
+              width={220}
+              height={54}
+              loading="lazy"
+              decoding="async"
+            />
+          </a>
+        </div>
+
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 text-sm text-muted sm:flex-row">
           <p>© {year} {siteConfig.name}. All rights reserved.</p>
           <p>Built for Cloudflare Pages · PWA ready</p>
