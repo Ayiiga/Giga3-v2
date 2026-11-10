@@ -60,6 +60,9 @@ describe("chat image edit classification", () => {
         hasImageAttachment: true,
       })
     ).toBe("image_generation");
+    for (const query of ["Make it blue", "Remove the person on the left", "Turn this into a watercolor"]) {
+      expect(classifyRequestKind(query, "general", { hasImageAttachment: true })).toBe("image_generation");
+    }
   });
 
   it("keeps vision analysis as text_chat when an image is attached without edit intent", () => {

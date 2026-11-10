@@ -9,7 +9,7 @@ const ASSISTANT_IMAGE_URL_RE =
 
 /** Follow-up edits after a prior generated image (no fresh upload required). */
 const ITERATIVE_IMAGE_EDIT_RE =
-  /^(?:please\s+)?(?:make it (?:brighter|darker|bigger|smaller|more realistic)|change (?:its|the) (?:colou?r|background|lighting|style)|edit (?:it|this)|(?:brighten|darken|upscale|retouch) (?:it|this)|same (?:image|picture|photo) but)\b/i;
+  /^(?:please\s+)?(?:make it (?:brighter|darker|bigger|smaller|more realistic|blue|red|green|yellow|black|white|purple|orange|pink|gr[ae]y)|change (?:its|the) (?:colou?r|background|lighting|style)|edit (?:it|this)|(?:remove|erase) (?:the |a )?(?:person|people|object|logo|shadow|reflection|blemish)\b|(?:turn|convert) (?:it|this) into (?:an? )?(?:watercolou?r|painting|sketch|cartoon|illustration|line drawing)\b|(?:brighten|darken|upscale|retouch) (?:it|this)|same (?:image|picture|photo) but)\b/i;
 
 export function extractImageUrlFromContent(content: string): string | null {
   const match = content.match(ASSISTANT_IMAGE_URL_RE);
