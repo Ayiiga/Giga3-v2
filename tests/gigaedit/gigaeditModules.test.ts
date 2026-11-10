@@ -80,7 +80,7 @@ describe("GigaEdit routing & SW", () => {
     expect(sw).toContain('CACHE_VERSION = "giga3-v');
     const precacheBlock = sw.match(/const PRECACHE = \[([\s\S]*?)\];/)?.[1] ?? "";
     expect(precacheBlock).not.toContain('"/gigaedit/"');
-    expect(precacheBlock).toContain("OFFLINE_URL");
+    expect(sw).toContain('cache.add(new Request(OFFLINE_URL, { cache: "reload" }))');
   });
 
   it("imports formatTimecodeMs in VideoEditor (prevents runtime ReferenceError)", () => {

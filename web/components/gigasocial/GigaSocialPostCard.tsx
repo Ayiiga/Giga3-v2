@@ -15,6 +15,7 @@ import type { SocialPostTypeId } from "@/lib/gigasocial/sections";
 import { useFeedVideoPlayback } from "@/components/gigasocial/feed/FeedVideoPlaybackProvider";
 import {
   Bookmark,
+  Ellipsis,
   Eye,
   Flag,
   Heart,
@@ -26,11 +27,10 @@ import {
   Trash2,
 } from "lucide-react";
 import dynamic from "next/dynamic";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { GigaSocialCommentThread } from "@/components/gigasocial/GigaSocialCommentThread";
 import { GigaSocialFanButton } from "@/components/gigasocial/fans/GigaSocialFanButton";
 import { GigaSocialPostCaption } from "@/components/gigasocial/GigaSocialPostCaption";
-import { GigaSocialPostCommentBox } from "@/components/gigasocial/GigaSocialPostCommentBox";
 import { GigaSocialPostMedia } from "@/components/gigasocial/GigaSocialPostMedia";
 import { GigaSocialProfileLink } from "@/components/gigasocial/GigaSocialProfileLink";
 import { VerifiedBadge } from "@/components/gigasocial/VerifiedBadge";
@@ -114,6 +114,8 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   const [shareCount, setShareCount] = useState(post.shareCount);
   const [viewCount, setViewCount] = useState(post.viewCount ?? 0);
   const [commentsOpen, setCommentsOpen] = useState(false);
+  const [actionsOpen, setActionsOpen] = useState(false);
+  const actionsId = useId();
   const [editorOpen, setEditorOpen] = useState(false);
   const [boostOpen, setBoostOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
@@ -530,187 +532,177 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
           <div className="gigasocial-post-card__meta px-4 pt-2">{captionBlock}</div>
         ) : null}
 
-        <div
-          className={cn(
-            "gigasocial-post-card__actions flex w-full min-w-0 flex-wrap items-center gap-0.5 border-t border-border",
-            isVisualPost
-              ? "gigasocial-post-card__actions--compact px-3 pt-2 sm:px-4"
-              : "mt-4 gap-1 pt-3"
-          )}
-        >
-        {/* Like/Tip live on media for visual posts; keep in footer for text posts. */}
-        {!isVisualPost ? (
+        <div className={cn(
+          "gigasocial-post-card__actions flex min-w-0 items-center gap-1 border-t border-border",
+          isVisualPost ? "px-3 sm:px-4" : "mt-3"
+        )}>
           <ActionButton
-            active={liked}
-            label={String(likeCount)}
-            icon={Heart}
-            onClick={() => void handleLike()}
-            disabled={busy}
-            className="gigasocial-reaction-like"
-          />
-        ) : null}
-        <ActionButton
-          compact={isVisualPost}
-          label={String(post.commentCount)}
-          icon={MessageCircle}
-          onClick={() => setCommentsOpen((o) => !o)}
-        />
-        <ActionButton
-          compact={isVisualPost}
-          label={String(shareCount)}
-          icon={Share2}
-          onClick={() => void handleShare()}
-          disabled={busy}
-        />
-        <ActionButton
-          compact={isVisualPost}
-          active={bookmarked}
-          label="Save"
-          icon={Bookmark}
-          onClick={() => void handleBookmark()}
-          disabled={busy}
-          iconOnly={isVisualPost}
-        />
-        {!isVisualPost && canTip ? (
-          <GigaSocialTipButton
-            sessionToken={sessionToken!}
-            creatorId={post.author.userId!}
-            postId={post._id}
-            disabled={busy}
-          />
-        ) : null}
-        {enableRemix && onRemix ? (
-          <GigaRemixButton
-            disabled={busy}
-            onRemix={() => {
-              if (!sessionToken) {
-                promptAuth();
-                return;
-              }
-              onRemix(post);
-            }}
-          />
-        ) : null}
-        {showTemplateButton ? (
-          <GigaTemplateButton
-            disabled={busy}
-            onUseTemplate={() => {
-              if (!sessionToken) {
-                promptAuth();
-                return;
-              }
-              onUseAsTemplate!(post);
-            }}
-          />
-        ) : null}
-        <span
-          className={cn(
-            "inline-flex items-center gap-1 rounded-full text-muted",
-            isVisualPost
-              ? "min-h-8 px-2 py-1 text-[11px]"
-              : "min-h-9 gap-1.5 px-3 py-1.5 text-xs font-medium"
-          )}
-          aria-label={`${viewCount} views`}
-        >
-          <Eye className={isVisualPost ? "h-3.5 w-3.5" : "h-4 w-4"} aria-hidden />
-          {viewCount}
-        </span>
-        {isOwnPost && sessionToken ? (
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            className={cn("min-h-9 text-violet-700", !canPin && !canDelete && "ml-auto")}
-            onClick={() => setBoostOpen(true)}
-            aria-label="Boost post"
-          >
-            <Megaphone className="h-4 w-4" aria-hidden />
-            <span className={cn(isVisualPost && "sr-only")}>Boost</span>
-          </Button>
-        ) : null}
-        {canPin ? (
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            className={cn(
-              "min-h-9",
-              pinned ? "text-accent" : "text-muted",
-              !(canDelete && enableEdit && onEdit) && !isOwnPost && "ml-auto"
-            )}
-            onClick={() => void handlePin()}
-            aria-label={pinned ? "Unpin post" : "Pin post"}
-            aria-pressed={pinned}
-          >
-            <Pin className="h-4 w-4" aria-hidden />
-          </Button>
-        ) : null}
-        {canDelete && enableEdit && onEdit ? (
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            className={cn("min-h-9 text-muted", !canPin && !isOwnPost && "ml-auto")}
-            onClick={() => setEditorOpen(true)}
-            aria-label="Edit post"
-          >
-            <Pencil className="h-4 w-4" aria-hidden />
-          </Button>
-        ) : null}
-        {canDelete && onDelete ? (
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            className={cn(
-              "min-h-9 text-red-700",
-              !(enableEdit && onEdit) && !canPin && !isOwnPost && "ml-auto"
-            )}
-            onClick={() => void onDelete(post._id)}
-          >
-            <Trash2 className="h-4 w-4" aria-hidden />
-          </Button>
-        ) : null}
-        {!isOwnPost ? (
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            className={cn(
-              "min-h-9 text-muted",
-              !canDelete && !canPin && !isOwnPost && "ml-auto"
-            )}
+            label={`Comments · ${post.commentCount}`}
+            icon={MessageCircle}
+            expanded={commentsOpen}
             onClick={() => {
-              if (!sessionToken) {
-                promptAuth();
-                return;
-              }
-              setStatusMessage(null);
-              setReportOpen(true);
+              setActionsOpen(false);
+              setCommentsOpen((open) => !open);
             }}
-            aria-label="Report post"
+          />
+          <span className="ml-auto inline-flex items-center gap-1 text-xs text-muted" aria-label={`${viewCount} views`}>
+            <Eye className="h-3.5 w-3.5" aria-hidden />
+            {viewCount}
+          </span>
+          <button
+            type="button"
+            className="inline-flex min-h-12 min-w-12 shrink-0 items-center justify-center rounded-full text-muted hover:bg-accent/10 hover:text-accent focus-visible:outline-accent"
+            aria-label="More post actions"
+            aria-expanded={actionsOpen}
+            aria-controls={actionsId}
+            onClick={() => {
+              setCommentsOpen(false);
+              setActionsOpen((open) => !open);
+            }}
           >
-            <Flag className="h-4 w-4" aria-hidden />
-            <span className={cn(isVisualPost && "sr-only")}>Report</span>
-          </Button>
-        ) : null}
+            <Ellipsis className="h-5 w-5" aria-hidden />
+          </button>
         </div>
 
-        {enablePostAIActions ? (
-          <div className={cn(isVisualPost ? "px-4 pt-1" : "mt-2")}>
-            <GigaSocialPostAIActions post={post} compact={isVisualPost} />
-          </div>
-        ) : null}
-
-        {sessionToken && !isVisualPost ? (
-          <div className="gigasocial-post-card__comment mt-3">
-            <GigaSocialPostCommentBox
-              postId={post._id}
-              sessionToken={sessionToken}
-              onPosted={() => setCommentsOpen(true)}
-            />
-          </div>
-        ) : null}
+        <div id={actionsId} hidden={!actionsOpen}>
+          {actionsOpen ? (
+            <div className="mx-3 mb-2 rounded-xl border border-border bg-accent/5 p-2 sm:mx-4">
+              <div className="flex flex-wrap items-center gap-1">
+                {/* Like/Tip live on media for visual posts; keep in footer for text posts. */}
+                {!isVisualPost ? (
+                  <ActionButton
+                    active={liked}
+                    label={`${liked ? "Unlike" : "Like"} · ${likeCount}`}
+                    icon={Heart}
+                    onClick={() => void handleLike()}
+                    disabled={busy}
+                    className="gigasocial-reaction-like"
+                  />
+                ) : null}
+                <ActionButton
+                  compact={isVisualPost}
+                  label={`Share · ${shareCount}`}
+                  icon={Share2}
+                  onClick={() => void handleShare()}
+                  disabled={busy}
+                />
+                <ActionButton
+                  compact={isVisualPost}
+                  active={bookmarked}
+                  label={bookmarked ? "Unsave" : "Save"}
+                  icon={Bookmark}
+                  onClick={() => void handleBookmark()}
+                  disabled={busy}
+                />
+                {!isVisualPost && canTip ? (
+                  <GigaSocialTipButton
+                    sessionToken={sessionToken!}
+                    creatorId={post.author.userId!}
+                    postId={post._id}
+                    disabled={busy}
+                  />
+                ) : null}
+                {enableRemix && onRemix ? (
+                  <GigaRemixButton
+                    disabled={busy}
+                    onRemix={() => {
+                      if (!sessionToken) {
+                        promptAuth();
+                        return;
+                      }
+                      onRemix(post);
+                    }}
+                  />
+                ) : null}
+                {showTemplateButton ? (
+                  <GigaTemplateButton
+                    disabled={busy}
+                    onUseTemplate={() => {
+                      if (!sessionToken) {
+                        promptAuth();
+                        return;
+                      }
+                      onUseAsTemplate!(post);
+                    }}
+                  />
+                ) : null}
+                {isOwnPost && sessionToken ? (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    className="text-accent"
+                    onClick={() => setBoostOpen(true)}
+                    aria-label="Boost post"
+                  >
+                    <Megaphone className="h-4 w-4" aria-hidden />
+                    Boost
+                  </Button>
+                ) : null}
+                {canPin ? (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    className={pinned ? "text-accent" : "text-muted"}
+                    onClick={() => void handlePin()}
+                    aria-label={pinned ? "Unpin post" : "Pin post"}
+                    aria-pressed={pinned}
+                  >
+                    <Pin className="h-4 w-4" aria-hidden />
+                    {pinned ? "Unpin" : "Pin"}
+                  </Button>
+                ) : null}
+                {canDelete && enableEdit && onEdit ? (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    className="text-muted"
+                    onClick={() => setEditorOpen(true)}
+                    aria-label="Edit post"
+                  >
+                    <Pencil className="h-4 w-4" aria-hidden />
+                    Edit
+                  </Button>
+                ) : null}
+                {canDelete && onDelete ? (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    className="text-red-700"
+                    onClick={() => void onDelete(post._id)}
+                  >
+                    <Trash2 className="h-4 w-4" aria-hidden />
+                    Delete
+                  </Button>
+                ) : null}
+                {!isOwnPost ? (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    className="text-muted"
+                    onClick={() => {
+                      if (!sessionToken) {
+                        promptAuth();
+                        return;
+                      }
+                      setStatusMessage(null);
+                      setReportOpen(true);
+                    }}
+                    aria-label="Report post"
+                  >
+                    <Flag className="h-4 w-4" aria-hidden />
+                    Report
+                  </Button>
+                ) : null}
+              </div>
+              {enablePostAIActions ? <GigaSocialPostAIActions post={post} compact={isVisualPost} /> : null}
+            </div>
+          ) : null}
+        </div>
 
         {commentsOpen ? (
           <div className={cn("gigasocial-post-card__thread", isVisualPost ? "px-4 pb-3 pt-2" : undefined)}>
@@ -718,7 +710,6 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
               postId={post._id}
               sessionToken={sessionToken}
               postAuthorUserId={post.author.userId}
-              hideComposer={!isVisualPost}
               onRequireAuth={onRequireAuth}
             />
           </div>
@@ -770,7 +761,7 @@ function ActionButton({
   active,
   disabled,
   compact = false,
-  iconOnly = false,
+  expanded,
   className,
 }: {
   icon: typeof Heart;
@@ -779,7 +770,7 @@ function ActionButton({
   active?: boolean;
   disabled?: boolean;
   compact?: boolean;
-  iconOnly?: boolean;
+  expanded?: boolean;
   className?: string;
 }) {
   return (
@@ -787,7 +778,8 @@ function ActionButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      aria-label={iconOnly && label ? label : undefined}
+      aria-expanded={expanded}
+      aria-pressed={active}
       className={cn(
         "inline-flex items-center rounded-full font-medium",
         compact
@@ -802,7 +794,7 @@ function ActionButton({
         className={cn(compact ? "h-3.5 w-3.5" : "h-4 w-4", active && "fill-current")}
         aria-hidden
       />
-      {iconOnly ? <span className="sr-only">{label}</span> : label}
+      {label}
     </button>
   );
 }
