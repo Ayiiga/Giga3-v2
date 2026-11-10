@@ -23,7 +23,7 @@ export type MediaSessionTools = {
   videoStudio: boolean;
   /** GigaEdit — trim, merge, captions, overlays, export on-device */
   gigaEdit: boolean;
-  /** Chat text-to-image generation (no pixel edit of uploads in chat) */
+  /** Chat text-to-image generation and supported image edits */
   chatImageGenerate: boolean;
   /** Chat vision — describe/analyze uploaded images (not pixel editing) */
   chatImageAnalyze: boolean;
@@ -55,13 +55,13 @@ const MEDIA_TOOLS_QUESTION_ALT_RE =
   /\b(edit (videos?|pictures?|photos?|images?) (here|in chat|on giga3|with giga3)|can you edit videos or pictures)\b/i;
 
 const IMAGE_EDIT_INTENT_RE =
-  /\b(remove background|background removal|replace background|upscale|enhance (this )?(photo|image|picture)|retouch|object removal|inpaint|color correct|relight|crop|resize|rotate|add text to (this )?(image|photo)|edit (this |my |the )?(photo|image|picture|pic))\b/i;
+  /\b(remove (the )?background|background removal|replace (the )?background|upscale|enhance (this )?(photo|image|picture)|retouch|object removal|inpaint|color correct|relight|crop|resize|rotate|add text to (this )?(image|photo)|edit (this |my |the )?(photo|image|picture|pic))\b/i;
 
 const VIDEO_EDIT_INTENT_RE =
   /\b(trim|cut|merge|join|caption|subtitle|transition|overlay|crop (this )?video|edit (this |my |the )?video|add music to (this )?video)\b/i;
 
 const VIDEO_GENERATE_INTENT_RE =
-  /\b(generate|create|make|produce)\b[\s\S]{0,32}\b(video|clip|reel|short|animation)\b/i;
+  /\b(generate|create|make|produce)\b[\s\S]{0,32}\b(video|clip|reel|youtube short|animation)\b/i;
 
 const GIGASOCIAL_TEMPLATE_INTENT_RE =
   /\b(make|create|generate|produce|remix)\b[\s\S]{0,40}\b(like|similar to|inspired by|based on)\b[\s\S]{0,40}\b(this )?(gigasocial )?(post|video|clip|reel|template)\b/i;
@@ -79,11 +79,13 @@ export function detectImageEditIntent(query: string): boolean {
 }
 
 export function detectVideoEditIntent(query: string): boolean {
-  return VIDEO_EDIT_INTENT_RE.test(query.trim());
+  return /\b(videos?|clips?|reels?|footage)\b/i.test(query) &&
+    VIDEO_EDIT_INTENT_RE.test(query);
 }
 
 export function detectVideoGenerateIntent(query: string): boolean {
-  return VIDEO_GENERATE_INTENT_RE.test(query.trim());
+  return !/\b(script|storyboard|outline|caption|transcript)\b/i.test(query) &&
+    VIDEO_GENERATE_INTENT_RE.test(query);
 }
 
 export function detectGigaSocialTemplateIntent(query: string): boolean {
@@ -125,7 +127,7 @@ export function resolveMediaCapability(args: {
   }
 
   if (detectImageEditIntent(query) || (hasImageAttachment && /\bedit\b/i.test(query))) {
-    return hasImageAttachment ? "image_edit_request" : "image_edit_request";
+    return "image_edit_request";
   }
 
   if (hasImageAttachment && !detectImageEditIntent(query)) {
@@ -150,7 +152,7 @@ function buildMediaStudioImageUrl(action: string, sourceUrl?: string): string {
 }
 
 const MEDIA_STUDIO_VIDEO_URL = "/media?tab=video";
-const GIGAEDIT_URL = "/gigaedit/";
+const GIGAEDIT_URL = "/gigaedit/?tab=video";
 const MEDIA_STUDIO_IMAGE_URL = "/media?tab=image";
 const GIGASOCIAL_TEMPLATES_URL = "/gigasocial/?tab=discover&view=templates";
 
@@ -256,7 +258,7 @@ export function mediaSystemPromptAddon(
         tools.chatImageAnalyze
           ? "You may describe, OCR, and answer questions about the image."
           : "Vision analysis may be limited in this session — say so if you cannot process the image.",
-        "If they want pixel edits (background, upscale, retouch), direct them to Media Studio — chat does not modify the file.",
+        "If they want pixel edits (background, upscale, retouch), use the chat image-edit pipeline when available or direct them to Media Studio.",
         editLink ? `[Edit in Media Studio](${editLink})` : `[Media Studio](${MEDIA_STUDIO_IMAGE_URL})`
       );
       break;
@@ -275,7 +277,7 @@ export function mediaSystemPromptAddon(
       parts.push(
         "The user wants AI video generation.",
         tools.videoStudio
-          ? `Guide them to [Media Studio Video](${MEDIA_STUDIO_VIDEO_URL}) or [Video AI](/video/) for text/image-to-video clips (5–15s per scene).`
+          ? `Guide them to [Media Studio Video](${MEDIA_STUDIO_VIDEO_URL}) for text/image-to-video clips (5–15s per scene).`
           : "Video generation is not available in this session.",
         "Chat does not render video files inline."
       );

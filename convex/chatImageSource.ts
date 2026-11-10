@@ -5,11 +5,11 @@
 import { detectImageEditIntent } from "./mediaCapabilities";
 
 const ASSISTANT_IMAGE_URL_RE =
-  /(?:Here is your generated image:\s*)?(https?:\/\/[^\s)]+|data:image\/[a-zA-Z0-9.+-]+;base64,[A-Za-z0-9+/=]+)/i;
+  /^Here is your (?:generated|edited) image:\s*(https?:\/\/[^\s)]+|data:image\/[a-zA-Z0-9.+-]+;base64,[A-Za-z0-9+/=]+)\s*$/i;
 
 /** Follow-up edits after a prior generated image (no fresh upload required). */
 const ITERATIVE_IMAGE_EDIT_RE =
-  /\b(make (it|the|this)|change (it|the|this)|turn (it|the|this)|edit (it|this)|add|remove|replace|brighter|darker|more|less|bigger|smaller|different (color|background|style)|same (image|picture|photo) but|background|enhance|upscale|retouch)\b/i;
+  /^(?:please\s+)?(?:make it (?:brighter|darker|bigger|smaller|more realistic|blue|red|green|yellow|black|white|purple|orange|pink|gr[ae]y)|change (?:its|the) (?:colou?r|background|lighting|style)|edit (?:it|this)|(?:remove|erase) (?:the |a )?(?:person|people|object|logo|shadow|reflection|blemish)\b|(?:turn|convert) (?:it|this) into (?:an? )?(?:watercolou?r|painting|sketch|cartoon|illustration|line drawing)\b|(?:brighten|darken|upscale|retouch) (?:it|this)|same (?:image|picture|photo) but)\b/i;
 
 export function extractImageUrlFromContent(content: string): string | null {
   const match = content.match(ASSISTANT_IMAGE_URL_RE);
@@ -25,8 +25,7 @@ export function findPriorAssistantImageUrl(
   for (let i = messages.length - 1; i >= 0; i -= 1) {
     const turn = messages[i];
     if (turn.role !== "assistant") continue;
-    const url = extractImageUrlFromContent(turn.content);
-    if (url) return url;
+    return extractImageUrlFromContent(turn.content);
   }
   return null;
 }
@@ -39,7 +38,6 @@ export function isImageEditOrTransformQuery(
   if (!q) return false;
   if (detectImageEditIntent(q)) return true;
   if (hasEditableImageSource && ITERATIVE_IMAGE_EDIT_RE.test(q)) return true;
-  if (hasEditableImageSource && /\bedit\b/i.test(q)) return true;
   return false;
 }
 

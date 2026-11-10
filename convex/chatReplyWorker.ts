@@ -53,7 +53,7 @@ import {
   imageDailyLimitMarkdown,
   resolveImageGenerationDecision,
 } from "./premiumImage";
-import { resolveChatImageSourceUrl } from "./chatImageSource";
+import { isImageEditOrTransformQuery, resolveChatImageSourceUrl } from "./chatImageSource";
 import { isLiveWebEnabled } from "./liveWeb/liveWebConfig";
 import {
   buildLiveWebMetadata,
@@ -67,6 +67,7 @@ import {
   liveSearchUnavailableNewsFallback,
   researchSystemPromptAddon,
   queryNeedsLiveWeb,
+  queryContainsPublicUrl,
   resolveResearchCapability,
   responseBasisForCapability,
   shouldRunLiveWebResearch,
@@ -241,13 +242,16 @@ async function runHybridAiEngine(
     freeOpenAiQuotaReservationId?: string;
   }
 > {
-  const sourceImageUrl = resolveChatImageSourceUrl({
+  const candidateImageUrl = resolveChatImageSourceUrl({
     imageAttachments: args.imageAttachments ?? [],
     history: args.chatMessages.map((m) => ({
       role: m.role,
       content: typeof m.content === "string" ? m.content : "",
     })),
   });
+  const sourceImageUrl = isImageEditOrTransformQuery(args.query, Boolean(candidateImageUrl))
+    ? candidateImageUrl
+    : undefined;
   const hasEditableImageSource = Boolean(sourceImageUrl);
 
   const routePlan = buildChatRoutePlan({
@@ -838,7 +842,12 @@ export const processJob = internalAction({
       }
 
       const writingCraft = hasWritingCraftIntent(job.content);
-      const capabilityPrompt = writingCraft
+      const requestedGrounding =
+        queryContainsPublicUrl(job.content) ||
+        job.researchCapability === "live_web" ||
+        researchCapability === "deep_research";
+      const allowResearch = !writingCraft || requestedGrounding;
+      const capabilityPrompt = !allowResearch
         ? ""
         : researchSystemPromptAddon(researchCapability);
       if (capabilityPrompt && infoRequestMode !== "answer_from_user_context") {
@@ -859,9 +868,9 @@ export const processJob = internalAction({
       }
 
       const shouldResearch =
-        !writingCraft && shouldRunLiveWebResearch(researchCapability);
+        allowResearch && shouldRunLiveWebResearch(researchCapability);
       const needsLiveWeb =
-        !writingCraft &&
+        allowResearch &&
         queryNeedsLiveWeb({
           query: job.content,
           capability: researchCapability,
@@ -872,8 +881,9 @@ export const processJob = internalAction({
       let liveWebSkippedReason: string | null = null;
 
       if (needsLiveWeb) {
-        systemPrompt +=
-          "\n\nThis is a current-events question. Answer from retrieved public sources and include the source links. Do not tell the user to check other news sites, and do not answer from general knowledge when sources are available. If no sources were retrieved, say the evidence is insufficient — do not invent headlines.";
+        systemPrompt += isNewsCapability(researchCapability)
+          ? "\n\nAnswer this news request from retrieved public sources. If evidence is insufficient, say so clearly and do not invent headlines."
+          : "\n\nUse retrieved evidence relevant to the user's exact request. Distinguish pages you read from search snippets. If a requested page could not be read, say so and do not infer its contents.";
       }
 
       if (
@@ -995,7 +1005,7 @@ export const processJob = internalAction({
           systemPrompt += `\n\nLive web notes:\n${research.warnings.join("\n")}`;
         }
         systemPrompt +=
-          "\n\nWhen live research is enabled, label your answer basis clearly (live web, current news, fact-checked, or Giga3 AI knowledge). Cite sources with publication dates. Label stories **Verified**, **Developing**, or **Unverified**. Never invent current news.";
+          "\n\nCite only sources that support the requested answer. Include publication dates when available and relevant. Keep unrelated results out of the answer.";
         }
       } else if (needsLiveWeb && !isLiveWebEnabled()) {
         systemPrompt += `\n\n${liveSearchUnavailableNewsFallback(researchCapability)}`;

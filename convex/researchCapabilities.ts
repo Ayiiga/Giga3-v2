@@ -315,8 +315,9 @@ export function resolveNewsLookupCapability(query: string): ResearchCapabilityId
 export function shouldUseConversationalWorker(args: {
   needsLiveWeb: boolean;
   attachmentCount: number;
+  needsMediaWorker?: boolean;
 }): boolean {
-  return !args.needsLiveWeb && args.attachmentCount === 0;
+  return !args.needsLiveWeb && args.attachmentCount === 0 && !args.needsMediaWorker;
 }
 
 /** Fast text jobs that should not inherit long research recovery timeouts. */
@@ -370,6 +371,10 @@ export function resolveResearchCapability(args: {
 
   if (classifyInformationRequest(q) === "answer_from_user_context") {
     return "general";
+  }
+
+  if (/\b(literature review|peer[- ]reviewed (articles?|papers?|studies|sources)|systematic review|(?:find|cite|locate) (?:relevant |recent |academic )?(?:journal articles?|research papers?|scholarly sources))\b/i.test(q)) {
+    return "deep_research";
   }
 
   const newsLookup = resolveNewsLookupCapability(q);

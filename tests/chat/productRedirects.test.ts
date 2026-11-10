@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { GIGA3_CHAT_PRODUCTS, GIGA3_PRODUCT_ROUTING_RULES } from "../../convex/giga3Products";
+import { classifyRequestKind } from "../../convex/providerRouter";
 import { composeSystemPrompt } from "../../convex/assistantIdentity";
 import { siteConfig } from "../../web/lib/site";
 import {
@@ -38,14 +39,12 @@ describe("matchProductRedirectIntent", () => {
     );
   });
 
-  it("suggests task shortcuts toward retained experiences", () => {
-    expect(matchProductRedirectIntent("I want to generate an image")?.product.id).toBe(
-      "chat"
-    );
-    expect(matchProductRedirectIntent("create a video")?.product.id).toBe("chat");
-    expect(matchProductRedirectIntent("edit a video clip")?.product.id).toBe("gigasocial");
+  it("keeps media requests in the worker instead of routing them back to Chat or the feed", () => {
+    for (const prompt of ["I want to generate an image", "Create a photo of a school", "Create a video", "Edit a video clip"]) {
+      expect(matchProductRedirectIntent(prompt)).toBeNull();
+    }
+    expect(classifyRequestKind("Create a photo of a school", "general")).toBe("image_generation");
     expect(matchProductRedirectIntent("post to GigaSocial")?.product.id).toBe("gigasocial");
-    expect(matchProductRedirectIntent("I want to generate an image")?.kind).toBe("suggest");
   });
 
   it("does not intercept homework, writing, or multi-step prompts", () => {

@@ -199,7 +199,7 @@ export const ChatInput = memo(function ChatInput({
     return () => mq.removeEventListener("change", sync);
   }, []);
 
-  const effectivePlaceholder = isNarrowScreen ? "Ask Giga3 anything…" : placeholder;
+  const effectivePlaceholder = isNarrowScreen ? "Message…" : placeholder;
 
   const typingMode = isMobileComposer && composerFocused && typingReady;
 

@@ -352,6 +352,15 @@
     line-height: var(--chat-line-height);
   }
 
+  html.chat-route .chat-composer-textarea:placeholder-shown {
+    overflow-y: hidden;
+  }
+
+  html.chat-route .chat-composer-textarea::placeholder {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
   html.chat-route .chat-composer-textarea {
     font-size: var(--chat-font-body);
     line-height: 1.5;

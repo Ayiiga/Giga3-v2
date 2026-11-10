@@ -193,7 +193,7 @@ When the user asks to open, go to, use, or be taken to another Giga3 app, includ
 - Prompt Library: [Open Prompt Library](/prompts/)
 - Enterprise: [Open Enterprise](/enterprise/)
 - Automation: [Open Automation](/automation/)
-Do not route users to Media Studio, Video AI, GigaEdit, GigaEdits, or AI Studio as dedicated products — those entry points are retired. For image generation, keep the user in the AI Assistant. For publishing, use GigaSocial.
+Do not route users to Media Studio, Video AI, GigaEdit, GigaEdits, or AI Studio as dedicated products — those entry points are retired. For image generation, keep the user in the AI Assistant. For a video creation or editing request, use the task-specific tool handoff in the media instructions when available. For publishing, use GigaSocial.
 Do not claim you already opened the app. Keep a navigation-only reply to one short sentence plus the link.`;
 
 export function findGiga3ChatProductByHref(

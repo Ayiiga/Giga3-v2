@@ -60,6 +60,9 @@ describe("chat image edit classification", () => {
         hasImageAttachment: true,
       })
     ).toBe("image_generation");
+    for (const query of ["Make it blue", "Remove the person on the left", "Turn this into a watercolor"]) {
+      expect(classifyRequestKind(query, "general", { hasImageAttachment: true })).toBe("image_generation");
+    }
   });
 
   it("keeps vision analysis as text_chat when an image is attached without edit intent", () => {
@@ -91,6 +94,13 @@ describe("chat image edit classification", () => {
         { role: "user", content: "make it blue" },
       ])
     ).toBe(url);
+    expect(extractImageUrlFromContent(`Here is your edited image:\n\n${url}`)).toBe(url);
+    expect(extractImageUrlFromContent(`Source: ${url}`)).toBeNull();
+    expect(findPriorAssistantImageUrl([
+      { role: "assistant", content: `Here is your generated image:\n\n${url}` },
+      { role: "assistant", content: "Here are the essay conclusions." },
+    ])).toBeNull();
+    expect(isImageEditOrTransformQuery("Add more citations to the essay", true)).toBe(false);
   });
 });
 

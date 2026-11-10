@@ -54,22 +54,7 @@ function isBareProductName(text: string): Giga3ChatProduct | null {
 }
 
 function matchTaskShortcut(text: string): Giga3ChatProduct | null {
-  if (
-    /\b(generate|create|make)\b/.test(text) &&
-    /\b(an? )?(image|photo|picture|poster|thumbnail|logo)\b/.test(text)
-  ) {
-    // Images stay in AI Assistant (Media Studio is not a dedicated product).
-    return GIGA3_CHAT_PRODUCTS.find((p) => p.id === "chat") ?? null;
-  }
-  if (
-    /\b(generate|create|make)\b/.test(text) &&
-    /\b(an? )?(video|clip|reel)\b/.test(text)
-  ) {
-    return GIGA3_CHAT_PRODUCTS.find((p) => p.id === "chat") ?? null;
-  }
-  if (/\b(edit|trim|join|caption)\b/.test(text) && /\b(video|photo|clip)\b/.test(text)) {
-    return GIGA3_CHAT_PRODUCTS.find((p) => p.id === "gigasocial") ?? null;
-  }
+  // Media requests go to the chat worker, which can generate images or offer a tool handoff.
   if (
     /\b(post|share|publish)\b/.test(text) &&
     /\b(on|to)\b/.test(text) &&

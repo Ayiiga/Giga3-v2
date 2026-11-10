@@ -278,7 +278,7 @@ export const ChatChrome = memo(function ChatChrome({
           </div>
         </div>
         <div className="flex min-w-0 items-center gap-2 md:mt-2">
-          <span className="shrink-0 text-xs text-muted">Detail</span>
+          <span className="hidden shrink-0 text-xs text-muted md:inline">Detail</span>
           <ResponseDetailSelector
             value={responseDetail}
             onChange={onResponseDetailChange}
