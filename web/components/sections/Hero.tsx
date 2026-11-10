@@ -12,9 +12,9 @@ const STARTING_POINTS = [
   },
   {
     name: "Create",
-    description: "Generate images and short videos for lessons, social posts, and projects.",
-    href: "/media/",
-    action: "Open Media Studio",
+    description: "Draft social posts and create images for lessons, campaigns, and projects.",
+    href: "/creator-studio/",
+    action: "Open Creator Studio",
     icon: WandSparkles,
   },
   {
@@ -34,7 +34,7 @@ export function Hero() {
           <p className="section-heading">Built in Ghana</p>
           <h1 className="hero-title mt-3">Practise for exams, create content, and get work done with Giga3 AI</h1>
           <p className="section-lead mx-auto mt-4 max-w-2xl">
-            Start with guided BECE and WASSCE practice, make images and videos, or get help with everyday work.
+            Start with guided BECE and WASSCE practice, draft posts and make images, or get help with everyday work.
             Paid plans are priced in Ghana cedis.
           </p>
         </div>

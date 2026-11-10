@@ -1,7 +1,6 @@
 import { ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { CREDIT_COSTS } from "@/lib/payments/subscriptionCatalog";
-import { MEDIA_VIDEO_CREDIT_TIERS } from "@/lib/media/videoCredits";
 import { pricingPlans } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
@@ -17,8 +16,8 @@ export function Pricing() {
           </h2>
           <p className="section-lead">
             Ordinary text chat is free. Premium tools use credits. An AI image starts at{" "}
-            {CREDIT_COSTS.image} credits and a {MEDIA_VIDEO_CREDIT_TIERS[0].durationSec}-second
-            Media Studio video starts at {MEDIA_VIDEO_CREDIT_TIERS[0].credits} credits.
+            {CREDIT_COSTS.image} credits, and an AI writing request in Creator Studio uses{" "}
+            {CREDIT_COSTS.writing} credits.
           </p>
           <p className="mt-3 text-sm text-muted">
             Paid plans renew monthly in Ghana cedis through Paystack.{" "}

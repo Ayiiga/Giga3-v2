@@ -8,7 +8,6 @@ import {
   SUBSCRIPTION_PLANS,
 } from "@/lib/payments/marketingPricing";
 import { CREDIT_COSTS } from "@/lib/payments/subscriptionCatalog";
-import { MEDIA_VIDEO_CREDIT_TIERS } from "@/lib/media/videoCredits";
 import { ButtonLink } from "@/components/ui/Button";
 import { publicMetadata } from "@/lib/seo/publicMetadata";
 import Link from "next/link";
@@ -120,10 +119,6 @@ export default function PricingPage() {
               <Link href="/enterprise/" className="text-accent underline decoration-accent/40 underline-offset-2 hover:decoration-accent">
                 see Enterprise
               </Link>
-              . Video AI has its own{" "}
-              <Link href="/video/plans/" className="text-accent underline decoration-accent/40 underline-offset-2 hover:decoration-accent">
-                video credit plans
-              </Link>
               . Cancel automatic renewal any time from your{" "}
               <Link href="/legal/refunds/" className="text-accent underline decoration-accent/40 underline-offset-2 hover:decoration-accent">
                 wallet (see refund &amp; cancellation policy)
@@ -146,12 +141,8 @@ export default function PricingPage() {
                 <p className="mt-1 text-sm text-muted">From {CREDIT_COSTS.image} credits per image</p>
               </div>
               <div className="rounded-xl bg-muted/10 p-4">
-                <p className="font-medium text-foreground">Media Studio video examples</p>
-                <ul className="mt-1 space-y-1 text-sm text-muted">
-                  {MEDIA_VIDEO_CREDIT_TIERS.map(({ durationSec, credits }) => (
-                    <li key={durationSec}>{durationSec} seconds · from {credits} credits</li>
-                  ))}
-                </ul>
+                <p className="font-medium text-foreground">Creator Studio AI writing</p>
+                <p className="mt-1 text-sm text-muted">{CREDIT_COSTS.writing} credits per request</p>
               </div>
             </div>
             <p className="mt-3 text-xs text-muted">

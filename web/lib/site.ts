@@ -52,10 +52,11 @@ export const siteConfig = {
 
 export const navLinks = [
   { href: "/gigalearn/exam/", label: "Study" },
-  { href: "/media/", label: "Create" },
+  { href: "/creator-studio/", label: "Create" },
   { href: "/chat/", label: "Work" },
   { href: "/features/", label: "All features" },
   { href: "/pricing/", label: "Pricing" },
+  { href: "/blog", label: "Blog" },
 ] as const;
 
 export const heroStats = [

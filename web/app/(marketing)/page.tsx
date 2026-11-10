@@ -12,7 +12,7 @@ import {
 import { FREE_SIGNUP_HREF } from "@/lib/payments/marketingPricing";
 
 const HOME_DESCRIPTION =
-  "Prepare for BECE and WASSCE, create AI images and videos, and get help with everyday work. Giga3 AI is built in Ghana, with plans priced in Ghana cedis.";
+  "Prepare for BECE and WASSCE, create AI images and social posts, and get help with everyday work. Giga3 AI is built in Ghana, with plans priced in Ghana cedis.";
 
 const HOME_TITLE = "Giga3 AI | BECE & WASSCE Practice, AI Chat and Creation";
 
