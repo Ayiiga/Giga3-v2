@@ -1,6 +1,6 @@
 "use client";
 
-import { SOCIAL_BOOST_COUNTRIES } from "convex/socialBoostOptions";
+import { SOCIAL_BOOST_COUNTRIES } from "@/lib/gigasocial/boostCountries";
 
 import type { GigaCreateLaunch } from "@/components/gigasocial/create/GigaCreateButton";
 import { GigaCreatorHub } from "@/components/gigasocial/create/GigaCreatorHub";

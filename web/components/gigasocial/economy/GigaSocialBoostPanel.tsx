@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { formatGhs } from "@/lib/gigasocial/creatorEconomy";
 import { redirectToPaystack } from "@/lib/payments/paystackService";
-import { SOCIAL_BOOST_COUNTRIES } from "convex/socialBoostOptions";
+import { SOCIAL_BOOST_COUNTRIES } from "@/lib/gigasocial/boostCountries";
 import { api } from "convex/_generated/api";
 import { useAction, useQuery } from "convex/react";
 import { Megaphone, Loader2 } from "lucide-react";
