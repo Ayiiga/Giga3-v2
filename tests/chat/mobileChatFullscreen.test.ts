@@ -15,7 +15,7 @@ describe("mobile chat fullscreen layout", () => {
   it("does not double-count safe-area under the composer while the tab bar is visible", () => {
     const css = read("web/styles/chat-mobile-app.css");
     expect(css).toMatch(
-      /html\.chat-route\s+\.chat-composer-dock\s*\{[\s\S]*?padding-bottom:\s*8px/
+      /html\.chat-route\s+\.chat-composer-dock\s*\{[\s\S]*?padding-bottom:\s*4px/
     );
     expect(css).toContain("html.chat-route.chat-keyboard-open .chat-composer-dock");
     expect(css).toMatch(
@@ -42,14 +42,29 @@ describe("mobile chat fullscreen layout", () => {
     expect(list).toContain("chat-message-scroll-region");
   });
 
-  it("compacts the reserved typing bar on phones without removing it", () => {
+  it("overlays reply status on phones without reserving idle height", () => {
     const css = read("web/styles/chat-mobile-app.css");
     expect(css).toMatch(
-      /html\.chat-route\s+\.chat-typing-bar\s*\{[\s\S]*?min-height:\s*2rem/
+      /html\.chat-route\s+\.chat-typing-bar\s*\{[\s\S]*?position:\s*absolute/
     );
     const bar = read("web/components/chat/ChatTypingBar.tsx");
     expect(bar).toContain("invisible");
-    expect(bar).toContain("always reserved");
+    expect(bar).toContain("data-visible={visible}");
+    expect(css).toContain('.chat-typing-bar[data-visible="false"]');
+  });
+
+  it("puts secondary controls inside mobile menus", () => {
+    const chrome = read("web/components/chat/ChatChrome.tsx");
+    const menu = read("web/components/chat/ChatMoreMenu.tsx");
+    const input = read("web/components/chat/ChatInput.tsx");
+    const picker = read("web/components/chat/ChatCreateHub.tsx");
+    expect(chrome).toContain("mobileAnswerDetail={");
+    expect(chrome).toContain("hidden border-t border-border/70 px-3 py-2 md:block");
+    expect(menu).toContain("{mobileAnswerDetail}");
+    expect(input).toContain("uploadHint={uploadHint}");
+    expect(input).toContain("freeImageHint={freeImageHint}");
+    expect(picker).toContain("{uploadHint}");
+    expect(picker).toContain("{freeImageHint}");
   });
 
   it("uses readable chat response font sizes on mobile (not text-sm)", () => {

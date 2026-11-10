@@ -14,6 +14,8 @@ import { useId, useRef } from "react";
 
 interface ChatInputToolbarProps {
   disabled?: boolean;
+  uploadHint?: string;
+  freeImageHint?: string;
   expanded: boolean;
   onToggle: () => void;
   onPickFiles: (files: File[], kind: AttachmentKind) => void;
@@ -24,6 +26,8 @@ interface ChatInputToolbarProps {
 
 export function ChatInputToolbar({
   disabled,
+  uploadHint,
+  freeImageHint,
   expanded,
   onToggle,
   onPickFiles,
@@ -173,6 +177,8 @@ export function ChatInputToolbar({
         <ChatCreateHub
           menuId={menuId}
           disabled={disabled}
+          uploadHint={uploadHint}
+          freeImageHint={freeImageHint}
           onMediaAction={triggerMediaAction}
           onSelectDocumentTemplate={
             onSelectDocumentTemplate ??

@@ -31,10 +31,10 @@ describe("Phase 2B typography tokens", () => {
 });
 
 describe("Phase 2B fullscreen + distraction-free invariants", () => {
-  it("compacts typing bar to 2rem and hides upsell while composing", () => {
+  it("keeps reply status out of mobile flow and hides upsell while composing", () => {
     const css = read("web/styles/chat-mobile-app.css");
     expect(css).toMatch(
-      /html\.chat-route\s+\.chat-typing-bar\s*\{[\s\S]*?min-height:\s*2rem/
+      /html\.chat-route\s+\.chat-typing-bar\s*\{[\s\S]*?position:\s*absolute/
     );
     expect(css).toContain("chat-composer-active");
     expect(css).toContain(".chat-banner-upsell");
@@ -44,7 +44,7 @@ describe("Phase 2B fullscreen + distraction-free invariants", () => {
   it("does not double safe-area under composer while the tab bar is visible", () => {
     const css = read("web/styles/chat-mobile-app.css");
     expect(css).toMatch(
-      /html\.chat-route\s+\.chat-composer-dock\s*\{[\s\S]*?padding-bottom:\s*8px/
+      /html\.chat-route\s+\.chat-composer-dock\s*\{[\s\S]*?padding-bottom:\s*4px/
     );
     expect(css).toMatch(
       /chat-keyboard-open\s+\.chat-composer-dock\s*\{[\s\S]*?safe-area-inset-bottom/

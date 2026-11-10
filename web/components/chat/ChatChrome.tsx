@@ -232,6 +232,13 @@ export const ChatChrome = memo(function ChatChrome({
             onInsertTemplate={onInsertTemplate}
             onError={onComposerError}
             onNotice={onComposerNotice}
+            mobileAnswerDetail={
+              <ResponseDetailSelector
+                value={responseDetail}
+                onChange={onResponseDetailChange}
+                disabled={isSending}
+              />
+            }
           />
 
           <button
@@ -251,7 +258,7 @@ export const ChatChrome = memo(function ChatChrome({
         </div>
       </div>
 
-      <div className="border-t border-border/70 px-3 py-2 sm:px-4">
+      <div className="hidden border-t border-border/70 px-3 py-2 md:block md:px-4">
         <div className="chat-header-combo hidden md:block">
           <div className="chat-header-combo-inner flex min-w-0 items-stretch overflow-hidden rounded-xl border border-border bg-card shadow-sm">
             <ModelSelector

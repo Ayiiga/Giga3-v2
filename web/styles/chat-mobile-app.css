@@ -88,11 +88,24 @@
     gap: 16px;
   }
 
-  /* Compact reserved typing row — always present (scroll stability), minimal blank. */
+  /* Keep reply status and Stop outside the mobile layout flow. */
   html.chat-route .chat-typing-bar {
-    min-height: 2rem;
-    padding-top: 0.125rem;
-    padding-bottom: 0.125rem;
+    position: absolute;
+    bottom: 100%;
+    inset-inline: var(--chat-edge-pad) var(--chat-edge-pad-right);
+    z-index: 1;
+    min-height: 0;
+    padding-block: 0;
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.875rem 0.875rem 0 0;
+  }
+
+  html.chat-route .chat-typing-bar[data-visible="false"] {
+    display: none;
+  }
+
+  html.chat-route .chat-conversation-grid:has(.chat-typing-bar[data-visible="true"]) .chat-scroll-fab {
+    bottom: 3.25rem;
   }
 
   /* Distraction-free while composing: collapse soft upsells; keep essential chrome. */
@@ -131,7 +144,7 @@
     min-height: var(--chat-composer-height);
     padding-inline: var(--chat-edge-pad) var(--chat-edge-pad-right);
     /* Shell already reserves safe-area via --primary-nav-offset while the tab bar shows. */
-    padding-bottom: 8px;
+    padding-bottom: 4px;
     background: #fff;
   }
 

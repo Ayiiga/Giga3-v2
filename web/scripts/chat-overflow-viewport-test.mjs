@@ -95,6 +95,35 @@ async function assertNoHorizontalOverflow(page, viewport) {
   }
 }
 
+async function assertMobileTypingDoesNotResizeChat(page) {
+  const mobileCss = fs.readFileSync(path.join(root, "../styles/chat-mobile-app.css"), "utf8");
+  await page.setViewportSize({ width: 360, height: 720 });
+  await page.setContent(`<!doctype html><html class="chat-route"><style>
+    ${mobileCss}
+    body { margin: 0 }
+    .chat-conversation-grid { height: 600px }
+    .chat-composer-dock { position: relative }
+    .fixture-composer { height: 52px }
+  </style><body>
+    <div class="chat-conversation-grid">
+      <div class="chat-message-list"></div>
+      <div class="chat-composer-dock">
+        <div class="chat-typing-bar" data-visible="false" style="height:44px">Generating</div>
+        <div class="fixture-composer">Composer</div>
+      </div>
+    </div>
+  </body></html>`);
+  const transcript = page.locator(".chat-message-list");
+  const height = await transcript.evaluate((el) => el.clientHeight);
+  const typing = page.locator(".chat-typing-bar");
+  if (await typing.isVisible()) throw new Error("Idle typing bar is visible on mobile");
+  await typing.evaluate((el) => el.setAttribute("data-visible", "true"));
+  if (!(await typing.isVisible())) throw new Error("Active typing bar is hidden on mobile");
+  if ((await transcript.evaluate((el) => el.clientHeight)) !== height) {
+    throw new Error("Typing status resized the mobile transcript");
+  }
+}
+
 async function main() {
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage();
@@ -106,6 +135,7 @@ async function main() {
     console.log(`ok: ${viewport.name} (${viewport.width}px)`);
   }
 
+  await assertMobileTypingDoesNotResizeChat(page);
   await browser.close();
   console.log("chat-overflow-viewport-test: all viewports passed");
 }

@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { Square } from "lucide-react";
 import { memo } from "react";
 
-/** Fixed-height typing row — always reserved so layout does not jump. */
+/** Desktop reserves the typing row. Mobile overlays it without resizing chat. */
 export const ChatTypingBar = memo(function ChatTypingBar({
   visible,
   slowNetwork = false,
@@ -25,6 +25,7 @@ export const ChatTypingBar = memo(function ChatTypingBar({
         "chat-typing-bar shrink-0 bg-background px-3 py-2 sm:px-6",
         !visible && "pointer-events-none invisible"
       )}
+      data-visible={visible}
       aria-hidden={!visible}
     >
       <div className="chat-rail flex items-center justify-between gap-3">
