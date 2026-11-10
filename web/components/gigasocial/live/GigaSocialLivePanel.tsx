@@ -145,8 +145,7 @@ export const GigaSocialLivePanel = memo(function GigaSocialLivePanel({
       <div className="saas-card rounded-2xl border border-border bg-white p-4">
         <h3 className="text-base font-semibold text-foreground">Go live on GigaSocial</h3>
         <p className="mt-1 text-sm text-muted">
-          Broadcast vertical 9:16 video, audio, or your screen with live chat, reactions, gifts,
-          moderation, and AI captions.
+          Open a room with chat and reactions. Camera, microphone and screen capture are host previews.
         </p>
         <div className="mt-4 space-y-3">
           <input
@@ -172,7 +171,7 @@ export const GigaSocialLivePanel = memo(function GigaSocialLivePanel({
                     : "border-border text-muted"
                 }`}
               >
-                {item.label}
+                {item.id === "video" ? "Camera preview" : item.id === "audio" ? "Mic preview" : "Screen preview"}
               </button>
             ))}
           </div>
@@ -180,32 +179,24 @@ export const GigaSocialLivePanel = memo(function GigaSocialLivePanel({
             <p className="text-xs text-muted">
               {isLikelyMobileLiveDevice()
                 ? LIVE_SCREEN_SHARE_MOBILE_HINT
-                : "You’ll be asked to choose a screen, window, or tab when you go live."}
+                : "Choose a screen, window or tab on browsers that support capture."}
             </p>
           ) : null}
           <div className="flex flex-wrap gap-2">
             <Button type="button" disabled={busy} onClick={() => void handleGoLive()} className="min-h-10">
               <Radio className="mr-1.5 h-4 w-4" aria-hidden />
-              Go live now
-            </Button>
-            <input
-              type="datetime-local"
-              value={scheduleAt}
-              onChange={(e) => setScheduleAt(e.target.value)}
-              className="input-surface min-h-10 flex-1"
-              aria-label="Schedule stream"
-            />
-            <Button
-              type="button"
-              variant="outline"
-              disabled={busy}
-              onClick={() => void handleSchedule()}
-              className="min-h-10"
-            >
-              <Calendar className="mr-1.5 h-4 w-4" aria-hidden />
-              Schedule
+              {busy ? "Opening…" : "Open live room"}
             </Button>
           </div>
+          <details className="rounded-xl border border-border p-3">
+            <summary className="cursor-pointer font-medium text-foreground">Schedule a room</summary>
+            <label className="mt-3 block text-sm text-foreground">Date and time
+              <input type="datetime-local" value={scheduleAt} onChange={(event) => setScheduleAt(event.target.value)} className="input-surface mt-1 min-h-11 w-full [color-scheme:dark]" />
+            </label>
+            <Button type="button" variant="outline" disabled={busy || !scheduleAt} onClick={() => void handleSchedule()} className="mt-2 min-h-11">
+              <Calendar className="h-4 w-4" aria-hidden /> Schedule
+            </Button>
+          </details>
           {error ? (
             <p className="text-xs text-red-700" role="alert">
               {error}

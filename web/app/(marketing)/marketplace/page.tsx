@@ -1,7 +1,6 @@
 import { ProductSeoHeader } from "@/components/seo/ProductSeoHeader";
 import { PublicProductPageShell } from "@/components/seo/PublicProductPageShell";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { ButtonLink } from "@/components/ui/Button";
 import { MARKETPLACE_PAGE_SHELL } from "@/lib/seo/productPageContent";
 import dynamic from "next/dynamic";
 import { publicMetadata } from "@/lib/seo/publicMetadata";
@@ -47,14 +46,6 @@ export default function MarketplacePage() {
         description="Explore ebooks, study notes, templates, and digital resources from Giga3 creators. Buy securely in Ghana cedis or sell your own digital products."
         detail="Verified sellers and admin-reviewed uploads help reduce fraud. Browse by category, compare prices in Ghana Cedis, and keep purchases in your account history. Files unlock only after Paystack payment is verified."
         showProductNav={false}
-        actions={
-          <>
-            <ButtonLink href="#marketplace-catalogue">Browse Products</ButtonLink>
-            <ButtonLink href="/marketplace/sell" variant="secondary">
-              Start Selling
-            </ButtonLink>
-          </>
-        }
       />
       <MarketplaceBrowseClient />
       <PublicProductPageShell

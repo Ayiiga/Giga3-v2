@@ -1,5 +1,6 @@
 "use client";
 
+import { useBackToClose } from "@/hooks/useBackToClose";
 import { CameraStylePreview } from "@/components/gigaedit/CameraStylePreview";
 import dynamic from "next/dynamic";
 
@@ -23,8 +24,8 @@ import {
   saveGigaEditProject,
 } from "@/lib/gigaedit/projects";
 import { handoffAndOpenGigaSocial } from "@/lib/gigaedit/publishHandoff";
-import { generateTeleprompterScript, loadTeleprompterScript } from "@/lib/gigasocial/teleprompterScripts";
-import { Circle, Image as ImageIcon, Loader2, Smile, Square, X } from "lucide-react";
+import { loadTeleprompterScript, saveTeleprompterScript } from "@/lib/gigasocial/teleprompterScripts";
+import { Circle, Loader2, Square, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -37,7 +38,7 @@ export type TeleprompterStudioProps = {
 
 export function TeleprompterStudio({
   focusRecord = false,
-  autoOpenCamera = true,
+  autoOpenCamera = false,
 }: TeleprompterStudioProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -48,21 +49,22 @@ export function TeleprompterStudio({
   const [recording, setRecording] = useState(false);
   const [hasRecording, setHasRecording] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
-  const [topic, setTopic] = useState("");
-  const [prompterKey, setPrompterKey] = useState(0);
-  const [cameraLook] = useState<CameraLookOptions>(ULTRA_CLEAR_CAMERA_LOOK);
+  const [script, setScript] = useState("");
+  const mountedRef = useRef(false);
+  const [cameraLook] = useState<CameraLookOptions>({ ...ULTRA_CLEAR_CAMERA_LOOK, hdr: false, whiteBalance: "auto" });
   const [mounted, setMounted] = useState(false);
-  const [captureMode, setCaptureMode] = useState<"multi" | "single">("multi");
-  const [durationPreset, setDurationPreset] = useState<"3min" | "60s" | "15s">("15s");
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
   const recordedFileRef = useRef<File | null>(null);
   const recordControlsRef = useRef<HTMLDivElement>(null);
   const tier = useMemo(() => detectDeviceTier(), []);
 
   useEffect(() => {
+    mountedRef.current = true;
     setMounted(true);
+    setScript(loadTeleprompterScript());
     return () => {
+      mountedRef.current = false;
+      if (mediaRecorderRef.current) mediaRecorderRef.current.onstop = null;
       streamRef.current?.getTracks().forEach((t) => t.stop());
     };
   }, []);
@@ -78,10 +80,11 @@ export function TeleprompterStudio({
         tier,
       });
       const next = await navigator.mediaDevices.getUserMedia(constraints);
+      if (!mountedRef.current) { next.getTracks().forEach((track) => track.stop()); return; }
       streamRef.current = next;
       setStream(next);
       await applyCameraTrackEnhancements(next, cameraLook);
-      setCameraOn(true);
+      if (mountedRef.current) setCameraOn(true);
     } catch {
       setStatus("Allow camera and microphone access, then tap Open camera.");
     } finally {
@@ -107,9 +110,11 @@ export function TeleprompterStudio({
     if (videoRef.current) videoRef.current.srcObject = null;
     setCameraOn(false);
     setRecording(false);
-    setHasRecording(false);
+    setScript(loadTeleprompterScript());
     autoOpenAttemptedRef.current = false;
   }
+
+  useBackToClose(cameraOn, disableCamera);
 
   function startRecording() {
     const active = streamRef.current;
@@ -117,48 +122,47 @@ export function TeleprompterStudio({
       setStatus("Enable the camera first.");
       return;
     }
-    chunksRef.current = [];
-    const recorder = new MediaRecorder(active);
+    const chunks: Blob[] = [];
+    let recorder: MediaRecorder;
+    try { recorder = new MediaRecorder(active); }
+    catch { setStatus("Video recording is unavailable on this device."); return; }
     mediaRecorderRef.current = recorder;
     recorder.ondataavailable = (e) => {
-      if (e.data.size > 0) chunksRef.current.push(e.data);
+      if (e.data.size > 0) chunks.push(e.data);
     };
     recorder.onstop = () => {
-      const blob = new Blob(chunksRef.current, { type: recorder.mimeType || "video/webm" });
-      const file = new File([blob], `gigaedit-teleprompter-${Date.now()}.webm`, {
+      mediaRecorderRef.current = null;
+      setRecording(false);
+      const blob = new Blob(chunks, { type: recorder.mimeType || "video/webm" });
+      if (!blob.size) { setStatus("No video was captured. Please record again."); return; }
+      const extension = blob.type.includes("mp4") ? "mp4" : "webm";
+      const file = new File([blob], `gigaedit-teleprompter-${Date.now()}.${extension}`, {
         type: blob.type || "video/webm",
       });
       recordedFileRef.current = file;
       setHasRecording(true);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = file.name;
-      a.click();
-      URL.revokeObjectURL(url);
       void (async () => {
         const project = createEmptyProject({ kind: "teleprompter", title: "Teleprompter take" });
         project.hasOriginal = true;
         project.scriptText = loadTeleprompterScript();
-        await saveGigaEditProject(project);
         await putProjectOriginalBlob(project.id, file);
+        await saveGigaEditProject(project);
         setStatus("Saved. Tap Post when ready.");
-      })();
+      })().catch(() => setStatus("Could not save this take to Projects."));
     };
-    recorder.start();
+    try { recorder.start(); }
+    catch { setStatus("Could not start recording. Please try again."); return; }
     setRecording(true);
     setStatus(null);
   }
 
   function stopRecording() {
-    mediaRecorderRef.current?.stop();
-    setRecording(false);
+    if (mediaRecorderRef.current?.state === "recording") mediaRecorderRef.current.stop();
   }
 
   async function saveScriptProject() {
     const project = createEmptyProject({ kind: "teleprompter", title: "Teleprompter script" });
     project.scriptText = loadTeleprompterScript();
-    project.aiAssisted = Boolean(topic.trim());
     await saveGigaEditProject(project);
     setStatus("Script saved.");
   }
@@ -176,8 +180,7 @@ export function TeleprompterStudio({
       original: file,
       aspectRatio: "9:16",
       destination: "feed",
-      caption: topic.trim() || "Teleprompter take",
-      aiAssisted: Boolean(topic.trim()),
+      caption: "Teleprompter take",
     });
     if (result.error) setStatus(result.error);
     if (result.queued) setStatus("Offline — queued for GigaSocial.");
@@ -202,31 +205,14 @@ export function TeleprompterStudio({
 
   const scriptPanel = (
     <div className="gigaedit-glass space-y-3 p-4">
-      <label className="block text-xs text-[var(--ge-muted)]">
-        Script topic (offline AI template)
-        <input
-          value={topic}
-          onChange={(e) => setTopic(e.target.value)}
-          className="mt-1 w-full rounded-lg border border-[var(--ge-border)] bg-[var(--ge-input)] px-3 py-2 text-sm"
-          placeholder="e.g. creator tips for Ghana"
-        />
+      <label className="block text-sm">
+        Script
+        <textarea value={script} rows={6} onChange={(event) => {
+          setScript(event.target.value);
+          saveTeleprompterScript(event.target.value);
+        }} className="mt-1 w-full rounded-lg border border-[var(--ge-border)] bg-[var(--ge-input)] px-3 py-2 text-base" />
       </label>
-      <button
-        type="button"
-        className="rounded-xl border border-[var(--ge-border)] px-3 py-2 text-xs"
-        onClick={() => {
-          const script = generateTeleprompterScript(topic);
-          try {
-            localStorage.setItem("giga3_gigasocial_teleprompter_script", script);
-          } catch {
-            /* ignore */
-          }
-          setPrompterKey((k) => k + 1);
-          setStatus("Script generated.");
-        }}
-      >
-        Generate script
-      </button>
+      <a className="inline-flex min-h-11 items-center text-sm font-semibold text-[var(--ge-gold)]" href="/gigaedit/?tab=audio">Generate commentary or voiceover</a>
     </div>
   );
 
@@ -249,15 +235,14 @@ export function TeleprompterStudio({
           overlay={
             <>
               <div
-                className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/55 to-transparent"
+                className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/30 to-transparent"
                 aria-hidden
               />
               <div
-                className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/65 to-transparent"
+                className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/40 to-transparent"
                 aria-hidden
               />
               <GigaSocialTeleprompter
-                key={prompterKey}
                 active
                 recording={recording}
                 presentation="studio"
@@ -268,7 +253,7 @@ export function TeleprompterStudio({
           }
         />
 
-        <div className="pointer-events-none absolute inset-x-0 top-0 flex items-center justify-between px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-[25] flex items-center justify-between px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
           <button
             type="button"
             className="pointer-events-auto inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/40 text-white"
@@ -277,9 +262,6 @@ export function TeleprompterStudio({
           >
             <X className="h-4 w-4" aria-hidden />
           </button>
-          <span className="rounded-full bg-black/35 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-white/90">
-            Ultra Clear · HDR
-          </span>
           <button
             type="button"
             className="pointer-events-auto rounded-full bg-black/40 px-3 py-1.5 text-xs font-medium text-white"
@@ -300,29 +282,7 @@ export function TeleprompterStudio({
             <p className="pointer-events-none text-center text-[11px] text-white/80">{status}</p>
           ) : null}
 
-          <div className="pointer-events-auto flex items-center gap-2">
-            {(["3min", "60s", "15s"] as const).map((preset) => (
-              <button
-                key={preset}
-                type="button"
-                className="gigaedit-teleprompter-duration-pill"
-                data-active={durationPreset === preset}
-                onClick={() => setDurationPreset(preset)}
-              >
-                {preset}
-              </button>
-            ))}
-          </div>
-
-          <div className="pointer-events-auto flex w-full max-w-sm items-center justify-between">
-            <button
-              type="button"
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-black/45 text-white"
-              aria-label="Effects"
-            >
-              <Smile className="h-5 w-5" aria-hidden />
-            </button>
-
+          <div className="pointer-events-auto flex justify-center">
             <button
               type="button"
               className="gigaedit-teleprompter-shutter flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full transition active:scale-95"
@@ -336,41 +296,15 @@ export function TeleprompterStudio({
               )}
             </button>
 
-            <button
-              type="button"
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-black/45 text-white"
-              aria-label="Album"
-            >
-              <ImageIcon className="h-5 w-5" aria-hidden />
-            </button>
-          </div>
-
-          <div className="pointer-events-auto flex items-center gap-8">
-            <button
-              type="button"
-              className="gigaedit-teleprompter-mode-tab"
-              data-active={captureMode === "multi"}
-              onClick={() => setCaptureMode("multi")}
-            >
-              Multi-clips
-            </button>
-            <button
-              type="button"
-              className="gigaedit-teleprompter-mode-tab"
-              data-active={captureMode === "single"}
-              onClick={() => setCaptureMode("single")}
-            >
-              One shot
-            </button>
           </div>
 
           <div className="pointer-events-auto flex w-full max-w-xs items-center justify-between pt-1">
             <button
               type="button"
               className="rounded-full bg-black/40 px-3 py-2 text-[11px] font-medium text-white/90"
-              onClick={() => void saveScriptProject()}
+              onClick={() => void saveScriptProject().catch(() => setStatus("Could not save the script."))}
             >
-              Save
+              Save script
             </button>
             <button
               type="button"
@@ -392,7 +326,7 @@ export function TeleprompterStudio({
       <div>
         <h2 className="text-lg font-semibold">Teleprompter</h2>
         <p className="mt-1 text-xs text-[var(--ge-muted)]">
-          Ultra Clear HDR camera with a clean script overlay. Tap Script to edit while recording.
+          Edit your script, then open the camera when you’re ready to record.
         </p>
       </div>
 
@@ -409,7 +343,7 @@ export function TeleprompterStudio({
         <button
           type="button"
           className="rounded-xl border border-[var(--ge-border)] px-3 py-2 text-xs"
-          onClick={() => void saveScriptProject()}
+          onClick={() => void saveScriptProject().catch(() => setStatus("Could not save the script."))}
         >
           Save script draft
         </button>

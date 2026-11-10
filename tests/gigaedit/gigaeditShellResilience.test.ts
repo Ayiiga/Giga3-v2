@@ -37,7 +37,7 @@ describe("GigaEdit shell resilience", () => {
   it("keeps the creator-home hero below the page-level SEO H1", () => {
     const home = readFileSync(resolve(__dirname, "../../web/components/gigaedit/GigaEditHome.tsx"), "utf8");
     expect(home).toMatch(/<h2[\\s>]/);
-    expect(home).toContain("Make something");
+    expect(home).toContain("Voice, script & video");
     expect(home).not.toMatch(/<h1[\\s>]/);
     expect(home).toContain("ge-welcome");
   });

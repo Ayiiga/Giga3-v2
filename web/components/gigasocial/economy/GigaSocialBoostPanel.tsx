@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { formatGhs } from "@/lib/gigasocial/creatorEconomy";
 import { redirectToPaystack } from "@/lib/payments/paystackService";
-import { SOCIAL_BOOST_COUNTRIES } from "@/lib/gigasocial/boostCountries";
+import { isSocialBoostCountry, SOCIAL_BOOST_COUNTRIES, type SocialBoostCountry } from "@/lib/gigasocial/boostCountries";
 import { api } from "convex/_generated/api";
 import { useAction, useQuery } from "convex/react";
 import { Megaphone, Loader2 } from "lucide-react";
@@ -29,7 +29,7 @@ export const GigaSocialBoostPanel = memo(function GigaSocialBoostPanel({
   const [targetId, setTargetId] = useState(postId ?? "");
   const [website, setWebsite] = useState("");
   const [audience, setAudience] = useState<"everyone" | "followers" | "new_people">("everyone");
-  const [country, setCountry] = useState<"" | "GH" | "NG">("");
+  const [country, setCountry] = useState<"" | SocialBoostCountry>("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -106,25 +106,15 @@ export const GigaSocialBoostPanel = memo(function GigaSocialBoostPanel({
             </select>
           </label>
           <label className="block text-sm">
-            <span>Discovery location</span>
-            <select value={country} onChange={(e) => setCountry(e.target.value as typeof country)} className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground">
+            <span className="font-medium">Discovery location</span>
+            <select value={country} onChange={(event) => {
+              const value = event.target.value;
+              setCountry(isSocialBoostCountry(value) ? value : "");
+            }} className="mt-1 min-h-11 w-full rounded-lg border border-border bg-background px-3 text-foreground">
               <option value="">All locations</option>
               {SOCIAL_BOOST_COUNTRIES.map((item) => <option key={item.code} value={item.code}>{item.name}</option>)}
             </select>
-            <span className="mt-1 block text-xs text-muted">Location uses the country people choose for their feed.</span>
-          </label>
-          <label className="block text-sm">
-            <span className="text-muted">Budget (GHS)</span>
-            <input
-              type="range"
-              min={minBudget}
-              max={maxBudget}
-              step={1}
-              value={budget}
-              onChange={(e) => setBudgetGhs(Number(e.target.value))}
-              className="mt-1 w-full"
-            />
-            <span className="font-medium text-foreground">{formatGhs(budget)}</span>
+            <span className="mt-1 block text-xs text-muted">Matches the country people choose for their feed.</span>
           </label>
 
           <label className="block text-sm">

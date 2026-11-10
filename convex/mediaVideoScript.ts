@@ -17,6 +17,7 @@ import {
 import { requireSessionWithMonitoring } from "./auth";
 import { CREDIT_COSTS } from "./creditsConfig";
 import {
+  buildSpokenCommentaryPrompt,
   buildVideoScriptGenerationPrompt,
   buildVideoScriptRewritePrompt,
 } from "./mediaVideoScriptPrompts";
@@ -100,6 +101,7 @@ export const generateVideoScript = action({
   args: {
     sessionToken: v.string(),
     idea: v.string(),
+    format: v.optional(v.literal("commentary")),
     clientRequestId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -119,7 +121,7 @@ export const generateVideoScript = action({
       ctx,
       args.sessionToken,
       verifiedEmail,
-      buildVideoScriptGenerationPrompt(idea),
+      args.format === "commentary" ? buildSpokenCommentaryPrompt(idea) : buildVideoScriptGenerationPrompt(idea),
       reference
     );
   },

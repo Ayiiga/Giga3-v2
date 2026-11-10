@@ -1,265 +1,186 @@
 "use client";
 
-import {
-  AFRICAN_VOICE_TABS,
-  getAfricanVoice,
-  previewAfricanVoiceOffline,
-  voicesForTab,
-  type AfricanVoice,
-  type AfricanVoiceTab,
-} from "@/lib/gigaedit/africanVoices";
+import { useAction } from "convex/react";
+import { api } from "convex/_generated/api";
+import { getSessionToken } from "@/lib/auth";
 import { createEmptyProject, putProjectOriginalBlob, saveGigaEditProject } from "@/lib/gigaedit/projects";
-import { Mic, Play, Square } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { loadTeleprompterScript, saveTeleprompterScript } from "@/lib/gigasocial/teleprompterScripts";
+import { GIGA3_AFRICAN_VOICE_MODEL } from "@/lib/voice/africanVoiceTypes";
+import { requestGiga3AfricanSpeech } from "@/lib/voice/giga3SpeechClient";
+import { useEffect, useRef, useState } from "react";
 
-export type AudioStudioProps = {
-  focusRecord?: boolean;
-  /** Fired when the user picks "Add African Voiceover" — parent opens the voice selector + teleprompter. */
-  onAddAfricanVoiceover?: (voice: AfricanVoice) => void;
-};
+const VOICES = [
+  { name: "Abena · Twi", language: "twi", voice: "female" },
+  { name: "Kwame · Twi", language: "twi", voice: "male_low" },
+  { name: "Kofi · Ewe", language: "ewe", voice: "male_low" },
+] as const;
+const MAX_VOICEOVER_LENGTH = 900;
 
-export function AudioStudio({ focusRecord = false, onAddAfricanVoiceover }: AudioStudioProps) {
+export function AudioStudio({ focusRecord = false }: { focusRecord?: boolean }) {
+  const generateScript = useAction(api.mediaVideoScript.generateVideoScript);
+  const [topic, setTopic] = useState("");
+  const [scriptLanguage, setScriptLanguage] = useState("English");
+  const [script, setScript] = useState("");
+  const [voiceIndex, setVoiceIndex] = useState(0);
+  const [busy, setBusy] = useState(false);
   const [recording, setRecording] = useState(false);
-  const [status, setStatus] = useState<string | null>(null);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [voiceTab, setVoiceTab] = useState<AfricanVoiceTab>("African");
-  const [selectedVoiceId, setSelectedVoiceId] = useState<string>("twi_female");
-  const [noiseSuppression, setNoiseSuppression] = useState(true);
-  const [echoCancellation, setEchoCancellation] = useState(true);
-  const [voiceScript, setVoiceScript] = useState("");
-  const recorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
-  const streamRef = useRef<MediaStream | null>(null);
-
-  const voices = useMemo(() => voicesForTab(voiceTab), [voiceTab]);
-  const selectedVoice = getAfricanVoice(selectedVoiceId);
+  const [status, setStatus] = useState("");
+  const [audio, setAudio] = useState<{ url: string; filename: string } | null>(null);
+  const audioUrl = useRef<string | null>(null);
+  const recorder = useRef<MediaRecorder | null>(null);
+  const stream = useRef<MediaStream | null>(null);
+  const mounted = useRef(false);
+  const requestPending = useRef(false);
+  const recordButton = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
+    mounted.current = true;
+    setScript(loadTeleprompterScript());
     return () => {
-      streamRef.current?.getTracks().forEach((t) => t.stop());
-      if (audioUrl) URL.revokeObjectURL(audioUrl);
+      mounted.current = false;
+      if (recorder.current) recorder.current.onstop = null;
+      stream.current?.getTracks().forEach((track) => track.stop());
+      if (audioUrl.current) URL.revokeObjectURL(audioUrl.current);
     };
-  }, [audioUrl]);
+  }, []);
 
   useEffect(() => {
-    if (!focusRecord) return;
-    setStatus("Tap Record to capture voiceover — saved as a local audio project.");
+    if (focusRecord) recordButton.current?.scrollIntoView({ block: "nearest" });
   }, [focusRecord]);
 
-  async function start() {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          noiseSuppression,
-          echoCancellation,
-          autoGainControl: true,
-        } as MediaTrackConstraints,
+  async function run(operation: () => Promise<void>) {
+    if (requestPending.current || recording) return;
+    requestPending.current = true;
+    setBusy(true);
+    setStatus("");
+    try { await operation(); }
+    catch (error) {
+      if (mounted.current) setStatus(error instanceof Error ? error.message : "Please try again.");
+    } finally {
+      requestPending.current = false;
+      if (mounted.current) setBusy(false);
+    }
+  }
+
+  async function saveAudio(blob: Blob, filename: string, title: string) {
+    if (!mounted.current || !blob.size) return;
+    if (audioUrl.current) URL.revokeObjectURL(audioUrl.current);
+    const url = URL.createObjectURL(blob);
+    audioUrl.current = url;
+    setAudio({ url, filename });
+    const project = createEmptyProject({ kind: "audio", title });
+    await putProjectOriginalBlob(project.id, blob);
+    await saveGigaEditProject({ ...project, hasOriginal: true });
+    if (mounted.current) setStatus("Audio saved to Projects.");
+  }
+
+  function writeCommentary() {
+    void run(async () => {
+      const sessionToken = getSessionToken();
+      if (!sessionToken) throw new Error("Sign in to generate commentary.");
+      const result = await generateScript({
+        sessionToken,
+        idea: `Language: ${scriptLanguage}\nTopic: ${topic.trim()}`,
+        format: "commentary",
+        clientRequestId: crypto.randomUUID(),
       });
-      streamRef.current = stream;
-      chunksRef.current = [];
-      const recorder = new MediaRecorder(stream);
-      recorderRef.current = recorder;
-      recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunksRef.current.push(e.data);
-      };
-      recorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: recorder.mimeType || "audio/webm" });
-        if (audioUrl) URL.revokeObjectURL(audioUrl);
-        setAudioUrl(URL.createObjectURL(blob));
-        void (async () => {
-          const project = createEmptyProject({ kind: "audio", title: "Audio take" });
-          project.hasOriginal = true;
-          await saveGigaEditProject(project);
-          await putProjectOriginalBlob(project.id, blob);
-          setStatus("Audio saved locally. Open Video editor → Use Audio Studio take to attach it.");
-        })();
-        stream.getTracks().forEach((t) => t.stop());
-      };
-      recorder.start();
-      setRecording(true);
-      setStatus(
-        `Recording…${noiseSuppression ? " street-noise suppression on." : " microphone permission granted."}`
-      );
-    } catch {
-      setStatus("Microphone permission denied or unavailable.");
-    }
+      if (mounted.current) setScript(result.script);
+    });
   }
 
-  function stop() {
-    recorderRef.current?.stop();
-    setRecording(false);
+  function synthesize() {
+    void run(async () => {
+      const { language, voice } = VOICES[voiceIndex];
+      const response = await requestGiga3AfricanSpeech({
+        model: GIGA3_AFRICAN_VOICE_MODEL, language, voice, input: script.trim(), response_format: "wav",
+      });
+      if (!response.ok) throw new Error(response.error);
+      await saveAudio(new Blob([response.audio], { type: response.contentType }), "voiceover.wav", "Generated voiceover");
+    });
   }
 
-  function handleAddAfricanVoiceover(voice: AfricanVoice) {
-    setSelectedVoiceId(voice.id);
-    const script = voiceScript.trim() || loadTeleprompterScriptFallback();
-    setVoiceScript(script);
-    setStatus(`“${voice.name}” selected — teleprompter opens with your script.`);
-    onAddAfricanVoiceover?.(voice);
-    try {
-      window.dispatchEvent(
-        new CustomEvent("giga3:african-voiceover-selected", { detail: { voiceId: voice.id, script } })
-      );
-    } catch {
-      /* ignore */
-    }
+  function record() {
+    void run(async () => {
+      if (typeof MediaRecorder === "undefined" || !navigator.mediaDevices?.getUserMedia) {
+        throw new Error("Voice recording is unavailable on this device.");
+      }
+      const activeStream = await navigator.mediaDevices.getUserMedia({
+        audio: { noiseSuppression: true, echoCancellation: true, autoGainControl: true },
+      });
+      if (!mounted.current) {
+        activeStream.getTracks().forEach((track) => track.stop());
+        return;
+      }
+      const chunks: Blob[] = [];
+      try {
+        const active = new MediaRecorder(activeStream);
+        recorder.current = active;
+        stream.current = activeStream;
+        active.ondataavailable = ({ data }) => { if (data.size) chunks.push(data); };
+        active.onstop = () => {
+          activeStream.getTracks().forEach((track) => track.stop());
+          stream.current = null;
+          recorder.current = null;
+          setRecording(false);
+          const mime = active.mimeType || chunks[0]?.type || "audio/webm";
+          const extension = mime.includes("mp4") ? "m4a" : mime.includes("ogg") ? "ogg" : "webm";
+          const blob = new Blob(chunks, { type: mime });
+          if (!blob.size) { setStatus("No audio was captured. Please record again."); return; }
+          void saveAudio(blob, `voice-take.${extension}`, "Voice take").catch(() => {
+            setStatus("Could not save to Projects. You can still download the take here.");
+          });
+        };
+        active.start();
+        setRecording(true);
+        setStatus("Recording…");
+      } catch (error) {
+        activeStream.getTracks().forEach((track) => track.stop());
+        throw error;
+      }
+    });
   }
 
+  const field = "mt-1 w-full rounded-lg border border-[var(--ge-border)] bg-[var(--ge-input)] px-3 py-2 text-sm text-white";
+  const action = "inline-flex min-h-11 items-center rounded-xl border border-[var(--ge-border)] px-3 text-sm font-semibold text-white disabled:opacity-50";
+  const locked = busy || recording;
   return (
-    <div className="space-y-4">
-      <div>
-        <h2 className="text-lg font-semibold">Audio studio</h2>
-        <p className="mt-1 text-xs text-[var(--ge-muted)]">
-          Record voiceovers offline, keep originals, then attach them on the video timeline for
-          export mix.
-        </p>
-      </div>
-
-      {/* ── African voices (top) ─────────────────────────────────────────── */}
-      <section aria-labelledby="gigaedit-african-voices" className="gigaedit-glass space-y-3 p-4">
-        <div className="flex items-center justify-between gap-2">
-          <h3 id="gigaedit-african-voices" className="text-sm font-semibold">
-            African voices
-          </h3>
-          <span className="gigaedit-african-badge">Built in Africa</span>
-        </div>
-        <div className="flex flex-wrap gap-1.5" role="tablist" aria-label="Voice groups">
-          {AFRICAN_VOICE_TABS.map((tab) => (
-            <button
-              key={tab}
-              type="button"
-              role="tab"
-              aria-selected={voiceTab === tab}
-              className={`gigaedit-chip px-2.5 py-1 text-[11px] ${voiceTab === tab ? "gigaedit-chip--active" : ""}`}
-              onClick={() => setVoiceTab(tab)}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-
-        <ul className="grid gap-2 sm:grid-cols-2">
-          {voices.map((voice) => {
-            const selected = voice.id === selectedVoiceId;
-            return (
-              <li
-                key={voice.id}
-                className={`gigaedit-voice-card ${selected ? "gigaedit-voice-card--selected" : ""}`}
-              >
-                <button
-                  type="button"
-                  className="min-w-0 flex-1 text-left"
-                  onClick={() => setSelectedVoiceId(voice.id)}
-                  aria-pressed={selected}
-                >
-                  <span className="flex items-center gap-1.5">
-                    <span className="text-lg" aria-hidden>
-                      {voice.flag}
-                    </span>
-                    <span className="truncate text-xs font-semibold text-white">{voice.name}</span>
-                  </span>
-                  <span className="mt-0.5 block text-[10px] text-[var(--ge-muted)]">
-                    {voice.language} · {voice.region}
-                    {voice.creditCostGhs > 0 ? ` · GH₵${voice.creditCostGhs.toFixed(2)}/clip` : " · offline free"}
-                  </span>
-                  {voice.africanAccent ? (
-                    <span className="gigaedit-voice-accent-badge">African accent</span>
-                  ) : null}
-                </button>
-                <button
-                  type="button"
-                  className="gigaedit-voice-sample-btn"
-                  aria-label={`Play sample of ${voice.name}`}
-                  onClick={() => previewAfricanVoiceOffline(voice)}
-                >
-                  <Play className="h-3.5 w-3.5" aria-hidden />
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-
-        <label className="block text-xs text-[var(--ge-muted)]">
-          Voiceover script (teleprompter opens with this)
-          <textarea
-            value={voiceScript}
-            onChange={(e) => setVoiceScript(e.target.value)}
-            rows={2}
-            className="mt-1 w-full rounded-lg border border-[var(--ge-border)] bg-[var(--ge-input)] px-2.5 py-1.5 text-sm text-white"
-            placeholder="Type the lines your African voiceover will read…"
-          />
+    <div className="space-y-4 text-white">
+      <section className="gigaedit-glass space-y-3 p-4">
+        <h2 className="text-lg font-semibold">Voiceover & commentary</h2>
+        <label className="block text-sm">Commentary topic
+          <input className={field} value={topic} maxLength={1000} disabled={locked} onChange={(event) => setTopic(event.target.value)} />
         </label>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            className="inline-flex items-center gap-2 rounded-xl bg-[var(--ge-gold)] px-4 py-2 text-xs font-bold text-[#0b1220]"
-            onClick={() => selectedVoice && handleAddAfricanVoiceover(selectedVoice)}
-          >
-            <Mic className="h-4 w-4" aria-hidden />
-            Add African Voiceover{selectedVoice ? ` · ${selectedVoice.name}` : ""}
-          </button>
-        </div>
-
-        <div className="grid gap-2 sm:grid-cols-2">
-          <label className="flex items-center justify-between gap-3 rounded-xl border border-[var(--ge-border)] bg-[var(--ge-input)] px-3 py-2.5 text-xs text-white">
-            <span>Noise suppression (street / market)</span>
-            <input
-              type="checkbox"
-              checked={noiseSuppression}
-              onChange={(e) => setNoiseSuppression(e.target.checked)}
-            />
-          </label>
-          <label className="flex items-center justify-between gap-3 rounded-xl border border-[var(--ge-border)] bg-[var(--ge-input)] px-3 py-2.5 text-xs text-white">
-            <span>Echo cancellation</span>
-            <input
-              type="checkbox"
-              checked={echoCancellation}
-              onChange={(e) => setEchoCancellation(e.target.checked)}
-            />
-          </label>
+        <label className="block text-sm">Commentary language
+          <select className={field} value={scriptLanguage} disabled={locked} onChange={(event) => setScriptLanguage(event.target.value)}>
+            <option>English</option><option>Twi</option><option>Ewe</option>
+          </select>
+        </label>
+        <button type="button" className={action} disabled={locked || !topic.trim()} onClick={writeCommentary}>Generate commentary · 2 credits</button>
+        <label className="block text-sm">Script
+          <textarea className={field} rows={5} value={script} disabled={locked} onChange={(event) => setScript(event.target.value)} />
+        </label>
+        <label className="block text-sm">Generated voice
+          <select className={field} value={voiceIndex} disabled={locked} onChange={(event) => setVoiceIndex(Number(event.target.value))}>
+            {VOICES.map((voice, index) => <option key={voice.name} value={index}>{voice.name}</option>)}
+          </select>
+        </label>
+        <p className="text-xs text-[var(--ge-muted)]">Use Twi or Ewe text to match your selected voice. Audio generation supports up to {MAX_VOICEOVER_LENGTH} characters per take.</p>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" className={action} disabled={locked || !script.trim() || script.trim().length > MAX_VOICEOVER_LENGTH} onClick={synthesize}>Generate voiceover</button>
+          {script.trim() && !locked && <a href="/gigaedit/?tab=teleprompter" className={action} onClick={() => saveTeleprompterScript(script)}>Open in teleprompter</a>}
         </div>
       </section>
-
-      {/* ── On-device recording ──────────────────────────────────────────── */}
-      <div className="gigaedit-glass flex flex-wrap items-center gap-3 p-4">
-        {!recording ? (
-          <button
-            type="button"
-            className="inline-flex items-center gap-2 rounded-xl bg-[var(--ge-gold)] px-4 py-2 text-xs font-bold text-[#0b1220]"
-            onClick={() => void start()}
-            title="ON DEVICE = offline, free, no credits"
-          >
-            <Mic className="h-4 w-4" aria-hidden />
-            Record Voice ON DEVICE
-          </button>
-        ) : (
-          <button
-            type="button"
-            className="inline-flex items-center gap-2 rounded-xl border border-red-400/40 px-4 py-2 text-xs text-red-200"
-            onClick={stop}
-          >
-            <Square className="h-4 w-4" aria-hidden />
-            Stop
-          </button>
-        )}
-        <a
-          href="/gigaedit/?tab=video"
-          className="rounded-xl border border-[var(--ge-border)] px-3 py-2 text-xs text-[var(--ge-gold)]"
-        >
-          Open video editor
-        </a>
-        {audioUrl ? <audio controls src={audioUrl} className="w-full max-w-md" /> : null}
-      </div>
-      {status ? <p className="text-xs text-[var(--ge-gold)]">{status}</p> : null}
+      <section className="gigaedit-glass space-y-3 p-4">
+        <h3 className="font-semibold">Record your own voice</h3>
+        <button ref={recordButton} type="button" className={action} disabled={busy} onClick={recording ? () => {
+          if (recorder.current?.state === "recording") recorder.current.stop();
+        } : record}>{recording ? "Stop recording" : "Record voice"}</button>
+      </section>
+      {busy || status ? <p role="status" className="text-sm text-[var(--ge-gold)]">{busy ? "Working…" : status}</p> : null}
+      {audio && <div className="space-y-2">
+        <audio controls src={audio.url} className="w-full max-w-md" />
+        <a href={audio.url} download={audio.filename} className={action}>Download audio</a>
+      </div>}
     </div>
   );
-}
-
-function loadTeleprompterScriptFallback(): string {
-  try {
-    return localStorage.getItem("giga3_gigasocial_teleprompter_script") ?? "";
-  } catch {
-    return "";
-  }
 }

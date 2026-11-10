@@ -1,13 +1,11 @@
 "use client";
 
-import { CommunityAssistantPanel } from "@/components/gigasocial/communities/CommunityAssistantPanel";
 import { CommunityDiscoveryRow } from "@/components/gigasocial/communities/CommunityDiscoveryRow";
 import { CommunitySkeleton } from "@/components/gigasocial/ux/PanelSkeletons";
 import { SocialEmptyState } from "@/components/gigasocial/ux/SocialEmptyState";
 import { Button } from "@/components/ui/Button";
 import {
   buildCommunityInviteLink,
-  COMMUNITY_FEATURES,
   COMMUNITY_TYPE_FILTERS,
   communityMatchesType,
 } from "@/lib/gigasocial/communitiesCatalog";
@@ -36,7 +34,6 @@ export const GigaSocialCommunitiesPanel = memo(function GigaSocialCommunitiesPan
   const [busySlug, setBusySlug] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [typeFilter, setTypeFilter] = useState("all");
-  const [activeSlug, setActiveSlug] = useState<string | null>(null);
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
 
   const communities = useMemo(
@@ -48,11 +45,6 @@ export const GigaSocialCommunitiesPanel = memo(function GigaSocialCommunitiesPan
     if (!features.enableCommunitiesV2 || typeFilter === "all") return communities;
     return communities.filter((community) => communityMatchesType(community, typeFilter));
   }, [communities, features.enableCommunitiesV2, typeFilter]);
-
-  const activeCommunity = useMemo(
-    () => communities.find((c) => c.slug === activeSlug) ?? null,
-    [activeSlug, communities]
-  );
 
   async function toggleJoin(community: SocialCommunity) {
     if (!sessionToken) {
@@ -125,7 +117,6 @@ export const GigaSocialCommunitiesPanel = memo(function GigaSocialCommunitiesPan
         <CommunityDiscoveryRow
           communities={communities}
           onSelect={(slug) => {
-            setActiveSlug(slug);
             const el = document.getElementById(`community-card-${slug}`);
             el?.scrollIntoView({ behavior: "smooth", block: "center" });
           }}
@@ -158,22 +149,7 @@ export const GigaSocialCommunitiesPanel = memo(function GigaSocialCommunitiesPan
             ))}
           </div>
 
-          <div className="flex flex-wrap gap-1.5" aria-label="Community features">
-            {COMMUNITY_FEATURES.slice(0, 8).map((feature) => (
-              <span
-                key={feature.id}
-                className="inline-flex items-center gap-1 rounded-full border border-border bg-white px-2 py-1 text-[10px] text-muted"
-              >
-                <span aria-hidden>{feature.emoji}</span>
-                {feature.label}
-              </span>
-            ))}
-          </div>
         </>
-      ) : null}
-
-      {activeCommunity && features.enableCommunityAI ? (
-        <CommunityAssistantPanel community={activeCommunity} />
       ) : null}
 
       {filtered.length === 0 ? (
@@ -242,19 +218,6 @@ export const GigaSocialCommunitiesPanel = memo(function GigaSocialCommunitiesPan
                 ) : null}
                 {features.enableCommunitiesV2 ? (
                   <>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="ghost"
-                      onClick={() =>
-                        setActiveSlug((current) =>
-                          current === community.slug ? null : community.slug
-                        )
-                      }
-                      className="min-h-10"
-                    >
-                      Tools
-                    </Button>
                     <Button
                       type="button"
                       size="sm"

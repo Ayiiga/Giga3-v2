@@ -741,3 +741,8 @@
   outline: 2px solid rgba(91, 33, 182, 0.55);
   outline-offset: 2px;
 }
+
+
+.gigasocial-live-room button:not(:disabled) { color: #fff; }
+.gigasocial-live-room button:disabled { color: #cbd5e1; }
+.gigasocial-live-room .gigasocial-live-controls { color-scheme: dark; }

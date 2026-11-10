@@ -53,9 +53,10 @@ describe("GigaEdits P0 UX reliability", () => {
     expect(panel).not.toContain("VOICEOVER_EXPORT_CREDITS");
   });
 
-  it("home defaults to Create tools and clarifies local-only drafts", () => {
+  it("home prioritizes voice and teleprompter and clarifies local-only drafts", () => {
     const home = read("web/components/gigaedit/GigaEditHome.tsx");
-    expect(home).toContain('useState<CreatorToolkitFilter>("create")');
+    expect(home.indexOf("Voiceover & commentary")).toBeLessThan(home.indexOf("Video editor"));
+    expect(home.indexOf('Teleprompter", detail')).toBeLessThan(home.indexOf("Video editor"));
     expect(home).toContain("drafts save on this device only");
     expect(home).toContain("AI Studio uses credits");
   });

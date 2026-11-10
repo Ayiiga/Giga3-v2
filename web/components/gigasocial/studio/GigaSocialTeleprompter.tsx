@@ -29,10 +29,8 @@ import { cn } from "@/lib/utils";
 import {
   Eye,
   EyeOff,
-  Minus,
   Pause,
   Play,
-  Plus,
   Settings,
   Sparkles,
   X,
@@ -537,8 +535,8 @@ export const GigaSocialTeleprompter = memo(function GigaSocialTeleprompter({
   if (isStudio) {
     const overlayVerticalClass =
       overlayPosition === "top"
-        ? "top-0"
-        : "bottom-0";
+        ? "top-[calc(env(safe-area-inset-top)+3.5rem)]"
+        : "bottom-[calc(env(safe-area-inset-bottom)+8rem)]";
 
     return (
       <div
@@ -566,18 +564,16 @@ export const GigaSocialTeleprompter = memo(function GigaSocialTeleprompter({
               overlayVerticalClass
             )}
             style={{
-              height: "25%",
-              transform: "translateZ(0)",
-              opacity: overlayOpacity / 100,
+              height: "min(32%, 15rem)",
             }}
             onPointerDown={beginOverlayLongPress}
             onPointerUp={endOverlayLongPress}
             onPointerCancel={endOverlayLongPress}
             onClick={() => setPanelMode("edit")}
           >
-            <div className="flex min-h-0 flex-1 flex-col rounded-lg bg-black/70 p-3 backdrop-blur-md">
+            <div className="flex min-h-0 flex-1 flex-col rounded-lg p-3" style={{ backgroundColor: `rgba(0,0,0,${overlayOpacity / 150})` }}>
               <div
-                className="mb-2 flex items-center justify-end gap-1.5"
+                className="mb-2 flex flex-wrap items-center justify-end gap-1.5"
                 onClick={(event) => event.stopPropagation()}
               >
                 <button
@@ -598,35 +594,6 @@ export const GigaSocialTeleprompter = memo(function GigaSocialTeleprompter({
                     onChange={(event) => setOverlayOpacity(Number(event.target.value))}
                     className="gigasocial-teleprompter-mini-slider w-14"
                     aria-label="Overlay opacity"
-                  />
-                </label>
-                <button
-                  type="button"
-                  className="gigasocial-teleprompter-toolbar-btn rounded-md px-1.5 py-1 text-[10px]"
-                  aria-label="Decrease font size"
-                  onClick={() => setFontSize((value) => clampTeleprompterFontSize(value - 1))}
-                >
-                  <Minus className="h-3 w-3" aria-hidden />
-                </button>
-                <button
-                  type="button"
-                  className="gigasocial-teleprompter-toolbar-btn rounded-md px-1.5 py-1 text-[10px]"
-                  aria-label="Increase font size"
-                  onClick={() => setFontSize((value) => clampTeleprompterFontSize(value + 1))}
-                >
-                  <Plus className="h-3 w-3" aria-hidden />
-                </button>
-                <label className="flex items-center gap-1 text-[10px] text-white/75">
-                  <span>{speedMultiplier.toFixed(1)}x</span>
-                  <input
-                    type="range"
-                    min={0.5}
-                    max={2}
-                    step={0.1}
-                    value={speedMultiplier}
-                    onChange={(event) => setSpeedMultiplier(Number(event.target.value))}
-                    className="gigasocial-teleprompter-mini-slider w-12"
-                    aria-label="Scroll speed multiplier"
                   />
                 </label>
                 {recording ? (

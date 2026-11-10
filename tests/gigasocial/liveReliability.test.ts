@@ -11,7 +11,7 @@ describe("GigaSocial live reliability guards", () => {
     const live = read("convex/gigaSocialLive.ts");
     const messages = read("web/lib/gigasocial/liveStreaming.ts");
 
-    expect(room).toContain("Hosts cannot send gifts to themselves");
+    expect(room).toMatch(/!isHost && <div[\s\S]*?Send a gift/);
     expect(live).toContain("You cannot gift yourself.");
     expect(messages).toContain("You cannot send a gift to yourself.");
   });
