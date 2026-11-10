@@ -98,6 +98,26 @@ export function Footer() {
           </a>
         </div>
 
+        <div className="mt-5 flex flex-col items-center gap-2" aria-label="VibeRank app listing">
+          <a
+            href="https://viberank.dev/apps/Giga3%20AI"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="View Giga3 AI on VibeRank"
+            className="inline-flex max-w-full items-center justify-center rounded-md transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
+            <img
+              src="https://viberank.dev/badge?app=Giga3%20AI&theme=dark"
+              alt="Giga3 AI on VibeRank"
+              width={180}
+              height={40}
+              loading="lazy"
+              decoding="async"
+              className="h-auto max-w-full"
+            />
+          </a>
+        </div>
+
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 text-sm text-muted sm:flex-row">
           <p>© {year} {siteConfig.name}. All rights reserved.</p>
           <p>Built for Cloudflare Pages · PWA ready</p>
