@@ -60,7 +60,15 @@
     .primary { background: #5B21B6; color: #fff; }
     .secondary { background: #fff; color: #1e1b4b; border: 1px solid #e2e8f0; }
     .hint { font-size: 12px; color: #94a3b8; margin-top: 14px; line-height: 1.5; }
+    @media (prefers-color-scheme: dark) {
+      body { background: #100b1d; color: #f5f3ff; }
+      .card { background: #1d152d; border-color: #41345a; }
+      p { color: #c4b5d7; }
+      .secondary { background: #291f3d; color: #f5f3ff; border-color: #54436d; }
+    }
+    @media (prefers-reduced-motion: reduce) { .dot.pulse { animation: none; } }
     #cached { display: none; margin-top: 10px; font-size: 13px; color: #5B21B6; }
+    @media (prefers-color-scheme: dark) { #cached { color: #c4b5d7; } }
   </style>
 </head>
 <body>
@@ -76,7 +84,7 @@
       <button type="button" class="primary" id="retry">Try again</button>
       <a class="btn secondary" href="/">Go to home</a>
     </div>
-    <p id="cached">Cached version available — open home or chat from your last visit.</p>
+    <p id="cached">Cached version available — you can try opening Home.</p>
   </div>
   <script>
 (function () {
@@ -96,7 +104,7 @@
     dotEl.className = "dot";
     statusText.textContent = "You're offline";
     titleEl.textContent = "You're offline";
-    messageEl.textContent = "No network detected. We'll retry every 3 seconds when you're back online.";
+    messageEl.textContent = "No network detected. Giga3 will try again when your device reconnects.";
   }
 
   function setOnline() {
@@ -113,14 +121,6 @@
     statusText.textContent = "Checking connection…";
   }
 
-  function withTimeout(promise, ms) {
-    return new Promise(function (resolve, reject) {
-      var t = setTimeout(function () { reject(new Error("timeout")); }, ms);
-      promise.then(function (v) { clearTimeout(t); resolve(v); })
-        .catch(function (e) { clearTimeout(t); reject(e); });
-    });
-  }
-
   function checkHealth() {
     var ctrl = new AbortController();
     var timer = setTimeout(function () { ctrl.abort(); }, HEALTH_MS);
@@ -130,14 +130,6 @@
         return r.ok ? r.json() : Promise.reject(r.status);
       })
       .catch(function (e) { clearTimeout(timer); throw e; });
-  }
-
-  function clearGigaCaches() {
-    if (!("caches" in window)) return Promise.resolve();
-    return caches.keys().then(function (keys) {
-      return Promise.all(keys.filter(function (k) { return k.indexOf("giga3") === 0; })
-        .map(function (k) { return caches.delete(k); }));
-    });
   }
 
   function showCachedIfAny() {
@@ -160,13 +152,15 @@
       setOffline();
       showCachedIfAny();
       checking = false;
-      scheduleRetry();
       return;
     }
     checkHealth()
       .then(function () {
         setOnline();
-        setTimeout(function () { location.reload(); }, 350);
+        setTimeout(function () {
+          if (location.pathname === "/offline.html") location.replace("/");
+          else location.reload();
+        }, 350);
       })
       .catch(function () {
         setOffline();
@@ -178,11 +172,15 @@
   }
 
   document.getElementById("retry").addEventListener("click", function () {
-    clearGigaCaches().finally(function () { location.reload(); });
+    if (retryTimer) clearTimeout(retryTimer);
+    runCheck();
   });
 
   window.addEventListener("online", runCheck);
-  window.addEventListener("offline", function () { setOffline(); scheduleRetry(); });
+  window.addEventListener("offline", function () {
+    if (retryTimer) clearTimeout(retryTimer);
+    setOffline();
+  });
 
   showCachedIfAny();
   runCheck();

@@ -2,11 +2,11 @@
  * Giga3 AI PWA service worker — Cloudflare Pages static export.
  * Bump CACHE_VERSION on every deploy that changes JS/CSS.
  */
-const CACHE_VERSION = "giga3-v86";
+const CACHE_VERSION = "giga3-v87";
 const OFFLINE_URL = "/offline.html";
 const NETWORK_TIMEOUT_MS = 15000;
 
-const PRECACHE = ["/", OFFLINE_URL, "/manifest.json", "/manifest.webmanifest"];
+const PRECACHE = ["/", "/manifest.json", "/manifest.webmanifest"];
 
 const BADGE_DB = "giga3-badge-v1";
 const BADGE_STORE = "meta";
@@ -27,7 +27,7 @@ function jsonOffline() {
 
 /** A top-level navigation must never expose the API's machine-readable offline payload. */
 function offlineDocumentResponse(offline) {
-  if (offline) {
+  if (offline?.headers.get("content-type")?.includes("text/html")) {
     return new Response(offline.body, {
       status: 503,
       headers: {
@@ -98,7 +98,7 @@ function isPrivateDocument(pathname) {
 
 function mayStoreDocument(response) {
   const cacheControl = response.headers.get("cache-control") || "";
-  return response.ok && !/no-store|private/i.test(cacheControl);
+  return response.ok && response.headers.get("content-type")?.includes("text/html") && !/no-store|private/i.test(cacheControl);
 }
 
 // --- Lifecycle ---
@@ -107,11 +107,13 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches
       .open(CACHE_VERSION)
-      .then((cache) => cache.addAll(PRECACHE))
+      .then(async (cache) => {
+        await cache.add(new Request(OFFLINE_URL, { cache: "reload" }));
+        await Promise.allSettled(PRECACHE.map((path) => cache.add(path)));
+      })
       .then(function () {
         self.skipWaiting();
       })
-      .catch((err) => console.error("[sw] precache failed", err))
   );
 });
 
@@ -164,7 +166,7 @@ self.addEventListener("fetch", (event) => {
       fetchWithTimeout(request, NETWORK_TIMEOUT_MS).catch(async () => {
         // A user opening an API URL directly should see the offline page, not raw JSON.
         if (request.mode === "navigate") {
-          const offline = await caches.match(OFFLINE_URL);
+          const offline = await caches.match(OFFLINE_URL).catch(() => undefined);
           return offlineDocumentResponse(offline);
         }
         // Programmatic API consumers retain the stable JSON error contract.
@@ -177,38 +179,37 @@ self.addEventListener("fetch", (event) => {
   // (b) Documents — network-first. Private and no-store HTML is never cached.
   // Cached public HTML is only a fallback when the network fails.
   if (isDocument(request)) {
-    if (isPrivateDocument(url.pathname)) {
-      event.respondWith(
-        fetchWithTimeout(request, NETWORK_TIMEOUT_MS).catch(async () => {
-          const offline = await caches.match(OFFLINE_URL);
-          return offline || jsonOffline();
-        })
-      );
-      return;
-    }
-    event.respondWith(
-      fetchWithTimeout(request, NETWORK_TIMEOUT_MS)
-        .then((response) => {
-          if (mayStoreDocument(response)) {
+    const privateDocument = isPrivateDocument(url.pathname);
+    event.respondWith((async () => {
+      try {
+        const response = await fetchWithTimeout(request, NETWORK_TIMEOUT_MS);
+        if (![502, 503, 504].includes(response.status)) {
+          if (!privateDocument && mayStoreDocument(response)) {
             const clone = response.clone();
-            caches.open(CACHE_VERSION).then((cache) => cache.put(request, clone));
+            await caches.open(CACHE_VERSION)
+              .then((cache) => cache.put(request, clone))
+              .catch(() => {});
           }
           return response;
-        })
-        .catch(async () => {
-          const cached = await caches.match(request);
-          if (cached) return cached;
-          const offline = await caches.match(OFFLINE_URL);
-          return offline || jsonOffline();
-        })
-    );
+        }
+      } catch {
+        // A failed request can still be served from the public cache.
+      }
+      if (!privateDocument) {
+        const cached = await caches.match(request).catch(() => undefined);
+        if (cached?.headers.get("content-type")?.includes("text/html")) return cached;
+      }
+      const offline = await caches.match(OFFLINE_URL).catch(() => undefined);
+      return offlineDocumentResponse(offline);
+    })());
     return;
   }
 
   // (c) Static — cache-first, then network, update cache
   if (isStaticAsset(url.pathname)) {
     event.respondWith(
-      caches.match(request).then(async (cached) => {
+      caches.match(request).catch(() => undefined).then(async (cached) => {
+        if (cached && url.pathname.startsWith("/_next/static/")) return cached;
         try {
           const response = await fetchWithTimeout(request, NETWORK_TIMEOUT_MS);
           if (response.status === 404 && url.pathname.endsWith(".js")) {
@@ -220,7 +221,6 @@ self.addEventListener("fetch", (event) => {
           }
           return response.ok ? response : cached || response;
         } catch {
-          if (url.pathname.endsWith(".js")) await handleStaleChunk(request);
           return cached || jsonOffline();
         }
       })
