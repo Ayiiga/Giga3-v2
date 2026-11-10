@@ -169,7 +169,6 @@ export const GigaSocialCommunitiesPanel = memo(function GigaSocialCommunitiesPan
               className={cn(
                 "gigasocial-pressable saas-card rounded-2xl border border-border p-4",
                 community.joined && "border-accent/30 bg-accent/5",
-                activeSlug === community.slug && "ring-2 ring-violet-300/50"
               )}
             >
               <div className="flex items-start justify-between gap-2">
