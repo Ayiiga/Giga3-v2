@@ -1,5 +1,6 @@
 import { ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
+import { CREDIT_COSTS } from "@/lib/payments/subscriptionCatalog";
 import { pricingPlans } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
@@ -11,15 +12,18 @@ export function Pricing() {
         <div className="mx-auto max-w-2xl text-center">
           <p className="section-heading">Pricing</p>
           <h2 className="page-title mt-3">
-            Simple, transparent plans
+            Start free. Upgrade when you need more.
           </h2>
           <p className="section-lead">
-            Start free with credits. Upgrade when you&apos;re ready—no hidden fees. Full plan
-            details and Paystack checkout at{" "}
-            <a href="/pricing/" className="font-medium text-accent underline underline-offset-2">
-              /pricing
+            Ordinary text chat is free. Premium tools use credits. An AI image starts at{" "}
+            {CREDIT_COSTS.image} credits, and an AI writing request in Creator Studio uses{" "}
+            {CREDIT_COSTS.writing} credits.
+          </p>
+          <p className="mt-3 text-sm text-muted">
+            Paid plans renew monthly in Ghana cedis through Paystack.{" "}
+            <a href="/pricing/#credit-costs" className="font-medium text-accent underline underline-offset-2">
+              See credit costs and renewal rules
             </a>
-            .
           </p>
         </div>
 
@@ -32,11 +36,6 @@ export function Pricing() {
                 plan.highlighted && "relative ring-1 ring-accent/25"
               )}
             >
-              {plan.highlighted && (
-                <span className="absolute -top-3 inset-x-0 mx-auto w-fit rounded-full bg-accent px-3 py-1 text-xs font-medium text-accent-foreground">
-                  Popular
-                </span>
-              )}
               <h3 className="text-lg font-semibold text-foreground">{plan.name}</h3>
               <div className="mt-4 flex items-baseline gap-1">
                 <span className="text-2xl font-semibold text-foreground">{plan.price}</span>

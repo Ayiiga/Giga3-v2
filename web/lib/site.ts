@@ -51,20 +51,12 @@ export const siteConfig = {
 } as const;
 
 export const navLinks = [
-  { href: "/features", label: "Features" },
-  { href: "/gigalearn/academy/", label: "Academy" },
-  { href: "/gigalearn/exam/", label: "Exam Practice" },
-  { href: "/chat", label: "AI Assistant" },
-  { href: "/gigalearn/academy/tech/", label: "Technology Hub" },
-  { href: "/gigasocial", label: "GigaSocial" },
-  { href: "/marketplace", label: "Marketplace" },
-  { href: "/discover", label: "Discover" },
-  { href: "/creator-studio", label: "Creator Studio" },
-  { href: "/pricing", label: "Pricing" },
-  { href: "/enterprise", label: "Enterprise" },
+  { href: "/gigalearn/exam/", label: "Study" },
+  { href: "/creator-studio/", label: "Create" },
+  { href: "/chat/", label: "Work" },
+  { href: "/features/", label: "All features" },
+  { href: "/pricing/", label: "Pricing" },
   { href: "/blog", label: "Blog" },
-  { href: "/chat/login", label: "Sign in" },
-  { href: "/#contact", label: "Contact" },
 ] as const;
 
 export const heroStats = [

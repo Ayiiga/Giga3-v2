@@ -38,7 +38,7 @@ function ChatLoginFormInner() {
   const router = useRouter();
   const params = useSearchParams();
   const [nextPath, setNextPath] = useState(() => safePostLoginPath(params.get("next")));
-  const [mode, setMode] = useState<AuthMode>("signin");
+  const [mode, setMode] = useState<AuthMode>(() => params.get("mode") === "signup" ? "signup" : "signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
