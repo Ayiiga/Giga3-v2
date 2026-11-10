@@ -81,4 +81,14 @@ describe("GigaLearn teaching materials library", () => {
     expect(ui).toContain("Checking your subscription and loading resource details");
     expect(ui).not.toContain("</p>\\n          {!detail.fullAccess");
   });
+  it("does not misrepresent a generic icon as a verified laboratory illustration", () => {
+    const ui = read("web/components/gigalearn/TeachingResourcesLibrary.tsx");
+    expect(ui).toContain("Illustration not yet available");
+    expect(ui).toContain("has not been verified");
+    expect(ui).toContain("Zoom illustration");
+    expect(ui).toContain("zoomed && resolvedImage");
+    expect(ui).not.toContain("⌕ Tap to zoom");
+    expect(ui).not.toContain(": <ResourceDiagram title={title} category={category} />");
+  });
+
 });
