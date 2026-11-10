@@ -1,5 +1,7 @@
 "use client";
 
+import { useInterfaceLanguage } from "@/components/providers/InterfaceLanguageProvider";
+
 import {
   CreateNavIcon,
   HomeNavIcon,
@@ -33,6 +35,14 @@ const PRIMARY_NAV_ICONS: Record<
   market: MarketNavIcon,
 };
 
+const FRENCH_TAB_LABELS: Record<PrimaryNavTabId, string> = {
+  home: "Accueil",
+  learn: "Apprendre",
+  practice: "Exercices",
+  social: "Social",
+  market: "Marché",
+};
+
 type PrimaryNavBarProps = {
   variant: "mobile" | "desktop";
   activeTab: ReturnType<typeof resolvePrimaryNavTab>;
@@ -44,6 +54,7 @@ const PrimaryNavBar = memo(function PrimaryNavBar({
   activeTab,
   pathname,
 }: PrimaryNavBarProps) {
+  const { language } = useInterfaceLanguage();
   const isMobile = variant === "mobile";
 
   return (
@@ -52,7 +63,8 @@ const PrimaryNavBar = memo(function PrimaryNavBar({
         "primary-nav",
         isMobile ? "primary-nav--mobile" : "primary-nav--desktop"
       )}
-      aria-label="Giga3 primary navigation"
+      lang={language}
+      aria-label={language === "fr" ? "Navigation principale de Giga3" : "Giga3 primary navigation"}
     >
       <div className={cn("primary-nav__inner", isMobile && "primary-nav__inner--mobile")}>
         {PRIMARY_NAV_TABS.map((tab) => {
@@ -74,7 +86,7 @@ const PrimaryNavBar = memo(function PrimaryNavBar({
               <span className="primary-nav__icon" aria-hidden>
                 <Icon active={active} className="primary-nav__glyph" />
               </span>
-              <span className="primary-nav__label">{tab.label}</span>
+              <span className="primary-nav__label">{language === "fr" ? FRENCH_TAB_LABELS[tab.id] : tab.label}</span>
             </Link>
           );
         })}

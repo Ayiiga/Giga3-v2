@@ -1,3 +1,4 @@
+import { InterfaceLanguageProvider } from "@/components/providers/InterfaceLanguageProvider";
 import { GenerationToastHost } from "@/components/generation/GenerationToastHost";
 import { AccessibilityBootstrap } from "@/components/a11y/AccessibilityBootstrap";
 import { GigaLiteBootstrap } from "@/components/network/GigaLiteBootstrap";
@@ -128,26 +129,28 @@ export default function RootLayout({
   return (
     <html lang={DEFAULT_HTML_LANG} className={inter.variable} suppressHydrationWarning>
       <body className="min-h-full w-full max-w-full overflow-x-hidden bg-background font-sans text-foreground antialiased">
-        <PwaInstallProvider>
-          <ConvexRuntimeBootstrap />
-          <ThemeProvider>
-            <div className="min-h-full w-full max-w-full overflow-x-hidden overflow-y-visible">
-              {children}
-            </div>
-          </ThemeProvider>
-          <AccessibilityBootstrap />
-          <GigaLiteBootstrap />
-          <ServiceWorkerRegister />
-          <AppBadgeSync />
-          <ConnectivityStatusHost />
-          <ChunkLoadRecoveryBootstrap />
-          <GlobalChatPrefetch />
-          <AuthenticatedChatRedirect />
-          <PlatformAnalyticsHost />
-          <DeferredPwaChrome />
-          <GenerationToastHost />
-          <PrimaryNavHost />
-        </PwaInstallProvider>
+        <InterfaceLanguageProvider>
+          <PwaInstallProvider>
+            <ConvexRuntimeBootstrap />
+            <ThemeProvider>
+              <div className="min-h-full w-full max-w-full overflow-x-hidden overflow-y-visible">
+                {children}
+              </div>
+            </ThemeProvider>
+            <AccessibilityBootstrap />
+            <GigaLiteBootstrap />
+            <ServiceWorkerRegister />
+            <AppBadgeSync />
+            <ConnectivityStatusHost />
+            <ChunkLoadRecoveryBootstrap />
+            <GlobalChatPrefetch />
+            <AuthenticatedChatRedirect />
+            <PlatformAnalyticsHost />
+            <DeferredPwaChrome />
+            <GenerationToastHost />
+            <PrimaryNavHost />
+          </PwaInstallProvider>
+        </InterfaceLanguageProvider>
       </body>
     </html>
   );

@@ -78,6 +78,17 @@ export const GIGASOCIAL_SECTIONS: GigaSocialSectionDefinition[] = [
   },
 ];
 
+export const FRENCH_SOCIAL_SECTION_LABELS: Record<GigaSocialSection, string> = {
+  feed: "Fil",
+  live: "En direct",
+  discover: "Découvrir",
+  communities: "Communautés",
+  creator: "Espace créateur",
+  profile: "Profil",
+  notifications: "Notifications",
+  messages: "Messages",
+};
+
 export const POST_TYPE_OPTIONS = [
   { id: "text", label: "Text" },
   { id: "image", label: "Image" },

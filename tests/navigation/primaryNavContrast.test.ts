@@ -45,7 +45,7 @@ describe("primary nav daylight contrast", () => {
     expect(css).toContain("min-height: 3.55rem");
     expect(css).toContain(".primary-nav__item:focus-visible");
     expect(component).toContain('aria-current={active ? "page" : undefined}');
-    expect(component).toContain('aria-label="Giga3 primary navigation"');
+    expect(component).toContain('aria-label={language === "fr" ? "Navigation principale de Giga3" : "Giga3 primary navigation"}');
     expect(component).toContain("triggerHaptic");
   });
 
