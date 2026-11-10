@@ -261,7 +261,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
           : ((searchResults?.posts ?? []) as SocialPost[])
         : effectiveOnline
           ? ([...(cursor ? extraPosts : []), ...(feed?.posts ?? [])] as SocialPost[])
-          : (offlineSnapshot ?? []).map((post) => ({ ...post, promotion: undefined }));
+          : (offlineSnapshot ?? []);
 
     const unique = new Map<string, SocialPost>();
     for (const post of sourcePosts) {
@@ -296,10 +296,11 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     const livePosts = [...(cursor ? extraPosts : []), ...(feed?.posts ?? [])] as SocialPost[];
     if (livePosts.length > 0) {
       saveFeedSnapshot(livePosts);
-      prefetchFeedMedia(livePosts, undefined, {
+      const publicPosts = livePosts.filter((post) => post.visibility !== "followers");
+      prefetchFeedMedia(publicPosts, undefined, {
         allowPrefetch: shouldAllowBackgroundPrefetch({ saveData, isSlowNetwork }),
       });
-      void pruneFeedMediaCache(livePosts.map((post) => post._id));
+      void pruneFeedMediaCache(publicPosts.map((post) => post._id));
     }
   }, [cursor, debouncedSearch, effectiveOnline, extraPosts, feed?.posts, savedFeed, isSlowNetwork, saveData]);
 

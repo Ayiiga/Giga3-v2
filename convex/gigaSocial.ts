@@ -64,6 +64,18 @@ function compareNewestWithPins(
   return b.createdAt - a.createdAt;
 }
 
+async function canViewSocialPost(
+  ctx: { db: import("./_generated/server").QueryCtx["db"] },
+  post: Doc<"socialPosts">,
+  viewerId: string | null
+) {
+  if (post.visibility !== "followers" || post.authorId === viewerId) return true;
+  if (!viewerId) return false;
+  return Boolean(await ctx.db.query("socialFollows").withIndex("by_pair", (q) =>
+    q.eq("followerId", viewerId).eq("followingId", post.authorId)
+  ).first());
+}
+
 async function listProfileDocs(
   ctx: { db: import("./_generated/server").QueryCtx["db"] },
   userId: string
@@ -607,11 +619,10 @@ export const listDiscover = query({
       );
     }
 
-    const slice = rows.slice(0, cap);
     let userId: string | null = null;
     if (args.sessionToken) {
       try {
-        userId = await requireSession(args.sessionToken);
+        userId = await requireSession(args.sessionToken, ctx);
       } catch {
         userId = null;
       }
@@ -626,6 +637,8 @@ export const listDiscover = query({
       supportingAuthors = new Set(follows.map((f) => f.followingId));
     }
 
+    const slice = rows.filter((post) => post.visibility !== "followers" ||
+      post.authorId === userId || supportingAuthors.has(post.authorId)).slice(0, cap);
     const posts = await Promise.all(
       slice.map(async (post) => {
         const resolved = await resolveAuthor(ctx, post.authorId, post.profileId);
@@ -901,6 +914,14 @@ export const listComments = query({
     const post = await ctx.db.get(args.postId);
     if (!post || post.deletedAt) return { comments: [] };
 
+    if (post.visibility === "followers") {
+      let viewerId: string | null = null;
+      if (args.sessionToken) {
+        try { viewerId = await requireSession(args.sessionToken, ctx); } catch { /* Treat expired sessions as guests. */ }
+      }
+      if (!await canViewSocialPost(ctx, post, viewerId)) return { comments: [] };
+    }
+
     const rows = await ctx.db
       .query("socialComments")
       .withIndex("by_post_created", (q) => q.eq("postId", args.postId))
@@ -1055,7 +1076,7 @@ export const getNotificationUnreadCount = query({
 export const listBookmarks = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const marks = await ctx.db
       .query("socialBookmarks")
       .withIndex("by_user_created", (q) => q.eq("userId", userId))
@@ -1065,7 +1086,7 @@ export const listBookmarks = query({
     const posts = await Promise.all(
       marks.map(async (mark) => {
         const post = await ctx.db.get(mark.postId);
-        if (!post || post.deletedAt) return null;
+        if (!post || post.deletedAt || !await canViewSocialPost(ctx, post, userId)) return null;
         const author = await resolveAuthor(ctx, post.authorId, post.profileId);
         return toPublicPost(post, author, { bookmarkedByMe: true });
       })
@@ -1551,11 +1572,11 @@ export const toggleLike = mutation({
     postId: v.id("socialPosts"),
   },
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     await assertChildSafetyFeature(ctx, userId, "social_ugc");
     await consumeSocialWriteRateLimit(ctx, userId, "toggle_like");
     const post = await ctx.db.get(args.postId);
-    if (!post || post.deletedAt) throw new Error("Post not found.");
+    if (!post || post.deletedAt || !await canViewSocialPost(ctx, post, userId)) throw new Error("Post not found.");
 
     const existing = await ctx.db
       .query("socialReactions")
@@ -1607,14 +1628,14 @@ export const addComment = mutation({
     parentId: v.optional(v.id("socialComments")),
   },
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     await assertChildSafetyFeature(ctx, userId, "social_ugc");
     await consumeSocialWriteRateLimit(ctx, userId, "add_comment");
     const body = sanitizeSocialText(args.body, socialBodyMaxLength("text"));
     if (!body) throw new Error("Comment cannot be empty.");
 
     const post = await ctx.db.get(args.postId);
-    if (!post || post.deletedAt) throw new Error("Post not found.");
+    if (!post || post.deletedAt || !await canViewSocialPost(ctx, post, userId)) throw new Error("Post not found.");
 
     if (args.parentId) {
       const parent = await ctx.db.get(args.parentId);
@@ -1745,9 +1766,9 @@ export const toggleBookmark = mutation({
     postId: v.id("socialPosts"),
   },
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const post = await ctx.db.get(args.postId);
-    if (!post || post.deletedAt) throw new Error("Post not found.");
+    if (!post || post.deletedAt || !await canViewSocialPost(ctx, post, userId)) throw new Error("Post not found.");
 
     const existing = await ctx.db
       .query("socialBookmarks")
@@ -1840,9 +1861,9 @@ export const recordShare = mutation({
     postId: v.id("socialPosts"),
   },
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const post = await ctx.db.get(args.postId);
-    if (!post || post.deletedAt) throw new Error("Post not found.");
+    if (!post || post.deletedAt || !await canViewSocialPost(ctx, post, userId)) throw new Error("Post not found.");
 
     const shareCount = post.shareCount + 1;
     await ctx.db.patch(args.postId, { shareCount, updatedAt: Date.now() });

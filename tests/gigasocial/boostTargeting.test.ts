@@ -20,6 +20,20 @@ describe("GigaSocial boost targeting", () => {
     expect(matchesSocialBoost(undefined, false, undefined)).toBe(true);
   });
 
+  it("keeps followers-only posts and their comments out of guest discovery", async () => {
+    const t = convexTest(schema, modules);
+    const postId = await t.run(async (ctx) => {
+      const id = await ctx.db.insert("socialPosts", {
+        authorId: "creator@example.com", body: "Followers only", postType: "text",
+        visibility: "followers", likeCount: 0, commentCount: 1, shareCount: 0, createdAt: 100, updatedAt: 100,
+      });
+      await ctx.db.insert("socialComments", { postId: id, authorId: "creator@example.com", body: "Private reply", createdAt: 100 });
+      return id;
+    });
+    expect((await t.query(api.gigaSocial.listDiscover, {})).posts).toEqual([]);
+    expect((await t.query(api.gigaSocial.listComments, { postId })).comments).toEqual([]);
+  });
+
   it("retains the paid campaign options and only displays the CTA to matching feeds", async () => {
     const t = convexTest(schema, modules);
     const postId = await t.run(async (ctx) => ctx.db.insert("socialPosts", {
