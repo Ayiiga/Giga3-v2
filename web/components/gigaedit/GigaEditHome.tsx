@@ -7,7 +7,6 @@ import { RecentProjectsGrid } from "@/components/gigaedit/RecentProjectsGrid";
 import { CREATOR_STUDIO_PRODUCT_NAME } from "@/lib/gigaedit/creatorStudio";
 import {
   buildCreatorToolkitItems,
-  countToolsForFilter,
   creatorToolkitFilterLabels,
   isTeleprompterPinned,
   setTeleprompterPinned,
@@ -23,8 +22,8 @@ import type { GigaEditOpenOptions, GigaEditSection } from "@/lib/gigaedit/types"
 import { shouldUseSolidPanels } from "@/lib/gigaedit/lowEndUi";
 import { cn } from "@/lib/utils";
 import {
-  ArrowUpRight, AudioLines, Clapperboard, ImagePlus, Layers3, Lightbulb,
-  Mic2, Pin, PinOff, Plus, Sparkles, WandSparkles, Zap,
+  ArrowUpRight, AudioLines, Clapperboard, ImagePlus,
+  Mic2, Pin, PinOff, WandSparkles, Zap,
 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 
@@ -93,14 +92,14 @@ function ToolkitCard({
 }
 
 const START_ACTIONS = [
-  { id: "video", title: "Video edit", detail: "Trim, captions & effects", icon: Clapperboard, section: "video" as const, tone: "violet" },
-  { id: "photo", title: "Photo design", detail: "Polish images & visuals", icon: ImagePlus, section: "photo" as const, tone: "blue" },
-  { id: "audio", title: "Audio studio", detail: "Voice, sound & music", icon: AudioLines, section: "audio" as const, tone: "gold" },
-  { id: "teleprompter", title: "Record & speak", detail: "Create with confidence", icon: Mic2, section: "teleprompter" as const, tone: "pink" },
+  { id: "audio", title: "Voiceover & commentary", detail: "Write a script or make an audio take", icon: AudioLines, section: "audio" as const, tone: "gold" },
+  { id: "teleprompter", title: "Teleprompter", detail: "Read a script while recording", icon: Mic2, section: "teleprompter" as const, tone: "pink" },
+  { id: "video", title: "Video editor", detail: "Trim, caption and export", icon: Clapperboard, section: "video" as const, tone: "violet" },
+  { id: "photo", title: "Photo editor", detail: "Crop and enhance photos", icon: ImagePlus, section: "photo" as const, tone: "blue" },
 ];
 
 export function GigaEditHome({ onOpen }: GigaEditHomeProps) {
-  const [category, setCategory] = useState<CreatorToolkitFilter>("create");
+  const [category, setCategory] = useState<CreatorToolkitFilter>("all");
   const [teleprompterPinned, setTeleprompterPinnedState] = useState(isTeleprompterPinned);
   const togglePin = useCallback(() => {
     setTeleprompterPinnedState((prev) => {
@@ -109,30 +108,20 @@ export function GigaEditHome({ onOpen }: GigaEditHomeProps) {
       return next;
     });
   }, []);
-  const catalog = useMemo(() => buildCreatorToolkitItems(category, teleprompterPinned), [category, teleprompterPinned]);
-  const toolCount = useMemo(() => countToolsForFilter(category), [category]);
-  const filters = useMemo(() => creatorToolkitFilterLabels(), []);
+  const catalog = useMemo(() => buildCreatorToolkitItems(category, teleprompterPinned).filter((item) => {
+    const entry = item.kind === "action" ? item.action : item.tool;
+    return entry.kind === "media" || !START_ACTIONS.some((action) => action.section === entry.section);
+  }), [category, teleprompterPinned]);
+  const toolCount = catalog.length;
+  const filters = useMemo(() => creatorToolkitFilterLabels().filter((item) => item.id !== "create"), []);
   const solidPanels = useMemo(() => shouldUseSolidPanels(), []);
 
   return (
     <div className={cn("gigaedit-home ge-creator-home", solidPanels && "gigaedit-solid-panels")}>
       <header className="ge-welcome">
-        <div className="ge-welcome__topline">
-          <span className="ge-brand-mark"><Sparkles size={15} /> GIGA</span>
-          <span className="ge-local-pill"><span /> Your creative space</span>
-        </div>
         <p className="ge-eyebrow">{CREATOR_STUDIO_PRODUCT_NAME}</p>
-        <h2>Make something <span>remarkable.</span></h2>
-        <p className="ge-welcome__copy">Your ideas deserve to be seen. Create videos, design visuals and bring every story to life.</p>
-        <div className="ge-welcome__actions">
-          <button type="button" className="ge-primary-action" onClick={() => onOpen("video", { autoImport: true })}>
-            <Plus size={18} /> Start creating <ArrowUpRight size={17} />
-          </button>
-          <button type="button" className="ge-secondary-action" onClick={() => onOpen("projects")}>
-            <Layers3 size={17} /> My projects
-          </button>
-        </div>
-        <div className="ge-welcome__spark"><WandSparkles size={54} strokeWidth={1.1} /></div>
+        <h2>Voice, script & video</h2>
+        <p className="ge-welcome__copy">Generate commentary, record or generate a voiceover, then open your script in the teleprompter.</p>
       </header>
 
       <section className="ge-start-section" aria-labelledby="ge-start-heading">
@@ -161,7 +150,7 @@ export function GigaEditHome({ onOpen }: GigaEditHomeProps) {
       </section>
 
       <div className="ge-device-note"><span className="ge-device-note__icon"><Zap size={16} /></span><div><strong>Your work, your device.</strong><span>drafts save on this device only. AI Studio uses credits</span></div><span className="ge-device-note__status">Ready</span></div>
-      <OfflineManager compact />
+      <details><summary className="ge-text-link cursor-pointer">Offline storage</summary><OfflineManager compact /></details>
 
       <section className="ge-toolkit-section" aria-labelledby="gigaedit-creator-toolkit">
         <div className="ge-section-heading">
@@ -181,11 +170,6 @@ export function GigaEditHome({ onOpen }: GigaEditHomeProps) {
               item={item} onOpen={onOpen} teleprompterPinned={teleprompterPinned} onTogglePin={togglePin} />
           ))}
         </div>
-      </section>
-
-      <section className="ge-inspiration">
-        <div className="ge-inspiration__icon"><Lightbulb size={19} /></div>
-        <div><p className="ge-kicker">A LITTLE CREATIVE NUDGE</p><h2>Start with an idea. Finish with a story.</h2><p>One clip, one photo or one voice note is enough to begin.</p></div>
       </section>
 
       <SurfaceRecommendations surface="edit" title="Suggested editing workflows" limit={4} variant="chips" />

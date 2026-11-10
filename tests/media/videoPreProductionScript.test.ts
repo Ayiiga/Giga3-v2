@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildSpokenCommentaryPrompt,
   buildVideoScriptGenerationPrompt,
   buildVideoScriptRewritePrompt,
   buildVideoPromptFromPreProduction,
@@ -16,6 +17,13 @@ describe("media video pre-production prompts", () => {
     const prompt = buildVideoScriptGenerationPrompt("A school promo in Accra");
     expect(prompt).toContain("SCENES:");
     expect(prompt).toContain("A school promo in Accra");
+  });
+
+  it("keeps spoken commentary separate from the scene-by-scene video format", () => {
+    const prompt = buildSpokenCommentaryPrompt("Language: Twi\nTopic: School garden");
+    expect(prompt).toContain("Return only the spoken words");
+    expect(prompt).toContain("Language: Twi\nTopic: School garden");
+    expect(prompt).not.toContain("SCENES:");
   });
 
   it("builds rewrite prompt preserving original context", () => {

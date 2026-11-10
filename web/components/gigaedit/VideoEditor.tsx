@@ -729,8 +729,9 @@ export function VideoEditor({
       setStatus("Could not load the latest audio take.");
       return;
     }
+    const extension = blob.type.includes("wav") ? "wav" : blob.type.includes("mp4") ? "m4a" : blob.type.includes("ogg") ? "ogg" : "webm";
     await attachAudioFile(
-      new File([blob], `${audioProject.title || "voiceover"}.webm`, {
+      new File([blob], `${audioProject.title || "voiceover"}.${extension}`, {
         type: blob.type || "audio/webm",
       })
     );

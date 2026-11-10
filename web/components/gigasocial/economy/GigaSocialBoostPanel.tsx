@@ -105,27 +105,18 @@ export const GigaSocialBoostPanel = memo(function GigaSocialBoostPanel({
               <option value="new_people">People who do not follow me</option>
             </select>
           </label>
-          <label className="block text-sm">
-            <span>Discovery location</span>
-            <select value={country} onChange={(e) => setCountry(e.target.value as typeof country)} className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground">
-              <option value="">All locations</option>
-              {SOCIAL_BOOST_COUNTRIES.map((item) => <option key={item.code} value={item.code}>{item.name}</option>)}
-            </select>
-            <span className="mt-1 block text-xs text-muted">Location uses the country people choose for their feed.</span>
-          </label>
-          <label className="block text-sm">
-            <span className="text-muted">Budget (GHS)</span>
-            <input
-              type="range"
-              min={minBudget}
-              max={maxBudget}
-              step={1}
-              value={budget}
-              onChange={(e) => setBudgetGhs(Number(e.target.value))}
-              className="mt-1 w-full"
-            />
-            <span className="font-medium text-foreground">{formatGhs(budget)}</span>
-          </label>
+          <fieldset className="text-sm">
+            <legend className="font-medium">Discovery location</legend>
+            <div className="mt-1 flex flex-wrap gap-2">
+              {[{ code: "", name: "All locations" }, ...SOCIAL_BOOST_COUNTRIES].map((item) => (
+                <label key={item.code} className="flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-border px-3">
+                  <input type="radio" name="boost-location" checked={country === item.code} onChange={() => setCountry(item.code as typeof country)} />
+                  {item.name}
+                </label>
+              ))}
+            </div>
+            <p className="mt-1 text-xs text-muted">Matches the country people choose for their feed.</p>
+          </fieldset>
 
           <label className="block text-sm">
             <span className="text-muted">Campaign duration</span>

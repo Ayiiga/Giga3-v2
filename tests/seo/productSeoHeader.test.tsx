@@ -90,15 +90,16 @@ describe("ProductSeoHeader compact Learn more", () => {
     expect(page).toContain("PublicProductPageShell");
   });
 
-  it("keeps Marketplace compact with catalogue CTA and SEO shell below", () => {
+  it("keeps Marketplace actions in the catalogue and the SEO shell below", () => {
     const page = readFileSync(
       resolve(__dirname, "../../web/app/(marketing)/marketplace/page.tsx"),
       "utf8"
     );
     expect(page).toContain("Discover. Buy. Sell.");
-    expect(page).toContain("Browse Products");
-    expect(page).toContain("#marketplace-catalogue");
-    expect(page).toContain("/marketplace/sell");
+    const catalogue = readFileSync(resolve(__dirname, "../../web/components/marketplace/MarketplaceBrowseClient.tsx"), "utf8");
+    expect(page).toContain("<MarketplaceBrowseClient />");
+    expect(catalogue).toContain('id="marketplace-catalogue"');
+    expect(catalogue).toContain("/marketplace/sell");
     expect(page).toMatch(/ProductSeoHeader[\s\S]*compact/);
     expect(page).toContain("MARKETPLACE_PAGE_SHELL");
     expect(page).toContain("Digital Products for Learning, Business, and Creativity");

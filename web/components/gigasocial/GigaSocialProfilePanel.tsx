@@ -295,9 +295,9 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
         <div className="mt-4 rounded-xl border border-border/80 bg-muted/10 p-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-xs font-semibold text-foreground">
-              Creator accounts ({accounts.length}/{maxAccounts})
+              Creator accounts · {accounts.length}
             </p>
-            <p className="text-[11px] text-muted">One main · up to three total</p>
+            <p className="text-[11px] text-muted">{maxAccounts > accounts.length ? `Up to ${maxAccounts} accounts` : "One main account"}</p>
           </div>
           <ul className="mt-2 space-y-1.5">
             {(accounts.length ? accounts : [
@@ -520,7 +520,10 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
         )}
       </div>
 
-      <GigaSocialGrowthHub sessionToken={sessionToken} xp={gamification?.xp ?? 0} />
+      <details className="rounded-xl border border-border p-3">
+        <summary className="cursor-pointer font-semibold text-foreground">Rewards & challenges</summary>
+        <GigaSocialGrowthHub sessionToken={sessionToken} xp={gamification?.xp ?? 0} />
+      </details>
 
       {gamification && gamification.badges.length > 0 && (
         <section>

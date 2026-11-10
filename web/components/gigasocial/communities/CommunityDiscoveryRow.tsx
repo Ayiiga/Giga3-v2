@@ -49,7 +49,7 @@ export const CommunityDiscoveryRow = memo(function CommunityDiscoveryRow({
               <span className="mt-1 block text-xs font-semibold text-foreground">
                 {community.name}
               </span>
-              <span className="block text-[10px] text-muted">{community.memberCount} members</span>
+              <span className="block text-[10px] text-muted">{community.memberCount} {community.memberCount === 1 ? "member" : "members"}</span>
             </button>
           </li>
         ))}

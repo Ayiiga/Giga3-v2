@@ -38,10 +38,17 @@ export const GigaSocialNotificationsPanel = memo(function GigaSocialNotification
     setPrefs(loadNotificationPrefs());
   }, []);
 
-  const notifications = useMemo(
-    () => (data?.notifications ?? []) as SocialNotification[],
-    [data?.notifications]
-  );
+  const notifications = useMemo(() => {
+    const seen = new Set<string>();
+    return ((data?.notifications ?? []) as SocialNotification[]).filter((entry) => {
+      const actor = entry.actor?.userId ?? entry.actor?.handle;
+      if (entry.type !== "follow" || !actor) return true;
+      const key = `${actor}:${Math.floor(entry.createdAt / 86_400_000)}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [data?.notifications]);
 
   const filtered = useMemo(() => {
     const byPrefs = features.enableSmartNotifications

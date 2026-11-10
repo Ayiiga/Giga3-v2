@@ -126,6 +126,7 @@ function GigaEditClientInner() {
     (next: GigaEditSection, opts?: GigaEditOpenOptions) => {
       const params = new URLSearchParams(searchParams?.toString() ?? "");
       if (next === "home") {
+        params.set("continue", "1");
         params.delete("tab");
         params.delete("tool");
         params.delete("project");
@@ -209,7 +210,7 @@ function GigaEditClientInner() {
           />
         )}
         {section === "teleprompter" && (
-          <TeleprompterStudio focusRecord={focusRecord} autoOpenCamera />
+          <TeleprompterStudio focusRecord={focusRecord} autoOpenCamera={focusRecord} />
         )}
         {section === "script" && features.enableGigaEditAiAssist ? (
           <AiCreatorAssistant />

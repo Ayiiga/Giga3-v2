@@ -25,6 +25,18 @@ export function buildVideoScriptGenerationPrompt(idea: string): string {
   ].join("\n");
 }
 
+export function buildSpokenCommentaryPrompt(idea: string): string {
+  return [
+    "Write a short spoken commentary for a creator to read aloud.",
+    "Return only the spoken words in natural paragraphs. Do not include a title, scene directions, or labels.",
+    "Use the requested language. Default to English if the topic does not name a language.",
+    "Aim for 70–110 words unless the creator specifies a different length. Avoid inventing details about footage, people, or events.",
+    "",
+    "Commentary brief:",
+    idea.trim(),
+  ].join("\n");
+}
+
 export function buildVideoScriptRewritePrompt(args: {
   originalScript: string;
   idea?: string;
