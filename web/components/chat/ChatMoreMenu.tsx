@@ -18,11 +18,12 @@ import {
   Shield,
   User,
 } from "lucide-react";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
 interface ChatMoreMenuProps {
   credits: number | null;
   className?: string;
+  mobileAnswerDetail?: ReactNode;
   onPickFiles?: (files: File[], kind: AttachmentKind) => void;
   onSelectDocumentTemplate?: (templateId: DocumentTemplateId) => void;
   onInsertTemplate?: (text: string) => void;
@@ -33,6 +34,7 @@ interface ChatMoreMenuProps {
 export const ChatMoreMenu = memo(function ChatMoreMenu({
   credits,
   className,
+  mobileAnswerDetail,
   onPickFiles,
   onSelectDocumentTemplate,
   onInsertTemplate,
@@ -102,6 +104,12 @@ export const ChatMoreMenu = memo(function ChatMoreMenu({
           aria-label="Account and settings"
           className="absolute right-0 top-full z-50 mt-1 max-h-[min(70vh,28rem)] w-60 overflow-y-auto rounded-2xl border border-border bg-card p-1.5 shadow-lg"
         >
+          {mobileAnswerDetail ? (
+            <div className="mb-1 border-b border-border px-2 pb-2 pt-1 md:hidden">
+              <p className="mb-1 text-xs font-semibold text-muted">Answer detail</p>
+              {mobileAnswerDetail}
+            </div>
+          ) : null}
           {credits != null ? (
             <StableLink
               href="/credits/"

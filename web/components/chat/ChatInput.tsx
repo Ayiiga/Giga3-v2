@@ -344,6 +344,17 @@ export const ChatInput = memo(function ChatInput({
     (uploadUsage != null &&
       (uploadUsage.filesRemaining < 20 || uploadUsage.imagesRemaining < 10));
 
+  const uploadHint = uploadUsage
+    ? `${uploadUsage.filesRemaining} files · ${uploadUsage.imagesRemaining} images left today${attachments.length > 0 ? ` · max ${formatUploadBytes(uploadUsage.limits.maxFileBytes)}` : ""}`
+    : undefined;
+  const freeImageHint =
+    !isPremium && freeImageGenerationEnabled && freeImageRemaining != null && freeImageLimit != null
+      ? `${freeImageRemaining > 0
+          ? `Free AI images today: ${freeImageRemaining} of ${freeImageLimit} remaining`
+          : `Free AI image limit reached (${freeImageLimit}/day)`}
+        ${freeImageResetsAt ? ` · resets ${formatFreeImageReset(freeImageResetsAt, freeImageTimeZone)}` : ""}. CV & letter templates stay free.`
+      : undefined;
+
   return (
     <form
       onSubmit={handleSubmit}
@@ -409,6 +420,8 @@ export const ChatInput = memo(function ChatInput({
           {!typingMode ? (
             <ChatInputToolbar
               disabled={inputDisabled}
+              uploadHint={uploadHint}
+              freeImageHint={freeImageHint}
               expanded={toolbarOpen}
               onToggle={() => {
                 setToolbarOpen((open) => !open);
@@ -534,30 +547,14 @@ export const ChatInput = memo(function ChatInput({
         <p className="hidden px-2 text-center text-[11px] leading-relaxed text-muted/70 md:block">
           Giga3 AI can make mistakes. Check important information.
         </p>
-        {showUploadHint && uploadUsage && (
-          <p className="px-2 text-center text-[11px] text-muted/70">
-            {uploadUsage.filesRemaining} files · {uploadUsage.imagesRemaining} images left today
-            {attachments.length > 0 ? ` · max ${formatUploadBytes(uploadUsage.limits.maxFileBytes)}` : ""}
+        {showUploadHint && uploadHint && (
+          <p className="hidden px-2 text-center text-[11px] text-muted/70 lg:block">
+            {uploadHint}
           </p>
         )}
-        {!isPremium &&
-        freeImageGenerationEnabled &&
-        freeImageRemaining != null &&
-        freeImageLimit != null &&
-        !composerFocused &&
-        !value.trim() ? (
-          <p
-            className="px-2 text-center text-xs leading-relaxed text-[#6D28D9]/90 sm:text-sm"
-            role="status"
-            aria-live="polite"
-          >
-            {freeImageRemaining > 0
-              ? `Free AI images today: ${freeImageRemaining} of ${freeImageLimit} remaining`
-              : `Free AI image limit reached (${freeImageLimit}/day)`}
-            {freeImageResetsAt
-              ? ` · resets ${formatFreeImageReset(freeImageResetsAt, freeImageTimeZone)}`
-              : ""}
-            . CV & letter templates stay free.
+        {freeImageHint && !composerFocused && !value.trim() ? (
+          <p className="hidden px-2 text-center text-sm text-[#6D28D9]/90 lg:block" role="status" aria-live="polite">
+            {freeImageHint}
           </p>
         ) : null}
       </div>

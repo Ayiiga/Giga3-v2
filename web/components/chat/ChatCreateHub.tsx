@@ -68,6 +68,8 @@ export const ChatCreateHub = memo(function ChatCreateHub({
   menuId,
   disabled,
   sections = CHAT_PLUS_SECTIONS,
+  uploadHint,
+  freeImageHint,
   onMediaAction,
   onSelectDocumentTemplate,
   onInsertTemplate,
@@ -78,6 +80,8 @@ export const ChatCreateHub = memo(function ChatCreateHub({
   menuId: string;
   disabled?: boolean;
   sections?: ChatCreateMenuSection[];
+  uploadHint?: string;
+  freeImageHint?: string;
   onMediaAction: (action: ChatCreateActionId) => void;
   onSelectDocumentTemplate: (templateId: DocumentTemplateId) => void;
   onInsertTemplate: (text: string) => void;
@@ -110,6 +114,12 @@ export const ChatCreateHub = memo(function ChatCreateHub({
       aria-label="Attach and search"
       className="absolute bottom-full left-0 right-0 z-20 mb-2 max-h-[50dvh] overflow-y-auto overscroll-contain rounded-2xl border border-[#E5E7EB] bg-white p-3 shadow-lg dark:border-border dark:bg-card"
     >
+      {uploadHint || freeImageHint ? (
+        <div className="mb-3 space-y-1 rounded-lg bg-muted/10 px-2 py-1.5 text-xs text-muted lg:hidden">
+          {uploadHint ? <p>{uploadHint}</p> : null}
+          {freeImageHint ? <p>{freeImageHint}</p> : null}
+        </div>
+      ) : null}
       {sections.map((section) => (
         <section key={section.id} className="mb-3 last:mb-0" aria-label={section.title}>
           <p className="px-1 pb-1.5 text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-muted">
