@@ -70,21 +70,6 @@ export function ExamPracticeHub() {
         </div>
       </header>
 
-      <section aria-labelledby="featured-resources-title" className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
-        <div className="mb-2 flex items-center justify-between gap-2">
-          <div><h3 id="featured-resources-title" className="text-sm font-extrabold text-slate-950">Learning materials <span className="sr-only">Teaching Materials & Practical Resources</span></h3><p className="text-xs text-slate-600">Quick practical guides for JHS & SHS</p></div>
-          <a href="/gigalearn/resources/" data-testid="teaching-resources-entry" className="shrink-0 rounded-full border border-violet-300 px-3 py-2 text-xs font-bold text-violet-900 hover:bg-violet-50">View all →</a>
-        </div>
-        {featuredResources === undefined ? <p className="py-2 text-xs text-slate-600">Loading learning materials…</p> :
-          featuredResources.length === 0 ? <p className="rounded-xl bg-slate-50 p-3 text-xs text-slate-700">New practical guides will appear here as they are published.</p> :
-          <div className="grid gap-2 sm:grid-cols-2">
-            {featuredResources.slice(0,2).map(resource => <a key={resource._id} href={`/gigalearn/resources/?resource=${encodeURIComponent(resource.slug)}`} className="flex min-w-0 items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 hover:border-violet-300 hover:bg-violet-50">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-violet-100 text-xl" aria-hidden>🔬</span>
-              <span className="min-w-0"><span className="block truncate text-sm font-bold text-slate-950">{resource.title}</span><span className="mt-0.5 block text-xs text-slate-700">{resource.subject} · {resource.classes.join(", ")}</span><span className="mt-1 block text-[11px] font-semibold text-violet-800">{resource.access === "free" ? "Free resource" : "Subscriber resource"}</span></span>
-            </a>)}
-          </div>}
-      </section>
-
       <section className="space-y-3" aria-labelledby="exam-select-title">
         <div className="flex items-center gap-3"><span className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-700 text-lg font-black text-white">1</span><h3 id="exam-select-title" className="text-xl font-extrabold text-slate-950">Select Exam</h3></div>
         <div className="grid grid-cols-3 gap-2 sm:gap-3">
@@ -147,6 +132,21 @@ export function ExamPracticeHub() {
       </a>
       {!available ? <p role="status" className="text-center text-xs text-amber-800">This practice bank is not available yet. Please choose another subject or exam.</p> : null}
       <p className="rounded-full bg-violet-50 px-3 py-3 text-center text-xs text-violet-950 sm:text-sm"><span className="font-semibold">ⓘ Free: up to 50 questions</span><span className="mx-2 text-violet-300">|</span><a href="/credits/" className="font-extrabold text-violet-800 underline">Upgrade</a> for up to 500 questions. Premium access is checked securely when your session starts.</p>
+
+      <section aria-labelledby="featured-resources-title" className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <div><h3 id="featured-resources-title" className="text-sm font-extrabold text-slate-950">Learning materials <span className="sr-only">Teaching Materials & Practical Resources</span></h3><p className="text-xs text-slate-600">Quick practical guides for JHS & SHS</p></div>
+          <a href="/gigalearn/resources/" data-testid="teaching-resources-entry" className="shrink-0 rounded-full border border-violet-300 px-3 py-2 text-xs font-bold text-violet-900 hover:bg-violet-50">View all →</a>
+        </div>
+        {featuredResources === undefined ? <p className="py-2 text-xs text-slate-600">Loading learning materials…</p> :
+          featuredResources.length === 0 ? <p className="rounded-xl bg-slate-50 p-3 text-xs text-slate-700">New practical guides will appear here as they are published.</p> :
+          <div className="grid gap-2 sm:grid-cols-2">
+            {featuredResources.slice(0,2).map(resource => <a key={resource._id} href={`/gigalearn/resources/?resource=${encodeURIComponent(resource.slug)}`} className="flex min-w-0 items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 hover:border-violet-300 hover:bg-violet-50">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-violet-100 text-xl" aria-hidden>🔬</span>
+              <span className="min-w-0"><span className="block truncate text-sm font-bold text-slate-950">{resource.title}</span><span className="mt-0.5 block text-xs text-slate-700">{resource.subject} · {resource.classes.join(", ")}</span><span className="mt-1 block text-[11px] font-semibold text-violet-800">{resource.access === "free" ? "Free resource" : "Subscriber resource"}</span></span>
+            </a>)}
+          </div>}
+      </section>
     </main>
   );
 }
