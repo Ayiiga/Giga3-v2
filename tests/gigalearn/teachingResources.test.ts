@@ -96,11 +96,12 @@ describe("GigaLearn teaching materials library", () => {
 describe("curated science diagrams", () => {
   it("resolves the seeded experiment slugs to distinct accessible portrait illustrations", async () => {
     const { scienceDiagramFor } = await import("../../web/lib/gigalearn/scienceDiagrams");
-    const experiments = [
-      "preparation-of-hydrogen-gas", "evaporation-set-up", "sublimation-set-up",
-      "electrolysis-of-water", "separating-funnel-set-up", "filtration-set-up",
-      "distillation-set-up", "simple-titration-set-up", "paper-chromatography-set-up",
-    ];
+    const seed = read("convex/teachingResources.ts");
+    const setupList = seed.match(/const setups = (.*);/)?.[1] ?? "";
+    const setups: [string, string, string][] = JSON.parse(setupList);
+    expect(setups).toHaveLength(18);
+    const experiments = setups.map(([, slug]) => slug)
+      .filter((slug) => slug !== "simple-titration-set-up-version-2");
     const images = experiments.map((name) => {
       const slug = `setup-${name}`;
       const diagram = scienceDiagramFor(slug);
