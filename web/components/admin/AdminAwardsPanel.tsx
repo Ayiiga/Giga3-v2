@@ -319,6 +319,7 @@ export function AdminAwardsPanel({
               >
                 <span>
                   {n.displayName} · {n.status}
+                  {n.portraitUrl && <a href={n.portraitUrl} target="_blank" rel="noopener noreferrer" className="ml-2 text-accent underline">View portrait</a>}
                   {!n.hasConsent ? " · needs consent" : ""}
                 </span>
                 <span className="flex gap-2">

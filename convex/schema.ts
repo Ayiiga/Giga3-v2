@@ -1,3 +1,4 @@
+import { socialBoostOptions } from "./socialBoostOptions";
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
@@ -434,6 +435,7 @@ export default defineSchema({
     ),
     boostTargetId: v.optional(v.string()),
     boostDurationDays: v.optional(v.number()),
+    boostOptions: v.optional(socialBoostOptions),
     status: v.union(
       v.literal("pending"),
       v.literal("success"),
@@ -1446,6 +1448,7 @@ export default defineSchema({
     endsAt: v.number(),
     /** Paystack reference when boost was paid via MoMo/card/etc. */
     paymentReference: v.optional(v.string()),
+    options: v.optional(socialBoostOptions),
     createdAt: v.number(),
   })
     .index("by_creator_created", ["creatorId", "createdAt"])
@@ -2289,6 +2292,7 @@ export default defineSchema({
     biography: v.string(),
     portfolioLinksJson: v.string(),
     evidenceJson: v.optional(v.string()),
+    portraitUrl: v.optional(v.string()),
     selfApplication: v.boolean(),
     nomineeConsentAt: v.optional(v.number()),
     status: v.union(

@@ -1,8 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useMutation, useQuery } from "convex/react";
+import { useAction, useMutation, useQuery } from "convex/react";
 import { api } from "convex/_generated/api";
+import { SOCIAL_MAX_AVATAR_BYTES } from "@/lib/gigasocial/constants";
+import { uploadSocialAvatar } from "@/lib/gigasocial/mediaUpload";
 import { getSessionToken } from "@/lib/auth";
 import { Button } from "@/components/ui/Button";
 import { LoadingState } from "@/components/ui/LoadingState";
@@ -16,6 +18,8 @@ function NominateInner() {
     api.gigaSocialAwards.getPublicSeason,
     seasonSlug ? { slug: seasonSlug } : "skip"
   );
+  const prepareAvatarUpload = useAction(api.gigaSocialStorage.prepareAvatarUpload);
+  const resolveStorageUrl = useMutation(api.gigaSocialStorage.resolveStorageUrl);
   const submit = useMutation(api.gigaSocialAwards.submitNomination);
   const respond = useMutation(api.gigaSocialAwards.respondToNomination);
   const mine = useQuery(
@@ -28,6 +32,9 @@ function NominateInner() {
   const [displayName, setDisplayName] = useState("");
   const [handle, setHandle] = useState("");
   const [biography, setBiography] = useState("");
+  const [portrait, setPortrait] = useState<File | null>(null);
+  const [portraitConsent, setPortraitConsent] = useState(false);
+  const [uploadedPortrait, setUploadedPortrait] = useState<string | undefined>();
   const [links, setLinks] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +47,8 @@ function NominateInner() {
     Boolean(season?.nominationsOpen) &&
     trimmedDisplayName.length >= 2 &&
     trimmedBiography.length >= 40 &&
-    (selfApplication || trimmedHandle.length > 0);
+    (selfApplication || trimmedHandle.length > 0) &&
+    (!selfApplication || !portrait || portraitConsent);
 
   if (seasons === undefined) return <LoadingState label="Loading seasons…" />;
   if (seasonSlug && season === undefined) {
@@ -50,7 +58,7 @@ function NominateInner() {
     return (
       <p className="text-sm text-muted">
         Sign in to nominate or apply.{" "}
-        <a className="text-accent underline" href="/chat/login/">
+        <a className="text-accent underline" href="/chat/login/?next=%2Fgigasocial%2Fawards%2Fnominate%2F">
           Sign in
         </a>
       </p>
@@ -69,6 +77,11 @@ function NominateInner() {
     setError(null);
     setNotice(null);
     try {
+      let portraitUrl = selfApplication && portrait ? uploadedPortrait : undefined;
+      if (selfApplication && portrait && !portraitUrl) {
+        portraitUrl = await uploadSocialAvatar({ prepareAvatarUpload, resolveStorageUrl, sessionToken }, portrait);
+        setUploadedPortrait(portraitUrl);
+      }
       const res = await submit({
         sessionToken,
         seasonSlug: season.slug,
@@ -77,6 +90,8 @@ function NominateInner() {
         nomineeDisplayName: trimmedDisplayName,
         nomineeHandle: trimmedHandle || undefined,
         biography: trimmedBiography,
+        portraitUrl,
+        portraitConsent: portraitUrl ? portraitConsent : undefined,
         portfolioLinks: links
           .split("\n")
           .map((l) => l.trim())
@@ -87,6 +102,9 @@ function NominateInner() {
       setHandle("");
       setBiography("");
       setLinks("");
+      setPortrait(null);
+      setPortraitConsent(false);
+      setUploadedPortrait(undefined);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not submit nomination.");
     } finally {
@@ -168,6 +186,34 @@ function NominateInner() {
               ) : null}
             </label>
         ) : null}
+        {selfApplication && (
+          <div className="space-y-2">
+            <label className="block text-sm">
+              <span className="font-medium">Passport-style portrait (optional)</span>
+              <input key={portrait ? "selected" : "empty"} type="file" accept="image/jpeg,image/png,image/webp" disabled={busy}
+                className="mt-1 block w-full rounded-xl border border-border px-3 py-2"
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  if (!file) return;
+                  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > SOCIAL_MAX_AVATAR_BYTES) {
+                    setError("Choose a JPG, PNG or WebP image up to 2 MB.");
+                    return;
+                  }
+                  setError(null); setPortrait(file); setUploadedPortrait(undefined); setPortraitConsent(false);
+                }} />
+            </label>
+            <p className="text-xs text-muted">Use a clear head-and-shoulders portrait. Anyone with the image link can view the uploaded photo.</p>
+            {portrait && <>
+              <p className="break-all text-xs">{portrait.name} <button type="button" disabled={busy} className="text-accent underline" onClick={() => {
+                setPortrait(null); setUploadedPortrait(undefined); setPortraitConsent(false);
+              }}>Remove</button></p>
+              <label className="flex items-start gap-2 text-sm">
+                <input type="checkbox" checked={portraitConsent} disabled={busy} onChange={(event) => setPortraitConsent(event.target.checked)} />
+                I agree that my portrait may be displayed on my candidate profile if approved.
+              </label>
+            </>}
+          </div>
+        )}
         <label className="block text-sm">
           <span className="font-medium">Biography</span>
           <textarea

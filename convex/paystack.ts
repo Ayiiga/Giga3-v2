@@ -1,3 +1,4 @@
+import { socialBoostOptions } from "./socialBoostOptions";
 import {
   action,
   httpAction,
@@ -329,6 +330,7 @@ export const createPendingPayment = internalMutation({
     ),
     boostTargetId: v.optional(v.string()),
     boostDurationDays: v.optional(v.number()),
+    boostOptions: v.optional(socialBoostOptions),
     isRenewal: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
@@ -351,6 +353,7 @@ export const createPendingPayment = internalMutation({
       boostTargetType: args.boostTargetType,
       boostTargetId: args.boostTargetId,
       boostDurationDays: args.boostDurationDays,
+      boostOptions: args.boostOptions,
       isRenewal: args.isRenewal,
       status: "pending",
       createdAt: Date.now(),
@@ -492,6 +495,7 @@ export const fulfillPayment = internalMutation({
         targetId: record.boostTargetId,
         budgetGhs: record.amountGhs,
         durationDays: record.boostDurationDays,
+        options: record.boostOptions,
       });
     } else if (record.type === "exam_founding_premium") {
       await ctx.runMutation(
@@ -853,6 +857,7 @@ export const initializeBoostPayment = action({
     targetId: v.string(),
     budgetGhs: v.number(),
     durationDays: v.number(),
+    options: v.optional(socialBoostOptions),
   },
   handler: async (ctx, args) => {
     assertPaystackProductionReady();
@@ -866,6 +871,7 @@ export const initializeBoostPayment = action({
         targetId: args.targetId,
         budgetGhs: args.budgetGhs,
         durationDays: args.durationDays,
+        options: args.options,
       }
     );
 
@@ -892,6 +898,7 @@ export const initializeBoostPayment = action({
       boostTargetType: prepared.targetType,
       boostTargetId: prepared.targetId,
       boostDurationDays: prepared.durationDays,
+      boostOptions: prepared.options,
     });
 
     const init = await paystackPost("/transaction/initialize", {

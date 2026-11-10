@@ -563,7 +563,6 @@ button:focus-visible {
     background-color: rgb(245 243 255) !important;
   }
 
-  .marketing-stable header,
   .marketing-stable .marketing-site-header {
     position: sticky;
     top: 0;

@@ -1,3 +1,4 @@
+import { normalizeSocialWebsite, socialBoostOptions } from "./socialBoostOptions";
 import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
 import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
@@ -822,6 +823,7 @@ export const activateBoostCampaignInternal = internalMutation({
     targetId: v.string(),
     budgetGhs: v.number(),
     durationDays: v.number(),
+    options: v.optional(socialBoostOptions),
   },
   handler: async (ctx, args) => {
     const existing = await ctx.db
@@ -845,6 +847,7 @@ export const activateBoostCampaignInternal = internalMutation({
       startedAt: now,
       endsAt,
       paymentReference: args.reference,
+      options: args.options,
       createdAt: now,
     });
     return { boostId, alreadyFulfilled: false as const, endsAt };
@@ -1412,6 +1415,7 @@ export const validateBoostCheckoutInternal = internalQuery({
     targetId: v.string(),
     budgetGhs: v.number(),
     durationDays: v.number(),
+    options: v.optional(socialBoostOptions),
   },
   handler: async (ctx, args) => {
     const profile = await ctx.db
@@ -1421,26 +1425,30 @@ export const validateBoostCheckoutInternal = internalQuery({
     if (!profile) throw new Error("Profile not found.");
 
     const settings = await loadEconomySettings(ctx);
-    const budgetGhs = Math.max(
-      settings.boostBudgetMinGhs,
-      Math.min(settings.boostBudgetMaxGhs, Math.floor(args.budgetGhs))
-    );
+    const budgetGhs = args.budgetGhs;
+    if (!Number.isSafeInteger(budgetGhs) || budgetGhs < settings.boostBudgetMinGhs ||
+        budgetGhs > settings.boostBudgetMaxGhs) throw new Error("Choose a budget within the displayed limits.");
     if (!settings.boostDurationDays.includes(args.durationDays)) {
       throw new Error("Invalid campaign duration.");
     }
 
-    if (args.targetType === "post" || args.targetType === "video") {
-      const post = await ctx.db.get(args.targetId as Id<"socialPosts">);
-      if (!post || post.deletedAt || post.authorId !== args.creatorId) {
-        throw new Error("Post not found or not owned by you.");
-      }
+    if (args.targetType !== "post" && args.targetType !== "video") {
+      throw new Error("Only post and video boosts are available.");
     }
+    const postId = ctx.db.normalizeId("socialPosts", args.targetId);
+    const post = postId ? await ctx.db.get(postId) : null;
+    if (!post || post.deletedAt || post.authorId !== args.creatorId) throw new Error("Post not found or not owned by you.");
+    if (post.visibility === "followers" || post.copyrightScreeningStatus === "rejected") {
+      throw new Error("Choose one of your eligible public posts.");
+    }
+    const options = args.options && { ...args.options, website: normalizeSocialWebsite(args.options.website) };
 
     return {
       budgetGhs,
       durationDays: args.durationDays,
       targetType: args.targetType,
       targetId: args.targetId,
+      options,
       label: `Boost ${args.targetType} · GHC ${budgetGhs}`,
     };
   },
@@ -1470,6 +1478,16 @@ export const createBoostCampaign = mutation({
   },
 });
 
+export const listBoostablePosts = query({
+  args: sessionArgs,
+  handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken, ctx);
+    const rows = await ctx.db.query("socialPosts").withIndex("by_author_created", (q) => q.eq("authorId", userId)).order("desc").take(120);
+    return rows.filter((post) => !post.deletedAt && post.visibility !== "followers" && post.copyrightScreeningStatus !== "rejected")
+      .map((post) => ({ postId: post._id, body: post.body.slice(0, 80), createdAt: post.createdAt }));
+  },
+});
+
 export const listBoostCampaigns = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
@@ -1488,6 +1506,7 @@ export const listBoostCampaigns = query({
         targetId: b.targetId,
         budgetGhs: b.budgetGhs,
         durationDays: b.durationDays,
+        options: b.options,
         status: b.endsAt <= now && b.status === "active" ? "completed" : b.status,
         impressions: b.impressions,
         reach: b.reach,

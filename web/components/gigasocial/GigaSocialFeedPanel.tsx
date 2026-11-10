@@ -1,5 +1,7 @@
 "use client";
 
+import { SOCIAL_BOOST_COUNTRIES } from "convex/socialBoostOptions";
+
 import type { GigaCreateLaunch } from "@/components/gigasocial/create/GigaCreateButton";
 import { GigaCreatorHub } from "@/components/gigasocial/create/GigaCreatorHub";
 import type { GigaCreateActionId } from "@/components/gigasocial/create/gigaCreateMenu";
@@ -123,6 +125,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     typeof window !== "undefined" ? loadFeedSnapshot() : null
   );
   const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
+  const [discoveryCountry, setDiscoveryCountry] = useState<"" | "GH" | "NG">("");
   const [cursor, setCursor] = useState<number | undefined>(undefined);
   const [extraPosts, setExtraPosts] = useState<SocialPost[]>([]);
   const [composerOpen, setComposerOpen] = useState(false);
@@ -166,6 +169,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
       : {
           sessionToken: sessionToken ?? undefined,
           communitySlug,
+          discoveryCountry: discoveryCountry || undefined,
           followingOnly: followingFeed || undefined,
           cursor,
           limit: 15,
@@ -257,14 +261,19 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
           : ((searchResults?.posts ?? []) as SocialPost[])
         : effectiveOnline
           ? ([...(cursor ? extraPosts : []), ...(feed?.posts ?? [])] as SocialPost[])
-          : (offlineSnapshot ?? []);
+          : (offlineSnapshot ?? []).map((post) => ({ ...post, promotion: undefined }));
 
-    const sorted = sortPostsNewestFirst(sourcePosts);
+    const unique = new Map<string, SocialPost>();
+    for (const post of sourcePosts) {
+      if (!unique.get(post._id)?.promotion || post.promotion) unique.set(post._id, post);
+    }
+    const sorted = sortPostsNewestFirst([...unique.values()]);
     const typed =
       typeFilter === "all" ? sorted : sorted.filter((p) => p.postType === typeFilter);
-    return features.enableFeedCategories
+    const ranked = features.enableFeedCategories
       ? filterPostsByFeedCategory(typed, feedCategory, rankingCtx)
       : typed;
+    return ranked.sort((a, b) => Number(Boolean(b.promotion)) - Number(Boolean(a.promotion)));
   }, [
     cursor,
     debouncedSearch,
@@ -362,13 +371,20 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   }, [featuredVideoIndex, goToNextFeaturedVideo, videoPosts.length]);
 
   const feedPosts = useMemo(() => {
-    if (!featuredPost) return posts;
+    if (!featuredPost || featuredPost.promotion) return posts;
     return posts.filter((post) => post._id !== featuredPost._id);
   }, [featuredPost, posts]);
 
   const resetFeedPagination = useCallback(() => {
     setCursor(undefined);
     setExtraPosts([]);
+  }, []);
+
+  useEffect(() => {
+    try {
+      const country = localStorage.getItem("gigasocial:discovery-country");
+      if (country === "GH" || country === "NG") setDiscoveryCountry(country);
+    } catch { /* The default feed works when browser storage is unavailable. */ }
   }, []);
 
   const requireAuth = useCallback(() => {
@@ -837,11 +853,11 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   }, [highlightPostId]);
 
   const showFeaturedAboveFeed = Boolean(
-    featuredPost && !isSearching && !savedFeed && !hideFeaturedOnMobile
+    featuredPost && !featuredPost.promotion && !isSearching && !savedFeed && !hideFeaturedOnMobile
   );
 
   const visibleFeedPosts =
-    hideFeaturedOnMobile && featuredPost ? [featuredPost, ...feedPosts] : feedPosts;
+    hideFeaturedOnMobile && featuredPost && !featuredPost.promotion ? [featuredPost, ...feedPosts] : feedPosts;
 
   const composerProps = {
     sessionToken: sessionToken!,
@@ -886,6 +902,18 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
           <GigaSocialSearchBar value={searchQuery} onChange={setSearchQuery} sessionToken={sessionToken} />
         </div>
         {features.enableDataSaver ? <DataSaverControl className="shrink-0 pt-0.5" /> : null}
+        <label className="shrink-0 text-xs text-muted">
+          <span className="sr-only">Discovery location</span>
+          <select value={discoveryCountry} className="max-w-28 rounded-xl border border-border bg-background px-2 py-2 text-foreground" onChange={(event) => {
+            const country = event.target.value as typeof discoveryCountry;
+            setDiscoveryCountry(country);
+            resetFeedPagination();
+            try { localStorage.setItem("gigasocial:discovery-country", country); } catch { /* Preference still applies for this visit. */ }
+          }}>
+            <option value="">Location</option>
+            {SOCIAL_BOOST_COUNTRIES.map((item) => <option key={item.code} value={item.code}>{item.name}</option>)}
+          </select>
+        </label>
       </div>
 
       {socialOutbox.pendingCount > 0 ? (
