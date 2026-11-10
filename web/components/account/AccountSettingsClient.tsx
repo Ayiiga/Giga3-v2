@@ -2,6 +2,8 @@
 
 import { DeleteAccountSection } from "@/components/account/DeleteAccountSection";
 import { LinkedProvidersSettings } from "@/components/account/LinkedProvidersSettings";
+import { useInterfaceLanguage } from "@/components/providers/InterfaceLanguageProvider";
+import { InterfaceLanguageSettings } from "@/components/settings/InterfaceLanguageSettings";
 import { GigaLiteSettings } from "@/components/settings/GigaLiteSettings";
 import { LanguagePreferencesSettings } from "@/components/settings/LanguagePreferencesSettings";
 import { ThemeToggle } from "@/components/chat/ThemeToggle";
@@ -18,6 +20,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 function AccountSettingsClientInner() {
+  const { language } = useInterfaceLanguage();
+  const french = language === "fr";
   const router = useRouter();
   const [email, setEmail] = useState<string | null>(null);
 
@@ -46,11 +50,12 @@ function AccountSettingsClientInner() {
 
   return (
     <div className="mx-auto w-full min-w-0 max-w-lg space-y-6">
-      <header className="text-center">
-        <h1 className="page-title">Settings</h1>
-        <p className="mt-2 text-sm text-muted">Account preferences for {email}</p>
+      <header lang={language} className="text-center">
+        <h1 className="page-title">{french ? "Paramètres" : "Settings"}</h1>
+        <p className="mt-2 text-sm text-muted">{french ? "Préférences du compte de" : "Account preferences for"} {email}</p>
       </header>
 
+      <InterfaceLanguageSettings />
       <GigaLiteSettings />
       <LanguagePreferencesSettings />
       <LinkedProvidersSettings />

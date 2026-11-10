@@ -1,5 +1,6 @@
 "use client";
 
+import { useInterfaceLanguage } from "@/components/providers/InterfaceLanguageProvider";
 import { GigaSocialPanelErrorBoundary } from "@/components/gigasocial/GigaSocialPanelErrorBoundary";
 import { GigaSocialUnreadLoader } from "@/components/gigasocial/GigaSocialUnreadLoader";
 import { SurfaceRecommendations } from "@/components/recommendations/SurfaceRecommendations";
@@ -15,6 +16,7 @@ import { withChunkRetryLoader } from "@/lib/pwa/dynamicWithChunkRetry";
 import { getSessionToken } from "@/lib/auth";
 import { getGigaSocialFeatures } from "@/lib/gigasocial/featureFlags";
 import {
+  FRENCH_SOCIAL_SECTION_LABELS,
   GIGASOCIAL_SECTIONS,
   type GigaSocialSection,
 } from "@/lib/gigasocial/sections";
@@ -113,6 +115,8 @@ const GigaSocialMessagesPanel = dynamic(
 );
 
 function GigaSocialContent() {
+  const { language } = useInterfaceLanguage();
+  const french = language === "fr";
   useRenderDiagnostic("GigaSocialContent");
 
   const router = useRouter();
@@ -260,7 +264,8 @@ function GigaSocialContent() {
 
       <nav
         className="gigasocial-section-nav hidden gap-1 overflow-x-auto overscroll-x-contain lg:flex lg:gap-1.5"
-        aria-label="GigaSocial sections"
+        lang={language}
+        aria-label={french ? "Sections de GigaSocial" : "GigaSocial sections"}
       >
         {GIGASOCIAL_SECTIONS.filter((item) => {
           if (item.id === "live") return features.enableGigaLive;
@@ -288,7 +293,7 @@ function GigaSocialContent() {
               )}
             >
               <Icon className="h-4 w-4" aria-hidden />
-              {item.label}
+              {french ? FRENCH_SOCIAL_SECTION_LABELS[item.id] : item.label}
               {item.id === "notifications" && unread > 0 && (
                 <span className="ml-1 rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-bold text-white">
                   {unread > 9 ? "9+" : unread}

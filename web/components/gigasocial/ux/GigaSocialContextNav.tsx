@@ -1,7 +1,9 @@
 "use client";
 
+import { useInterfaceLanguage } from "@/components/providers/InterfaceLanguageProvider";
 import { cn } from "@/lib/utils";
 import {
+  FRENCH_SOCIAL_SECTION_LABELS,
   GIGASOCIAL_SECTIONS,
   type GigaSocialSection,
 } from "@/lib/gigasocial/sections";
@@ -34,6 +36,8 @@ export const GigaSocialContextNav = memo(function GigaSocialContextNav({
   onNavigate: (section: GigaSocialSection) => void;
   onOpenGigaEdits: () => void;
 }) {
+  const { language } = useInterfaceLanguage();
+  const french = language === "fr";
   const [attention, setAttention] = useState(() => shouldShowAttentionDot());
 
   useEffect(() => {
@@ -59,7 +63,7 @@ export const GigaSocialContextNav = memo(function GigaSocialContextNav({
     }).map((item) => ({
       kind: "section" as const,
       id: item.id,
-      label: item.id === "notifications" ? "Inbox" : item.label,
+      label: french ? FRENCH_SOCIAL_SECTION_LABELS[item.id] : item.id === "notifications" ? "Inbox" : item.label,
     }));
 
     // Keep GigaEdits near Discover for thumb reach; insert after Discover when present.
@@ -71,12 +75,13 @@ export const GigaSocialContextNav = memo(function GigaSocialContextNav({
       ...sections.slice(insertAt),
     ];
     return withGigaEdits;
-  }, [showLive, showMessages]);
+  }, [french, showLive, showMessages]);
 
   return (
     <nav
       className="gigasocial-context-nav lg:hidden"
-      aria-label="GigaSocial sections"
+      lang={language}
+      aria-label={french ? "Sections de GigaSocial" : "GigaSocial sections"}
     >
       <div className="gigasocial-context-nav__scroll">
         {items.map((item) => {
@@ -86,7 +91,7 @@ export const GigaSocialContextNav = memo(function GigaSocialContextNav({
                 key="gigaedits"
                 type="button"
                 className="gigasocial-context-nav__create"
-                aria-label="Open GigaEdits editor"
+                aria-label={french ? "Ouvrir GigaEdits" : "Open GigaEdits editor"}
                 onClick={onOpenGigaEdits}
               >
                 <Clapperboard className="h-5 w-5" aria-hidden />
@@ -110,7 +115,7 @@ export const GigaSocialContextNav = memo(function GigaSocialContextNav({
               )}
               aria-current={active ? "true" : undefined}
               aria-label={
-                showAttention ? `${item.label} (welcome back)` : item.label
+                showAttention ? `${item.label} (${french ? "bon retour" : "welcome back"})` : item.label
               }
               onClick={() => {
                 if (item.id === "feed") setAttention(false);
