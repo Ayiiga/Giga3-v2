@@ -25,7 +25,8 @@ describe("fullscreen camera / live / teleprompter UI", () => {
     expect(source).toContain("gigasocial-immersive-capture");
     expect(source).toContain("gigasocial-live-video--fullscreen");
     expect(source).toContain("PreSnapEditBar");
-    expect(source).toContain("Pre-live looks");
+    expect(source).toContain("Preview looks");
+    expect(source).toContain("Viewer playback is unavailable");
   });
 
   it("teleprompter opens ultra-clear fullscreen camera without pre-snap bar", () => {

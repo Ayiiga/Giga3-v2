@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { formatGhs } from "@/lib/gigasocial/creatorEconomy";
 import { redirectToPaystack } from "@/lib/payments/paystackService";
-import { SOCIAL_BOOST_COUNTRIES } from "@/lib/gigasocial/boostCountries";
+import { isSocialBoostCountry, SOCIAL_BOOST_COUNTRIES, type SocialBoostCountry } from "@/lib/gigasocial/boostCountries";
 import { api } from "convex/_generated/api";
 import { useAction, useQuery } from "convex/react";
 import { Megaphone, Loader2 } from "lucide-react";
@@ -29,7 +29,7 @@ export const GigaSocialBoostPanel = memo(function GigaSocialBoostPanel({
   const [targetId, setTargetId] = useState(postId ?? "");
   const [website, setWebsite] = useState("");
   const [audience, setAudience] = useState<"everyone" | "followers" | "new_people">("everyone");
-  const [country, setCountry] = useState<"" | "GH" | "NG">("");
+  const [country, setCountry] = useState<"" | SocialBoostCountry>("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -105,18 +105,17 @@ export const GigaSocialBoostPanel = memo(function GigaSocialBoostPanel({
               <option value="new_people">People who do not follow me</option>
             </select>
           </label>
-          <fieldset className="text-sm">
-            <legend className="font-medium">Discovery location</legend>
-            <div className="mt-1 flex flex-wrap gap-2">
-              {[{ code: "", name: "All locations" }, ...SOCIAL_BOOST_COUNTRIES].map((item) => (
-                <label key={item.code} className="flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-border px-3">
-                  <input type="radio" name="boost-location" checked={country === item.code} onChange={() => setCountry(item.code as typeof country)} />
-                  {item.name}
-                </label>
-              ))}
-            </div>
-            <p className="mt-1 text-xs text-muted">Matches the country people choose for their feed.</p>
-          </fieldset>
+          <label className="block text-sm">
+            <span className="font-medium">Discovery location</span>
+            <select value={country} onChange={(event) => {
+              const value = event.target.value;
+              setCountry(isSocialBoostCountry(value) ? value : "");
+            }} className="mt-1 min-h-11 w-full rounded-lg border border-border bg-background px-3 text-foreground">
+              <option value="">All locations</option>
+              {SOCIAL_BOOST_COUNTRIES.map((item) => <option key={item.code} value={item.code}>{item.name}</option>)}
+            </select>
+            <span className="mt-1 block text-xs text-muted">Matches the country people choose for their feed.</span>
+          </label>
 
           <label className="block text-sm">
             <span className="text-muted">Campaign duration</span>

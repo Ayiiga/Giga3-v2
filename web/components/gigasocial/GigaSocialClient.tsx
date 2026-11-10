@@ -362,7 +362,7 @@ function GigaSocialContent() {
           <>
             <SectionIntro
               title="Live"
-              description="Go live with video, audio, or screen sharing — chat, reactions, gifts, and replays."
+              description="Open a room for chat and reactions, or preview your camera, microphone, or screen."
             />
             {sessionToken ? (
               <GigaSocialPanelErrorBoundary panelName="Live">

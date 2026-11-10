@@ -71,6 +71,7 @@ type VideoProps = CommonProps & {
   muted?: boolean;
   onLoadedMetadata?: (el: HTMLVideoElement) => void;
   onTimeUpdate?: (el: HTMLVideoElement) => void;
+  onEnded?: () => void;
 };
 
 export type CameraStylePreviewProps = ImageProps | VideoProps;
@@ -256,6 +257,7 @@ export const CameraStylePreview = forwardRef<CameraStylePreviewHandle, CameraSty
                 style={mediaStyle}
                 onLoadedMetadata={(e) => props.onLoadedMetadata?.(e.currentTarget)}
                 onTimeUpdate={(e) => props.onTimeUpdate?.(e.currentTarget)}
+                onEnded={props.onEnded}
               />
             ) : null}
 

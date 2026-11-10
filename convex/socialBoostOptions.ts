@@ -1,9 +1,12 @@
+import { SOCIAL_BOOST_COUNTRIES } from "../web/lib/gigasocial/boostCountries";
 import { v } from "convex/values";
+
+export const socialBoostCountryValidator = v.union(...SOCIAL_BOOST_COUNTRIES.map(({ code }) => v.literal(code)));
 
 export const socialBoostOptions = v.object({
   website: v.optional(v.string()),
   audience: v.union(v.literal("everyone"), v.literal("followers"), v.literal("new_people")),
-  country: v.optional(v.union(v.literal("GH"), v.literal("NG"))),
+  country: v.optional(socialBoostCountryValidator),
 });
 
 export function normalizeSocialWebsite(input: string | undefined) {

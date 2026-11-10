@@ -1,21 +1,25 @@
 "use client";
 
 import { formatTimecodeMs } from "@/lib/gigaedit/frameTime";
-import { Maximize2, Pause, Play } from "lucide-react";
+import { Maximize2, Minimize2, Pause, Play } from "lucide-react";
 import { useEffect, useState } from "react";
 
 type PreviewTransportProps = {
   videoRef: React.RefObject<HTMLVideoElement | null>;
   playheadSec: number;
   durationSec: number;
+  source: string | null;
+  expanded: boolean;
+  onToggleExpanded: () => void;
 };
 
-export function PreviewTransport({ videoRef, playheadSec, durationSec }: PreviewTransportProps) {
+export function PreviewTransport({ videoRef, playheadSec, durationSec, source, expanded, onToggleExpanded }: PreviewTransportProps) {
   const [playing, setPlaying] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
+    setPlaying(!video.paused);
     const onPlay = () => setPlaying(true);
     const onPause = () => setPlaying(false);
     video.addEventListener("play", onPlay);
@@ -24,40 +28,32 @@ export function PreviewTransport({ videoRef, playheadSec, durationSec }: Preview
       video.removeEventListener("play", onPlay);
       video.removeEventListener("pause", onPause);
     };
-  }, [videoRef]);
+  }, [videoRef, source]);
 
   function togglePlay() {
     const video = videoRef.current;
     if (!video) return;
-    if (video.paused) void video.play();
+    if (video.paused) void video.play().catch(() => undefined);
     else video.pause();
-  }
-
-  function toggleFullscreen() {
-    const video = videoRef.current;
-    if (!video) return;
-    if (document.fullscreenElement) {
-      void document.exitFullscreen();
-      return;
-    }
-    void video.requestFullscreen?.();
   }
 
   return (
     <div className="gigaedit-preview-transport flex items-center justify-between gap-3 px-3 py-2">
       <button
         type="button"
-        onClick={toggleFullscreen}
+        onClick={onToggleExpanded}
+        disabled={!source}
         className="gigaedit-editor-icon-btn"
-        aria-label="Fullscreen preview"
+        aria-label={expanded ? "Exit fullscreen preview" : "Fullscreen preview"}
       >
-        <Maximize2 className="h-4 w-4" />
+        {expanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
       </button>
 
       <div className="flex min-w-0 flex-1 items-center justify-center gap-3">
         <button
           type="button"
           onClick={togglePlay}
+          disabled={!source}
           className="gigaedit-preview-play-btn"
           aria-label={playing ? "Pause" : "Play"}
         >

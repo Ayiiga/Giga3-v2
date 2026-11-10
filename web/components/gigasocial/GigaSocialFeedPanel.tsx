@@ -1,6 +1,6 @@
 "use client";
 
-import { SOCIAL_BOOST_COUNTRIES } from "@/lib/gigasocial/boostCountries";
+import { isSocialBoostCountry, SOCIAL_BOOST_COUNTRIES, type SocialBoostCountry } from "@/lib/gigasocial/boostCountries";
 
 import type { GigaCreateLaunch } from "@/components/gigasocial/create/GigaCreateButton";
 import { GigaCreatorHub } from "@/components/gigasocial/create/GigaCreatorHub";
@@ -125,7 +125,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     typeof window !== "undefined" ? loadFeedSnapshot() : null
   );
   const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
-  const [discoveryCountry, setDiscoveryCountry] = useState<"" | "GH" | "NG">("");
+  const [discoveryCountry, setDiscoveryCountry] = useState<"" | SocialBoostCountry>("");
   const [cursor, setCursor] = useState<number | undefined>(undefined);
   const [extraPosts, setExtraPosts] = useState<SocialPost[]>([]);
   const [composerOpen, setComposerOpen] = useState(false);
@@ -384,7 +384,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   useEffect(() => {
     try {
       const country = localStorage.getItem("gigasocial:discovery-country");
-      if (country === "GH" || country === "NG") setDiscoveryCountry(country);
+      if (isSocialBoostCountry(country)) setDiscoveryCountry(country);
     } catch { /* The default feed works when browser storage is unavailable. */ }
   }, []);
 

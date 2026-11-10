@@ -1,4 +1,4 @@
-import { matchesSocialBoost } from "./socialBoostOptions";
+import { matchesSocialBoost, socialBoostCountryValidator } from "./socialBoostOptions";
 import { internal } from "./_generated/api";
 import { internalQuery, mutation, query, type MutationCtx } from "./_generated/server";
 import { v } from "convex/values";
@@ -392,7 +392,7 @@ export const listFeed = query({
     followingOnly: v.optional(v.boolean()),
     cursor: v.optional(v.number()),
     limit: v.optional(v.number()),
-    discoveryCountry: v.optional(v.union(v.literal("GH"), v.literal("NG"))),
+    discoveryCountry: v.optional(socialBoostCountryValidator),
   },
   handler: async (ctx, args) => {
     const cap = Math.max(1, Math.min(Math.floor(args.limit ?? 20), 40));

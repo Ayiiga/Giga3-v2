@@ -74,8 +74,8 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
   const [busy, setBusy] = useState(false);
   const [mediaError, setMediaError] = useState<string | null>(null);
   const [showTeleprompter, setShowTeleprompter] = useState(false);
-  const [showChatPanel, setShowChatPanel] = useState(true);
-  const [showPreSnap, setShowPreSnap] = useState(true);
+  const [showChatPanel, setShowChatPanel] = useState(false);
+  const [showPreSnap, setShowPreSnap] = useState(false);
   const [filterId, setFilterId] = useState<CameraFilterId>("none");
   const [captureModeId, setCaptureModeId] = useState<CameraCaptureModeId>("standard");
   const [mounted, setMounted] = useState(false);
@@ -162,6 +162,13 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
       if (videoRef.current && mode !== "audio") {
         videoRef.current.srcObject = media;
         await videoRef.current.play().catch(() => undefined);
+      }
+      if (source === "display") {
+        media.getVideoTracks()[0]?.addEventListener("ended", () => {
+          if (mediaStreamRef.current !== media) return;
+          stopMedia();
+          setAwaitingScreenShare(true);
+        }, { once: true });
       }
       startCaptions();
     },
@@ -377,6 +384,7 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-6 text-white">
             <Radio className="h-10 w-10" aria-hidden />
             <p className="text-sm font-medium">Live audio room</p>
+            <p className="text-xs text-white/90">Microphone capture stays on the host device.</p>
             <p className="text-xs text-violet-200">Chat, reactions, and gifts are active.</p>
             {isHost ? (
               <GigaSocialTeleprompter
@@ -388,7 +396,7 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
         ) : showScreenPicker ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-4 text-center text-white">
             <MonitorUp className="h-10 w-10 text-violet-200" aria-hidden />
-            <p className="text-sm font-medium">Share your screen on this phone</p>
+            <p className="text-sm font-medium">Choose a source for your preview</p>
             <p className="max-w-sm text-xs text-violet-100/90">{LIVE_SCREEN_SHARE_MOBILE_HINT}</p>
             <div className="mt-1 flex w-full max-w-sm flex-col gap-2">
               {supportsOsDisplayCapture() ? (
@@ -450,39 +458,8 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
             ) : (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-6 text-center text-white">
                 <Radio className="h-10 w-10 text-violet-200" aria-hidden />
-                <p className="text-sm font-medium">Joining live video…</p>
-                <p className="max-w-sm text-xs text-violet-100/90">
-                  Live transport is reconnecting. If playback does not start, tap Retry.
-                </p>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  className="min-h-9 border-white/40 bg-white/10 text-white"
-                  onClick={() => void joinLive({ sessionToken, streamId })
-                    .then(() => {
-                      setMediaError(null);
-                      joinedRef.current = true;
-                    })
-                    .catch((e) => {
-                      setMediaError(getLiveActionErrorMessage(e));
-                      joinedRef.current = false;
-                    })}
-                >
-                  Retry
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  className="min-h-9 border-white/30 bg-white/10 text-white"
-                  onClick={() => {
-                    setMediaError(null);
-                    onClose();
-                  }}
-                >
-                  Leave
-                </Button>
+                <p className="text-sm font-medium">Viewer playback is unavailable</p>
+                <p className="max-w-sm text-sm text-white/85">You can still use room chat and reactions.</p>
               </div>
             )}
             {isHost ? (
@@ -497,12 +474,12 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
         <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-3 bg-gradient-to-b from-black/70 to-transparent px-3 py-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
           <div className="min-w-0">
             <p className="text-[10px] font-semibold uppercase tracking-wide text-violet-200">
-              GigaSocial Live · fullscreen
+              {isHost && stream.status === "live" ? "Host preview" : "GigaSocial Live"}
             </p>
             <h3 className="truncate text-base font-semibold text-white">{stream.title}</h3>
             <p className="text-[11px] text-white/70">
               @{stream.host.handle} · {stream.status} · {stream.viewerCount} viewers
-              {stream.peakViewers > 0 ? ` · peak ${stream.peakViewers}` : ""}
+              {isHost && screenSource ? ` · ${screenSource === "display" ? "Display" : screenSource === "file" ? "File" : "Rear camera"} preview` : ""}
             </p>
           </div>
           <Button
@@ -531,7 +508,7 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
         </div>
       ) : null}
 
-      <div className="space-y-2 border-t border-white/10 bg-black/90 px-3 py-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+      <div className="gigasocial-live-controls absolute inset-x-0 bottom-0 z-30 max-h-[46dvh] space-y-2 overflow-y-auto overscroll-contain border-t border-white/15 bg-black/85 px-3 py-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         {isHost && mode === "video" && showPreSnap && stream.status === "live" ? (
           <PreSnapEditBar
             filterId={filterId}
@@ -563,7 +540,7 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
                   className="min-h-9"
                   onClick={() => setShowPreSnap((value) => !value)}
                 >
-                  {showPreSnap ? "Hide looks" : "Pre-live looks"}
+                  {showPreSnap ? "Hide preview looks" : "Preview looks"}
                 </Button>
               ) : null}
               {mode === "screen" && !awaitingScreenShare ? (
@@ -593,7 +570,7 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
             <MessageCircle className="h-4 w-4" aria-hidden />
             {showChatPanel ? "Hide chat" : "Chat"}
           </Button>
-          {LIVE_REACTIONS.map((emoji) => (
+          {showChatPanel && LIVE_REACTIONS.map((emoji) => (
             <button
               key={emoji}
               type="button"
@@ -629,6 +606,7 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
                     size="sm"
                     variant="outline"
                     className="min-h-9"
+                    disabled={!coHostHandle.trim()}
                     onClick={() =>
                       void addCoHost({ sessionToken, streamId, coHostHandle })
                         .then(() => setCoHostHandle(""))
@@ -642,16 +620,11 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
               </div>
             ) : null}
 
-            <div className="space-y-2 rounded-xl border border-white/15 bg-white/5 p-3">
+            {!isHost && <div className="space-y-2 rounded-xl border border-white/15 bg-white/5 p-3">
               <p className="text-sm font-medium">
                 <Gift className="mr-1 inline h-4 w-4" aria-hidden />
                 Send a gift
               </p>
-              {isHost ? (
-                <p className="text-xs text-white/70">
-                  Hosts cannot send gifts to themselves. Viewers can send gifts from this panel.
-                </p>
-              ) : (
                 <div className="flex flex-wrap gap-2">
                   {LIVE_GIFTS.map((gift) => (
                     <Button
@@ -667,8 +640,7 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
                     </Button>
                   ))}
                 </div>
-              )}
-            </div>
+            </div>}
 
             <div className="space-y-2 rounded-xl border border-white/15 bg-white/5 p-3 sm:col-span-2">
               <p className="text-sm font-medium">

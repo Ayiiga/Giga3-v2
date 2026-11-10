@@ -970,7 +970,8 @@ html.gigaedit-publish-dock-open .gigaedit-publish-sticky {
   flex: 1 1 auto;
   flex-direction: column;
   background: #000;
-  max-height: min(42vh, 22rem);
+  min-height: min(40dvh, 18rem);
+  max-height: min(55dvh, 30rem);
 }
 
 @media (min-width: 640px) {
@@ -1687,4 +1688,17 @@ html.gigaedit-publish-dock-open .gigaedit-survey-sheet {
   text-decoration: underline;
   text-underline-offset: 2px;
   cursor: pointer;
+}
+
+
+.gigaedit-preview-stage.gigaedit-preview-stage--expanded {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  max-height: none;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.gigaedit-preview-stage--expanded .gigaedit-camera-preview {
+  max-height: none;
+  max-width: 100%;
 }

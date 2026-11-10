@@ -1,5 +1,7 @@
 "use client";
 
+import { useBackToClose } from "@/hooks/useBackToClose";
+
 import { CameraStylePreview } from "@/components/gigaedit/CameraStylePreview";
 import { BrandingPanel } from "@/components/gigaedit/BrandingPanel";
 import { ImportModeDialog } from "@/components/gigaedit/ImportModeDialog";
@@ -162,6 +164,8 @@ export function VideoEditor({
   const overlayInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [previewExpanded, setPreviewExpanded] = useState(false);
+  useBackToClose(previewExpanded, () => setPreviewExpanded(false));
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
   const [duration, setDuration] = useState(0);
   const [playhead, setPlayhead] = useState(0);
@@ -1389,7 +1393,6 @@ export function VideoEditor({
             </p>
             <ToolGrid>
               <ToolTile label="Trim" onClick={openTrimPrompt} disabled={!hasVideo} />
-              <ToolTile label="Split" onClick={splitAtPlayhead} disabled={!hasVideo} />
               <ToolTile
                 label="Join on export"
                 onClick={mergeClips}
@@ -1700,7 +1703,7 @@ export function VideoEditor({
         </div>
       ) : null}
 
-      <div className="gigaedit-preview-stage">
+      <div className={previewExpanded ? "gigaedit-preview-stage gigaedit-preview-stage--expanded" : "gigaedit-preview-stage"}>
         <div className="relative flex min-h-0 flex-1 flex-col items-center justify-center bg-black px-2 py-2">
           <TeleprompterOverlay
             script={teleprompterScript || overlayText}
@@ -1753,7 +1756,7 @@ export function VideoEditor({
               setPlayhead(nextPlayhead);
 
               const sourceEnd = active.sourceEndSec ?? active.endSec - active.startSec;
-              if (el.currentTime >= sourceEnd - 0.08) {
+              if (!el.paused && !el.ended && el.currentTime >= sourceEnd - 0.08) {
                 const index = mainClips.findIndex((clip) => clip.id === active.id);
                 const nextClip = index >= 0 ? mainClips[index + 1] : null;
                 if (nextClip) {
@@ -1809,6 +1812,9 @@ export function VideoEditor({
           videoRef={videoRef}
           playheadSec={playhead}
           durationSec={timelineMax}
+          source={objectUrl}
+          expanded={previewExpanded}
+          onToggleExpanded={() => setPreviewExpanded((value) => !value)}
         />
       </div>
 

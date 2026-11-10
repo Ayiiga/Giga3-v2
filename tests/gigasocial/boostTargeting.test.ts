@@ -43,17 +43,17 @@ describe("GigaSocial boost targeting", () => {
     const args = {
       reference: "giga3_boost_targeting_test", creatorId: "creator@example.com", targetType: "post" as const,
       targetId: postId, budgetGhs: 50, durationDays: 7,
-      options: { audience: "new_people" as const, country: "GH" as const, website: "https://example.com/offer" },
+      options: { audience: "new_people" as const, country: "BF" as const, website: "https://example.com/offer" },
     };
     const activation = await t.mutation(internal.gigaSocialEconomy.activateBoostCampaignInternal, args);
     const retry = await t.mutation(internal.gigaSocialEconomy.activateBoostCampaignInternal, args);
     expect(retry).toMatchObject({ alreadyFulfilled: true, boostId: activation.boostId });
-    const targeted = await t.query(api.gigaSocial.listFeed, { discoveryCountry: "GH", limit: 1 });
+    const targeted = await t.query(api.gigaSocial.listFeed, { discoveryCountry: "BF", limit: 1 });
     expect(targeted.posts[0]).toMatchObject({ _id: postId, promotion: { website: args.options.website } });
     expect(targeted.nextCursor).toBe(100);
-    const untargeted = await t.query(api.gigaSocial.listFeed, { discoveryCountry: "NG" });
+    const untargeted = await t.query(api.gigaSocial.listFeed, { discoveryCountry: "TG" });
     expect(untargeted.posts[0].promotion).toBeUndefined();
-    const next = await t.query(api.gigaSocial.listFeed, { discoveryCountry: "GH", cursor: 100 });
+    const next = await t.query(api.gigaSocial.listFeed, { discoveryCountry: "BF", cursor: 100 });
     expect(next.posts).toEqual([]);
   });
 });
