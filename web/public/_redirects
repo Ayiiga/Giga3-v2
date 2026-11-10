@@ -68,5 +68,8 @@
 /blog/coding-vs-ai-which-skill-should-beginners-learn-first  /blog/coding-vs-ai-which-skill-beginners-learn-first/  301
 /blog/coding-vs-ai-which-skill-should-beginners-learn-first/ /blog/coding-vs-ai-which-skill-beginners-learn-first/  301
 
+/blog/digital-literacy-ghana-2026  /blog/facebook-tiktok-whatsapp-fact-checking/  301
+/blog/digital-literacy-ghana-2026/ /blog/facebook-tiktok-whatsapp-fact-checking/  301
+
 # Unknown URLs must 404 via web/out/404.html. Do not rewrite them to /index.html.
 # Apex → www is handled in functions/_middleware.js. Pages _redirects cannot change hostname.

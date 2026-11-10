@@ -3,6 +3,13 @@ import { internal } from "./_generated/api";
 
 const crons = cronJobs();
 
+crons.daily(
+  "generate queued GigaSEO editorial drafts",
+  { hourUTC: 6, minuteUTC: 15 },
+  internal.gigaSeo.generateScheduledDraft,
+  {},
+);
+
 // Charge saved cards for periods ending within 2 days (runs before the expiry sweep).
 crons.daily(
   "renew subscriptions via saved payment methods",

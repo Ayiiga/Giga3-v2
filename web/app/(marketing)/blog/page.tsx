@@ -39,6 +39,7 @@ export default function BlogIndexPage() {
                 { name: "Blog" },
               ]}
             />
+            <a className="block py-3 text-sm font-semibold underline" href="/blog/editorial/">Browse new editorial articles</a>
             <header className="mx-auto mt-6 max-w-3xl text-center">
               <h1 className="page-title">
                 Giga3 AI Blog — AI, Education &amp; Technology in Ghana

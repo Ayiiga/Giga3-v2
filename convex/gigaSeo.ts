@@ -1,4 +1,6 @@
-import { action, mutation, query } from "./_generated/server";
+import { action, internalAction, internalMutation, internalQuery, mutation, query } from "./_generated/server";
+import type { ActionCtx, MutationCtx } from "./_generated/server";
+import type { Doc, Id } from "./_generated/dataModel";
 import { makeFunctionReference } from "convex/server";
 
 // Keep this module's backend type-check independent of the repository-wide generated API map.
@@ -8,6 +10,9 @@ const saveDraftRef = makeFunctionReference<"mutation">("gigaSeo:saveDraft");
 import { v } from "convex/values";
 import { adminCredentialArgs, ensureAdminAccess } from "./adminAccess";
 import { GIGA3_VERIFIED_FEATURE_EDITORIAL_RULE } from "./gigaSeoEditorialPolicy";
+
+const getScheduledDraftPlanRef = makeFunctionReference<"query", Record<string, never>, Doc<"gigaSeoContentPlans"> | null>("gigaSeo:getScheduledDraftPlan");
+const saveScheduledDraftRef = makeFunctionReference<"mutation">("gigaSeo:saveScheduledDraft");
 
 const DEFAULT_SETTINGS = {
   key: "primary",
@@ -32,7 +37,7 @@ const keywordIdeaValidator = v.object({
 
 function slugify(value: string) {
   return value.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 90);
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 90).replace(/-$/, "");
 }
 
 async function requestOpenAi(system: string, user: string): Promise<string> {
@@ -191,6 +196,7 @@ export const createContentPlan = mutation({
     const primaryKeyword = args.primaryKeyword.trim().slice(0, 160);
     if (title.length < 5 || primaryKeyword.length < 3) throw new Error("A valid title and primary keyword are required.");
     const slug = slugify(title);
+    if (!slug) throw new Error("Use a title containing Latin letters or numbers.");
     const existing = await ctx.db.query("gigaSeoContentPlans").withIndex("by_slug", (q) => q.eq("slug", slug)).unique();
     // Repeated taps/retries reuse the existing plan instead of surfacing an error.
     if (existing) return existing._id;
@@ -207,55 +213,84 @@ export const generateDraft = action({
     await ensureAdminAccess(args);
     const plan = await ctx.runQuery(getPlanForDraftRef, { ...args, planId: args.planId });
     if (!plan) throw new Error("Content plan not found.");
-    const raw = await requestOpenAi(
-      "You are the lead editorial writer for the Giga3 AI blog, a Ghana-focused technology, education and learning platform. Return JSON only with title, metaDescription, markdown, and factCheckNotes (array). Write an original, useful, well-structured article with H2/H3 headings, practical Ghana-relevant examples, a concise conclusion and FAQ where appropriate. BRAND INTEGRATION IS REQUIRED whenever the topic relates to AI tools, teaching, education, students, learning, examination preparation, STEM or African technology: include a natural, substantive section explaining how Giga3 AI can help the reader, describing only capabilities verified as currently available in the live product. Never infer features from roadmap items or marketing assumptions; omit uncertain claims and flag them in factCheckNotes. Include a clear, helpful call to action to explore Giga3 AI at https://www.giga3ai.com/; do not turn the article into an advertisement or repeat the brand unnaturally. For unrelated topics, mention Giga3 AI only when genuinely useful. Do not invent product capabilities, prices, availability, outcomes, statistics, quotes, dates, named sources, or citations. Mark claims requiring verification in factCheckNotes. Do not claim live keyword metrics. " + GIGA3_VERIFIED_FEATURE_EDITORIAL_RULE,
-      `Working title: ${plan.title}\nPrimary keyword: ${plan.primaryKeyword}\nMarket: ${plan.market}\nAudience: ${plan.audience}\nWrite approximately 900-1200 words. Naturally use the keyword; prioritize reader value.`
-    );
-    const parsed = parseJsonObject(raw);
-    const title = String(parsed.title ?? plan.title).trim().slice(0, 180);
-    const metaDescription = String(parsed.metaDescription ?? "").trim().slice(0, 300);
-    let markdown = String(parsed.markdown ?? "").trim().slice(0, 40000);
-    const notes = Array.isArray(parsed.factCheckNotes) ? parsed.factCheckNotes.map(String).slice(0, 20) : [];
-    if (markdown.length < 500) throw new Error("The generated article is too short or incomplete. Please retry.");
-    const headings = (markdown.match(/^##\s+/gm) ?? []).length;
-    const wordCount = markdown.split(/\s+/).filter(Boolean).length;
-    const topicRequiresBrandIntegration = /\b(ai|artificial intelligence|teach(?:er|ing)?|educat(?:ion|or|ional)|student|learn(?:ing)?|exam(?:ination)?|bece|wassce|stem|classroom|school|african technology|technology|digital skills|innovation|local communities)\b/i.test(`${plan.title} ${plan.primaryKeyword}`);
-    // Normalize Markdown decoration before checking headings so bold/linked H2s are recognised.
-    const sections = markdown.split(/^##\s+/m).slice(1);
-    const giga3Section = sections.find((section) => {
-      const heading = section.split("\n", 1)[0].replace(/[*_\[\]]/g, "").trim();
-      return /giga3\s*ai/i.test(heading);
+    if (plan.status === "published") throw new Error("Published articles cannot be regenerated.");
+    const draft = await buildDraft(plan);
+    await ctx.runMutation(saveDraftRef, {
+      ...args, ...draft.fields, expectedUpdatedAt: plan.updatedAt,
     });
-    const giga3SectionBody = giga3Section?.split("\n").slice(1).join(" ").replace(/\s+/g, " ").trim() ?? "";
-    let hasSubstantiveGiga3Section = Boolean(giga3Section && giga3SectionBody.length >= 80);
-    // Accept Markdown CTA links regardless of whether the URL is on the same line as its anchor.
-    let hasGiga3CallToAction =
-      /\[(?:explore|visit|discover|try|learn more about)[^\]]*\]\(https?:\/\/(?:www\.)?giga3ai\.com\/?[^)]*\)/i.test(markdown) ||
-      /\b(?:explore|visit|discover|try|learn more about)\b[^\n]{0,180}https?:\/\/(?:www\.)?giga3ai\.com\/?/i.test(markdown);
-    // Add a factual fallback when the model omits required brand integration.
-    if (topicRequiresBrandIntegration && !hasSubstantiveGiga3Section) {
-      const contextualTopic = plan.primaryKeyword.replace(/[<>]/g, " ").replace(/[\r\n]/g, " ").trim().slice(0, 120);
-      markdown += "\n\n## How Giga3 AI Relates to " + contextualTopic +
-        "\n\nGiga3 AI is the AI service within Giga3 Hub, an Africa-built digital platform. For readers exploring " +
-        contextualTopic + ", the platform provides a place to discover its current AI and learning resources and assess which tools are relevant to their needs. Always check the live platform for current features and availability; do not assume that planned or unreleased capabilities are available.\n";
-      hasSubstantiveGiga3Section = true;
-    }
-    if (topicRequiresBrandIntegration && !hasGiga3CallToAction) {
-      markdown += "\n\nTo explore the platform and its currently available resources, visit [Giga3 AI](https://www.giga3ai.com/).\n";
-      hasGiga3CallToAction = true;
-    }
-    const missingBrandIntegration = topicRequiresBrandIntegration && !(hasSubstantiveGiga3Section && hasGiga3CallToAction);
-    const brandIntegrationIssue = "Add a substantive Giga3 AI section explaining relevant platform value and a contextual call to action linking to https://www.giga3ai.com/ before editorial approval.";
-    const issues = [
-      ...(wordCount < 700 ? ["Article is shorter than the recommended 700 words."] : []),
-      ...(headings < 3 ? ["Add at least three descriptive H2 sections."] : []),
-      ...(metaDescription.length < 100 || metaDescription.length > 170 ? ["Review meta description length (recommended 100–170 characters)."] : []),
-      ...(missingBrandIntegration ? [brandIntegrationIssue] : []),
-      ...(notes.length ? [`${notes.length} factual claim(s) require editorial verification.`] : []),
-    ];
-    const qualityScore = Math.max(0, Math.min(100, 100 - issues.length * 12));
-    await ctx.runMutation(saveDraftRef, { ...args, planId: args.planId, title, metaDescription, draftContent: markdown, qualityScore, qualityIssues: issues, factCheckNotes: notes });
-    return { wordCount, qualityScore, qualityIssues: issues, factCheckNotes: notes };
+    return { wordCount: draft.wordCount, qualityScore: draft.fields.qualityScore, qualityIssues: draft.fields.qualityIssues, factCheckNotes: draft.fields.factCheckNotes };
+  },
+});
+
+async function buildDraft(plan: Doc<"gigaSeoContentPlans">) {
+  const raw = await requestOpenAi(
+    "You are the lead editorial writer for the Giga3 AI blog, a Ghana-focused technology, education and learning platform. Return JSON only with title, metaDescription, markdown, and factCheckNotes (array). Write an original, useful, well-structured article with H2/H3 headings, practical Ghana-relevant examples, a concise conclusion and FAQ where appropriate. BRAND INTEGRATION IS REQUIRED whenever the topic relates to AI tools, teaching, education, students, learning, examination preparation, STEM or African technology: include a natural, substantive section explaining how Giga3 AI can help the reader, describing only capabilities verified as currently available in the live product. Never infer features from roadmap items or marketing assumptions; omit uncertain claims and flag them in factCheckNotes. Include a clear, helpful call to action to explore Giga3 AI at https://www.giga3ai.com/; do not turn the article into an advertisement or repeat the brand unnaturally. For unrelated topics, mention Giga3 AI only when genuinely useful. Do not invent product capabilities, prices, availability, outcomes, statistics, quotes, dates, named sources, or citations. Mark claims requiring verification in factCheckNotes. Do not claim live keyword metrics. " + GIGA3_VERIFIED_FEATURE_EDITORIAL_RULE,
+    `Working title: ${plan.title}\nPrimary keyword: ${plan.primaryKeyword}\nMarket: ${plan.market}\nAudience: ${plan.audience}\nWrite approximately 900-1200 words. Naturally use the keyword; prioritize reader value.`
+  );
+  const parsed = parseJsonObject(raw);
+  const title = String(parsed.title ?? plan.title).trim().slice(0, 180);
+  const metaDescription = String(parsed.metaDescription ?? "").trim().slice(0, 300);
+  let markdown = String(parsed.markdown ?? "").trim().slice(0, 40000);
+  const notes = Array.isArray(parsed.factCheckNotes) ? parsed.factCheckNotes.map(String).slice(0, 20) : [];
+  if (markdown.length < 500) throw new Error("The generated article is too short or incomplete. Please retry.");
+  const headings = (markdown.match(/^##\s+/gm) ?? []).length;
+  const wordCount = markdown.split(/\s+/).filter(Boolean).length;
+  const topicRequiresBrandIntegration = /\b(ai|artificial intelligence|teach(?:er|ing)?|educat(?:ion|or|ional)|student|learn(?:ing)?|exam(?:ination)?|bece|wassce|stem|classroom|school|african technology|technology|digital skills|innovation|local communities)\b/i.test(`${plan.title} ${plan.primaryKeyword}`);
+  // Normalize Markdown decoration before checking headings so bold/linked H2s are recognised.
+  const sections = markdown.split(/^##\s+/m).slice(1);
+  const giga3Section = sections.find((section) => {
+    const heading = section.split("\n", 1)[0].replace(/[*_\[\]]/g, "").trim();
+    return /giga3\s*ai/i.test(heading);
+  });
+  const giga3SectionBody = giga3Section?.split("\n").slice(1).join(" ").replace(/\s+/g, " ").trim() ?? "";
+  let hasSubstantiveGiga3Section = Boolean(giga3Section && giga3SectionBody.length >= 80);
+  // Accept Markdown CTA links regardless of whether the URL is on the same line as its anchor.
+  let hasGiga3CallToAction =
+    /\[(?:explore|visit|discover|try|learn more about)[^\]]*\]\(https?:\/\/(?:www\.)?giga3ai\.com\/?[^)]*\)/i.test(markdown) ||
+    /\b(?:explore|visit|discover|try|learn more about)\b[^\n]{0,180}https?:\/\/(?:www\.)?giga3ai\.com\/?/i.test(markdown);
+  // Add a factual fallback when the model omits required brand integration.
+  if (topicRequiresBrandIntegration && !hasSubstantiveGiga3Section) {
+    const contextualTopic = plan.primaryKeyword.replace(/[<>]/g, " ").replace(/[\r\n]/g, " ").trim().slice(0, 120);
+    markdown += "\n\n## How Giga3 AI Relates to " + contextualTopic +
+      "\n\nGiga3 AI is the AI service within Giga3 Hub, an Africa-built digital platform. For readers exploring " +
+      contextualTopic + ", the platform provides a place to discover its current AI and learning resources and assess which tools are relevant to their needs. Always check the live platform for current features and availability; do not assume that planned or unreleased capabilities are available.\n";
+    hasSubstantiveGiga3Section = true;
+  }
+  if (topicRequiresBrandIntegration && !hasGiga3CallToAction) {
+    markdown += "\n\nTo explore the platform and its currently available resources, visit [Giga3 AI](https://www.giga3ai.com/).\n";
+    hasGiga3CallToAction = true;
+  }
+  const missingBrandIntegration = topicRequiresBrandIntegration && !(hasSubstantiveGiga3Section && hasGiga3CallToAction);
+  const brandIntegrationIssue = "Add a substantive Giga3 AI section explaining relevant platform value and a contextual call to action linking to https://www.giga3ai.com/ before editorial approval.";
+  const issues = [
+    ...(wordCount < 700 ? ["Article is shorter than the recommended 700 words."] : []),
+    ...(headings < 3 ? ["Add at least three descriptive H2 sections."] : []),
+    ...(metaDescription.length < 100 || metaDescription.length > 170 ? ["Review meta description length (recommended 100–170 characters)."] : []),
+    ...(missingBrandIntegration ? [brandIntegrationIssue] : []),
+    ...(notes.length ? [`${notes.length} factual claim(s) require editorial verification.`] : []),
+  ];
+  const qualityScore = Math.max(0, Math.min(100, 100 - issues.length * 12));
+  return { wordCount, fields: { title, metaDescription, draftContent: markdown, qualityScore, qualityIssues: issues, factCheckNotes: notes } };
+}
+
+export const getScheduledDraftPlan = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    const settings = await ctx.db.query("gigaSeoSettings").withIndex("by_key", (q) => q.eq("key", "primary")).unique();
+    if (!settings?.enabled || !process.env.OPENAI_API_KEY) return null;
+    const day = (new Date().getUTCDay() + 6) % 7;
+    if (Math.floor((day + 1) * settings.articlesPerWeek / 7) === Math.floor(day * settings.articlesPerWeek / 7)) return null;
+    return await ctx.db.query("gigaSeoContentPlans").withIndex("by_status_updated", (q) => q.eq("status", "idea")).first();
+  },
+});
+
+export const generateScheduledDraft = internalAction({
+  args: {},
+  handler: async (ctx: ActionCtx): Promise<void> => {
+    const plan = await ctx.runQuery(getScheduledDraftPlanRef, {});
+    if (!plan) return;
+    const { fields } = await buildDraft(plan);
+    await ctx.runMutation(saveScheduledDraftRef, { planId: plan._id, expectedUpdatedAt: plan.updatedAt, ...fields });
   },
 });
 
@@ -267,20 +302,64 @@ export const getPlanForDraft = query({
   },
 });
 
+const draftArgs = {
+  planId: v.id("gigaSeoContentPlans"), title: v.string(), metaDescription: v.string(),
+  draftContent: v.string(), qualityScore: v.number(), qualityIssues: v.array(v.string()),
+  factCheckNotes: v.array(v.string()), expectedUpdatedAt: v.optional(v.number()),
+};
+
+async function saveDraftFields(ctx: MutationCtx, args: {
+  planId: Id<"gigaSeoContentPlans">; title: string; metaDescription: string; draftContent: string;
+  qualityScore: number; qualityIssues: string[]; factCheckNotes: string[]; expectedUpdatedAt?: number;
+}) {
+  const plan = await ctx.db.get(args.planId);
+  if (!plan) throw new Error("Content plan not found.");
+  if (plan.status === "published") throw new Error("Published articles cannot be overwritten.");
+  if (args.expectedUpdatedAt !== undefined && plan.updatedAt !== args.expectedUpdatedAt) {
+    throw new Error("This plan changed while the draft was being prepared. Reload and try again.");
+  }
+  await ctx.db.patch(plan._id, {
+    title: args.title.trim().slice(0, 180), metaDescription: args.metaDescription.trim().slice(0, 300),
+    draftContent: args.draftContent.trim().slice(0, 40000), qualityScore: args.qualityScore,
+    qualityIssues: args.qualityIssues.slice(0, 20), factCheckNotes: args.factCheckNotes.slice(0, 20),
+    status: "quality_review", updatedAt: Date.now(),
+  });
+  return { ok: true as const };
+}
+
 export const saveDraft = mutation({
-  args: { ...adminCredentialArgs, planId: v.id("gigaSeoContentPlans"), title: v.string(),
-    metaDescription: v.string(), draftContent: v.string(), qualityScore: v.number(), qualityIssues: v.array(v.string()), factCheckNotes: v.array(v.string()) },
+  args: { ...adminCredentialArgs, ...draftArgs },
+  handler: async (ctx, args) => {
+    await ensureAdminAccess(args);
+    return saveDraftFields(ctx, args);
+  },
+});
+
+export const saveScheduledDraft = internalMutation({
+  args: draftArgs,
+  handler: async (ctx, args) => {
+    const plan = await ctx.db.get(args.planId);
+    if (plan?.status === "idea" && plan.updatedAt === args.expectedUpdatedAt) await saveDraftFields(ctx, args);
+  },
+});
+
+export const importDraft = mutation({
+  args: { ...adminCredentialArgs, planId: v.id("gigaSeoContentPlans"), markdown: v.string(), metaDescription: v.string() },
   handler: async (ctx, args) => {
     await ensureAdminAccess(args);
     const plan = await ctx.db.get(args.planId);
     if (!plan) throw new Error("Content plan not found.");
-    await ctx.db.patch(args.planId, { title: args.title, metaDescription: args.metaDescription,
-      draftContent: args.draftContent, qualityScore: args.qualityScore,
-      qualityIssues: args.qualityIssues, factCheckNotes: args.factCheckNotes.slice(0, 20), status: "quality_review", updatedAt: Date.now() });
-    return { ok: true };
+    const markdown = args.markdown.trim();
+    const description = args.metaDescription.trim();
+    if (markdown.length < 500 || markdown.length > 40000 || description.length < 30 || description.length > 170) {
+      throw new Error("Use a Markdown article of 500–40,000 characters and a description of 30–170 characters.");
+    }
+    return saveDraftFields(ctx, {
+      planId: plan._id, title: plan.title, metaDescription: description, draftContent: markdown,
+      qualityScore: 60, qualityIssues: [], factCheckNotes: ["Review the imported article and verify its factual claims."],
+    });
   },
 });
-
 
 /** Human approval changes workflow state only; it does not publish the article. */
 export const approveDraft = mutation({
@@ -299,5 +378,44 @@ export const approveDraft = mutation({
     }
     await ctx.db.patch(args.planId, { status: "approved", updatedAt: Date.now() });
     return { ok: true as const };
+  },
+});
+
+
+const EDITORIAL_BASE = "https://www.giga3ai.com/blog/editorial/";
+
+export const publishDraft = mutation({
+  args: { ...adminCredentialArgs, planId: v.id("gigaSeoContentPlans") },
+  handler: async (ctx, args) => {
+    await ensureAdminAccess(args);
+    const plan = await ctx.db.get(args.planId);
+    if (plan?.status === "published" && plan.publishedUrl) return plan.publishedUrl;
+    if (!plan || plan.status !== "approved" || !plan.draftContent || !plan.metaDescription ||
+        !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(plan.slug)) {
+      throw new Error("Only an approved article with content, a description and a valid slug can be published.");
+    }
+    const publishedUrl = EDITORIAL_BASE + plan.slug + "/";
+    await ctx.db.patch(plan._id, { status: "published", publishedUrl, updatedAt: Date.now() });
+    return publishedUrl;
+  },
+});
+
+export const getPublishedArticle = query({
+  args: { slug: v.string() },
+  handler: async (ctx, { slug }) => {
+    if (slug.length > 90) return null;
+    const plan = await ctx.db.query("gigaSeoContentPlans").withIndex("by_slug", (q) => q.eq("slug", slug)).unique();
+    if (plan?.status !== "published" || !plan.publishedUrl?.startsWith(EDITORIAL_BASE)) return null;
+    return { title: plan.title, description: plan.metaDescription, markdown: plan.draftContent, url: plan.publishedUrl, updatedAt: plan.updatedAt };
+  },
+});
+
+export const listPublishedArticles = query({
+  args: {},
+  handler: async (ctx) => {
+    const plans = await ctx.db.query("gigaSeoContentPlans").withIndex("by_status_updated", (q) => q.eq("status", "published")).order("desc").take(100);
+    return plans.filter((plan) => plan.publishedUrl?.startsWith(EDITORIAL_BASE)).map((plan) => ({
+      title: plan.title, description: plan.metaDescription, url: plan.publishedUrl, updatedAt: plan.updatedAt,
+    }));
   },
 });
