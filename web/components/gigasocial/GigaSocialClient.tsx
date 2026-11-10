@@ -147,7 +147,7 @@ function GigaSocialContent() {
 
   useEffect(() => {
     const featuresNow = getGigaSocialFeatures();
-    const tab = params.get("tab") as GigaSocialSection;
+    const tab = (params.get("tab") ?? "feed") as GigaSocialSection;
     if (tab && GIGASOCIAL_SECTIONS.some((s) => s.id === tab)) {
       if (tab === "messages" && !featuresNow.enableDirectMessages) {
         setSection("feed");
@@ -156,10 +156,10 @@ function GigaSocialContent() {
       }
     }
     const community = params.get("community");
-    if (community) setCommunitySlug(community);
+    setCommunitySlug(community ?? undefined);
     const highlight = params.get("highlight");
-    if (highlight && section !== "feed") setSection("feed");
-  }, [params, section]);
+    if (highlight) setSection("feed");
+  }, [params]);
 
   useEffect(() => {
     function onRequireAuth() {
@@ -179,10 +179,15 @@ function GigaSocialContent() {
   const openSection = (id: GigaSocialSection) => {
     setAuthPromptOpen(false);
     setSection(id);
-    if (id !== "feed") setCommunitySlug(undefined);
     const nextParams = new URLSearchParams(window.location.search);
-    nextParams.set("tab", id);
-    router.replace(`/gigasocial/?${nextParams.toString()}`, { scroll: false });
+    if (id === "feed") nextParams.delete("tab");
+    else nextParams.set("tab", id);
+    nextParams.delete("highlight");
+    nextParams.delete("community");
+    setCommunitySlug(undefined);
+    if (id === section && !params.get("community") && !params.get("highlight")) return;
+    const query = nextParams.toString();
+    router.push(query ? `/gigasocial/?${query}` : "/gigasocial/", { scroll: false });
   };
 
   const isFeedSection = section === "feed";
@@ -211,12 +216,12 @@ function GigaSocialContent() {
       >
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <Link
-            href={siteConfig.links.dashboard}
+            href={isFeedSection ? siteConfig.links.dashboard : "/gigasocial/"}
             className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border text-muted hover:border-accent/30 hover:text-foreground sm:h-9 sm:w-auto sm:gap-1.5 sm:px-2.5 sm:py-1"
-            aria-label="Back to chat"
+            aria-label={isFeedSection ? "Back to chat" : "Back to GigaSocial feed"}
           >
             <ArrowLeft className="h-4 w-4" aria-hidden />
-            <span className="hidden text-sm sm:inline">Chat</span>
+            <span className="hidden text-sm sm:inline">{isFeedSection ? "Chat" : "Feed"}</span>
           </Link>
           <div className="flex min-w-0 items-center gap-2">
             <div className="gigasocial-brand-mark flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white sm:h-9 sm:w-9 sm:rounded-xl">
@@ -236,7 +241,7 @@ function GigaSocialContent() {
             <button
               type="button"
               className="ml-1.5 text-accent hover:underline"
-              onClick={() => setCommunitySlug(undefined)}
+              onClick={() => openSection("feed")}
             >
               Clear
             </button>
@@ -346,6 +351,7 @@ function GigaSocialContent() {
                 onSelectCommunity={(slug) => {
                   setCommunitySlug(slug);
                   setSection("feed");
+                  router.push(`/gigasocial/?community=${encodeURIComponent(slug)}`, { scroll: false });
                 }}
               />
             </GigaSocialPanelErrorBoundary>

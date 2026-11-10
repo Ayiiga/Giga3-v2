@@ -1,3 +1,4 @@
+import { normalizeSocialWebsite } from "./socialBoostOptions";
 /**
  * GigaSocial Awards — public queries and creator/session mutations.
  * Admin mutations live in gigaSocialAwardsAdmin.ts.
@@ -421,6 +422,8 @@ export const submitNomination = mutation({
     biography: v.string(),
     portfolioLinks: v.array(v.string()),
     evidence: v.optional(v.string()),
+    portraitUrl: v.optional(v.string()),
+    portraitConsent: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const userId = await requireSession(args.sessionToken, ctx);
@@ -452,6 +455,11 @@ export const submitNomination = mutation({
       .map((l) => l.trim())
       .filter(Boolean)
       .slice(0, 12);
+
+    const portraitUrl = normalizeSocialWebsite(args.portraitUrl);
+    if (portraitUrl && (!args.selfApplication || !args.portraitConsent)) {
+      throw new Error("Confirm that your portrait may appear on your approved candidate profile.");
+    }
 
     // Prevent duplicate active submissions by the same nominator for the same season/category.
     const existingByNominator = await ctx.db
@@ -520,6 +528,7 @@ export const submitNomination = mutation({
       biography,
       portfolioLinksJson: JSON.stringify(links),
       evidenceJson: args.evidence?.trim().slice(0, 4000),
+      portraitUrl,
       selfApplication: args.selfApplication,
       nomineeConsentAt,
       status,

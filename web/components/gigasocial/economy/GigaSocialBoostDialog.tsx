@@ -1,6 +1,7 @@
 "use client";
 
 import { GigaSocialBoostPanel } from "@/components/gigasocial/economy/GigaSocialBoostPanel";
+import { useBackToClose } from "@/hooks/useBackToClose";
 import { X } from "lucide-react";
 import { memo, useEffect } from "react";
 
@@ -17,6 +18,8 @@ export const GigaSocialBoostDialog = memo(function GigaSocialBoostDialog({
   postId: string;
   postPreview?: string;
 }) {
+  useBackToClose(open, onClose);
+
   useEffect(() => {
     if (!open) return;
     function onKey(e: KeyboardEvent) {

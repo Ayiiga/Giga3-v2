@@ -19,10 +19,19 @@ function readSnapshot(): FeedSnapshot | null {
     if (!parsed || !Array.isArray(parsed.posts) || typeof parsed.savedAt !== "number") {
       return null;
     }
-    return parsed;
+    const posts = publicSnapshotPosts(parsed.posts);
+    if (parsed.posts.some((post) => post.visibility === "followers" || post.promotion || post.likedByMe || post.bookmarkedByMe)) {
+      window.localStorage.setItem(SNAPSHOT_KEY, JSON.stringify({ ...parsed, posts }));
+    }
+    return { ...parsed, posts };
   } catch {
     return null;
   }
+}
+
+function publicSnapshotPosts(posts: SocialPost[]) {
+  return posts.filter((post) => post.visibility !== "followers").slice(0, 40)
+    .map(({ promotion, likedByMe, bookmarkedByMe, ...post }) => post);
 }
 
 export function saveFeedSnapshot(posts: SocialPost[]): void {
@@ -30,7 +39,7 @@ export function saveFeedSnapshot(posts: SocialPost[]): void {
   try {
     const payload: FeedSnapshot = {
       savedAt: Date.now(),
-      posts: posts.slice(0, 40),
+      posts: publicSnapshotPosts(posts),
     };
     window.localStorage.setItem(SNAPSHOT_KEY, JSON.stringify(payload));
   } catch {

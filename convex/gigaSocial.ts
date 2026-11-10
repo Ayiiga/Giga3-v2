@@ -1,3 +1,4 @@
+import { matchesSocialBoost } from "./socialBoostOptions";
 import { internal } from "./_generated/api";
 import { internalQuery, mutation, query, type MutationCtx } from "./_generated/server";
 import { v } from "convex/values";
@@ -61,6 +62,18 @@ function compareNewestWithPins(
     return b.pinnedAt - a.pinnedAt;
   }
   return b.createdAt - a.createdAt;
+}
+
+async function canViewSocialPost(
+  ctx: { db: import("./_generated/server").QueryCtx["db"] },
+  post: Doc<"socialPosts">,
+  viewerId: string | null
+) {
+  if (post.visibility !== "followers" || post.authorId === viewerId) return true;
+  if (!viewerId) return false;
+  return Boolean(await ctx.db.query("socialFollows").withIndex("by_pair", (q) =>
+    q.eq("followerId", viewerId).eq("followingId", post.authorId)
+  ).first());
 }
 
 async function listProfileDocs(
@@ -379,13 +392,14 @@ export const listFeed = query({
     followingOnly: v.optional(v.boolean()),
     cursor: v.optional(v.number()),
     limit: v.optional(v.number()),
+    discoveryCountry: v.optional(v.union(v.literal("GH"), v.literal("NG"))),
   },
   handler: async (ctx, args) => {
-    const cap = Math.min(args.limit ?? 20, 40);
+    const cap = Math.max(1, Math.min(Math.floor(args.limit ?? 20), 40));
     let userId: string | null = null;
     if (args.sessionToken) {
       try {
-        userId = await requireSession(args.sessionToken);
+        userId = await requireSession(args.sessionToken, ctx);
       } catch {
         userId = null;
       }
@@ -395,27 +409,25 @@ export const listFeed = query({
       ? await ctx.db
           .query("socialPosts")
           .withIndex("by_community_created", (q) =>
-            q.eq("communitySlug", args.communitySlug!)
+            args.cursor === undefined ? q.eq("communitySlug", args.communitySlug!) : q.eq("communitySlug", args.communitySlug!).lt("createdAt", args.cursor)
           )
           .order("desc")
           .take(120)
       : await ctx.db
           .query("socialPosts")
-          .withIndex("by_created")
+          .withIndex("by_created", (q) => args.cursor === undefined ? q : q.lt("createdAt", args.cursor))
           .order("desc")
           .take(120);
 
     rows = rows.filter((r) => !r.deletedAt);
-    if (args.cursor) {
-      rows = rows.filter((r) => r.createdAt < args.cursor!);
-    }
 
+    let supportingIds = new Set<string>();
     if (userId) {
       const follows = await ctx.db
         .query("socialFollows")
         .withIndex("by_follower", (q) => q.eq("followerId", userId))
         .collect();
-      const supportingIds = new Set(follows.map((f) => f.followingId));
+      supportingIds = new Set(follows.map((f) => f.followingId));
       rows = rows.filter((post) => {
         if (post.visibility !== "followers") return true;
         if (post.authorId === userId) return true;
@@ -429,42 +441,40 @@ export const listFeed = query({
       if (!userId) {
         return { posts: [], nextCursor: null };
       }
-      const follows = await ctx.db
-        .query("socialFollows")
-        .withIndex("by_follower", (q) => q.eq("followerId", userId))
-        .collect();
-      const followingIds = new Set(follows.map((f) => f.followingId));
-      rows = rows.filter((r) => followingIds.has(r.authorId));
+      rows = rows.filter((r) => supportingIds.has(r.authorId));
     }
 
-    rows.sort(compareNewestWithPins);
-
-    const boostedPostIds = new Set<string>();
-    const activeBoosts = await ctx.db
-      .query("socialPostBoosts")
-      .withIndex("by_status_ends", (q) => q.eq("status", "active"))
-      .take(200);
-    const now = Date.now();
-    for (const boost of activeBoosts) {
-      if (boost.endsAt > now && boost.targetType === "post") {
-        boostedPostIds.add(boost.targetId);
+    const organic = rows.slice(0, cap);
+    const nextCursor = organic.length === cap ? organic.at(-1)?.createdAt ?? null : null;
+    let promotion: { postId: string; website?: string } | undefined;
+    let promotedPost: Doc<"socialPosts"> | undefined;
+    if (args.cursor === undefined && !args.communitySlug && !args.followingOnly) {
+      const active = await ctx.db.query("socialPostBoosts")
+        .withIndex("by_status_ends", (q) => q.eq("status", "active").gt("endsAt", Date.now()))
+        .order("desc").take(40);
+      const viewerKey = userId ?? args.discoveryCountry ?? "guest";
+      let bucket = 0;
+      for (const character of viewerKey) bucket = (Math.imul(bucket, 31) + character.charCodeAt(0)) >>> 0;
+      const offset = active.length ? (bucket + Math.floor(Date.now() / 3_600_000)) % active.length : 0;
+      for (const boost of [...active.slice(offset), ...active.slice(0, offset)]) {
+        if (boost.creatorId === userId || (boost.targetType !== "post" && boost.targetType !== "video") ||
+            !matchesSocialBoost(boost.options, supportingIds.has(boost.creatorId), args.discoveryCountry)) continue;
+        const id = ctx.db.normalizeId("socialPosts", boost.targetId);
+        const post = id ? await ctx.db.get(id) : null;
+        if (!post || post.deletedAt || post.visibility === "followers" || post.authorId !== boost.creatorId ||
+            post.copyrightScreeningStatus === "rejected") continue;
+        promotion = { postId: post._id, website: boost.options?.website };
+        promotedPost = post;
+        break;
       }
     }
-    if (boostedPostIds.size > 0) {
-      rows.sort((a, b) => {
-        const aBoost = boostedPostIds.has(String(a._id)) ? 1 : 0;
-        const bBoost = boostedPostIds.has(String(b._id)) ? 1 : 0;
-        if (aBoost !== bBoost) return bBoost - aBoost;
-        return compareNewestWithPins(a, b);
-      });
-    }
+    const slice = organic.sort(compareNewestWithPins);
+    if (promotedPost && !slice.some((post) => post._id === promotedPost._id)) slice.unshift(promotedPost);
 
-    const slice = rows.slice(0, cap);
     const authorCache = new Map<string, ReturnType<typeof toPublicAuthor>>();
 
     let liked = new Set<string>();
     let bookmarked = new Set<string>();
-    let supportingAuthors = new Set<string>();
     if (userId && slice.length) {
       const reactions = await ctx.db
         .query("socialReactions")
@@ -476,11 +486,6 @@ export const listFeed = query({
         .withIndex("by_user_created", (q) => q.eq("userId", userId!))
         .collect();
       bookmarked = new Set(marks.map((m) => m.postId));
-      const follows = await ctx.db
-        .query("socialFollows")
-        .withIndex("by_follower", (q) => q.eq("followerId", userId!))
-        .collect();
-      supportingAuthors = new Set(follows.map((f) => f.followingId));
     }
 
     const posts = await Promise.all(
@@ -493,19 +498,16 @@ export const listFeed = query({
             resolved,
             post.authorId,
             userId,
-            supportingAuthors
+            supportingIds
           );
           authorCache.set(cacheKey, author);
         }
-        return toPublicPost(post, author, {
+        return { ...toPublicPost(post, author, {
           likedByMe: liked.has(post._id),
           bookmarkedByMe: bookmarked.has(post._id),
-        });
+        }), promotion: promotion?.postId === post._id ? { website: promotion.website } : undefined };
       })
     );
-
-    const nextCursor =
-      slice.length === cap ? slice[slice.length - 1]?.createdAt : null;
 
     return { posts, nextCursor };
   },
@@ -527,7 +529,7 @@ export const searchProfiles = query({
         (profile) =>
           profile.handle.includes(q) ||
           profile.displayName.toLowerCase().includes(q) ||
-          profile.bio.toLowerCase().includes(q)
+          (profile.bio ?? "").toLowerCase().includes(q)
       )
       .slice(0, cap);
 
@@ -617,11 +619,10 @@ export const listDiscover = query({
       );
     }
 
-    const slice = rows.slice(0, cap);
     let userId: string | null = null;
     if (args.sessionToken) {
       try {
-        userId = await requireSession(args.sessionToken);
+        userId = await requireSession(args.sessionToken, ctx);
       } catch {
         userId = null;
       }
@@ -636,6 +637,8 @@ export const listDiscover = query({
       supportingAuthors = new Set(follows.map((f) => f.followingId));
     }
 
+    const slice = rows.filter((post) => post.visibility !== "followers" ||
+      post.authorId === userId || supportingAuthors.has(post.authorId)).slice(0, cap);
     const posts = await Promise.all(
       slice.map(async (post) => {
         const resolved = await resolveAuthor(ctx, post.authorId, post.profileId);
@@ -911,6 +914,14 @@ export const listComments = query({
     const post = await ctx.db.get(args.postId);
     if (!post || post.deletedAt) return { comments: [] };
 
+    if (post.visibility === "followers") {
+      let viewerId: string | null = null;
+      if (args.sessionToken) {
+        try { viewerId = await requireSession(args.sessionToken, ctx); } catch { /* Treat expired sessions as guests. */ }
+      }
+      if (!await canViewSocialPost(ctx, post, viewerId)) return { comments: [] };
+    }
+
     const rows = await ctx.db
       .query("socialComments")
       .withIndex("by_post_created", (q) => q.eq("postId", args.postId))
@@ -1065,7 +1076,7 @@ export const getNotificationUnreadCount = query({
 export const listBookmarks = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const marks = await ctx.db
       .query("socialBookmarks")
       .withIndex("by_user_created", (q) => q.eq("userId", userId))
@@ -1075,7 +1086,7 @@ export const listBookmarks = query({
     const posts = await Promise.all(
       marks.map(async (mark) => {
         const post = await ctx.db.get(mark.postId);
-        if (!post || post.deletedAt) return null;
+        if (!post || post.deletedAt || !await canViewSocialPost(ctx, post, userId)) return null;
         const author = await resolveAuthor(ctx, post.authorId, post.profileId);
         return toPublicPost(post, author, { bookmarkedByMe: true });
       })
@@ -1561,11 +1572,11 @@ export const toggleLike = mutation({
     postId: v.id("socialPosts"),
   },
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     await assertChildSafetyFeature(ctx, userId, "social_ugc");
     await consumeSocialWriteRateLimit(ctx, userId, "toggle_like");
     const post = await ctx.db.get(args.postId);
-    if (!post || post.deletedAt) throw new Error("Post not found.");
+    if (!post || post.deletedAt || !await canViewSocialPost(ctx, post, userId)) throw new Error("Post not found.");
 
     const existing = await ctx.db
       .query("socialReactions")
@@ -1617,14 +1628,14 @@ export const addComment = mutation({
     parentId: v.optional(v.id("socialComments")),
   },
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     await assertChildSafetyFeature(ctx, userId, "social_ugc");
     await consumeSocialWriteRateLimit(ctx, userId, "add_comment");
     const body = sanitizeSocialText(args.body, socialBodyMaxLength("text"));
     if (!body) throw new Error("Comment cannot be empty.");
 
     const post = await ctx.db.get(args.postId);
-    if (!post || post.deletedAt) throw new Error("Post not found.");
+    if (!post || post.deletedAt || !await canViewSocialPost(ctx, post, userId)) throw new Error("Post not found.");
 
     if (args.parentId) {
       const parent = await ctx.db.get(args.parentId);
@@ -1755,9 +1766,9 @@ export const toggleBookmark = mutation({
     postId: v.id("socialPosts"),
   },
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const post = await ctx.db.get(args.postId);
-    if (!post || post.deletedAt) throw new Error("Post not found.");
+    if (!post || post.deletedAt || !await canViewSocialPost(ctx, post, userId)) throw new Error("Post not found.");
 
     const existing = await ctx.db
       .query("socialBookmarks")
@@ -1850,9 +1861,9 @@ export const recordShare = mutation({
     postId: v.id("socialPosts"),
   },
   handler: async (ctx, args) => {
-    const userId = await requireSession(args.sessionToken);
+    const userId = await requireSession(args.sessionToken, ctx);
     const post = await ctx.db.get(args.postId);
-    if (!post || post.deletedAt) throw new Error("Post not found.");
+    if (!post || post.deletedAt || !await canViewSocialPost(ctx, post, userId)) throw new Error("Post not found.");
 
     const shareCount = post.shareCount + 1;
     await ctx.db.patch(args.postId, { shareCount, updatedAt: Date.now() });

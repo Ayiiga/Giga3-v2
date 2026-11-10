@@ -390,6 +390,14 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
           ) : null}
         </div>
       </header>
+      {post.promotion && (
+        <div className="flex items-center justify-between gap-3 border-y border-border px-3 py-2 text-sm">
+          <span className="text-muted">Sponsored</span>
+          {post.promotion.website && (
+            <a className="font-semibold text-accent underline" href={post.promotion.website} target="_blank" rel="noopener noreferrer sponsored">Visit website</a>
+          )}
+        </div>
+      )}
 
       <GigaRemixBadge
         post={post}

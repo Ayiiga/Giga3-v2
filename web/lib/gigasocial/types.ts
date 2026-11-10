@@ -44,6 +44,7 @@ export type SocialPost = {
   author: SocialAuthor;
   likedByMe?: boolean;
   bookmarkedByMe?: boolean;
+  promotion?: { website?: string };
 };
 
 export type SocialCommunity = {
