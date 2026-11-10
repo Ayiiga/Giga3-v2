@@ -103,19 +103,26 @@ function ResourceVisual({ title, category, imageUrl, large = false }: {
   const commons = useCommonsImage(title, category, !imageUrl);
   const resolvedImage = imageUrl || commons?.thumb;
   const visual = resolvedImage
-    ? <img src={resolvedImage} alt={"Photograph of " + title} className="block h-full w-full bg-white object-contain" loading="lazy" />
-    : <ResourceDiagram title={title} category={category} />;
+    ? <img src={resolvedImage} alt={"Learning aid: " + title} className="block h-full w-full bg-white object-contain" loading="lazy" />
+    : <div className="flex h-full min-h-48 flex-col items-center justify-center gap-3 rounded-2xl bg-violet-50 p-5 text-center" role="status">
+        <span className="text-sm font-semibold text-violet-950">Illustration not yet available</span>
+        <span className="text-xs leading-5 text-violet-800">The correct diagram for {title} has not been verified. Read the material while the illustration is being prepared.</span>
+      </div>;
   return (
     <>
-      <button type="button" onClick={() => setZoomed(true)} aria-label={"Zoom labelled diagram for " + title} className={"group relative mx-auto block w-full overflow-hidden rounded-2xl border border-violet-200 bg-[#f8f7ff] text-left shadow-sm focus:outline-none focus:ring-4 focus:ring-violet-300 " + (large ? "max-w-[420px]" : "max-w-[260px]")}>
-        <div className="relative aspect-[9/16] w-full">{visual}</div>
-        <span className="absolute bottom-3 right-3 rounded-full bg-slate-950/85 px-3 py-1.5 text-xs font-bold text-white shadow">⌕ Tap to zoom</span>
-      </button>
+      <div className={"mx-auto w-full " + (large ? "max-w-[420px]" : "max-w-[260px]")}>
+        {resolvedImage ? (
+          <button type="button" onClick={() => setZoomed(true)} aria-label={"Zoom illustration for " + title} className="block w-full overflow-hidden rounded-2xl border border-violet-200 bg-white shadow-sm focus:outline-none focus:ring-4 focus:ring-violet-300">
+            <div className="aspect-[9/16] w-full">{visual}</div>
+          </button>
+        ) : <div className="rounded-2xl border border-violet-200">{visual}</div>}
+        {resolvedImage ? <button type="button" onClick={() => setZoomed(true)} className="mt-2 w-full rounded-lg border border-violet-300 bg-white px-3 py-2 text-sm font-semibold text-violet-900">Zoom illustration</button> : null}
+      </div>
       {commons && !imageUrl && <div className="mx-auto mt-1 max-w-[420px] text-[10px] leading-4 text-slate-600">
         Photo: {commons.artist} · {commons.license} · <a href={commons.page} target="_blank" rel="noreferrer" className="font-semibold text-violet-800 underline">Source & licence</a>
         {" · "}<a href={commons.original} target="_blank" rel="noreferrer" download className="font-semibold text-violet-800 underline">Download original</a>
       </div>}
-      {zoomed && <div role="dialog" aria-modal="true" aria-label={"Zoomed learning diagram: " + title} className="fixed inset-0 z-[100] flex items-center justify-center overflow-auto bg-slate-950/95 p-3" onClick={() => setZoomed(false)}>
+      {zoomed && resolvedImage && <div role="dialog" aria-modal="true" aria-label={"Zoomed learning diagram: " + title} className="fixed inset-0 z-[100] flex items-center justify-center overflow-auto bg-slate-950/95 p-3" onClick={() => setZoomed(false)}>
         <button type="button" onClick={() => setZoomed(false)} className="fixed right-4 top-4 z-[101] rounded-full bg-white px-4 py-2 text-sm font-bold text-slate-950 shadow-lg">Close ✕</button>
         <div className="my-12 w-full max-w-[520px]" onClick={e => e.stopPropagation()} style={{touchAction:"pinch-zoom pan-y"}}>
           <div className="aspect-[9/16] w-full overflow-hidden rounded-xl bg-white shadow-2xl">{visual}</div>
