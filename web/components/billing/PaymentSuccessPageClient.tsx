@@ -22,6 +22,7 @@ type VerifyResult = {
 };
 
 function successMessage(res: VerifyResult, isMarketplace: boolean): string {
+  if (res.type === "boost_campaign") return "Boost payment confirmed. View your campaign in GigaSocial.";
   if (res.type === "marketplace" || isMarketplace) {
     return "Purchase confirmed. Your download is ready in My purchases.";
   }
@@ -60,6 +61,8 @@ function PaymentSuccessPageContent() {
     "confirming"
   );
   const [retrying, setRetrying] = useState(false);
+  const isBoostCallback = params.get("boost") === "1";
+  const [isBoost, setIsBoost] = useState(false);
   const [isMarketplace, setIsMarketplace] = useState(isMarketplaceParam);
   const started = useRef(false);
 
@@ -74,6 +77,7 @@ function PaymentSuccessPageContent() {
 
   const applySuccess = useCallback((res: VerifyResult) => {
     if (res.type === "marketplace") setIsMarketplace(true);
+    if (res.type === "boost_campaign") setIsBoost(true);
     setMessage(successMessage(res, isMarketplaceParam));
     setPhase("success");
   }, [isMarketplaceParam]);
@@ -138,7 +142,8 @@ function PaymentSuccessPageContent() {
       if (cancelled) return;
       if (!ok) {
         setMessage(
-          "We received your payment but confirmation is taking longer than usual. Tap below to check again — credits usually appear within a minute."
+          isBoostCallback ? "Your boost payment is still being verified. Check again using this reference." :
+            "We received your payment but confirmation is taking longer than usual. Tap below to check again — credits usually appear within a minute."
         );
         setPhase("pending");
       }
@@ -147,7 +152,7 @@ function PaymentSuccessPageContent() {
     return () => {
       cancelled = true;
     };
-  }, [reference, paymentRecord, runVerification, applySuccess]);
+  }, [reference, paymentRecord, runVerification, applySuccess, isBoostCallback]);
 
   const handleRetry = useCallback(async () => {
     if (!reference) return;
@@ -157,12 +162,13 @@ function PaymentSuccessPageContent() {
     const ok = await runVerification(0);
     if (!ok) {
       setMessage(
-        "Still confirming. If you completed payment, wait a moment and try again, or refresh chat to see updated credits."
+        isBoostCallback ? "Your boost payment is still being verified. Wait a moment before checking again." :
+          "Still confirming. If you completed payment, wait a moment and try again, or refresh chat to see updated credits."
       );
       setPhase("pending");
     }
     setRetrying(false);
-  }, [reference, runVerification]);
+  }, [reference, runVerification, isBoostCallback]);
 
   if (phase === "failed") {
     return (
@@ -200,6 +206,18 @@ function PaymentSuccessPageContent() {
         pending
       />
     );
+  }
+
+  if (isBoost) {
+    return <PaymentSuccess
+      title="Boost payment confirmed"
+      message={message}
+      reference={reference}
+      primaryHref="/gigasocial/?tab=creator&creatorTab=boost"
+      primaryLabel="View campaigns"
+      secondaryHref="/gigasocial/"
+      secondaryLabel="Back to feed"
+    />;
   }
 
   if (isMarketplace) {
