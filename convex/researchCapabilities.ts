@@ -315,8 +315,9 @@ export function resolveNewsLookupCapability(query: string): ResearchCapabilityId
 export function shouldUseConversationalWorker(args: {
   needsLiveWeb: boolean;
   attachmentCount: number;
+  needsMediaWorker?: boolean;
 }): boolean {
-  return !args.needsLiveWeb && args.attachmentCount === 0;
+  return !args.needsLiveWeb && args.attachmentCount === 0 && !args.needsMediaWorker;
 }
 
 /** Fast text jobs that should not inherit long research recovery timeouts. */

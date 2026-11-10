@@ -44,6 +44,8 @@ import {
   creditActionForChatImageGeneration,
 } from "./creditsConfig";
 import { classifyRequestKind } from "./providerRouter";
+import { resolveMediaCapability } from "./mediaCapabilities";
+import { extractImageUrlFromContent, isImageEditOrTransformQuery } from "./chatImageSource";
 import { getAgeAccessForEmail } from "./childSafety";
 import {
   scanTextForSafetyHits,
@@ -237,11 +239,20 @@ export const acceptMessage = mutation({
     const rawAttachments = (args.attachments ?? []) as RawAttachmentInput[];
     const attachments = rawAttachments as ChatCompletionAttachment[];
     const hasImageAttachment = attachments.some((a) => a.kind === "image");
+    const previousAssistant = !hasImageAttachment && conversationId && isImageEditOrTransformQuery(args.content, true)
+      ? await ctx.db.query("messages")
+        .withIndex("by_conversation", (q) => q.eq("conversationId", conversationId))
+        .filter((q) => q.eq(q.field("role"), "assistant"))
+        .order("desc")
+        .first()
+      : null;
+    const hasEditableImageSource = hasImageAttachment ||
+      Boolean(previousAssistant && extractImageUrlFromContent(previousAssistant.content));
     // Ordinary text chat is credit-free. Only in-chat image *generation* requires credits.
     // Run before persona consumption so a failed image credit check cannot burn a daily slot.
     const requestKind = classifyRequestKind(args.content, mode, {
       hasImageAttachment,
-      hasEditableImageSource: hasImageAttachment,
+      hasEditableImageSource,
     });
     if (requestKind === "image_generation") {
       const creditUser = await ctx.db
@@ -479,6 +490,12 @@ export const acceptMessage = mutation({
       };
     }
 
+    const useConversationalWorker = shouldUseConversationalWorker({
+      needsLiveWeb,
+      attachmentCount: attachments.length,
+      needsMediaWorker: requestKind === "image_generation" ||
+        resolveMediaCapability({ query: args.content, hasImageAttachment }) !== "none",
+    });
     const jobId = await ctx.db.insert("chatReplyJobs", {
       conversationId: conversationId!,
       userId: email,
@@ -486,13 +503,7 @@ export const acceptMessage = mutation({
       content: args.content,
       attachmentsJson:
         attachments.length > 0 ? JSON.stringify(attachments) : undefined,
-      kind:
-        shouldUseConversationalWorker({
-          needsLiveWeb,
-          attachmentCount: attachments.length,
-        })
-          ? ("conversational" as const)
-          : ("reply" as const),
+      kind: useConversationalWorker ? "conversational" : "reply",
       clientRequestId: args.clientRequestId,
       chatSystem: args.chatSystem,
       responseDetail: args.responseDetail,
@@ -505,10 +516,7 @@ export const acceptMessage = mutation({
       createdAt: now,
     });
 
-    const worker = shouldUseConversationalWorker({
-      needsLiveWeb,
-      attachmentCount: attachments.length,
-    })
+    const worker = useConversationalWorker
       ? internal.chatConversationalReply.processTurn
       : internal.chatReplyWorker.processJob;
 
@@ -801,28 +809,25 @@ export const retryFailedReply = mutation({
       mode,
     });
 
+    const useConversationalWorker = shouldUseConversationalWorker({
+      needsLiveWeb,
+      attachmentCount: 0,
+      needsMediaWorker: classifyRequestKind(lastUser.content, mode) === "image_generation" ||
+        resolveMediaCapability({ query: lastUser.content }) !== "none",
+    });
     const jobId = await ctx.runMutation(internal.chatReplyJobs.createJob, {
       conversationId: args.conversationId,
       userId: email,
       mode,
       content: lastUser.content,
-      kind:
-        shouldUseConversationalWorker({
-          needsLiveWeb,
-          attachmentCount: 0,
-        })
-          ? ("conversational" as const)
-          : ("reply" as const),
+      kind: useConversationalWorker ? "conversational" : "reply",
       clientRequestId: args.clientRequestId,
       researchCapability: resolvedResearchCapability,
       personaId: conv.personaId,
       liveWeb: needsLiveWeb,
     });
 
-    const worker = shouldUseConversationalWorker({
-      needsLiveWeb,
-      attachmentCount: 0,
-    })
+    const worker = useConversationalWorker
       ? internal.chatConversationalReply.processTurn
       : internal.chatReplyWorker.processJob;
 

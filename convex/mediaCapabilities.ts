@@ -55,7 +55,7 @@ const MEDIA_TOOLS_QUESTION_ALT_RE =
   /\b(edit (videos?|pictures?|photos?|images?) (here|in chat|on giga3|with giga3)|can you edit videos or pictures)\b/i;
 
 const IMAGE_EDIT_INTENT_RE =
-  /\b(remove background|background removal|replace background|upscale|enhance (this )?(photo|image|picture)|retouch|object removal|inpaint|color correct|relight|crop|resize|rotate|add text to (this )?(image|photo)|edit (this |my |the )?(photo|image|picture|pic))\b/i;
+  /\b(remove (the )?background|background removal|replace (the )?background|upscale|enhance (this )?(photo|image|picture)|retouch|object removal|inpaint|color correct|relight|crop|resize|rotate|add text to (this )?(image|photo)|edit (this |my |the )?(photo|image|picture|pic))\b/i;
 
 const VIDEO_EDIT_INTENT_RE =
   /\b(trim|cut|merge|join|caption|subtitle|transition|overlay|crop (this )?video|edit (this |my |the )?video|add music to (this )?video)\b/i;

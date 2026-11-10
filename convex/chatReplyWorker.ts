@@ -53,7 +53,7 @@ import {
   imageDailyLimitMarkdown,
   resolveImageGenerationDecision,
 } from "./premiumImage";
-import { resolveChatImageSourceUrl } from "./chatImageSource";
+import { isImageEditOrTransformQuery, resolveChatImageSourceUrl } from "./chatImageSource";
 import { isLiveWebEnabled } from "./liveWeb/liveWebConfig";
 import {
   buildLiveWebMetadata,
@@ -242,13 +242,16 @@ async function runHybridAiEngine(
     freeOpenAiQuotaReservationId?: string;
   }
 > {
-  const sourceImageUrl = resolveChatImageSourceUrl({
+  const candidateImageUrl = resolveChatImageSourceUrl({
     imageAttachments: args.imageAttachments ?? [],
     history: args.chatMessages.map((m) => ({
       role: m.role,
       content: typeof m.content === "string" ? m.content : "",
     })),
   });
+  const sourceImageUrl = isImageEditOrTransformQuery(args.query, Boolean(candidateImageUrl))
+    ? candidateImageUrl
+    : undefined;
   const hasEditableImageSource = Boolean(sourceImageUrl);
 
   const routePlan = buildChatRoutePlan({

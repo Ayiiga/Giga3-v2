@@ -91,6 +91,13 @@ describe("chat image edit classification", () => {
         { role: "user", content: "make it blue" },
       ])
     ).toBe(url);
+    expect(extractImageUrlFromContent(`Here is your edited image:\n\n${url}`)).toBe(url);
+    expect(extractImageUrlFromContent(`Source: ${url}`)).toBeNull();
+    expect(findPriorAssistantImageUrl([
+      { role: "assistant", content: `Here is your generated image:\n\n${url}` },
+      { role: "assistant", content: "Here are the essay conclusions." },
+    ])).toBeNull();
+    expect(isImageEditOrTransformQuery("Add more citations to the essay", true)).toBe(false);
   });
 });
 

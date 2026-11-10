@@ -28,6 +28,9 @@ describe("shouldUseConversationalWorker", () => {
     expect(
       shouldUseConversationalWorker({ needsLiveWeb: true, attachmentCount: 0 })
     ).toBe(false);
+    expect(
+      shouldUseConversationalWorker({ needsLiveWeb: false, attachmentCount: 0, needsMediaWorker: true })
+    ).toBe(false);
   });
 });
 
