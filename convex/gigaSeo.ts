@@ -1,7 +1,6 @@
 import { action, internalAction, internalMutation, internalQuery, mutation, query } from "./_generated/server";
 import type { ActionCtx, MutationCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
-import { internal } from "./_generated/api";
 import { makeFunctionReference } from "convex/server";
 
 // Keep this module's backend type-check independent of the repository-wide generated API map.
@@ -11,6 +10,9 @@ const saveDraftRef = makeFunctionReference<"mutation">("gigaSeo:saveDraft");
 import { v } from "convex/values";
 import { adminCredentialArgs, ensureAdminAccess } from "./adminAccess";
 import { GIGA3_VERIFIED_FEATURE_EDITORIAL_RULE } from "./gigaSeoEditorialPolicy";
+
+const getScheduledDraftPlanRef = makeFunctionReference<"query", Record<string, never>, Doc<"gigaSeoContentPlans"> | null>("gigaSeo:getScheduledDraftPlan");
+const saveScheduledDraftRef = makeFunctionReference<"mutation">("gigaSeo:saveScheduledDraft");
 
 const DEFAULT_SETTINGS = {
   key: "primary",
@@ -285,10 +287,10 @@ export const getScheduledDraftPlan = internalQuery({
 export const generateScheduledDraft = internalAction({
   args: {},
   handler: async (ctx: ActionCtx): Promise<void> => {
-    const plan = await ctx.runQuery(internal.gigaSeo.getScheduledDraftPlan, {});
+    const plan = await ctx.runQuery(getScheduledDraftPlanRef, {});
     if (!plan) return;
     const { fields } = await buildDraft(plan);
-    await ctx.runMutation(internal.gigaSeo.saveScheduledDraft, { planId: plan._id, expectedUpdatedAt: plan.updatedAt, ...fields });
+    await ctx.runMutation(saveScheduledDraftRef, { planId: plan._id, expectedUpdatedAt: plan.updatedAt, ...fields });
   },
 });
 
