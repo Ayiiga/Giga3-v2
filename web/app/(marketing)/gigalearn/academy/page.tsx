@@ -47,6 +47,14 @@ export default function GigaLearnAcademyPage() {
         description="Learn by Doing. Build with AI. Create the Future. Practice, studios, and existing Academy pathways on GigaLearn."
         showProductNav={false}
       />
+      <div className="section-padding pt-4">
+        <a
+          href="/gigalearn/academy/workspace/"
+          className="inline-flex min-h-11 items-center rounded-xl bg-violet-700 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-800"
+        >
+          Open Academy Workspace
+        </a>
+      </div>
       <div className="marketing-stable gigalearn-stable section-padding pt-4 pb-6 sm:pt-6">
         <Suspense fallback={<ClientAppHydrationNotice productName="GigaLearn Academy" />}>
           <AcademyHomeRoot />
