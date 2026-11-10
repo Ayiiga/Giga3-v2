@@ -1,4 +1,5 @@
 import courses from './courses.mjs';
+import { eligibleForCertificate, passingScore, readProgress } from './progress.mjs';
 const main = document.querySelector('main');
 const dialog = document.querySelector('#detail');
 const paths = {
@@ -31,15 +32,10 @@ try {
   // Corrupt or unavailable storage must not prevent opening lessons.
 }
 function record(course) {
-  const state = saved[course.id] || {};
-  return {
-    done: Array.isArray(state.done) ? [...new Set(state.done.filter(i => Number.isInteger(i) && i >= 0 && i < course.lessons.length))] : [],
-    best: Number.isInteger(state.best) && state.best >= 0 && state.best <= course.quiz.length ? state.best : 0,
-    earned: typeof state.earned === 'string' && !Number.isNaN(Date.parse(state.earned)) ? state.earned : ''
-  };
+  return readProgress(course, saved[course.id]);
 }
 function save(course, state) {
-  if (!state.earned && state.done.length === course.lessons.length && state.best >= 3) state.earned = new Date().toISOString();
+  if (!state.earned && eligibleForCertificate(course,state)) state.earned = new Date().toISOString();
   saved[course.id] = state;
   try { localStorage.setItem(key, JSON.stringify(saved)); }
   catch { storageAvailable = false; }
@@ -52,8 +48,9 @@ const head = (label,title,desc) => '<div class="pagehead"><p class="eyebrow">'+l
 const art = '<svg class="hero-art" viewBox="0 0 400 320" aria-hidden="true"><g fill="none" stroke="#b58bf1" stroke-opacity=".42"><circle cx="244" cy="163" r="140"/><circle cx="244" cy="163" r="110"/><circle cx="244" cy="163" r="78"/><ellipse cx="244" cy="163" rx="172" ry="60" transform="rotate(-33 244 163)"/><path d="M244 8v306M91 163h306" stroke-dasharray="3 7"/></g><g transform="translate(244 163) rotate(-10)"><rect x="-54" y="-53" width="108" height="106" rx="22" fill="#a278e2" fill-opacity=".27" stroke="#e0c7ff" stroke-opacity=".65"/><path d="M-35 -11 0 -29 35 -11 0 7-35-11Zm12 7v18q23 21 46 0V-4m12-7v21" stroke="#f0dcff" stroke-width="3" fill="none" stroke-linejoin="round" stroke-linecap="round"/></g><g fill="#dfc2ff"><circle cx="359" cy="81" r="5"/><circle cx="107" cy="224" r="4"/><circle cx="306" cy="258" r="4"/><path d="M156 59v16m-8-8h16M338 199v18m-9-9h18" stroke="#e6ceff" stroke-width="2"/></g></svg>';
 function catalog(materials=false) {
   const completed = courses.reduce((sum, course) => sum + record(course).done.length, 0);
+  const totalLessons = courses.reduce((sum, course) => sum + course.lessons.length, 0);
   const inProgress = courses.find(course => record(course).done.length && !record(course).earned);
-  const stats = [['grid',courses.length,'Course tracks'],['check',completed+' / 18','Lessons complete'],['award',courses.filter(course=>record(course).earned).length,'Certificates earned']];
+  const stats = [['grid',courses.length,'Course tracks'],['check',completed+' / '+totalLessons,'Lessons complete'],['award',courses.reduce((count,course)=>{const state=record(course);return count+Number(Boolean(state.earned))+Number(Boolean(state.introductoryEarned));},0),'Certificates earned']];
   main.innerHTML = (materials ? head('RESOURCE LIBRARY','Learning materials','View every resource for free. Download and print access is reserved for verified Giga3 Hub subscribers.') :
     '<section class="hero"><div class="hero-text"><p class="eyebrow">GIGA3 HUB / LEARNING WORKSPACE</p><h1>GigaLearn Academy</h1><p>Build practical skills in six focused tracks. Learn step by step, put it into practice, and track your progress.</p>'+
     button(inProgress?'Continue learning':'Browse courses',inProgress?'#course/'+inProgress.id:'#courses',false).replace('class="btn"', 'class="btn" id="hero-action"')+
@@ -186,13 +183,14 @@ function openMaterial(course) {
 }
 function coursePage(course) {
   const state = record(course);
+  const pass = passingScore(course);
   main.innerHTML = '<a class="back" href="#courses">'+icon('back')+' All courses</a>'+head(course.field,course.name,course.summary)+
     '<section class="panel"><div class="row"><strong>Course progress</strong><span id="lesson-count"></span></div><progress aria-label="Lessons complete" max="'+course.lessons.length+'"></progress><p id="course-status" class="notice" aria-live="polite"></p></section>'+
     '<h2 class="section-title">Step-by-step lessons</h2><p class="section-subtitle">Try each activity before marking its lesson complete.</p>'+
     '<div class="lesson-list">'+course.lessons.map(([title,intro,steps,activity,related],i)=>'<details class="panel"><summary>'+String(i+1).padStart(2,'0')+' · '+title+' <span data-marker="'+i+'"></span></summary>'+
     '<div class="lesson-content"><p>'+intro+'</p>'+list(steps)+'<div class="activity"><strong>Practical activity</strong>'+activity+'</div><p><strong>Related area</strong> · '+related+'</p>'+
     '<button class="btn" type="button" data-lesson="'+i+'"></button></div></details>').join('')+'</div>'+
-    '<section class="panel"><h2>Course assessment</h2><p>Answer all four questions. Score at least 3 out of 4 and complete every lesson to unlock a browser-local certificate.</p>'+
+    '<section class="panel"><h2>Course assessment</h2><p>Answer all '+course.quiz.length+' questions. Score at least '+pass+' out of '+course.quiz.length+' and complete every lesson to unlock a browser-local certificate.</p>'+
     '<form id="quiz">'+course.quiz.map(([question,options],i)=>'<fieldset><legend>'+(i+1)+'. '+esc(question)+'</legend>'+
     options.map((answer,j)=>'<label class="option"><input required type="radio" name="q'+i+'" value="'+j+'">'+esc(answer)+'</label>').join('')+
     '<p class="feedback" id="feedback-'+i+'" hidden></p></fieldset>').join('')+
@@ -209,7 +207,8 @@ function coursePage(course) {
     });
     const status = main.querySelector('#course-status');
     status.textContent = 'Best assessment score '+state.best+' / '+course.quiz.length+'. ';
-    if (state.earned) {
+    if (state.introductoryBest) status.append('Original assessment score '+state.introductoryBest+' / 4. ');
+    if (state.earned || state.introductoryEarned) {
       const link = document.createElement('a');
       link.href='#certificates';
       link.className='back';
@@ -238,30 +237,32 @@ function coursePage(course) {
     state.best = Math.max(state.best,score);
     save(course,state);
     update();
-    main.querySelector('#quiz-result').textContent = score+' / '+course.quiz.length+(score>=3?' · Passed':' · Try again');
+    main.querySelector('#quiz-result').textContent = score+' / '+course.quiz.length+(score>=pass?' · Passed':' · Try again');
   });
   update();
 }
 function overview(certificates) {
-  main.innerHTML = (certificates ? head('LEARNING RECORD','Certificates','Earn a certificate by completing all three lessons and passing the assessment for a track. Certificates reflect progress recorded in this browser.') :
+  main.innerHTML = (certificates ? head('LEARNING RECORD','Certificates','Earn a certificate by completing every lesson and passing the assessment for a track. Certificates reflect progress recorded in this browser.') :
     head('YOUR WORKSPACE','Your progress','Pick up a track where you left off. Your progress is stored in this browser.'))+
     '<section class="grid">'+courses.map(course=>{
       const state = record(course);
-      const earned = state.earned && state.done.length===course.lessons.length && state.best>=3;
+      const earned = state.earned && eligibleForCertificate(course,state);
       return '<article class="card '+course.color+'">'+badge(certificates?'award':course.icon,course.color)+'<h3>'+course.name+'</h3>'+
         (certificates ? '<p>'+(earned?'Certificate earned':'Complete the lessons and pass the assessment to unlock.')+'</p>'+
-        (earned?'<button class="btn" data-certificate="'+course.id+'">View certificate'+icon('arrow')+'</button>':button('Open course','#course/'+course.id)) :
+        (earned?'<button class="btn" data-certificate="'+course.id+'">View certificate'+icon('arrow')+'</button>':button('Open course','#course/'+course.id))+
+        (state.introductoryEarned?'<button class="btn" data-certificate="'+course.id+'" data-introductory>View original certificate'+icon('arrow')+'</button>':'') :
         '<p>'+state.done.length+' of '+course.lessons.length+' lessons · Best score '+state.best+' / '+course.quiz.length+'</p>'+
         '<progress aria-label="'+course.name+' lessons complete" max="'+course.lessons.length+'" value="'+state.done.length+'"></progress>'+
         button(state.done.length?'Continue course':'Open course','#course/'+course.id))+'</article>';
     }).join('')+'</section>';
 }
-function openCertificate(course) {
+function openCertificate(course, introductory) {
   const state = record(course);
-  if (!state.earned || state.done.length!==course.lessons.length || state.best<3) return;
-  const date = new Intl.DateTimeFormat('en-GH',{dateStyle:'long',timeZone:'Africa/Accra'}).format(new Date(state.earned));
+  const earned = introductory ? state.introductoryEarned : state.earned;
+  if (!earned || (!introductory && !eligibleForCertificate(course,state))) return;
+  const date = new Intl.DateTimeFormat('en-GH',{dateStyle:'long',timeZone:'Africa/Accra'}).format(new Date(earned));
   dialog.innerHTML = '<div class="dialog-top">'+badge('award')+'<button class="btn" type="button" aria-label="Close certificate" data-close>'+icon('close')+'</button></div>'+
-    '<div class="cert-paper"><p class="eyebrow">GIGALEARN ACADEMY</p><h2 id="dialog-title">Certificate of completion</h2><h3>'+course.name+'</h3><p>All lessons completed and assessment passed.</p><p>Earned '+esc(date)+'</p></div><p class="notice">Learning record generated in this browser.</p>';
+    '<div class="cert-paper"><p class="eyebrow">GIGALEARN ACADEMY</p><h2 id="dialog-title">Certificate of completion</h2><h3>'+course.name+'</h3><p>'+ (introductory?'Original three-lesson course completed.':course.lessons.length+' lessons completed and assessment passed.') +'</p><p>Earned '+esc(date)+'</p></div><p class="notice">Learning record generated in this browser.</p>';
   dialog.setAttribute('aria-labelledby','dialog-title');
   dialog.showModal();
 }
@@ -287,7 +288,7 @@ main.addEventListener('click',event=>{
   const course = courses.find(c=>c.id===(trigger.dataset.material || trigger.dataset.certificate));
   if (!course) return;
   if (trigger.dataset.material) openMaterial(course);
-  else openCertificate(course);
+  else openCertificate(course,trigger.hasAttribute('data-introductory'));
 });
 dialog.addEventListener('click',event=>{if(event.target.closest('[data-close]')) dialog.close();});
 window.addEventListener('hashchange',()=>{render();main.focus({preventScroll:true});window.scrollTo(0,0);});
