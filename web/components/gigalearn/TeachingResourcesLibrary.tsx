@@ -3,6 +3,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "convex/_generated/api";
+import { scienceDiagramFor } from "@/lib/gigalearn/scienceDiagrams";
 import { getSessionToken } from "@/lib/auth";
 import { getConvexSiteUrl, getConvexUrl } from "@/lib/convex/env";
 import { BookOpen, Search, ShieldCheck, Download, Printer, Play, FlaskConical } from "lucide-react";
@@ -22,51 +23,6 @@ type Resource = {
   activity: string; access: "free" | "subscriber"; previewText?: string | null;
   videoUrl?: string | null; imageUrl?: string | null;
 };
-function ResourceDiagram({ title, category }: { title: string; category: string }) {
-  const value = (title + " " + category).toLowerCase();
-  const microscope = value.includes("microscope");
-  const thermometer = value.includes("thermometer");
-  const beaker = value.includes("beaker");
-  const multimeter = value.includes("multimeter") || value.includes("electric");
-  const heading = microscope ? "COMPOUND LIGHT MICROSCOPE" : thermometer ? "LABORATORY THERMOMETER" : beaker ? "LABORATORY BEAKER" : multimeter ? "DIGITAL MULTIMETER" : title.toUpperCase();
-  return (
-    <svg viewBox="0 0 360 640" role="img" aria-label={"9 by 16 labelled educational diagram: " + title} className="block h-auto w-full bg-[#f8f7ff]">
-      <defs><linearGradient id="diagBg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#f5f0ff"/><stop offset="1" stopColor="#e8e5ff"/></linearGradient><linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#f8fafc"/><stop offset="1" stopColor="#94a3b8"/></linearGradient></defs>
-      <rect width="360" height="640" rx="22" fill="url(#diagBg)"/>
-      <text x="180" y="38" textAnchor="middle" fontSize="13" fontWeight="800" letterSpacing="1.2" fill="#5b21b6">GIGALEARN • VISUAL STUDY GUIDE</text>
-      <text x="180" y="66" textAnchor="middle" fontSize={heading.length > 24 ? 13 : 16} fontWeight="900" fill="#17133b">{heading}</text>
-      {microscope && <>
-        <g stroke="#26345c" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M142 130 L177 105 L218 168 L193 187 Z" fill="url(#metal)"/><path d="M165 112 L185 98 L230 160 L211 174 Z" fill="#64748b"/>
-          <path d="M207 169 Q250 190 241 245 Q234 280 197 286" fill="none" stroke="#5b7cba" strokeWidth="20"/>
-          <path d="M191 285 L116 285 Q92 285 92 308 L92 321 L263 321 Q275 321 275 309 L275 303 Q275 285 256 285 L225 285" fill="none" stroke="#334b83" strokeWidth="18"/>
-          <path d="M119 285 L151 225 L205 225" fill="none" stroke="#334b83" strokeWidth="16"/><path d="M139 225 L215 225" stroke="#111827" strokeWidth="7"/><path d="M123 210 L215 210" stroke="#64748b" strokeWidth="7"/>
-          <circle cx="208" cy="191" r="12" fill="#f8fafc"/><path d="M174 228 L174 246" stroke="#f59e0b" strokeWidth="6"/><path d="M142 249 L210 249" stroke="#f8fafc" strokeWidth="8"/><path d="M176 249 L176 269" stroke="#0f172a" strokeWidth="5"/>
-        </g>
-        <g fill="none" stroke="#7c3aed" strokeWidth="2"><path d="M170 117 L85 112 L45 112"/><path d="M220 191 L286 160 L320 160"/><path d="M180 228 L75 220 L40 220"/><path d="M170 250 L285 270 L325 270"/><path d="M200 300 L95 355 L38 355"/><path d="M255 315 L290 385 L325 385"/></g>
-        <g fill="#24134f" fontSize="11" fontWeight="800"><text x="12" y="102">Eyepiece</text><text x="286" y="148">Focus knob</text><text x="10" y="210">Objective lens</text><text x="286" y="258">Stage</text><text x="10" y="370">Arm</text><text x="286" y="402">Base</text></g>
-        <text x="180" y="465" textAnchor="middle" fontSize="12" fontWeight="800" fill="#4c1d95">LIGHT PATH & PARTS</text><text x="180" y="490" textAnchor="middle" fontSize="11" fill="#312e81">Light passes through the specimen</text><text x="180" y="510" textAnchor="middle" fontSize="11" fill="#312e81">and lenses to magnify the image.</text>
-      </>}
-      {thermometer && <>
-        <rect x="154" y="125" width="52" height="260" rx="26" fill="#fff" stroke="#334155" strokeWidth="5"/><rect x="176" y="165" width="9" height="205" rx="5" fill="#ef4444"/><circle cx="180" cy="385" r="39" fill="#ef4444" stroke="#334155" strokeWidth="5"/><circle cx="180" cy="385" r="25" fill="#fb7185"/>
-        {Array.from({length:8},(_,i)=><g key={i}><path d={"M207 " + (170+i*24) + " h18"} stroke="#334155" strokeWidth="3"/><text x="233" y={174+i*24} fontSize="10" fill="#334155">{100-i*10}°</text></g>)}
-        <path d="M154 180 L92 150 L30 150 M207 285 L268 260 L330 260 M180 420 L180 470" stroke="#7c3aed" strokeWidth="2" fill="none"/><g fill="#24134f" fontSize="12" fontWeight="800"><text x="10" y="138">Scale</text><text x="272" y="248">Liquid column</text><text x="180" y="492" textAnchor="middle">Bulb / reservoir</text></g><text x="180" y="540" textAnchor="middle" fontSize="12" fill="#4c1d95">Read at eye level • °C</text>
-      </>}
-      {beaker && <>
-        <path d="M110 140 L250 140 L235 430 Q180 455 125 430 Z" fill="#dbeafe" fillOpacity=".75" stroke="#2563eb" strokeWidth="6"/><path d="M117 300 Q180 285 243 300 L236 427 Q180 449 126 427 Z" fill="#38bdf8" fillOpacity=".6"/><path d="M110 140 L250 140 L250 160 L110 160 Z" fill="#94a3b8" stroke="#334155" strokeWidth="3"/>
-        {Array.from({length:6},(_,i)=><path key={i} d={"M220 " + (205+i*28) + " h20"} stroke="#1e40af" strokeWidth="3"/>)}
-        <path d="M120 165 L50 130 L20 130 M235 300 L300 280 L340 280 M235 430 L295 460 L340 460" stroke="#7c3aed" strokeWidth="2" fill="none"/><g fill="#24134f" fontSize="12" fontWeight="800"><text x="8" y="118">Rim & spout</text><text x="270" y="266">Graduations</text><text x="272" y="482">Flat base</text></g><text x="180" y="520" textAnchor="middle" fontSize="12" fill="#4c1d95">For holding, mixing & heating</text><text x="180" y="542" textAnchor="middle" fontSize="11" fill="#4c1d95">Graduations show approximate volume</text>
-      </>}
-      {multimeter && <>
-        <rect x="102" y="120" width="156" height="300" rx="24" fill="#25334c" stroke="#111827" strokeWidth="5"/><rect x="126" y="148" width="108" height="70" rx="8" fill="#d9f99d" stroke="#111827" strokeWidth="4"/><text x="180" y="193" textAnchor="middle" fontSize="28" fontWeight="900" fill="#1f2937">12.0</text><circle cx="180" cy="294" r="48" fill="#475569" stroke="#cbd5e1" strokeWidth="6"/><path d="M180 294 L204 263" stroke="#f8fafc" strokeWidth="7" strokeLinecap="round"/><circle cx="180" cy="294" r="8" fill="#f8fafc"/><circle cx="145" cy="376" r="10" fill="#111827" stroke="#ef4444" strokeWidth="4"/><circle cx="215" cy="376" r="10" fill="#111827" stroke="#0f172a" strokeWidth="4"/>
-        <path d="M126 180 L62 160 L20 160 M226 295 L295 270 L340 270 M145 376 L70 430 L20 430 M215 376 L285 460 L340 460" stroke="#7c3aed" strokeWidth="2" fill="none"/><g fill="#24134f" fontSize="12" fontWeight="800"><text x="8" y="148">Display</text><text x="278" y="255">Selector dial</text><text x="8" y="448">COM socket</text><text x="278" y="480">V / Ω socket</text></g><text x="180" y="530" textAnchor="middle" fontSize="12" fill="#4c1d95">Measures voltage, current & resistance</text>
-      </>}
-      {!microscope && !thermometer && !beaker && !multimeter && <><rect x="55" y="145" width="250" height="260" rx="20" fill="#ede9fe" stroke="#7c3aed" strokeWidth="3"/><text x="180" y="260" textAnchor="middle" fontSize="54">📘</text><text x="180" y="310" textAnchor="middle" fontSize="13" fontWeight="800" fill="#312e81">{category}</text><text x="180" y="340" textAnchor="middle" fontSize="11" fill="#4338ca">Study the description and key points</text></>}
-      <rect x="18" y="570" width="324" height="48" rx="12" fill="#4c1d95"/><text x="180" y="590" textAnchor="middle" fontSize="10" fontWeight="800" fill="#fff">GIGALEARN • LABELLED DIAGRAM</text><text x="180" y="605" textAnchor="middle" fontSize="9" fill="#ede9fe">Tap image to zoom • 9:16 portrait</text>
-    </svg>
-  );
-}
-
 type CommonsImage = { thumb: string; original: string; page: string; license: string; artist: string };
 
 function useCommonsImage(title: string, category: string, enabled: boolean) {
@@ -96,14 +52,15 @@ function useCommonsImage(title: string, category: string, enabled: boolean) {
   return image;
 }
 
-function ResourceVisual({ title, category, imageUrl, large = false }: {
-  title: string; category: string; imageUrl?: string | null; large?: boolean;
+function ResourceVisual({ slug, title, category, imageUrl, large = false }: {
+  slug: string; title: string; category: string; imageUrl?: string | null; large?: boolean;
 }) {
   const [zoomed, setZoomed] = useState(false);
-  const commons = useCommonsImage(title, category, !imageUrl);
-  const resolvedImage = imageUrl || commons?.thumb;
+  const diagram = scienceDiagramFor(slug);
+  const commons = useCommonsImage(title, category, !diagram && !imageUrl && category !== "Laboratory Set-ups");
+  const resolvedImage = diagram?.src || imageUrl || commons?.thumb;
   const visual = resolvedImage
-    ? <img src={resolvedImage} alt={"Learning aid: " + title} className="block h-full w-full bg-white object-contain" loading="lazy" />
+    ? <img src={resolvedImage} alt={diagram?.alt ?? ("Learning aid: " + title)} className="block h-full w-full bg-white object-contain" loading="lazy" />
     : <div className="flex h-full min-h-48 flex-col items-center justify-center gap-3 rounded-2xl bg-violet-50 p-5 text-center" role="status">
         <span className="text-sm font-semibold text-violet-950">Illustration not yet available</span>
         <span className="text-xs leading-5 text-violet-800">The correct diagram for {title} has not been verified. Read the material while the illustration is being prepared.</span>
@@ -118,7 +75,7 @@ function ResourceVisual({ title, category, imageUrl, large = false }: {
         ) : <div className="rounded-2xl border border-violet-200">{visual}</div>}
         {resolvedImage ? <button type="button" onClick={() => setZoomed(true)} className="mt-2 w-full rounded-lg border border-violet-300 bg-white px-3 py-2 text-sm font-semibold text-violet-900">Zoom illustration</button> : null}
       </div>
-      {commons && !imageUrl && <div className="mx-auto mt-1 max-w-[420px] text-[10px] leading-4 text-slate-600">
+      {commons && !diagram && !imageUrl && category !== "Laboratory Set-ups" && <div className="mx-auto mt-1 max-w-[420px] text-[10px] leading-4 text-slate-600">
         Photo: {commons.artist} · {commons.license} · <a href={commons.page} target="_blank" rel="noreferrer" className="font-semibold text-violet-800 underline">Source & licence</a>
         {" · "}<a href={commons.original} target="_blank" rel="noreferrer" download className="font-semibold text-violet-800 underline">Download original</a>
       </div>}
@@ -335,7 +292,7 @@ export function TeachingResourcesLibrary() {
       {selected && <section className="rounded-3xl border border-violet-200 bg-white p-4 shadow-sm print-resource" aria-live="polite">
         {!sessionReady || detail === undefined ? <p className="text-sm text-slate-500">Checking your subscription and loading resource details…</p> : !detail ? <p className="text-sm text-slate-500">This resource is no longer available. Refresh the library and try again.</p> : <>
           <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-wide text-violet-700">{detail.subject} · {detail.classes.join(", ")}</p><h2 className="mt-1 text-xl font-black text-slate-950">{detail.title}</h2><p className="mt-1 text-sm text-slate-600">{detail.summary}</p></div><button onClick={() => setSelected(null)} className="rounded-full border px-3 py-2 text-sm">Close</button></div>
-          <div className="mt-4"><ResourceVisual title={detail.title} category={detail.category} imageUrl={detail.imageUrl} large /></div>
+          <div className="mt-4"><ResourceVisual slug={detail.slug} title={detail.title} category={detail.category} imageUrl={detail.imageUrl} large /></div>
           <p className="mt-4 text-sm leading-6 text-slate-700">{detail.description}</p>
           {!detail.fullAccess && <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">You are viewing a free preview. Sign in with an active Giga3 AI subscription to unlock the complete practical instructions, teacher notes and student exercises.</div>}
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -365,7 +322,7 @@ export function TeachingResourcesLibrary() {
         <div className="mb-3 flex items-center justify-between gap-3"><h2 className="text-lg font-black text-slate-950">Explore learning resources</h2><span className="text-xs text-slate-500">{resources?.length ?? 0} resources</span></div>
         {resources === undefined ? <p className="rounded-2xl bg-slate-50 p-5 text-sm text-slate-500">Loading resource library…</p> :
           resources.length === 0 ? <div className="rounded-2xl border border-dashed p-7 text-center"><BookOpen className="mx-auto h-8 w-8 text-violet-500" /><h3 className="mt-2 font-bold">No matching resources yet</h3><p className="mt-1 text-sm text-slate-500">This collection has no published resources yet. Please contact the administrator to publish the science learning aids.</p></div> :
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{resources.map(r => <article key={r._id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><div className="flex items-center justify-between gap-2"><span className="rounded-full bg-violet-50 px-2.5 py-1 text-[10px] font-bold text-violet-800">{r.subject}</span><span className="text-xs font-bold text-emerald-700">Free viewing</span></div><div className="mt-3"><ResourceVisual title={r.title} category={r.category} imageUrl={r.imageUrl} /></div><h3 className="mt-3 font-extrabold text-slate-950">{r.title}</h3><p className="mt-1 text-sm leading-5 text-slate-600">{r.summary}</p><p className="mt-3 text-xs text-slate-500">{r.classes.join(" · ")} · {r.category}</p><button onClick={() => {setSelected(r.slug);setNotice("");}} className="mt-4 min-h-11 w-full rounded-xl bg-violet-700 px-4 py-2 text-sm font-bold text-white">Open full material & illustration</button></article>)}</div>}
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{resources.map(r => <article key={r._id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><div className="flex items-center justify-between gap-2"><span className="rounded-full bg-violet-50 px-2.5 py-1 text-[10px] font-bold text-violet-800">{r.subject}</span><span className="text-xs font-bold text-emerald-700">Free viewing</span></div><div className="mt-3"><ResourceVisual slug={r.slug} title={r.title} category={r.category} imageUrl={r.imageUrl} /></div><h3 className="mt-3 font-extrabold text-slate-950">{r.title}</h3><p className="mt-1 text-sm leading-5 text-slate-600">{r.summary}</p><p className="mt-3 text-xs text-slate-500">{r.classes.join(" · ")} · {r.category}</p><button onClick={() => {setSelected(r.slug);setNotice("");}} className="mt-4 min-h-11 w-full rounded-xl bg-violet-700 px-4 py-2 text-sm font-bold text-white">Open full material & illustration</button></article>)}</div>}
       </section>
       <style jsx global>{`@media print { body * { visibility: hidden !important; } .print-resource, .print-resource * { visibility: visible !important; } .print-resource { position: absolute; inset: 0; width: 100%; border: 0 !important; box-shadow: none !important; } .print-resource button, .print-resource a { display: none !important; } }`}</style>
     </main>
