@@ -62,11 +62,11 @@ describe("GigaLearn teaching materials library", () => {
     expect(backend).toContain("status: \"published\"");
     expect(backend).toContain("existing resources refreshed/published");
     expect(ui).toContain("function ResourceVisual");
-    expect(ui).toContain("function ResourceDiagram");
+    expect(ui).toContain("scienceDiagramFor(slug)");
+    expect(ui).toContain("diagram?.src || imageUrl || commons?.thumb");
+    expect(ui).toContain('!diagram && !imageUrl && category !== "Laboratory Set-ups"');
     expect(ui).toContain("aspect-[9/16]");
     expect(ui).toContain("Pinch with two fingers to zoom");
-    expect(ui).toContain("COMPOUND LIGHT MICROSCOPE");
-    expect(ui).toContain("Liquid column");
     expect(ui).toContain("https://commons.wikimedia.org/w/api.php");
     expect(ui).toContain("Source & licence");
     expect(ui).toContain("Download original");
@@ -91,4 +91,30 @@ describe("GigaLearn teaching materials library", () => {
     expect(ui).not.toContain(": <ResourceDiagram title={title} category={category} />");
   });
 
+});
+
+describe("curated science diagrams", () => {
+  it("resolves the seeded experiment slugs to distinct accessible portrait illustrations", async () => {
+    const { scienceDiagramFor } = await import("../../web/lib/gigalearn/scienceDiagrams");
+    const experiments = [
+      "preparation-of-hydrogen-gas", "evaporation-set-up", "sublimation-set-up",
+      "electrolysis-of-water", "separating-funnel-set-up", "filtration-set-up",
+      "distillation-set-up", "simple-titration-set-up", "paper-chromatography-set-up",
+    ];
+    const images = experiments.map((name) => {
+      const slug = `setup-${name}`;
+      const diagram = scienceDiagramFor(slug);
+      expect(diagram?.alt.length).toBeGreaterThan(60);
+      const svg = read("web/public" + diagram?.src);
+      expect(svg).toContain('viewBox="0 0 450 800"');
+      expect(svg).toContain("<title");
+      expect(svg).toContain("WHAT TO NOTICE");
+      return diagram?.src;
+    });
+    expect(new Set(images).size).toBe(experiments.length);
+    expect(scienceDiagramFor("setup-simple-titration-set-up-version-2")).toEqual(
+      scienceDiagramFor("setup-simple-titration-set-up"),
+    );
+    expect(scienceDiagramFor("equipment-evaporation-set-up")).toBeUndefined();
+  });
 });
