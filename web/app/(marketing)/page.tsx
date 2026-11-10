@@ -1,54 +1,53 @@
 import { AwardsHomeBanner } from "@/components/gigasocial/awards/AwardsHomeBanner";
 import { Contact } from "@/components/sections/Contact";
-import { Features } from "@/components/sections/Features";
+import { ExamPracticePreview } from "@/components/sections/ExamPracticePreview";
 import { Hero } from "@/components/sections/Hero";
 import { SiteStructuredData } from "@/components/seo/SiteStructuredData";
-import { MultiChat } from "@/components/sections/MultiChat";
 import { Pricing } from "@/components/sections/Pricing";
-import { TrendIntelligenceSection } from "@/components/sections/TrendIntelligenceSection";
 import { publicMetadata } from "@/lib/seo/publicMetadata";
 import {
   FREE_STARTER_CREDITS,
   SUBSCRIPTION_PLANS,
 } from "@/lib/payments/subscriptionCatalog";
+import { FREE_SIGNUP_HREF } from "@/lib/payments/marketingPricing";
 
 const HOME_DESCRIPTION =
-  "Giga3 AI is Africa's AI super app for chat, research, learning, coding, image and video creation, editing and productivity. Built in Ghana for Africa and the world.";
+  "Prepare for BECE and WASSCE, create AI images and videos, and get help with everyday work. Giga3 AI is built in Ghana, with plans priced in Ghana cedis.";
+
+const HOME_TITLE = "Giga3 AI | BECE & WASSCE Practice, AI Chat and Creation";
 
 export const metadata = publicMetadata({
   path: "/",
-  title: "Giga3 AI — Africa's AI Super App for Ghana | Chat, Learn & Create",
+  title: HOME_TITLE,
   description: HOME_DESCRIPTION,
 });
 
-/** Offers mirror the visible homepage pricing teaser (Free + Pro); Enterprise is quote-based. */
+/** Offers mirror the visible homepage pricing teaser (Free and paid plans); Enterprise is quote-based. */
 const HOME_OFFERS = [
   {
     name: "Free",
     price: 0,
     priceCurrency: "GHS",
     description: `${FREE_STARTER_CREDITS} starter credits`,
-    path: "/chat/login",
+    path: FREE_SIGNUP_HREF,
   },
-  {
-    name: `${SUBSCRIPTION_PLANS.pro.label} (monthly)`,
-    price: SUBSCRIPTION_PLANS.pro.priceGhs,
+  ...Object.values(SUBSCRIPTION_PLANS).map((plan) => ({
+    name: `${plan.label} (monthly)`,
+    price: plan.priceGhs,
     priceCurrency: "GHS",
-    description: `${SUBSCRIPTION_PLANS.pro.credits} credits per month`,
-    path: "/pricing",
-  },
+    description: `${plan.credits} credits per month`,
+    path: "/pricing/",
+  })),
 ];
 
 export default function HomePage() {
   return (
     <>
-      <SiteStructuredData offers={HOME_OFFERS} homeDescription={HOME_DESCRIPTION} />
-      <AwardsHomeBanner />
+      <SiteStructuredData offers={HOME_OFFERS} homeDescription={HOME_DESCRIPTION} homeTitle={HOME_TITLE} />
       <Hero />
-      <TrendIntelligenceSection />
-      <Features />
-      <MultiChat />
+      <ExamPracticePreview />
       <Pricing />
+      <AwardsHomeBanner />
       <Contact />
     </>
   );

@@ -9,10 +9,11 @@ type SiteStructuredDataProps = {
   /** Homepage pricing teaser offers — must match visible homepage pricing. */
   offers?: OfferItem[];
   homeDescription: string;
+  homeTitle: string;
 };
 
 /** Single homepage JSON-LD graph: Organization, WebSite, WebPage, WebApplication, optional Offers. */
-export function SiteStructuredData({ offers, homeDescription }: SiteStructuredDataProps) {
+export function SiteStructuredData({ offers, homeDescription, homeTitle }: SiteStructuredDataProps) {
   const logo = brandingAssetUrl("/images/logo.png");
   const homeUrl = seoPageId("/");
 
@@ -30,7 +31,7 @@ export function SiteStructuredData({ offers, homeDescription }: SiteStructuredDa
       "@type": "WebPage",
       "@id": homeUrl,
       url: homeUrl,
-      name: "Giga3 AI — Africa's AI Super App for Ghana",
+      name: homeTitle,
       description: homeDescription,
       isPartOf: { "@id": SEO_WEBSITE_ID },
       about: { "@id": SEO_ORGANIZATION_ID },

@@ -5,6 +5,8 @@
 import { formatGhs } from "./plans";
 import { FREE_STARTER_CREDITS, SUBSCRIPTION_PLANS } from "./subscriptionCatalog";
 
+export const FREE_SIGNUP_HREF = "/chat/login/?mode=signup";
+
 export type MarketingPlanTeaser = {
   name: string;
   price: string;
@@ -80,15 +82,15 @@ export function buildHomepagePricingTeasers(): readonly MarketingPlanTeaser[] {
       name: "Free",
       price: formatGhs(0),
       period: "",
-      description: `${FREE_STARTER_CREDITS} starter credits to explore chat, writing, and media.`,
+      description: "Try ordinary text chat and explore premium tools with starter credits.",
       features: [
         `${FREE_STARTER_CREDITS} starter credits`,
-        "Chat & research modes",
+        "Ordinary text chat",
         "Image & video studio",
-        "Email sign-in",
+        "No payment card required",
       ],
-      cta: "Get started",
-      href: "/chat/login",
+      cta: `Start free with ${FREE_STARTER_CREDITS} credits`,
+      href: FREE_SIGNUP_HREF,
       highlighted: false,
     },
     {

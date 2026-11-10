@@ -4,8 +4,12 @@ import { JsonLd, type OfferItem } from "@/components/seo/JsonLd";
 import {
   buildPublicPlanSummaryLines,
   FREE_STARTER_CREDITS,
+  FREE_SIGNUP_HREF,
   SUBSCRIPTION_PLANS,
 } from "@/lib/payments/marketingPricing";
+import { CREDIT_COSTS } from "@/lib/payments/subscriptionCatalog";
+import { MEDIA_VIDEO_CREDIT_TIERS } from "@/lib/media/videoCredits";
+import { ButtonLink } from "@/components/ui/Button";
 import { publicMetadata } from "@/lib/seo/publicMetadata";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -32,12 +36,7 @@ const PLAN_ROWS = buildPublicPlanSummaryLines().slice(0, 4).map((row) => ({
   name: row.name,
   price: row.price.replace("/month", " / month"),
   credits: row.detail,
-  note:
-    row.name === "Free"
-      ? "One-time, no card required"
-      : row.name === "Enterprise"
-        ? "Contact sales — not self-serve checkout"
-        : "Renews automatically · cancel anytime",
+  note: row.name === "Free" ? "One-time, no card required" : "Renews automatically · cancel anytime",
 }));
 
 const OFFERS: OfferItem[] = [
@@ -46,7 +45,7 @@ const OFFERS: OfferItem[] = [
     price: 0,
     priceCurrency: "GHS",
     description: `${FREE_STARTER_CREDITS} starter credits`,
-    path: "/chat/login",
+    path: FREE_SIGNUP_HREF,
   },
   ...PAID_PLAN_IDS.map((id) => ({
     name: `${SUBSCRIPTION_PLANS[id].label} (monthly)`,
@@ -80,8 +79,11 @@ export default function PricingPage() {
             <h1 className="hero-title">Pricing</h1>
             <p className="mt-4 text-base leading-[1.7] text-muted">
               Pay in <strong className="text-foreground">Ghana Cedis (GHS)</strong> via
-              Paystack. Subscription credits refill every billing period.
+              Paystack. Start free without a payment card, or choose a monthly plan.
             </p>
+            <ButtonLink href={FREE_SIGNUP_HREF} className="mt-5">
+              Start free with {FREE_STARTER_CREDITS} credits
+            </ButtonLink>
           </div>
 
           <section aria-labelledby="plans-glance" className="mx-auto mt-10 max-w-3xl">
@@ -130,7 +132,7 @@ export default function PricingPage() {
             </p>
           </section>
 
-          <section aria-labelledby="credit-costs" className="mx-auto mt-8 max-w-3xl rounded-2xl border border-border p-5">
+          <section aria-labelledby="credit-costs" className="mx-auto mt-8 max-w-3xl scroll-mt-28 rounded-2xl border border-border p-5">
             <h2 id="credit-costs" className="text-lg font-semibold text-foreground">
               What uses credits?
             </h2>
@@ -141,20 +143,26 @@ export default function PricingPage() {
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <div className="rounded-xl bg-muted/10 p-4">
                 <p className="font-medium text-foreground">AI image generation</p>
-                <p className="mt-1 text-sm text-muted">2 credits per image</p>
+                <p className="mt-1 text-sm text-muted">From {CREDIT_COSTS.image} credits per image</p>
               </div>
               <div className="rounded-xl bg-muted/10 p-4">
-                <p className="font-medium text-foreground">AI video generation</p>
+                <p className="font-medium text-foreground">Media Studio video examples</p>
                 <ul className="mt-1 space-y-1 text-sm text-muted">
-                  <li>5 seconds — 9 credits</li>
-                  <li>10 seconds — 20 credits</li>
-                  <li>15 seconds — 30 credits</li>
+                  {MEDIA_VIDEO_CREDIT_TIERS.map(({ durationSec, credits }) => (
+                    <li key={durationSec}>{durationSec} seconds · from {credits} credits</li>
+                  ))}
                 </ul>
               </div>
             </div>
             <p className="mt-3 text-xs text-muted">
               Other tools may have their own usage rules. Always review the displayed
               credit charge before starting a paid task.
+            </p>
+            <h3 className="mt-5 text-sm font-semibold text-foreground">What happens at renewal?</h3>
+            <p className="mt-1 text-sm leading-6 text-muted">
+              Starter credits are a one-time grant. When a paid subscription starts or renews,
+              the shared credit balance resets to the plan allowance. Unused credits in that
+              balance do not roll over at the reset.
             </p>
           </section>
 

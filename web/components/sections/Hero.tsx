@@ -1,75 +1,55 @@
-import { InstallButton } from "@/components/pwa/InstallButton";
 import { ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
-import { VisionTagline } from "@/components/vision/VisionTagline";
-import { heroStats, siteConfig } from "@/lib/site";
-import { BrandLogo } from "@/components/brand/BrandLogo";
-import { ArrowRight, Bot } from "lucide-react";
+import { ArrowRight, Briefcase, GraduationCap, WandSparkles } from "lucide-react";
+
+const STARTING_POINTS = [
+  {
+    name: "Study",
+    description: "Prepare for BECE, WASSCE, or Teacher Promotion with practice questions and answer explanations.",
+    href: "/gigalearn/exam/",
+    action: "Try exam practice",
+    icon: GraduationCap,
+  },
+  {
+    name: "Create",
+    description: "Generate images and short videos for lessons, social posts, and projects.",
+    href: "/media/",
+    action: "Open Media Studio",
+    icon: WandSparkles,
+  },
+  {
+    name: "Work",
+    description: "Draft a lesson plan, outline a proposal, or work through a question with AI Chat.",
+    href: "/chat/",
+    action: "Open AI Chat",
+    icon: Briefcase,
+  },
+] as const;
 
 export function Hero() {
   return (
-    <section className="discover-stable bg-white pt-12 sm:pt-16">
+    <section className="discover-stable bg-white py-12 sm:py-16">
       <Container>
         <div className="mx-auto max-w-3xl text-center">
-          <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/5 px-4 py-2 text-sm font-medium text-accent">
-            <BrandLogo size={20} className="shadow-none ring-0" />
-            Multi-provider AI · Production-ready PWA
-          </div>
-
-          <h1 className="hero-title">
-            Africa&apos;s AI Super App — Built in Ghana
-          </h1>
-
-          <p className="section-lead mx-auto mt-6 max-w-2xl">
-            Giga3 AI is Africa&apos;s AI Super App for people who want to learn, create,
-            connect, and grow their work from one mobile-ready platform.
+          <p className="section-heading">Built in Ghana</p>
+          <h1 className="hero-title mt-3">Practise for exams, create content, and get work done with Giga3 AI</h1>
+          <p className="section-lead mx-auto mt-4 max-w-2xl">
+            Start with guided BECE and WASSCE practice, make images and videos, or get help with everyday work.
+            Paid plans are priced in Ghana cedis.
           </p>
-
-          <VisionTagline className="mx-auto mt-5 max-w-md text-center" variant="subtle" />
-
-          <div className="discover-card-grid discover-card-grid--3 mx-auto mt-10 w-full max-w-3xl">
-            <ButtonLink href="/chat/login" size="lg" className="w-full">
-              Get Started
-              <ArrowRight aria-hidden />
-            </ButtonLink>
-            <ButtonLink href="#multi-chat" variant="secondary" size="lg" className="w-full">
-              Open Giga3 AI
-            </ButtonLink>
-            <InstallButton size="lg" variant="outline" className="w-full" />
-          </div>
-
-          <dl className="discover-card-grid discover-card-grid--3 mx-auto mt-14 max-w-lg">
-            {heroStats.map((stat) => (
-              <div
-                key={stat.label}
-                className="saas-card rounded-xl px-3 py-4 text-center"
-              >
-                <dt className="text-xs text-muted">{stat.label}</dt>
-                <dd className="mt-1 text-lg font-semibold text-foreground">{stat.value}</dd>
-              </div>
-            ))}
-          </dl>
         </div>
-
-        <div className="relative mx-auto mt-16 max-w-4xl">
-          <div className="saas-card rounded-2xl p-6 sm:p-8">
-            <div className="mb-4 flex items-center gap-2 border-b border-border pb-4">
-              <Bot className="text-accent" aria-hidden />
-              <span className="font-medium text-foreground">Giga3 Assistant</span>
-              <span className="ml-auto rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
-                Failover active
-              </span>
-            </div>
-            <div className="space-y-4 text-base leading-[1.7]">
-              <div className="max-w-[85%] rounded-2xl rounded-tl-md border border-border bg-white px-4 py-3 text-muted">
-                What happens if the primary AI provider is down?
-              </div>
-              <div className="ml-auto max-w-[90%] rounded-2xl rounded-tr-md border border-border bg-white px-4 py-3 text-foreground">
-                Giga3 tries backup models and keys automatically—your team keeps
-                chatting while we surface which provider answered.
-              </div>
-            </div>
-          </div>
+        <div className="discover-card-grid discover-card-grid--3 mx-auto mt-8 max-w-5xl">
+          {STARTING_POINTS.map(({ name, description, href, action, icon: Icon }, index) => (
+            <article key={name} className="saas-card flex flex-col gap-3 rounded-2xl p-5 sm:p-6">
+              <Icon className="h-6 w-6 text-accent" aria-hidden />
+              <h2 className="text-xl font-semibold text-foreground">{name}</h2>
+              <p className="flex-1 text-sm leading-6 text-muted">{description}</p>
+              <ButtonLink href={href} variant={index === 0 ? "primary" : "secondary"} className="w-full">
+                {action}
+                <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
+              </ButtonLink>
+            </article>
+          ))}
         </div>
       </Container>
     </section>
