@@ -15,7 +15,7 @@ describe("GigaSocial GigaEdits navigation", () => {
       "utf8"
     );
 
-    expect(nav).toContain('aria-label="Open GigaEdits editor"');
+    expect(nav).toContain('aria-label={french ? "Ouvrir GigaEdits" : "Open GigaEdits editor"}');
     expect(nav).toContain("<span>GigaEdits</span>");
     expect(nav).toContain("Clapperboard");
     expect(client).toContain('router.push("/gigaedit/?continue=1")');

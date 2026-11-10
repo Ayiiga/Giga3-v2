@@ -76,7 +76,7 @@ describe("PrimaryNav UI wiring", () => {
     );
     expect(nav).not.toMatch(/from "@\/components\/(gigaedit|gigasocial|media)\//);
     expect(host).not.toMatch(/from "@\/components\/(gigaedit|gigasocial|media)\//);
-    expect(nav).toContain('aria-label="Giga3 primary navigation"');
+    expect(nav).toContain('aria-label={language === "fr" ? "Navigation principale de Giga3" : "Giga3 primary navigation"}');
     expect(nav).toContain("primary-nav__label");
     expect(nav).toContain("PrimaryNavIcons");
   });

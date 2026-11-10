@@ -35,7 +35,7 @@ describe("GigaEdit controls audit — navigation surfaces", () => {
   it("bottom nav wires onOpenSection for each tab", () => {
     const nav = read("web/components/gigaedit/GigaEditBottomNav.tsx");
     expect(nav).toContain('onClick={() => onOpenSection?.(item.id)}');
-    expect(nav).toContain('aria-label="GigaEdit navigation"');
+    expect(nav).toContain('aria-label={language === "fr" ? "Navigation de GigaEdits" : "GigaEdit navigation"}');
     expect(nav).toMatch(/min-h-11/);
   });
 
