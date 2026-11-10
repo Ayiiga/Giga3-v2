@@ -1,10 +1,5 @@
 import { v } from "convex/values";
 
-export const SOCIAL_BOOST_COUNTRIES = [
-  { code: "GH", name: "Ghana" },
-  { code: "NG", name: "Nigeria" },
-] as const;
-
 export const socialBoostOptions = v.object({
   website: v.optional(v.string()),
   audience: v.union(v.literal("everyone"), v.literal("followers"), v.literal("new_people")),
