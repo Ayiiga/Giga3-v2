@@ -3,6 +3,7 @@ import { makeFunctionReference } from "convex/server";
 import courses from "../../public/gigalearn/academy/workspace/courses.mjs";
 
 const getActiveSubscription = makeFunctionReference("subscriptions:getActiveSubscription");
+const validateSession = makeFunctionReference("users:validateSession");
 const productionConvexUrl = "https://perfect-lark-521.convex.cloud";
 const privateHeaders = { "Cache-Control": "private, no-store" };
 
@@ -24,7 +25,12 @@ export async function onRequestPost({ request, env }) {
   try {
     const convex = new ConvexHttpClient(env?.ACADEMY_CONVEX_URL || productionConvexUrl, { logger: false });
     convex.setFetchOptions({ signal: AbortSignal.timeout(8000) });
-    subscription = await convex.query(getActiveSubscription, { sessionToken: token });
+    const args = { sessionToken: token };
+    subscription = await convex.query(getActiveSubscription, args);
+    if (subscription === null) {
+      const session = await convex.query(validateSession, args);
+      if (session?.ok !== true) return new Response(null, { status: 401, headers: privateHeaders });
+    }
   } catch {
     return new Response(null, { status: 503, headers: privateHeaders });
   }

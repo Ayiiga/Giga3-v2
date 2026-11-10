@@ -15,8 +15,12 @@ function request(action: string, course = "robotics", token: string | null = "se
   });
 }
 
-function mockSubscription(value: unknown) {
-  const fetch = vi.fn().mockImplementation(async () => Response.json({ status: "success", value }));
+function mockSubscription(subscription: unknown, validSession = true) {
+  const fetch = vi.fn().mockImplementation(async (_url, options) => {
+    const { path } = JSON.parse(options.body);
+    const value = path === "users:validateSession" ? { ok: validSession } : subscription;
+    return Response.json({ status: "success", value });
+  });
   vi.stubGlobal("fetch", fetch);
   return fetch;
 }
@@ -42,6 +46,16 @@ describe("Academy worksheet export", () => {
       expect(response.status).toBe(403);
       expect(await response.text()).toBe("");
     }
+  });
+
+  it("asks returning subscribers with invalid sessions to sign in again", async () => {
+    const fetch = mockSubscription(null, false);
+    for (const action of ["access", "download", "print"]) {
+      const response = await request(action);
+      expect(response.status).toBe(401);
+      expect(await response.text()).toBe("");
+    }
+    expect(fetch).toHaveBeenCalledTimes(6);
   });
 
   it("checks the signed-in session for each export and only returns the selected worksheet", async () => {
