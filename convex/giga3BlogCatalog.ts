@@ -55,12 +55,12 @@ export const GIGA3_BLOG_CATALOG: Giga3BlogEntry[] = [
     url: `${BLOG_BASE}/ai-tools-for-ghanaian-students-2026/`,
   },
   {
-    slug: "digital-literacy-ghana-2026",
+    slug: "facebook-tiktok-whatsapp-fact-checking",
     title: "Digital Literacy in Ghana: Spot Misinformation Before You Share",
     excerpt:
       "Verification checklist for news, screenshots and deepfakes on Ghanaian social media.",
     keywords: ["digital literacy", "misinformation", "verify", "fact check"],
-    url: `${BLOG_BASE}/digital-literacy-ghana-2026/`,
+    url: `${BLOG_BASE}/facebook-tiktok-whatsapp-fact-checking/`,
   },
   {
     slug: "chatgpt-vs-gemini-vs-claude-ghana-2026",

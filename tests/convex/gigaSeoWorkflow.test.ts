@@ -145,6 +145,30 @@ describe("GigaSEO Convex workflow", () => {
     expect(approved[0].publishedUrl).toBeUndefined();
   });
 
+  it("keeps imported articles private through approval and publishes them once", async () => {
+    process.env.PLATFORM_STATS_ADMIN_KEY = "giga-seo-test-admin";
+    const t = convexTest(schema, modules);
+    const adminKey = "giga-seo-test-admin";
+    const planId = await t.mutation(api.gigaSeo.createContentPlan, {
+      adminKey, title: "Community garden checklist", primaryKeyword: "community gardens", market: "Ghana", audience: "Gardeners",
+    });
+    const slug = "community-garden-checklist";
+    const markdown = "## Planning a shared garden\n\n" + "Agree on a watering schedule with the other gardeners. ".repeat(15);
+    await expect(t.mutation(api.gigaSeo.importDraft, { planId, markdown, metaDescription: "A practical checklist for garden volunteers." })).rejects.toThrow("Unauthorized");
+    await t.mutation(api.gigaSeo.importDraft, { adminKey, planId, markdown, metaDescription: "A practical checklist for garden volunteers." });
+    await expect(t.mutation(api.gigaSeo.publishDraft, { adminKey, planId })).rejects.toThrow("Only an approved article");
+    await t.mutation(api.gigaSeo.approveDraft, { adminKey, planId });
+    expect(await t.query(api.gigaSeo.getPublishedArticle, { slug })).toBeNull();
+    expect(await t.query(api.gigaSeo.listPublishedArticles, {})).toEqual([]);
+    const url = await t.mutation(api.gigaSeo.publishDraft, { adminKey, planId });
+    expect(await t.mutation(api.gigaSeo.publishDraft, { adminKey, planId })).toBe(url);
+    expect(await t.query(api.gigaSeo.getPublishedArticle, { slug })).toMatchObject({ markdown: markdown.trim(), url });
+    expect(await t.query(api.gigaSeo.listPublishedArticles, {})).toEqual([
+      expect.objectContaining({ url, title: "Community garden checklist" }),
+    ]);
+    await expect(t.mutation(api.gigaSeo.importDraft, { adminKey, planId, markdown, metaDescription: "A different description for this article." })).rejects.toThrow("Published articles cannot be overwritten");
+  });
+
   it("flags teaching and African-technology topics when the brand is only mentioned incidentally", async () => {
     process.env.PLATFORM_STATS_ADMIN_KEY = "giga-seo-test-admin";
     process.env.OPENAI_API_KEY = "test-openai-key";

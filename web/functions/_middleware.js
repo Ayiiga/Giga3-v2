@@ -1,6 +1,7 @@
 /** Cloudflare Pages middleware — canonical host, offline shell, 404 status, GigaSocial OG. */
 
 import { apexToWwwRedirect } from "./canonicalHost.js";
+import { editorialBlogResponse } from "./editorialBlog.js";
 import { OFFLINE_PAGE_HTML } from "./offlinePageHtml.js";
 
 const CRAWLER_UA =
@@ -123,6 +124,9 @@ export async function onRequest(context) {
     }
     return serveOfflineHtml();
   }
+
+  const editorialResponse = await editorialBlogResponse(context, url.pathname);
+  if (editorialResponse) return editorialResponse;
 
   const convexSite = (context.env?.CONVEX_SITE_URL || DEFAULT_CONVEX_SITE).replace(/\/$/, "");
 
