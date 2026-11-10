@@ -29,6 +29,33 @@ describe("fullscreen camera / live / teleprompter UI", () => {
     expect(source).toContain("Viewer playback is unavailable");
   });
 
+  it("keeps the host camera uncropped and bounded within the live room", () => {
+    const source = readFileSync(
+      resolve(root, "web/components/gigasocial/live/GigaSocialLiveRoom.tsx"),
+      "utf8"
+    );
+    const css = readFileSync(resolve(root, "web/styles/gigasocial-pro.css"), "utf8");
+    expect(source).toContain('isHost && mode === "video"');
+    expect(source).toContain('"gigasocial-live-camera-preview"');
+    expect(source).not.toContain("object-cover");
+    expect(css).toMatch(/\.gigasocial-live-camera-preview\s*{[^}]*height: 72%/);
+  });
+
+  it("keeps full-screen videos free of the single-item hint and templates above feed controls", () => {
+    const lightbox = readFileSync(
+      resolve(root, "web/components/gigasocial/GigaSocialMediaLightbox.tsx"),
+      "utf8"
+    );
+    const templates = readFileSync(
+      resolve(root, "web/components/gigasocial/template/GigaTemplateStudio.tsx"),
+      "utf8"
+    );
+    expect(lightbox).toContain('className="h-full w-full object-contain"');
+    expect(lightbox).toContain("!isVideo || mediaItems.length > 1");
+    expect(templates).toContain("dialog.showModal()");
+    expect(templates).toContain("onCancel=");
+  });
+
   it("teleprompter opens ultra-clear fullscreen camera without pre-snap bar", () => {
     const source = readFileSync(
       resolve(root, "web/components/gigaedit/TeleprompterStudio.tsx"),
