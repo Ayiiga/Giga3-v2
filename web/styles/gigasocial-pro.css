@@ -539,6 +539,15 @@
   justify-content: stretch;
 }
 
+.gigasocial-live-room .gigasocial-live-camera-preview {
+  width: calc(100% - 2rem);
+  height: 72%;
+  max-width: 32rem;
+  max-height: 38rem;
+  border-radius: 1rem;
+  background: #101019;
+}
+
 .gigasocial-immersive-capture .gigasocial-live-video--fullscreen {
   aspect-ratio: auto;
   max-height: none;

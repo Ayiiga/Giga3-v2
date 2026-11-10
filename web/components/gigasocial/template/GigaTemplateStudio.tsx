@@ -9,7 +9,7 @@ import {
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { cn } from "@/lib/utils";
 import { Sparkles, X } from "lucide-react";
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 type GigaTemplateStudioProps = {
@@ -33,6 +33,7 @@ export const GigaTemplateStudio = memo(function GigaTemplateStudio({
   loading,
   error,
 }: GigaTemplateStudioProps) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
   const [mode, setMode] = useState<GigaTemplateModeId | null>(null);
   const [userIdea, setUserIdea] = useState("");
 
@@ -44,9 +45,13 @@ export const GigaTemplateStudio = memo(function GigaTemplateStudio({
 
   useEffect(() => {
     if (!open || typeof document === "undefined") return;
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    dialog.showModal();
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
+      dialog.close();
       document.body.style.overflow = prev;
     };
   }, [open]);
@@ -58,15 +63,20 @@ export const GigaTemplateStudio = memo(function GigaTemplateStudio({
   const waiting = Boolean(loading && !modes.length && !blocked);
 
   return createPortal(
-    <div
-      className="gigasocial-stable fixed inset-0 z-[66] flex items-end justify-center bg-black/55 p-3 sm:items-center"
-      role="dialog"
-      aria-modal="true"
+    <dialog
+      ref={dialogRef}
+      className="fixed inset-x-0 bottom-0 top-auto m-0 mx-auto h-fit max-h-[80dvh] w-[calc(100%_-_1.5rem)] max-w-lg overflow-hidden rounded-2xl bg-transparent p-0 backdrop:bg-black/60 sm:inset-y-0 sm:my-auto"
       aria-label="Use as Template"
-      onClick={onClose}
+      onCancel={(event) => {
+        event.preventDefault();
+        onClose();
+      }}
+      onClick={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
     >
       <div
-        className="gigasocial-template-studio max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-border bg-[var(--gs-card,#162033)] p-4 text-[var(--gs-text,#fff)] shadow-xl"
+        className="gigasocial-template-studio max-h-[80dvh] overscroll-contain w-full max-w-lg overflow-y-auto rounded-2xl border border-border bg-[var(--gs-card,#162033)] p-4 text-[var(--gs-text,#fff)] shadow-xl"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="mb-3 flex items-start justify-between gap-2">
@@ -82,7 +92,7 @@ export const GigaTemplateStudio = memo(function GigaTemplateStudio({
           </div>
           <button
             type="button"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted"
+            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border text-muted"
             aria-label="Close template studio"
             onClick={onClose}
           >
@@ -107,7 +117,7 @@ export const GigaTemplateStudio = memo(function GigaTemplateStudio({
                     type="button"
                     disabled={loading || blocked}
                     className={cn(
-                      "flex h-full w-full flex-col gap-1 rounded-xl border border-border bg-black/20 p-3 text-left",
+                      "grid h-full w-full grid-cols-[auto_1fr] items-center gap-x-2 gap-y-0.5 rounded-xl border border-border bg-black/20 p-2.5 text-left",
                       "hover:border-accent/40 hover:bg-accent/5 disabled:opacity-50"
                     )}
                     onClick={() => setMode(item.id)}
@@ -116,7 +126,7 @@ export const GigaTemplateStudio = memo(function GigaTemplateStudio({
                       {item.emoji}
                     </span>
                     <span className="text-sm font-semibold">{item.label}</span>
-                    <span className="text-[11px] leading-snug text-muted">{item.description}</span>
+                    <span className="col-start-2 text-xs leading-snug text-[var(--gs-muted,#94a3b8)]">{item.description}</span>
                   </button>
                 </li>
               ))}
@@ -161,7 +171,7 @@ export const GigaTemplateStudio = memo(function GigaTemplateStudio({
           </div>
         )}
       </div>
-    </div>,
+    </dialog>,
     document.body
   );
 });

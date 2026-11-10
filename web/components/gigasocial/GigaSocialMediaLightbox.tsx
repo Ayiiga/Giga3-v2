@@ -138,7 +138,7 @@ export const GigaSocialMediaLightbox = memo(function GigaSocialMediaLightbox({
 
   return createPortal(
     <div
-      className="gigasocial-media-lightbox fixed inset-0 z-[70] flex items-center justify-center bg-black/94"
+      className="gigasocial-media-lightbox fixed inset-0 z-[70] flex items-center justify-center bg-black"
       role="dialog"
       aria-modal="true"
       aria-label={isVideo ? "Full screen video" : "Full size photo"}
@@ -146,8 +146,11 @@ export const GigaSocialMediaLightbox = memo(function GigaSocialMediaLightbox({
     >
       <button
         type="button"
-        onClick={onClose}
-        className="absolute right-3 top-3 z-20 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/12 text-white"
+        onClick={(event) => {
+          event.stopPropagation();
+          onClose();
+        }}
+        className="absolute right-3 top-[max(0.75rem,env(safe-area-inset-top))] z-20 inline-flex h-11 w-11 items-center justify-center rounded-full bg-black/75 text-white"
         aria-label="Close full screen"
       >
         <X className="h-5 w-5" aria-hidden />
@@ -183,7 +186,10 @@ export const GigaSocialMediaLightbox = memo(function GigaSocialMediaLightbox({
       ) : null}
 
       <div
-        className="relative flex h-full w-full max-w-5xl items-center justify-center px-2 py-14"
+        className={cn(
+          "relative flex h-full w-full items-center justify-center",
+          isVideo ? "pb-[env(safe-area-inset-bottom)]" : "max-w-5xl px-2 py-14"
+        )}
         onClick={(event) => event.stopPropagation()}
         onTouchStart={onTouchStartPinch}
         onTouchMove={onTouchMovePinch}
@@ -193,7 +199,7 @@ export const GigaSocialMediaLightbox = memo(function GigaSocialMediaLightbox({
           <video
             key={current.url}
             src={current.url}
-            className="max-h-[88vh] max-w-full rounded-lg object-contain"
+            className="h-full w-full object-contain"
             controls
             playsInline
             autoPlay
@@ -221,18 +227,20 @@ export const GigaSocialMediaLightbox = memo(function GigaSocialMediaLightbox({
         ) : null}
       </div>
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center gap-2 bg-gradient-to-t from-black/70 to-transparent px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-10">
-        {mediaItems.length > 1 ? (
-          <p className="text-xs font-medium text-white/80">
-            {index + 1} / {mediaItems.length}
+      {!isVideo || mediaItems.length > 1 ? (
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center gap-2 bg-gradient-to-t from-black/70 to-transparent px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-10">
+          {mediaItems.length > 1 ? (
+            <p className="text-xs font-medium text-white/80">
+              {index + 1} / {mediaItems.length}
+            </p>
+          ) : null}
+          <p className="text-[11px] text-white/55">
+            {isVideo
+              ? "Swipe down to close"
+              : "Pinch to zoom · double-tap to appreciate · swipe to browse"}
           </p>
-        ) : null}
-        <p className="text-[11px] text-white/55">
-          {isVideo
-            ? "Swipe down to close"
-            : "Pinch to zoom · double-tap to appreciate · swipe to browse"}
-        </p>
-      </div>
+        </div>
+      ) : null}
     </div>,
     document.body
   );

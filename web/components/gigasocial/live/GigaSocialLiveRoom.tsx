@@ -366,6 +366,7 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
   const showScreenPicker =
     isHost && mode === "screen" && stream.status === "live" && awaitingScreenShare;
   const previewFilter = getCameraFilterCss(filterId);
+  const isCameraPreview = isHost && mode === "video";
 
   if (!mounted) {
     return <LoadingState label="Opening fullscreen live…" />;
@@ -449,8 +450,10 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
                 muted
                 controls={false}
                 className={cn(
-                  "gigasocial-live-video gigasocial-live-video--fullscreen absolute inset-0 h-full w-full bg-black",
-                  mode === "screen" ? "object-contain" : "object-cover"
+                  "gigasocial-live-video absolute inset-0 m-auto h-full w-full bg-black object-contain",
+                  isCameraPreview
+                    ? "gigasocial-live-camera-preview"
+                    : "gigasocial-live-video--fullscreen"
                 )}
                 style={mode === "video" && previewFilter ? { filter: previewFilter } : undefined}
                 aria-label="Live stream preview"
@@ -487,7 +490,7 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
             variant="outline"
             size="sm"
             onClick={() => void handleEnd()}
-            className="min-h-9 shrink-0 border-white/30 bg-black/40 text-white"
+            className="min-h-11 shrink-0 border-white/30 bg-black/70 text-white hover:bg-white/20 hover:text-white"
           >
             <X className="h-4 w-4" aria-hidden />
             {isHost ? "End" : "Leave"}
@@ -495,7 +498,7 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
         </div>
 
         {stream.captionLines?.length ? (
-          <div className="absolute inset-x-3 bottom-44 rounded-xl bg-black/70 px-3 py-2 text-sm text-white">
+          <div className="pointer-events-none absolute inset-x-3 bottom-3 rounded-xl bg-black/70 px-3 py-2 text-sm text-white">
             <p className="text-[10px] uppercase tracking-wide text-violet-300">AI captions</p>
             <p>{stream.captionLines[stream.captionLines.length - 1]}</p>
           </div>
@@ -508,7 +511,7 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
         </div>
       ) : null}
 
-      <div className="gigasocial-live-controls absolute inset-x-0 bottom-0 z-30 max-h-[46dvh] space-y-2 overflow-y-auto overscroll-contain border-t border-white/15 bg-black/85 px-3 py-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+      <div className="gigasocial-live-controls relative z-30 max-h-[46dvh] shrink-0 space-y-2 overflow-y-auto overscroll-contain border-t border-white/15 bg-[#101019] px-3 py-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         {isHost && mode === "video" && showPreSnap && stream.status === "live" ? (
           <PreSnapEditBar
             filterId={filterId}
@@ -525,8 +528,9 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
               <Button
                 type="button"
                 size="sm"
-                variant={showTeleprompter ? "primary" : "outline"}
-                className="min-h-9"
+                variant="outline"
+                aria-pressed={showTeleprompter}
+                className="min-h-11 border-white/25 bg-white/10 text-white hover:bg-white/20 hover:text-white"
                 onClick={() => setShowTeleprompter((value) => !value)}
               >
                 <Type className="h-4 w-4" aria-hidden />
@@ -537,8 +541,12 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
                   type="button"
                   size="sm"
                   variant="outline"
-                  className="min-h-9"
-                  onClick={() => setShowPreSnap((value) => !value)}
+                  className="min-h-11 border-white/25 bg-white/10 text-white hover:bg-white/20 hover:text-white"
+                  aria-pressed={showPreSnap}
+                  onClick={() => {
+                    setShowChatPanel(false);
+                    setShowPreSnap((value) => !value);
+                  }}
                 >
                   {showPreSnap ? "Hide preview looks" : "Preview looks"}
                 </Button>
@@ -548,7 +556,7 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
                   type="button"
                   size="sm"
                   variant="outline"
-                  className="min-h-9"
+                  className="min-h-11 border-white/25 bg-white/10 text-white hover:bg-white/20 hover:text-white"
                   disabled={busy}
                   onClick={() => {
                     setAwaitingScreenShare(true);
@@ -564,8 +572,12 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
             type="button"
             size="sm"
             variant="outline"
-            className="min-h-9"
-            onClick={() => setShowChatPanel((value) => !value)}
+            className="min-h-11 border-white/25 bg-white/10 text-white hover:bg-white/20 hover:text-white"
+            aria-expanded={showChatPanel}
+            onClick={() => {
+              setShowPreSnap(false);
+              setShowChatPanel((value) => !value);
+            }}
           >
             <MessageCircle className="h-4 w-4" aria-hidden />
             {showChatPanel ? "Hide chat" : "Chat"}
@@ -588,60 +600,6 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
 
         {showChatPanel ? (
           <div className="grid max-h-[34vh] gap-2 overflow-y-auto overscroll-contain sm:grid-cols-2">
-            {isHost ? (
-              <div className="space-y-2 rounded-xl border border-white/15 bg-white/5 p-3">
-                <p className="text-sm font-medium">
-                  <Shield className="mr-1 inline h-4 w-4" aria-hidden />
-                  Host moderation
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <input
-                    value={coHostHandle}
-                    onChange={(e) => setCoHostHandle(e.target.value)}
-                    placeholder="Add co-host @handle"
-                    className="input-surface min-h-9 flex-1 bg-black/40 text-white"
-                  />
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    className="min-h-9"
-                    disabled={!coHostHandle.trim()}
-                    onClick={() =>
-                      void addCoHost({ sessionToken, streamId, coHostHandle })
-                        .then(() => setCoHostHandle(""))
-                        .catch((e) => setMediaError(getLiveActionErrorMessage(e)))
-                    }
-                  >
-                    <Users className="h-4 w-4" aria-hidden />
-                    Co-host
-                  </Button>
-                </div>
-              </div>
-            ) : null}
-
-            {!isHost && <div className="space-y-2 rounded-xl border border-white/15 bg-white/5 p-3">
-              <p className="text-sm font-medium">
-                <Gift className="mr-1 inline h-4 w-4" aria-hidden />
-                Send a gift
-              </p>
-                <div className="flex flex-wrap gap-2">
-                  {LIVE_GIFTS.map((gift) => (
-                    <Button
-                      key={gift.id}
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      disabled={giftBusyId !== null}
-                      className="min-h-9 border-white/40 bg-white/10 text-white hover:bg-white/20 disabled:opacity-60"
-                      onClick={() => void handleSendGift(gift.id, gift.credits)}
-                    >
-                      {gift.emoji} {gift.label} · {gift.credits}
-                    </Button>
-                  ))}
-                </div>
-            </div>}
-
             <div className="space-y-2 rounded-xl border border-white/15 bg-white/5 p-3 sm:col-span-2">
               <p className="text-sm font-medium">
                 <MessageCircle className="mr-1 inline h-4 w-4" aria-hidden />
@@ -726,6 +684,59 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
                 </div>
               ) : null}
             </div>
+            {isHost ? (
+              <div className="space-y-2 rounded-xl border border-white/15 bg-white/5 p-3">
+                <p className="text-sm font-medium">
+                  <Shield className="mr-1 inline h-4 w-4" aria-hidden />
+                  Host moderation
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <input
+                    value={coHostHandle}
+                    onChange={(e) => setCoHostHandle(e.target.value)}
+                    placeholder="Add co-host @handle"
+                    className="input-surface min-h-9 flex-1 bg-black/40 text-white"
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="min-h-11 border-white/25 bg-white/10 text-white hover:bg-white/20 hover:text-white"
+                    disabled={!coHostHandle.trim()}
+                    onClick={() =>
+                      void addCoHost({ sessionToken, streamId, coHostHandle })
+                        .then(() => setCoHostHandle(""))
+                        .catch((e) => setMediaError(getLiveActionErrorMessage(e)))
+                    }
+                  >
+                    <Users className="h-4 w-4" aria-hidden />
+                    Co-host
+                  </Button>
+                </div>
+              </div>
+            ) : null}
+
+            {!isHost && <div className="space-y-2 rounded-xl border border-white/15 bg-white/5 p-3">
+              <p className="text-sm font-medium">
+                <Gift className="mr-1 inline h-4 w-4" aria-hidden />
+                Send a gift
+              </p>
+                <div className="flex flex-wrap gap-2">
+                  {LIVE_GIFTS.map((gift) => (
+                    <Button
+                      key={gift.id}
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={giftBusyId !== null}
+                      className="min-h-9 border-white/40 bg-white/10 text-white hover:bg-white/20 disabled:opacity-60"
+                      onClick={() => void handleSendGift(gift.id, gift.credits)}
+                    >
+                      {gift.emoji} {gift.label} · {gift.credits}
+                    </Button>
+                  ))}
+                </div>
+            </div>}
           </div>
         ) : null}
       </div>
