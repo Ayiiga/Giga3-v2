@@ -372,6 +372,10 @@ export function resolveResearchCapability(args: {
     return "general";
   }
 
+  if (/\b(literature review|peer[- ]reviewed (articles?|papers?|studies|sources)|systematic review|(?:find|cite|locate) (?:relevant |recent |academic )?(?:journal articles?|research papers?|scholarly sources))\b/i.test(q)) {
+    return "deep_research";
+  }
+
   const newsLookup = resolveNewsLookupCapability(q);
   if (newsLookup) return newsLookup;
 

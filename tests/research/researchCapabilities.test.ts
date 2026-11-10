@@ -248,3 +248,10 @@ describe("research capability routing", () => {
     expect(queryNeedsLiveWeb({ query, capability: "general" })).toBe(true);
   });
 });
+
+it("routes an academic source request to live research from general chat", () => {
+  const query = "Find peer-reviewed studies on formative assessment in Ghanaian basic schools";
+  const capability = resolveResearchCapability({ query, liveWebEnabled: false });
+  expect(capability).toBe("deep_research");
+  expect(queryNeedsLiveWeb({ query, capability })).toBe(true);
+});

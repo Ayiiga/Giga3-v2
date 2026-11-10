@@ -26,6 +26,12 @@ export function useScrollToLatestMessage({
 
   useEffect(() => {
     const el = scrollRef.current;
+    if (!enabled) {
+      prevKeyRef.current = undefined;
+      nearBottomRef.current = true;
+      setShowScrollButton(false);
+      return;
+    }
     if (!el) return;
 
     function onScroll() {
@@ -40,7 +46,7 @@ export function useScrollToLatestMessage({
     onScroll();
     el.addEventListener("scroll", onScroll, { passive: true });
     return () => el.removeEventListener("scroll", onScroll);
-  }, [scrollRef, nearBottomThresholdPx, scrollKey]);
+  }, [scrollRef, nearBottomThresholdPx, scrollKey, enabled]);
 
   // Stick to bottom while streaming reveal grows the last bubble (scrollKey
   // only changes on new turns, not mid-reveal character ticks).
@@ -68,9 +74,8 @@ export function useScrollToLatestMessage({
     }
 
     const isNewTurn = prevKeyRef.current !== undefined;
-    prevKeyRef.current = scrollKey;
-
     if (isNewTurn && !nearBottomRef.current) {
+      prevKeyRef.current = scrollKey;
       setShowScrollButton(true);
       return;
     }
@@ -78,11 +83,13 @@ export function useScrollToLatestMessage({
     const el = scrollRef.current;
     if (!el) return;
 
-    requestAnimationFrame(() => {
+    const frame = requestAnimationFrame(() => {
+      prevKeyRef.current = scrollKey;
       scrollToBottom(el, "auto");
       setShowScrollButton(false);
       dispatchChatViewportSync({ reason: "scroll" });
     });
+    return () => cancelAnimationFrame(frame);
   }, [scrollRef, scrollKey, enabled]);
 
   const scrollToLatest = useCallback(() => {
@@ -92,5 +99,5 @@ export function useScrollToLatestMessage({
     setShowScrollButton(false);
   }, [scrollRef]);
 
-  return { showScrollButton, scrollToLatest };
+  return { showScrollButton: enabled && showScrollButton, scrollToLatest };
 }
