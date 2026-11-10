@@ -809,10 +809,13 @@ export const retryFailedReply = mutation({
       mode,
     });
 
+    const priorAssistant = rows.slice(rows.indexOf(lastUser) + 1).find((m) => m.role === "assistant");
+    const hasEditableImageSource = Boolean(priorAssistant && extractImageUrlFromContent(priorAssistant.content));
+    const requestKind = classifyRequestKind(lastUser.content, mode, { hasEditableImageSource });
     const useConversationalWorker = shouldUseConversationalWorker({
       needsLiveWeb,
       attachmentCount: 0,
-      needsMediaWorker: classifyRequestKind(lastUser.content, mode) === "image_generation" ||
+      needsMediaWorker: requestKind === "image_generation" ||
         resolveMediaCapability({ query: lastUser.content }) !== "none",
     });
     const jobId = await ctx.runMutation(internal.chatReplyJobs.createJob, {

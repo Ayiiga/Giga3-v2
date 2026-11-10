@@ -42,6 +42,13 @@ describe("acceptMessage conversational routing", () => {
     expect(source).toContain("internal.chatConversationalReply.processTurn");
     expect(source).toContain("shouldUseConversationalWorker");
   });
+
+  it("uses the preceding assistant image when dispatching an image edit retry", () => {
+    const retry = source.slice(source.indexOf("export const retryFailedReply"));
+    expect(retry).toContain('rows.slice(rows.indexOf(lastUser) + 1).find((m) => m.role === "assistant")');
+    expect(retry).toContain("classifyRequestKind(lastUser.content, mode, { hasEditableImageSource })");
+    expect(retry).toContain('needsMediaWorker: requestKind === "image_generation"');
+  });
 });
 
 describe("decideJobRecovery conversational jobs", () => {
