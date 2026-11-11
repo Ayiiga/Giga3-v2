@@ -33,7 +33,6 @@ import {
 import { composePhotoMusicVideo } from "@/lib/gigasocial/photoMusicVideo";
 import { needsVideoTrim, VIDEO_CLIP_LENGTH_OPTIONS_SEC } from "@/lib/gigasocial/videoTrim";
 import {
-  canOptionalEpisodeSplit,
   getRecommendedEpisodeCount,
   SOCIAL_EPISODE_SPLIT_COUNT,
   shouldOfferEpisodeSplit,
@@ -1450,7 +1449,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         onRemoveAudio={() => setPendingAudio(null)}
       />
 
-      {pendingVideo && canOptionalEpisodeSplit(pendingVideo.durationSec) ? (
+      {pendingVideo && shouldOfferEpisodeSplit(pendingVideo.file.size, pendingVideo.durationSec) ? (
         <Button
           type="button"
           variant="outline"
