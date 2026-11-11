@@ -138,3 +138,30 @@ export const GhanaCreatorEarningsGuide = productGuide(
     <ArticleFigure key="support-mobile-learning" src="/images/blog/support-mobile-learning.jpg" alt="A person using a phone to learn a new skill" />,
   ],
 );
+
+export const DollarToCediGuide = productGuide(
+  "How much is $100 in Ghana cedis? Multiply 100 by the exchange rate quoted in Ghana cedis per US dollar. At an example rate of GH₵12 per dollar, $100 equals GH₵1,200 before fees. For a current benchmark, check the Bank of Ghana’s dated USDGHS row, then use the quote from the provider handling your transaction.",
+  [
+    { id: "check-rate", label: "Where to check the dollar-to-cedi rate", paragraphs: [
+      "Open the Bank of Ghana’s Daily Interbank FX Rates page. Look for US Dollar or USDGHS and check the date on that row. The table shows buying, selling and mid rates. The mid rate gives you a reference point. For a transaction, ask the provider for the rate it will apply to you.",
+      "Check the direction. If you hand over US dollars and receive cedis, the provider is buying your dollars. If you pay cedis to receive US dollars, it is selling dollars to you. Ask for the amount you will receive after any fee.",
+    ] },
+    { id: "conversion", label: "Convert $1, $10, $50 or $100 to cedis", paragraphs: [
+      "At an illustrative rate of GH₵12 per US dollar, $1 is GH₵12, $10 is GH₵120, $50 is GH₵600 and $100 is GH₵1,200. Replace 12 with your actual quoted rate before using the result.",
+      "To go the other way, divide the cedi amount by the rate. At the same example rate, GH₵600 ÷ 12 equals $50 before fees.",
+    ] },
+    { id: "compare-quotes", label: "Compare the amount that actually arrives", paragraphs: [
+      "Ask both providers for quotes using the same dollar amount and payout method. Compare the total you pay, the final amount the recipient gets, the expected delivery time and how long the quote is valid.",
+      "For example, suppose two providers convert the full $100 and deduct fees from the cedi payout. One quotes GH₵12 per dollar with a GH₵30 fee, leaving GH₵1,170. The other quotes GH₵11.85 per dollar with a GH₵5 fee, leaving GH₵1,180. The second quote delivers GH₵10 more in this example.",
+    ] },
+    { id: "freelance", label: "If a client is paying you in dollars", paragraphs: [
+      "Before quoting a job, write down your expected payment in dollars, any receiving charges and the cedi amount you need to cover your costs. Save the final receipt and note how much arrived. Use that figure to review what you earned after direct costs.",
+    ] },
+  ],
+  { title: "Check the latest official USDGHS benchmark", description: "Look for the US Dollar row and its date in the Bank of Ghana’s daily interbank table.", href: "https://www.bog.gov.gh/treasury-and-the-markets/daily-interbank-fx-rates/", label: "Open Bank of Ghana FX rates" },
+  [
+    <ArticleFigure key="support-small-business-phone" src="/images/blog/support-small-business-phone.jpg" alt="A small business owner using a phone during the working day" />,
+    <ArticleFigure key="support-skills-roadmap-notebook" src="/images/blog/support-skills-roadmap-notebook.jpg" alt="An open notebook for writing down calculations and plans" />,
+  ],
+  { href: "/blog/how-to-make-money-as-a-content-creator-in-ghana/", label: "Read the Ghana content creator earnings guide" },
+);

@@ -3,6 +3,19 @@ import type { BlogPost } from "@/lib/blog/types";
 /** Metadata-only registry — article bodies live in web/content/blog/*.tsx */
 export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
   {
+    slug: "dollar-to-cedi-usd-ghs-conversion-guide",
+    title: "Dollar to Cedi: How Much Is $100 in Ghana Cedis?",
+    description: "Check the Bank of Ghana’s USD to GHS reference rate, convert dollars to cedis, and compare what you’ll receive after fees.",
+    excerpt: "Look up the dollar-to-cedi rate, calculate $1, $10 or $100 in Ghana cedis, and compare the final amount before you exchange or send money.",
+    category: "Ghana",
+    tags: ["dollar to cedi","USD to GHS","Ghana cedi","exchange rates"],
+    author: "Giga3 AI Editorial Team",
+    publishedAt: "2026-11-11",
+    featuredImage: "/images/blog/ghana-wage-system.jpg",
+    featuredImageAlt: "Ghanaian office worker reviewing figures at a desk",
+    keywords: ["dollar to cedi","100 dollars to Ghana cedis","USD to GHS","Bank of Ghana exchange rate"],
+  },
+  {
     slug: "how-to-make-money-as-a-content-creator-in-ghana",
     title: "How to Make Money as a Content Creator in Ghana",
     description: "Explore four practical ways to earn as a Ghanaian content creator, from paid client work to sponsorship, and prepare for GigaSocial Awards in December 2026.",
