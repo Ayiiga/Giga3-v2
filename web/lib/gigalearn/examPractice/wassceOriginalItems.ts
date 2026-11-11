@@ -58,6 +58,8 @@ export const wassceOriginalItems: TechBankQuestion[] = Object.entries(subjects).
     sourceDocument: "Original GigaLearn practice informed by WAEC Ghana exam materials",
     sourceQuestionNumber: index + 1,
     reviewStatus: "pending_review",
+      sourceType: "original_practice",
+      verificationStatus: "awaiting_verification",
     tags: [strand, subStrand],
     curriculumStrand: strand,
     curriculumSubStrand: subStrand,
