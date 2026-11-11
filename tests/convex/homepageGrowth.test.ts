@@ -30,7 +30,7 @@ describe("homepage growth analytics", () => {
     const payments = await t.run(async (ctx) => {
       const now = Date.now();
       const email = "homepage-growth@example.com";
-      const user = await ctx.db.insert("users", { email, tokens: 0, plan: "free", tier: "free" });
+      const user = await ctx.db.insert("users", { email, tokens: 0, plan: "free", tier: "free", subscriptionPlan: "free", credits: 25, starterCreditsGranted: true });
       await ctx.db.insert("platformCounters", {
         key: `growth_signup_${user}`, value: now - 1000, updatedAt: now,
       });
