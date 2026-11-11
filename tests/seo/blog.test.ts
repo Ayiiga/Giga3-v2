@@ -44,7 +44,7 @@ describe("blog slug aliases for Search Console / title-inferred URLs", () => {
 
 describe("blog post registry", () => {
   it("has the published articles with valid categories", () => {
-    expect(BLOG_POST_REGISTRY).toHaveLength(30);
+    expect(BLOG_POST_REGISTRY).toHaveLength(31);
     const slugs = BLOG_POST_REGISTRY.map((p) => p.slug);
     expect(slugs).toContain("best-ai-tools-in-ghana-2026");
     expect(slugs).toContain("ai-for-bece-wassce-preparation-ghana");
@@ -72,6 +72,7 @@ describe("blog post registry", () => {
     expect(slugs).toContain("photoroom-ai-tutorial");
     expect(slugs).toContain("claude-ai-login-guide");
     expect(slugs).toContain("gemini-ai-login-guide");
+    expect(slugs).toContain("dollar-to-cedi-usd-ghs-conversion-guide");
     expect(slugs).toContain("how-to-make-money-as-a-content-creator-in-ghana");
     expect(slugs).toContain("gigasocial-awards-nomination-voting-guide");
     expect(slugs).toContain("gigalearn-academy-courses-guide");
@@ -84,7 +85,7 @@ describe("blog post registry", () => {
 
   it("exposes posts with hrefs and reading time", () => {
     const posts = getRegistryBlogPosts();
-    expect(posts).toHaveLength(30);
+    expect(posts).toHaveLength(31);
     for (const post of posts) {
       expect(post.href).toBe(`/blog/${post.slug}/`);
       expect(post.readingTime).toMatch(/min read/);

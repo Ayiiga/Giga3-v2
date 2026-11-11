@@ -37,6 +37,7 @@ import {
   GigaLearnAcademyGuide,
   Giga3ExamRevisionGuide,
   GhanaCreatorEarningsGuide,
+  DollarToCediGuide,
 } from "@/content/blog/giga3-product-guides";
 import type { ComponentType } from "react";
 
@@ -52,6 +53,7 @@ type BlogEntry = {
 
 const BODY_BY_SLUG: Record<string, { Body: ComponentType<BlogArticleBodyProps>; plainText: string }> =
   {
+    "dollar-to-cedi-usd-ghs-conversion-guide": DollarToCediGuide,
     "how-to-make-money-as-a-content-creator-in-ghana": GhanaCreatorEarningsGuide,
     "gigasocial-awards-nomination-voting-guide": GigaSocialAwardsGuide,
     "gigalearn-academy-courses-guide": GigaLearnAcademyGuide,
