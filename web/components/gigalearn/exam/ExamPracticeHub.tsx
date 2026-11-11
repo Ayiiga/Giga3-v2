@@ -4,11 +4,10 @@ import { useMemo, useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "convex/_generated/api";
 import { BookOpen, GraduationCap, Users, Target, Timer, RotateCcw, Layers, Play } from "lucide-react";
-import { EXAM_PRACTICE_FREE_JOURNEY_STAGE_SIZE } from "@/lib/gigalearn/examPractice/practiceLimits";
 import { getExamBankMeta, examPracticeHref } from "@/lib/gigalearn/examPractice/examBankMeta";
 
 type Exam = "bece" | "wassce" | "promotion";
-type Mode = "practice_test" | "timed" | "learn";
+type Mode = "practice_test" | "timed" | "revision";
 
 const WASSCE = [
   { id: "english", label: "English Language", slug: "exam-wassce-english" },
@@ -46,11 +45,13 @@ export function ExamPracticeHub() {
     ? bece?.topics.find((topic) => topic.id === selectedId)?.questionCount ?? 0
     : (selectedBank?.pendingQuestionCount ?? 0) + (selectedBank?.approvedQuestionCount ?? 0);
   const available = subjectCount > 0;
-  const stageCount = Math.min(subjectCount, EXAM_PRACTICE_FREE_JOURNEY_STAGE_SIZE);
+  const freeCounts = [...new Set([5, 10, 20, 50, 100, 200, subjectCount].filter((n) => n > 0 && n <= subjectCount))];
+  const freeCount = freeCounts.includes(Number(count)) ? Number(count) : Math.min(50, subjectCount);
+  if (freeCount > 0 && !freeCounts.includes(freeCount)) freeCounts.push(freeCount);
   const href = exam === "promotion" && selectedSlug
     ? `/gigalearn/academy/tech/?course=${selectedSlug}&mode=${mode}&count=${count}`
     : selectedSlug
-      ? `${examPracticeHref(selectedSlug, { mode, ...(exam === "bece" ? { topic: selectedId } : {}) })}&count=${stageCount}`
+      ? `${examPracticeHref(selectedSlug, { mode, ...(exam === "bece" ? { topic: selectedId } : {}) })}&count=${freeCount}`
       : "/gigalearn/exam/";
 
   function changeExam(value: Exam) {
@@ -107,7 +108,7 @@ export function ExamPracticeHub() {
           {([
             { id: "practice_test" as const, label: "Practice", detail: "Learn & get feedback", Icon: Target },
             { id: "timed" as const, label: "Timed", detail: "Real exam feel", Icon: Timer },
-            { id: "learn" as const, label: "Revision", detail: "Retry missed questions", Icon: RotateCcw },
+            { id: "revision" as const, label: "Revision", detail: "Retry missed questions", Icon: RotateCcw },
           ]).map(({ id, label, detail, Icon }) => (
             <button key={id} type="button" onClick={() => setMode(id)} aria-pressed={mode === id}
               className={`flex min-h-[88px] flex-col items-center justify-center gap-1 rounded-2xl border-2 px-1 py-3 text-center transition ${mode === id ? "border-violet-600 bg-violet-50 text-violet-900 shadow-sm" : "border-slate-200 bg-white text-slate-900"}`}>
@@ -125,7 +126,7 @@ export function ExamPracticeHub() {
         </label>
         {exam === "promotion" ? <select aria-label="Number of questions" value={count} onChange={(e) => setCount(e.target.value)} className="min-h-14 rounded-2xl border-2 border-slate-200 bg-white px-4 font-bold text-slate-950 outline-none focus:border-violet-500">
           <option value="50">50 (Free)</option><option value="100">100 (Premium)</option><option value="250">250 (Premium)</option><option value="500">500 (Premium)</option>
-        </select> : <p className="rounded-2xl border-2 border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-950">Up to {stageCount} free questions in this stage · {subjectCount} available in {selected?.label ?? "this subject"}</p>}
+        </select> : <select aria-label="Number of questions" value={freeCount} onChange={(e) => setCount(e.target.value)} className="min-h-14 rounded-2xl border-2 border-slate-200 bg-white px-4 font-bold">{freeCounts.map((n) => <option key={n} value={n}>{n === subjectCount ? `All ${n} questions (Free)` : `${n} questions (Free)`}</option>)}</select>}
       </section>
 
       <a href={available ? href : undefined} aria-disabled={!available} data-testid="start-practice-test"

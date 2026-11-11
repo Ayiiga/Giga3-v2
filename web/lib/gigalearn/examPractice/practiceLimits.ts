@@ -1,8 +1,7 @@
 /**
  * Exam Practice session sizes and entitlement rules.
  *
- * Free orientation / entry practice stays small. Larger packs ("premium
- * version") unlock with:
+ * BECE and WASSCE banks are free. Larger Teacher Promotion packs unlock with:
  * - any **active paid subscription** — Basic (GHS 60), Pro (GHS 150), or
  *   Premium (GHS 350) — via `subscriptionActive`, OR
  * - a credit-pack purchase (`hasPurchasedCredits` / AI `isPremium` tier).
@@ -16,9 +15,6 @@
  */
 
 export const EXAM_PRACTICE_FREE_QUESTION_COUNT = 50;
-export const EXAM_PRACTICE_FREE_JOURNEY_TOTAL = 500;
-export const EXAM_PRACTICE_FREE_JOURNEY_STAGE_SIZE = 50;
-export const EXAM_PRACTICE_FREE_JOURNEY_PASS_PERCENT = 60;
 export const EXAM_PRACTICE_PREMIUM_QUESTION_COUNT = 500;
 
 /** Lowest paid catalog plan that unlocks Exam Practice premium packs. */
@@ -37,7 +33,7 @@ export const TECH_HUB_DEFAULT_MAX_COUNT = 50;
  */
 export const EXAM_PRACTICE_MAX_CONCURRENT_IN_PROGRESS = 1;
 
-export function isFreeProgressiveExamCourseSlug(courseSlug: string): boolean {
+export function isOpenExamPracticeCourseSlug(courseSlug: string): boolean {
   const slug = courseSlug.trim().toLowerCase();
   return slug === "exam-bece-prep" || slug.startsWith("exam-wassce-");
 }
@@ -94,7 +90,7 @@ export function maxPracticeQuestionCount(args: {
   premiumAccess: boolean;
 }): number {
   if (args.courseSlug && isExamPracticeCourseSlug(args.courseSlug)) {
-    return args.premiumAccess
+    return args.premiumAccess || isOpenExamPracticeCourseSlug(args.courseSlug)
       ? EXAM_PRACTICE_PREMIUM_QUESTION_COUNT
       : EXAM_PRACTICE_FREE_QUESTION_COUNT;
   }
@@ -121,7 +117,7 @@ export function clampPracticeQuestionCount(args: {
 
 /**
  * Pure entitlement → session size resolution used by Convex and unit tests.
- * Free callers requesting 500 are clamped to 50 (no error leak).
+ * Teacher Promotion trial users are limited to 50 questions.
  */
 export function resolveExamPracticeSessionCount(args: {
   requested: number;
@@ -139,7 +135,7 @@ export function resolveExamPracticeSessionCount(args: {
   freeCap: number;
   premiumCap: number;
 } {
-  const premiumAccess = hasExamPracticePremiumAccess(args);
+  const premiumAccess = !isOpenExamPracticeCourseSlug(args.courseSlug) && hasExamPracticePremiumAccess(args);
   const count = clampPracticeQuestionCount({
     requested: args.requested,
     courseSlug: args.courseSlug,
@@ -149,7 +145,7 @@ export function resolveExamPracticeSessionCount(args: {
   return {
     premiumAccess,
     count,
-    freeCap: EXAM_PRACTICE_FREE_QUESTION_COUNT,
+    freeCap: maxPracticeQuestionCount({ courseSlug: args.courseSlug, premiumAccess: false }),
     premiumCap: Math.min(
       EXAM_PRACTICE_PREMIUM_QUESTION_COUNT,
       Math.max(0, args.bankSize)

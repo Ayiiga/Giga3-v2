@@ -1,7 +1,7 @@
 import { expandedExamItems } from "../../examPractice/expandedExamItems";
 import { wassceOriginalItems } from "../../examPractice/wassceOriginalItems";
 import { beceScienceReviewed } from "../../examPractice/beceScienceReviewed";
-import { selectQualityExamQuestions } from "../../examPractice/examQuestionQuality";
+import { normalizeExamQuestionStem, selectQualityExamQuestions } from "../../examPractice/examQuestionQuality";
 /**
  * Server-only Technology Learning Hub bank loader.
  * Import from Convex (or Node tests) — do not import from client components.
@@ -27,10 +27,9 @@ import wassceCoreMathematics from "@/lib/gigalearn/examPractice/banks/wassce-cor
 import wassceIntegratedScience from "@/lib/gigalearn/examPractice/banks/wassce-integrated-science.json";
 import wassceSocialStudies from "@/lib/gigalearn/examPractice/banks/wassce-social-studies.json";
 import {
-  EXAM_PRACTICE_FREE_QUESTION_COUNT,
-  EXAM_PRACTICE_PREMIUM_QUESTION_COUNT,
-  TECH_HUB_DEFAULT_MAX_COUNT,
   isExamPracticeCourseSlug,
+  isOpenExamPracticeCourseSlug,
+  maxPracticeQuestionCount,
 } from "@/lib/gigalearn/examPractice/practiceLimits";
 import {
   buildOptionPermutation,
@@ -190,7 +189,7 @@ export function toPublicTechQuestion(q: TechBankQuestion): TechPublicQuestion {
     questionId: q.questionId,
     topicId: q.topicId,
     topicLabel: q.topicLabel,
-    questionText: sanitizePracticeStem(q.questionText).replace(/GH■/g, "GH₵"),
+    questionText: sanitizePracticeStem(normalizeExamQuestionStem(q).questionText).replace(/GH■/g, "GH₵"),
     curriculumStrand: q.curriculumStrand,
     curriculumSubStrand: q.curriculumSubStrand,
     options: q.options,
@@ -289,19 +288,14 @@ export function selectTechQuestionIds(args: {
   /** Optional question-format filter for type-specific practice. */
   questionType?: "mcq" | "true_false" | "structured";
 }): string[] {
-  // Exam Practice packs allow up to 500; Technology Hub courses stay within 50.
-  // Also clamp here when premiumAccess is false so free callers never receive
-  // more than EXAM_PRACTICE_FREE_QUESTION_COUNT even if count is overstated
-  // (defense in depth alongside startTechPracticeSession).
   const isExam = isExamPracticeCourseSlug(args.courseSlug);
-  const hardMax = isExam
-    ? args.premiumAccess === false
-      ? EXAM_PRACTICE_FREE_QUESTION_COUNT
-      : EXAM_PRACTICE_PREMIUM_QUESTION_COUNT
-    : TECH_HUB_DEFAULT_MAX_COUNT;
+  const hardMax = maxPracticeQuestionCount({
+    courseSlug: args.courseSlug,
+    premiumAccess: args.premiumAccess !== false,
+  });
   const count = Math.max(1, Math.min(hardMax, Math.floor(args.count)));
   const rand = mulberry32(args.seed);
-  const freeTierOnly = args.premiumAccess === false;
+  const freeTierOnly = args.premiumAccess === false && !isOpenExamPracticeCourseSlug(args.courseSlug);
 
   if (args.mode === "revision" && args.revisionQuestionIds?.length) {
     const allowed = new Set(
