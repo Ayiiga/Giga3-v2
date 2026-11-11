@@ -85,6 +85,10 @@ describe("sitemap.xml", () => {
     const xml = readFileSync(resolve(__dirname, "../../web/public/sitemap-gigalearn.xml"), "utf8");
     for (const path of [
       "https://www.giga3ai.com/gigalearn/",
+      "https://www.giga3ai.com/gigalearn/exam/bece/",
+      "https://www.giga3ai.com/gigalearn/exam/wassce/",
+      "https://www.giga3ai.com/gigalearn/exam/promotion/",
+      "https://www.giga3ai.com/gigalearn/resources/",
       "https://www.giga3ai.com/ai-for-bece-wassce-ghana/",
       "https://www.giga3ai.com/ai-tools-for-students-ghana/",
       "https://www.giga3ai.com/ai-for-teachers-ghana/",

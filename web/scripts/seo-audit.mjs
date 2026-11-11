@@ -13,10 +13,11 @@
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 
+import { CANONICAL_ORIGIN as SITE, canonicalLoc, robotsTxt } from "./seo-route-policy.mjs";
+
 const args = process.argv.slice(2);
 const outDir = resolve(args.includes("--out") ? args[args.indexOf("--out") + 1] : "out");
 const jsonPath = args.includes("--json") ? args[args.indexOf("--json") + 1] : null;
-const SITE = "https://www.giga3ai.com";
 
 function walk(dir, acc = []) {
   for (const entry of readdirSync(dir)) {
@@ -69,7 +70,7 @@ const pages = walk(outDir).map((file) => {
     return tag ? attr(tag, "href") : null;
   })();
   const robots = metaContent(html, "name", "robots") ?? "";
-  const noindex = /noindex/i.test(robots);
+  const noindex = /\bnoindex\b/i.test(robots) || /\bnoindex\b/i.test(metaContent(html, "name", "googlebot") ?? "");
   const h1s = [...html.matchAll(/<h1[\s>]/gi)].length;
   const ogTitle = metaContent(html, "property", "og:title");
   const ogDescription = metaContent(html, "property", "og:description");
@@ -195,10 +196,16 @@ function collectSitemapLocs(outDir) {
   if (isIndex) {
     const childFiles = [...rootXml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1].trim());
     for (const childUrl of childFiles) {
-      if (!childUrl.startsWith(SITE)) continue;
-      const childName = childUrl.slice(SITE.length).replace(/^\//, "");
+      const childName = childUrl.startsWith(`${SITE}/`) ? childUrl.slice(SITE.length + 1) : "";
+      if (!/^sitemap-[a-z0-9-]+\.xml$/.test(childName)) {
+        err("/sitemap.xml", `invalid child sitemap URL: ${childUrl}`);
+        continue;
+      }
       const childPath = join(outDir, childName);
-      if (!existsSync(childPath)) continue;
+      if (!existsSync(childPath)) {
+        err("/sitemap.xml", `missing child sitemap: ${childName}`);
+        continue;
+      }
       const childXml = readFileSync(childPath, "utf8");
       allLocs.push(...[...childXml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1].trim()));
     }
@@ -218,9 +225,17 @@ try {
 }
 const routeSet = new Set(pages.map((p) => p.route));
 const indexableSet = new Set(indexable.map((p) => p.route));
+const robotsPath = join(outDir, "robots.txt");
+if (!existsSync(robotsPath) || readFileSync(robotsPath, "utf8") !== robotsTxt()) {
+  err("/robots.txt", "exported robots.txt is missing or differs from the public crawl policy");
+}
+
+const seenLocs = new Set();
 for (const loc of sitemapLocs) {
-  if (!loc.startsWith(SITE)) {
-    err("/sitemap.xml", `sitemap loc not on canonical host: ${loc}`);
+  if (seenLocs.has(loc)) err("/sitemap.xml", `duplicate sitemap URL: ${loc}`);
+  seenLocs.add(loc);
+  if (canonicalLoc(loc) !== loc) {
+    err("/sitemap.xml", `sitemap URL is private or noncanonical: ${loc}`);
     continue;
   }
   const route = loc.slice(SITE.length) || "/";
