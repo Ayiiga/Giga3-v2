@@ -81,15 +81,15 @@ describe("Exam practice question limits", () => {
 });
 
 describe("Exam practice rewards", () => {
-  it("returns praise lines including Excellent and Superb", () => {
+  it("returns praise lines including Excellent and Brilliant Student", () => {
     const lines = new Set(
       Array.from({ length: 24 }, (_, i) =>
         rewardForCorrectAnswer({ streak: 1, seed: i })
       )
     );
     expect([...lines].some((l) => /excellent/i.test(l))).toBe(true);
-    expect([...lines].some((l) => /superb/i.test(l))).toBe(true);
-    expect(rewardForCorrectAnswer({ streak: 3 })).toMatch(/superb/i);
+    expect([...lines].some((l) => /brilliant student/i.test(l))).toBe(true);
+    expect(rewardForCorrectAnswer({ streak: 3 })).toMatch(/brilliant student/i);
     expect(rewardForSessionScore(92)).toMatch(/outstanding/i);
     expect(rewardForSessionScore(40)).toMatch(/keep practising/i);
   });
