@@ -3,6 +3,19 @@ import type { BlogPost } from "@/lib/blog/types";
 /** Metadata-only registry — article bodies live in web/content/blog/*.tsx */
 export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
   {
+    slug: "how-to-make-money-as-a-content-creator-in-ghana",
+    title: "How to Make Money as a Content Creator in Ghana",
+    description: "Explore four practical ways to earn as a Ghanaian content creator, from paid client work to sponsorship, and prepare for GigaSocial Awards in December 2026.",
+    excerpt: "Start with one paid service, pitch a relevant sponsor, or sell an original resource. Plus, see how to prepare for GigaSocial’s December Creator Edition.",
+    category: "Creators",
+    tags: ["content creators Ghana","make money online Ghana","GigaSocial Awards","creator sponsorship"],
+    author: "Giga3 AI Editorial Team",
+    publishedAt: "2026-11-11",
+    featuredImage: "/images/blog/ai-hustle-ghana.jpg",
+    featuredImageAlt: "Young Ghanaian creator filming content with a phone on a small tripod at home",
+    keywords: ["how to make money as a content creator in Ghana","how to make money online in Ghana","GigaSocial Awards December 2026"],
+  },
+  {
     slug: "gigasocial-awards-nomination-voting-guide",
     title: "GigaSocial Awards: How to Nominate and Vote",
     description: "Learn how to nominate a creator for GigaSocial Awards in Ghana, share a candidate page and take part in free voting.",

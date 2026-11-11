@@ -104,3 +104,37 @@ export const Giga3ExamRevisionGuide = productGuide(
   ],
   { href: "https://waecgh.org/chief-examiners-report/", label: "Read WAEC Ghana’s chief examiners’ reports" },
 );
+
+export const GhanaCreatorEarningsGuide = productGuide(
+  "A shop owner in Kumasi needs a short video showing how to find her shop. A teacher in Tamale needs a simple graphic for a revision class. If you can make either piece of content well, you have something specific to offer. Here are four ways to turn original content into an earning opportunity, plus what Ghanaian creators can do now for GigaSocial’s December Awards.",
+  [
+    { id: "client-work", label: "1. Sell one service you can demonstrate", paragraphs: [
+      "Pick one service you can deliver with the tools you already have. Try editing a 30-second product video, filming a short shop tour or designing three social posts for a local business. Make a sample using material you own or have permission to use.",
+      "Send the business one example and a clear offer. State what you’ll deliver, when you’ll deliver it, how many revisions are included and what the work costs. Ask what customers usually want to know, then make the video answer that question.",
+    ] },
+    { id: "sponsors", label: "2. Pitch a sponsor that fits your audience", paragraphs: [
+      "If you teach mobile photography, a local accessories shop may be a better fit than a brand your viewers rarely use. Show the sponsor one relevant post and your actual reach or engagement. Explain the idea for the sponsored post and how you’ll report results.",
+      "Disclose paid partnerships clearly. Agree in advance on how the business may reuse the video, especially if it wants to turn the clip into an advertisement.",
+    ] },
+    { id: "products", label: "3. Turn a repeated question into a product", paragraphs: [
+      "If people keep asking for your editing checklist, make a simple one-page version. If they ask how you teach a topic, consider a short original worksheet or a small live session. Let a few people try it first and use their feedback before charging.",
+      "Work out what you keep after data, transport, production and payment costs. For example, a GH₵200 editing job with GH₵50 in direct costs leaves GH₵150 before you account for your time or other expenses. The figures are illustrative.",
+    ] },
+    { id: "gigasocial", label: "4. Give viewers one clear way to support you", paragraphs: [
+      "Use your GigaSocial profile as a portfolio. Choose a recognisable profile photo, describe the kind of work you make and share two or three posts that demonstrate it. When tips are available on your profile, tell supporters what their tips help you make next.",
+      "A tip is voluntary support. Keep your client prices, sponsorship agreements and any future awards participation terms clear so supporters know what they’re paying for.",
+    ] },
+    { id: "december-awards", label: "Get ready for GigaSocial Awards in December 2026", paragraphs: [
+      "GigaSocial is preparing its December 2026 Creator Edition to recognise original work by creators in Ghana. Pick three posts that best show what you do. For each one, write a sentence about who it helped or why you made it. Check that you can share the links from a phone.",
+      "The Awards page has a December preview and a sponsorship inquiry link. Nomination dates, voting rules and prize details are pending confirmation. If you run a business that serves creators, use the preview to ask about sponsorship.",
+    ] },
+    { id: "first-week", label: "Your first seven days", paragraphs: [
+      "Spend the first two days making a sample. On day three, publish it and explain the problem it solves. Over the next two days, send it to three businesses or clients that could use similar work. Use the weekend to follow up and improve the offer based on what people asked you.",
+    ] },
+  ],
+  { title: "See the December Creator Edition", description: "Get the latest GigaSocial Awards updates or ask about sponsoring the edition.", href: "/gigasocial/awards/#december-2026", label: "Open the December Awards preview" },
+  [
+    <ArticleFigure key="support-creator-editing" src="/images/blog/support-creator-editing.jpg" alt="Creator editing video at a desk with a laptop and phone" />,
+    <ArticleFigure key="support-mobile-learning" src="/images/blog/support-mobile-learning.jpg" alt="A person using a phone to learn a new skill" />,
+  ],
+);

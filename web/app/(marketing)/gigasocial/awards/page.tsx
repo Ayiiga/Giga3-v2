@@ -52,6 +52,11 @@ export default function GigaSocialAwardsPage() {
             >
               Ask about December sponsorship
             </a>
+            <p className="mt-3">
+              <a href="/blog/how-to-make-money-as-a-content-creator-in-ghana/" className="font-semibold underline">
+                Read the Ghana creator earnings and December Awards guide
+              </a>
+            </p>
           </section>
           <AwardsHubClient />
         </Container>
