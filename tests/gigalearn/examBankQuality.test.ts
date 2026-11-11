@@ -20,7 +20,7 @@ describe("BECE and WASSCE question quality", () => {
 
   it("covers the five BECE Science strands and preserves historical question IDs", () => {
     const questions = getTechBankQuestions("exam-bece-prep", { topicId: "integrated-science", questionType: "mcq" });
-    expect(questions).toHaveLength(22);
+    expect(questions).toHaveLength(25);
     expect(new Set(questions.map((q) => q.curriculumStrand)).size).toBe(5);
     expect(new Set(questions.map((q) => q.curriculumSubStrand)).size).toBe(20);
     expect(getTechBankQuestionById("exam-bece-prep", "exam-bece-prep-q107")).toBeDefined();
