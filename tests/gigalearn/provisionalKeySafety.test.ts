@@ -149,7 +149,7 @@ describe("client + server wiring for provisional reward suppression", () => {
     );
     expect(ui).toContain("fb.pendingReview");
     expect(ui).toContain("Practice answer —");
-    expect(ui).toContain("This question is unscored while its answer key is under review.");
+    expect(ui).toContain("Not counted in your score.");
     expect(ui).not.toContain('data-testid="exam-answer-under-review"');
     expect(ui).toContain("isVerifiedCorrect");
     expect(ui).toContain("goToQuestion");

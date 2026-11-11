@@ -872,10 +872,10 @@ function TechHubInner() {
                     {activeFeedback.explanation}
                     {activeFeedback.pendingReview && (
                       <small className="mt-2 block">
-                        {activeFeedback.correctIndex != null && (activeFeedback.provisionalMatch
-                          ? "Your choice matches the practice answer. "
-                          : "Your choice differs from the practice answer. ")}
-                        This question is unscored while its answer key is under review.
+                        {activeFeedback.correctIndex != null && (
+                          activeFeedback.provisionalMatch ? "You chose the practice answer. " : "Review the practice answer above. "
+                        )}
+                        Not counted in your score.
                       </small>
                     )}
                   </p>
