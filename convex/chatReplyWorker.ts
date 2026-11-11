@@ -1,7 +1,8 @@
 "use node";
 
 import { internalAction } from "./_generated/server";
-import { internal } from "./_generated/api";
+import { api, internal } from "./_generated/api";
+import { blogPopularityLimit, formatBlogPopularity, publishedBlogSlugs } from "./blogPopularity";
 import { v } from "convex/values";
 import { buildRoutingContextFromUser,
   completeChatWithFailover,
@@ -780,6 +781,18 @@ export const processJob = internalAction({
         })),
       });
 
+      const writingCraft = hasWritingCraftIntent(job.content);
+      const popularityLimit = attachments.length === 0 && !writingCraft
+        ? blogPopularityLimit(job.content)
+        : null;
+      let blogPopularityReply: string | null = null;
+      if (popularityLimit !== null) {
+        const counts = await ctx.runQuery(api.blogStats.getStatsBatch, {
+          slugs: publishedBlogSlugs,
+        }).catch(() => null);
+        blogPopularityReply = formatBlogPopularity(counts, popularityLimit);
+      }
+
       const matchedBlogPosts = matchGiga3BlogPosts(job.content);
       const blogContextBlock = formatGiga3BlogContextBlock(matchedBlogPosts);
 
@@ -841,12 +854,11 @@ export const processJob = internalAction({
         systemPrompt += `\n\n${USER_PROVIDED_CONTENT_GUIDANCE}`;
       }
 
-      const writingCraft = hasWritingCraftIntent(job.content);
       const requestedGrounding =
         queryContainsPublicUrl(job.content) ||
         job.researchCapability === "live_web" ||
         researchCapability === "deep_research";
-      const allowResearch = !writingCraft || requestedGrounding;
+      const allowResearch = blogPopularityReply === null && (!writingCraft || requestedGrounding);
       const capabilityPrompt = !allowResearch
         ? ""
         : researchSystemPromptAddon(researchCapability);
@@ -1096,35 +1108,45 @@ export const processJob = internalAction({
         WORKER_TEXT_TIMEOUT_MS,
         jobBudgetMs - (Date.now() - workerStarted)
       );
-      const engineResult = await withWorkerTimeout(
-        runHybridAiEngine(ctx, {
-          email,
-          mode,
-          query: job.content,
-          systemPrompt,
-          chatMessages,
-          routing,
-          hasAttachments: attachments.length > 0,
-          hasImageAttachment: attachments.some((a) => a.kind === "image"),
-          imageAttachments: attachments
-            .filter((a) => a.kind === "image")
-            .map((a) => ({ dataUrl: a.dataUrl })),
-          conversationId: job.conversationId,
-          quotaReservationId: String(args.jobId),
-          subscriptionPlan: refreshedUser?.subscriptionPlan ?? "free",
-          subscriptionExpiresAt: refreshedUser?.subscriptionExpiresAt,
-          forceWebSearch: Boolean(
-            needsLiveWeb && isLiveWebEnabled() && !liveWebSkippedReason
-          ),
-        }),
-        Math.min(
-          attachments.some((a) => a.kind === "image")
-            ? WORKER_IMAGE_TIMEOUT_MS
-            : WORKER_TEXT_TIMEOUT_MS,
-          remainingBudgetMs
-        ),
-        "runHybridAiEngine"
-      );
+      const engineResult: Awaited<ReturnType<typeof runHybridAiEngine>> =
+        blogPopularityReply !== null
+          ? {
+              content: blogPopularityReply,
+              providerId: "local_fallback",
+              usedFallback: false,
+              latencyMs: 0,
+              cached: false,
+              requestKind: "text_chat",
+            }
+          : await withWorkerTimeout(
+            runHybridAiEngine(ctx, {
+              email,
+              mode,
+              query: job.content,
+              systemPrompt,
+              chatMessages,
+              routing,
+              hasAttachments: attachments.length > 0,
+              hasImageAttachment: attachments.some((a) => a.kind === "image"),
+              imageAttachments: attachments
+                .filter((a) => a.kind === "image")
+                .map((a) => ({ dataUrl: a.dataUrl })),
+              conversationId: job.conversationId,
+              quotaReservationId: String(args.jobId),
+              subscriptionPlan: refreshedUser?.subscriptionPlan ?? "free",
+              subscriptionExpiresAt: refreshedUser?.subscriptionExpiresAt,
+              forceWebSearch: Boolean(
+                needsLiveWeb && isLiveWebEnabled() && !liveWebSkippedReason
+              ),
+            }),
+            Math.min(
+              attachments.some((a) => a.kind === "image")
+                ? WORKER_IMAGE_TIMEOUT_MS
+                : WORKER_TEXT_TIMEOUT_MS,
+              remainingBudgetMs
+            ),
+            "runHybridAiEngine"
+          );
       await ctx.runMutation(internal.chatReplyJobs.touchJobActivity, {
         jobId: args.jobId,
       });
@@ -1173,7 +1195,7 @@ export const processJob = internalAction({
 
       let assistantContent: string;
       let qualityReport: ReturnType<typeof validateAnswerQuality>["report"] | null = null;
-      if (engineResult.requestKind === "image_generation") {
+      if (blogPopularityReply !== null || engineResult.requestKind === "image_generation") {
         assistantContent = engineResult.content;
       } else {
         const validated = validateAnswerQuality({

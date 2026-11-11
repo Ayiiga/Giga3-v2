@@ -1,4 +1,4 @@
-import type { BlogPost } from "@/lib/blog/types";
+import type { BlogPost } from "./types";
 
 /** Metadata-only registry — article bodies live in web/content/blog/*.tsx */
 export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
