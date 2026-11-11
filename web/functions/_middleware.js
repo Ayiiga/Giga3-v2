@@ -4,8 +4,9 @@ import { apexToWwwRedirect } from "./canonicalHost.js";
 import { editorialBlogResponse } from "./editorialBlog.js";
 import { OFFLINE_PAGE_HTML } from "./offlinePageHtml.js";
 
+// Serve share cards to social preview agents. Search crawlers use the public page.
 const CRAWLER_UA =
-  /facebookexternalhit|Facebot|WhatsApp|whatsapp|Twitterbot|LinkedInBot|Slackbot|TelegramBot|Discordbot|Googlebot|bingbot|Applebot|Pinterest|Embedly|ia_archiver|Snapchat|SkypeUriPreview|Viber|Line\/|KakaoTalk|redditbot|Quora|MetaInspector|bot|crawl|spider|preview|fetch|link/i;
+  /facebookexternalhit|Facebot|WhatsApp|whatsapp|Twitterbot|LinkedInBot|Slackbot|TelegramBot|Discordbot|Pinterest|Embedly|ia_archiver|Snapchat|SkypeUriPreview|Viber|Line\/|KakaoTalk|redditbot|Quora|MetaInspector/i;
 
 const DEFAULT_CONVEX_SITE = "https://perfect-lark-521.convex.site";
 
