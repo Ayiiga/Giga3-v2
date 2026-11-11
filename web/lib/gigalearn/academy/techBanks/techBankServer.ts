@@ -1,3 +1,4 @@
+import { expandedExamItems } from "../../examPractice/expandedExamItems";
 import { wassceOriginalItems } from "../../examPractice/wassceOriginalItems";
 import { beceScienceReviewed } from "../../examPractice/beceScienceReviewed";
 import { selectQualityExamQuestions } from "../../examPractice/examQuestionQuality";
@@ -56,7 +57,7 @@ const BANKS: Record<string, BankFile> = {
   [robotics.courseSlug]: robotics as BankFile,
   [otherDigital.courseSlug]: otherDigital as BankFile,
   [aiMl.courseSlug]: aiMl as BankFile,
-  [becePrep.courseSlug]: { ...(becePrep as BankFile), questions: [...(becePrep as BankFile).questions, ...beceScienceReviewed] },
+  [becePrep.courseSlug]: { ...(becePrep as BankFile), questions: [...(becePrep as BankFile).questions, ...beceScienceReviewed, ...expandedExamItems.filter((q) => q.courseSlug === becePrep.courseSlug)] },
   [teacherPromotion.courseSlug]: teacherPromotion as BankFile,
   [adIi.courseSlug]: adIi as BankFile,
   [adI.courseSlug]: adI as BankFile,
@@ -65,19 +66,19 @@ const BANKS: Record<string, BankFile> = {
   [directorI.courseSlug]: directorI as BankFile,
   [wassceEnglish.courseSlug]: {
     ...(wassceEnglish as BankFile),
-    questions: [...wassceOriginalItems.filter((q) => q.courseSlug === wassceEnglish.courseSlug), ...(wassceEnglish as BankFile).questions],
+    questions: [...expandedExamItems.filter((q) => q.courseSlug === wassceEnglish.courseSlug), ...wassceOriginalItems.filter((q) => q.courseSlug === wassceEnglish.courseSlug), ...(wassceEnglish as BankFile).questions],
   },
   [wassceCoreMathematics.courseSlug]: {
     ...(wassceCoreMathematics as BankFile),
-    questions: [...wassceOriginalItems.filter((q) => q.courseSlug === wassceCoreMathematics.courseSlug), ...(wassceCoreMathematics as BankFile).questions],
+    questions: [...expandedExamItems.filter((q) => q.courseSlug === wassceCoreMathematics.courseSlug), ...wassceOriginalItems.filter((q) => q.courseSlug === wassceCoreMathematics.courseSlug), ...(wassceCoreMathematics as BankFile).questions],
   },
   [wassceIntegratedScience.courseSlug]: {
     ...(wassceIntegratedScience as BankFile),
-    questions: [...wassceOriginalItems.filter((q) => q.courseSlug === wassceIntegratedScience.courseSlug), ...(wassceIntegratedScience as BankFile).questions],
+    questions: [...expandedExamItems.filter((q) => q.courseSlug === wassceIntegratedScience.courseSlug), ...wassceOriginalItems.filter((q) => q.courseSlug === wassceIntegratedScience.courseSlug), ...(wassceIntegratedScience as BankFile).questions],
   },
   [wassceSocialStudies.courseSlug]: {
     ...(wassceSocialStudies as BankFile),
-    questions: [...wassceOriginalItems.filter((q) => q.courseSlug === wassceSocialStudies.courseSlug), ...(wassceSocialStudies as BankFile).questions],
+    questions: [...expandedExamItems.filter((q) => q.courseSlug === wassceSocialStudies.courseSlug), ...wassceOriginalItems.filter((q) => q.courseSlug === wassceSocialStudies.courseSlug), ...(wassceSocialStudies as BankFile).questions],
   },
 };
 

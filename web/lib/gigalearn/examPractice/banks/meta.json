@@ -5,60 +5,60 @@
       "courseSlug": "exam-bece-prep",
       "title": "Ghana BECE Preparation",
       "sourceDocument": "Ghana_BECE_Preparation_500_Objective_Questions_Explained_c887.pdf",
-      "approvedQuestionCount": 219,
-      "pendingQuestionCount": 320,
-      "mcqCount": 469,
+      "approvedQuestionCount": 102,
+      "pendingQuestionCount": 352,
+      "mcqCount": 384,
       "trueFalseCount": 0,
       "topics": [
         {
           "id": "integrated-science",
           "label": "Integrated Science",
-          "questionCount": 20
+          "questionCount": 22
         },
         {
           "id": "social-studies",
           "label": "Social Studies",
-          "questionCount": 20
+          "questionCount": 10
         },
         {
           "id": "rme",
           "label": "RME",
-          "questionCount": 20
+          "questionCount": 7
         },
         {
           "id": "computing",
           "label": "Computing",
-          "questionCount": 20
+          "questionCount": 12
         },
         {
           "id": "career-technology",
           "label": "Career Technology",
-          "questionCount": 20
+          "questionCount": 13
         },
         {
           "id": "creative-arts",
           "label": "Creative Arts",
-          "questionCount": 20
+          "questionCount": 7
         },
         {
           "id": "mathematics",
           "label": "Mathematics",
-          "questionCount": 48
+          "questionCount": 50
         },
         {
           "id": "french",
           "label": "French",
-          "questionCount": 40
+          "questionCount": 21
         },
         {
           "id": "english",
           "label": "English",
-          "questionCount": 31
+          "questionCount": 10
         },
         {
           "id": "ghanaian-language-culture",
           "label": "Asante Twi",
-          "questionCount": 300
+          "questionCount": 302
         }
       ],
       "structuredCount": 70
@@ -897,14 +897,14 @@
       "title": "WASSCE English Language Practice",
       "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
       "approvedQuestionCount": 0,
-      "pendingQuestionCount": 63,
-      "mcqCount": 63,
+      "pendingQuestionCount": 65,
+      "mcqCount": 65,
       "trueFalseCount": 0,
       "topics": [
         {
           "id": "wassce-english",
           "label": "English Language",
-          "questionCount": 63
+          "questionCount": 65
         }
       ]
     },
@@ -914,14 +914,14 @@
       "title": "WASSCE Core Mathematics Practice",
       "sourceDocument": "GigaLearn_SHS_Mathematics_New_Curriculum_400.pdf",
       "approvedQuestionCount": 0,
-      "pendingQuestionCount": 19,
-      "mcqCount": 19,
+      "pendingQuestionCount": 23,
+      "mcqCount": 23,
       "trueFalseCount": 0,
       "topics": [
         {
           "id": "wassce-core-mathematics",
           "label": "Core Mathematics",
-          "questionCount": 19
+          "questionCount": 23
         }
       ]
     },
@@ -931,14 +931,14 @@
       "title": "WASSCE Integrated Science Practice",
       "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
       "approvedQuestionCount": 0,
-      "pendingQuestionCount": 113,
-      "mcqCount": 113,
+      "pendingQuestionCount": 115,
+      "mcqCount": 115,
       "trueFalseCount": 0,
       "topics": [
         {
           "id": "wassce-integrated-science",
           "label": "Integrated Science",
-          "questionCount": 113
+          "questionCount": 115
         }
       ]
     },
@@ -948,14 +948,14 @@
       "title": "WASSCE Social Studies Practice",
       "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
       "approvedQuestionCount": 0,
-      "pendingQuestionCount": 220,
-      "mcqCount": 220,
+      "pendingQuestionCount": 222,
+      "mcqCount": 222,
       "trueFalseCount": 0,
       "topics": [
         {
           "id": "wassce-social-studies",
           "label": "Social Studies",
-          "questionCount": 220
+          "questionCount": 222
         }
       ]
     }

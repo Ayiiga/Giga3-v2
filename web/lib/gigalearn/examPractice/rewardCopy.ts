@@ -1,24 +1,24 @@
 /** Short praise shown when a learner answers correctly. */
 
 const CORRECT_REWARDS = [
-  "EXCELLENT!",
-  "SUPERB!",
-  "OUTSTANDING!",
-  "PROFICIENT!",
-  "CORRECT — KEEP IT UP!",
-  "WELL DONE!",
+  "Brilliant student! You got it right.",
+  "Well spotted!",
+  "Excellent work!",
+  "Nicely done!",
+  "Great work!",
+  "Keep it up!",
 ] as const;
 
 const INCORRECT_REWARDS = [
-  "NOT QUITE — REVIEW THE EXPLANATION.",
-  "KEEP PRACTISING!",
-  "YOU CAN DO BETTER!",
+  "Good try. Read the explanation and have another go.",
+  "Keep practising. Take a moment to check your reasoning.",
+  "Review the explanation and try a similar question.",
 ] as const;
 
 const STREAK_REWARDS: Record<number, string> = {
-  3: "SUPERB! — 3 in a row!",
-  5: "EXCELLENT! — 5 correct in a row!",
-  10: "OUTSTANDING! — 10 streak!",
+  3: "Brilliant student! 3 correct in a row!",
+  5: "Excellent work! 5 correct in a row!",
+  10: "Outstanding! 10 correct in a row!",
 };
 
 export function rewardForCorrectAnswer(args: {
