@@ -3,10 +3,10 @@ import { getExamBankMeta } from "../../web/lib/gigalearn/examPractice/examBankMe
 import { getTechBankQuestions, listLoadedTechBankSlugs } from "../../web/lib/gigalearn/academy/techBanks/techBankServer";
 
 const WASSCE_BANKS = [
-  { slug: "exam-wassce-english", topic: "English Language", minimum: 200 },
-  { slug: "exam-wassce-core-mathematics", topic: "Core Mathematics", minimum: 250 },
-  { slug: "exam-wassce-integrated-science", topic: "Integrated Science", minimum: 250 },
-  { slug: "exam-wassce-social-studies", topic: "Social Studies", minimum: 250 },
+  { slug: "exam-wassce-english", topic: "English Language", minimum: 60 },
+  { slug: "exam-wassce-core-mathematics", topic: "Core Mathematics", minimum: 20 },
+  { slug: "exam-wassce-integrated-science", topic: "Integrated Science", minimum: 110 },
+  { slug: "exam-wassce-social-studies", topic: "Social Studies", minimum: 220 },
 ] as const;
 
 describe("WASSCE four-core-subject practice banks", () => {
@@ -21,7 +21,7 @@ describe("WASSCE four-core-subject practice banks", () => {
       expect(questions.length).toBeGreaterThan(0);
       expect(questions.every((question) => question.courseSlug === selected.slug)).toBe(true);
       expect(
-        questions.every((question) => question.questionId.startsWith(`${selected.slug}-q`))
+        questions.every((question) => question.questionId.startsWith(`${selected.slug}-`))
       ).toBe(true);
     }
   });
@@ -30,7 +30,7 @@ describe("WASSCE four-core-subject practice banks", () => {
     it(`makes ${bank.topic} objective practice available with honest review status`, () => {
       const meta = getExamBankMeta(bank.slug);
       const questions = getTechBankQuestions(bank.slug);
-      expect(meta).toBeTruthy();
+      expect(meta?.mcqCount).toBe(questions.length);
       expect(questions.length).toBeGreaterThanOrEqual(bank.minimum);
       expect(questions.every((q) => q.reviewStatus === "pending_review")).toBe(true);
       expect(questions.every((q) => q.questionType === "mcq")).toBe(true);

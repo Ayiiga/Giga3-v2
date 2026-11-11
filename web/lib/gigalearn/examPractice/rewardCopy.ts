@@ -16,7 +16,7 @@ const INCORRECT_REWARDS = [
 ] as const;
 
 const STREAK_REWARDS: Record<number, string> = {
-  3: "Brilliant student! 3 correct in a row!",
+  3: "Brilliant student! 3 in a row!",
   5: "Excellent work! 5 correct in a row!",
   10: "Outstanding! 10 correct in a row!",
 };

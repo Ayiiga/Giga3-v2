@@ -87,6 +87,8 @@ export const expandedExamItems: TechBankQuestion[] = ([["bece", bece], ["wassce"
       explanation, difficulty: "intermediate", questionType: "mcq",
       sourceDocument: "Original GigaLearn curriculum-informed practice",
       sourceQuestionNumber: index + 1, reviewStatus: "pending_review",
+      sourceType: "original_practice",
+      verificationStatus: "awaiting_verification",
       tags: [strand, subStrand], curriculumStrand: strand, curriculumSubStrand: subStrand,
     })),
   ),
