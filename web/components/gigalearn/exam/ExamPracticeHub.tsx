@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "convex/_generated/api";
 import { BookOpen, GraduationCap, Users, Target, Timer, RotateCcw, Layers, Play } from "lucide-react";
+import { EXAM_PRACTICE_FREE_JOURNEY_STAGE_SIZE } from "@/lib/gigalearn/examPractice/practiceLimits";
 import { getExamBankMeta, examPracticeHref } from "@/lib/gigalearn/examPractice/examBankMeta";
 
 type Exam = "bece" | "wassce" | "promotion";
@@ -40,15 +41,16 @@ export function ExamPracticeHub() {
   const selected = subjects.find((item) => item.id === subject) ?? subjects[0];
   const selectedId = selected?.id ?? "";
   const selectedSlug = selected?.slug ?? "";
-  const available = exam === "bece"
-    ? (bece?.topics.find((t) => t.id === selectedId)?.questionCount ?? 0) > 0
-    : exam === "wassce"
-      ? (getExamBankMeta(selectedSlug)?.pendingQuestionCount ?? 0) + (getExamBankMeta(selectedSlug)?.approvedQuestionCount ?? 0) > 0
-      : (getExamBankMeta(selectedSlug)?.pendingQuestionCount ?? 0) + (getExamBankMeta(selectedSlug)?.approvedQuestionCount ?? 0) > 0;
+  const selectedBank = getExamBankMeta(selectedSlug);
+  const subjectCount = exam === "bece"
+    ? bece?.topics.find((topic) => topic.id === selectedId)?.questionCount ?? 0
+    : (selectedBank?.pendingQuestionCount ?? 0) + (selectedBank?.approvedQuestionCount ?? 0);
+  const available = subjectCount > 0;
+  const stageCount = Math.min(subjectCount, EXAM_PRACTICE_FREE_JOURNEY_STAGE_SIZE);
   const href = exam === "promotion" && selectedSlug
     ? `/gigalearn/academy/tech/?course=${selectedSlug}&mode=${mode}&count=${count}`
     : selectedSlug
-      ? `${examPracticeHref(selectedSlug, { mode, ...(exam === "bece" ? { topic: selectedId } : {}) })}&count=${count}`
+      ? `${examPracticeHref(selectedSlug, { mode, ...(exam === "bece" ? { topic: selectedId } : {}) })}&count=${stageCount}`
       : "/gigalearn/exam/";
 
   function changeExam(value: Exam) {
@@ -121,9 +123,9 @@ export function ExamPracticeHub() {
           <Layers className="h-6 w-6 shrink-0 text-violet-700" />
           <span className="text-sm font-bold text-slate-950">Number of Questions</span>
         </label>
-        <select aria-label="Number of questions" value={count} onChange={(e) => setCount(e.target.value)} className="min-h-14 rounded-2xl border-2 border-slate-200 bg-white px-4 font-bold text-slate-950 outline-none focus:border-violet-500">
+        {exam === "promotion" ? <select aria-label="Number of questions" value={count} onChange={(e) => setCount(e.target.value)} className="min-h-14 rounded-2xl border-2 border-slate-200 bg-white px-4 font-bold text-slate-950 outline-none focus:border-violet-500">
           <option value="50">50 (Free)</option><option value="100">100 (Premium)</option><option value="250">250 (Premium)</option><option value="500">500 (Premium)</option>
-        </select>
+        </select> : <p className="rounded-2xl border-2 border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-950">Up to {stageCount} free questions in this stage · {subjectCount} available in {selected?.label ?? "this subject"}</p>}
       </section>
 
       <a href={available ? href : undefined} aria-disabled={!available} data-testid="start-practice-test"
@@ -131,7 +133,7 @@ export function ExamPracticeHub() {
         <Play className="h-7 w-7 fill-current" /> Start Practice Test <span aria-hidden>→</span>
       </a>
       {!available ? <p role="status" className="text-center text-xs text-amber-800">This practice bank is not available yet. Please choose another subject or exam.</p> : null}
-      <p className="rounded-full bg-violet-50 px-3 py-3 text-center text-xs text-violet-950 sm:text-sm"><span className="font-semibold">ⓘ Free: up to 50 questions</span><span className="mx-2 text-violet-300">|</span><a href="/credits/" className="font-extrabold text-violet-800 underline">Upgrade</a> for up to 500 questions. Premium access is checked securely when your session starts.</p>
+      {exam === "promotion" ? <p className="rounded-full bg-violet-50 px-3 py-3 text-center text-xs text-violet-950 sm:text-sm"><span className="font-semibold">ⓘ Free: up to 50 questions</span><span className="mx-2 text-violet-300">|</span><a href="/credits/" className="font-extrabold text-violet-800 underline">Upgrade</a> for up to 500 questions. Premium access is checked securely when your session starts.</p> : null}
 
       <section aria-labelledby="featured-resources-title" className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
         <div className="mb-2 flex items-center justify-between gap-2">

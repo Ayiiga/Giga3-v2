@@ -30,7 +30,6 @@ import {
 import {
   rewardForCorrectAnswer,
   rewardForIncorrectAnswer,
-  rewardForPracticeAttempt,
   rewardForSessionScore,
 } from "@/lib/gigalearn/examPractice/rewardCopy";
 import { cn } from "@/lib/utils";
@@ -380,7 +379,7 @@ function TechHubInner() {
           if (fb.pendingReview) {
             // Encourage continued practice without claiming correctness or extending a verified streak.
             setStreak(0);
-            setReward(rewardForPracticeAttempt({ seed: index }));
+            setReward(null);
           } else if (fb.correct) {
             const nextStreak = streak + 1;
             setStreak(nextStreak);
@@ -561,18 +560,18 @@ function TechHubInner() {
                     ? "Written response · self-assessment required"
                     : r.provisional
                     ? r.provisionalMatch
-                      ? "Answer under review · matched provisional key"
-                      : "Answer under review · provisional key differs"
+                      ? "Matched the practice answer · unscored"
+                      : "Different from the practice answer · unscored"
                     : r.correct
                       ? "Correct"
                       : "Incorrect"}
                   {!r.provisional && r.correctIndex >= 0
                     ? ` · Answer: ${r.options[r.correctIndex] ?? "—"}`
                     : r.provisional && r.correctIndex >= 0
-                      ? ` · Provisional key: ${r.options[r.correctIndex] ?? "—"}`
+                      ? ` · Practice answer: ${r.options[r.correctIndex] ?? "—"}`
                       : ""}
                 </p>
-                <p className="mt-1 text-slate-600">{r.explanation}</p>
+                <p className="mt-1 text-slate-600">{r.provisional ? r.explanation.replace(/^Answer under review\. Provisional key \(not human-verified\)\.\s*/, "") : r.explanation}</p>
                 {r.writtenAnswer != null ? <div className="mt-2 rounded-lg bg-slate-50 p-3"><p className="text-xs font-semibold uppercase text-slate-500">Your written response</p><p className="mt-1 whitespace-pre-wrap">{r.writtenAnswer || "No response saved."}</p></div> : null}
                 {r.markingGuide?.length ? <div className="mt-2 rounded-lg border border-blue-200 bg-blue-50 p-3"><p className="text-xs font-semibold uppercase text-blue-900">Self-assessment marking points · up to {r.maxMarks ?? 0} marks</p><ul className="mt-1 list-disc space-y-1 pl-5 text-slate-700">{r.markingGuide.map((point, pi) => <li key={pi}>{point}</li>)}</ul></div> : null}
                 {r.optionExplanations && r.optionExplanations.length === r.options.length ? (
@@ -850,7 +849,7 @@ function TechHubInner() {
                 })}
               </ul>
               )}
-              {revealed && reward ? (
+              {revealed && reward && !activeFeedback?.pendingReview ? (
                 <p className="exam-session-reward" role="status" data-testid="exam-reward">
                   {reward}
                 </p>
@@ -862,12 +861,23 @@ function TechHubInner() {
                       {activeFeedback.selfAssessment
                         ? "Response saved — "
                         : activeFeedback.pendingReview
-                        ? "Provisional feedback — "
+                        ? "Practice answer — "
                         : activeFeedback.correct
                           ? "Correct — "
                           : "Incorrect — "}
                     </span>
+                    {activeFeedback.pendingReview && activeFeedback.correctIndex != null
+                      ? current.options[activeFeedback.correctIndex].replace(/[.!?]$/, "") + ". "
+                      : null}
                     {activeFeedback.explanation}
+                    {activeFeedback.pendingReview && (
+                      <small className="mt-2 block">
+                        {activeFeedback.correctIndex != null && (activeFeedback.provisionalMatch
+                          ? "Your choice matches the practice answer. "
+                          : "Your choice differs from the practice answer. ")}
+                        This question is unscored while its answer key is under review.
+                      </small>
+                    )}
                   </p>
                   {activeFeedback.optionExplanations &&
                   activeFeedback.optionExplanations.length === current.options.length ? (
