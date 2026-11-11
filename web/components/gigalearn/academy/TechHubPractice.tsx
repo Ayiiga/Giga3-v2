@@ -143,6 +143,8 @@ function TechHubInner() {
     Array<{
       questionId: string;
       topicLabel: string;
+      curriculumStrand?: string;
+      curriculumSubStrand?: string;
       questionText: string;
       options: string[];
       difficulty: string;
@@ -309,6 +311,8 @@ function TechHubInner() {
           (q: {
             questionId: string;
             topicLabel: string;
+            curriculumStrand?: string;
+            curriculumSubStrand?: string;
             questionText: string;
             options: string[];
             difficulty: string;
@@ -731,6 +735,12 @@ function TechHubInner() {
               <p className="exam-session-kicker">
                 {isTrueFalse ? "Statement" : "Question"} {index + 1}
               </p>
+              {current.curriculumStrand && (
+                <p className="mt-2 text-sm text-muted">
+                  {current.curriculumStrand}
+                  {current.curriculumSubStrand && " · " + current.curriculumSubStrand}
+                </p>
+              )}
               <h2 className="exam-session-stem">{current.questionText}</h2>
               {current.questionType === "structured" ? (
                 <div className="space-y-3">

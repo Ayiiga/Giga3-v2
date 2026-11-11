@@ -1,3 +1,6 @@
+import { wassceOriginalItems } from "../../examPractice/wassceOriginalItems";
+import { beceScienceReviewed } from "../../examPractice/beceScienceReviewed";
+import { selectQualityExamQuestions } from "../../examPractice/examQuestionQuality";
 /**
  * Server-only Technology Learning Hub bank loader.
  * Import from Convex (or Node tests) — do not import from client components.
@@ -53,17 +56,29 @@ const BANKS: Record<string, BankFile> = {
   [robotics.courseSlug]: robotics as BankFile,
   [otherDigital.courseSlug]: otherDigital as BankFile,
   [aiMl.courseSlug]: aiMl as BankFile,
-  [becePrep.courseSlug]: becePrep as BankFile,
+  [becePrep.courseSlug]: { ...(becePrep as BankFile), questions: [...(becePrep as BankFile).questions, ...beceScienceReviewed] },
   [teacherPromotion.courseSlug]: teacherPromotion as BankFile,
   [adIi.courseSlug]: adIi as BankFile,
   [adI.courseSlug]: adI as BankFile,
   [deputyDirector.courseSlug]: deputyDirector as BankFile,
   [directorIi.courseSlug]: directorIi as BankFile,
   [directorI.courseSlug]: directorI as BankFile,
-  [wassceEnglish.courseSlug]: wassceEnglish as BankFile,
-  [wassceCoreMathematics.courseSlug]: wassceCoreMathematics as BankFile,
-  [wassceIntegratedScience.courseSlug]: wassceIntegratedScience as BankFile,
-  [wassceSocialStudies.courseSlug]: wassceSocialStudies as BankFile,
+  [wassceEnglish.courseSlug]: {
+    ...(wassceEnglish as BankFile),
+    questions: [...wassceOriginalItems.filter((q) => q.courseSlug === wassceEnglish.courseSlug), ...(wassceEnglish as BankFile).questions],
+  },
+  [wassceCoreMathematics.courseSlug]: {
+    ...(wassceCoreMathematics as BankFile),
+    questions: [...wassceOriginalItems.filter((q) => q.courseSlug === wassceCoreMathematics.courseSlug), ...(wassceCoreMathematics as BankFile).questions],
+  },
+  [wassceIntegratedScience.courseSlug]: {
+    ...(wassceIntegratedScience as BankFile),
+    questions: [...wassceOriginalItems.filter((q) => q.courseSlug === wassceIntegratedScience.courseSlug), ...(wassceIntegratedScience as BankFile).questions],
+  },
+  [wassceSocialStudies.courseSlug]: {
+    ...(wassceSocialStudies as BankFile),
+    questions: [...wassceOriginalItems.filter((q) => q.courseSlug === wassceSocialStudies.courseSlug), ...(wassceSocialStudies as BankFile).questions],
+  },
 };
 
 /** Exam Practice banks allow pending_review items with provisional feedback. */
@@ -106,6 +121,8 @@ export function getTechBankQuestions(
     approvedOnly?: boolean;
     topicId?: string;
     includePending?: boolean;
+    /** Historical sessions need their original question and answer mapping. */
+    forExistingSession?: boolean;
     /** When true, drop premium-only items (backend entitlement gate). */
     freeTierOnly?: boolean;
     /** Filter to MCQ or True/False only. */
@@ -148,6 +165,9 @@ export function getTechBankQuestions(
   if (opts?.freeTierOnly) {
     rows = rows.filter((q) => isTechQuestionAccessible(q, false));
   }
+  if (!opts?.forExistingSession && (slug === "exam-bece-prep" || slug.startsWith("exam-wassce-"))) {
+    return selectQualityExamQuestions(rows);
+  }
   return rows;
 }
 
@@ -156,7 +176,7 @@ export function getTechBankQuestionById(
   questionId: string
 ): TechBankQuestion | undefined {
   const slug = courseSlug.trim().toLowerCase();
-  return getTechBankQuestions(slug, { approvedOnly: false }).find(
+  return getTechBankQuestions(slug, { approvedOnly: false, forExistingSession: true }).find(
     (q) =>
       typeof q.courseSlug === "string" &&
       q.courseSlug.trim().toLowerCase() === slug &&
@@ -169,7 +189,9 @@ export function toPublicTechQuestion(q: TechBankQuestion): TechPublicQuestion {
     questionId: q.questionId,
     topicId: q.topicId,
     topicLabel: q.topicLabel,
-    questionText: sanitizePracticeStem(q.questionText),
+    questionText: sanitizePracticeStem(q.questionText).replace(/GH■/g, "GH₵"),
+    curriculumStrand: q.curriculumStrand,
+    curriculumSubStrand: q.curriculumSubStrand,
     options: q.options,
     difficulty: q.difficulty,
     sourceQuestionNumber: q.sourceQuestionNumber,

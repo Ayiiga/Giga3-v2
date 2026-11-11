@@ -388,12 +388,15 @@ export const startTechPracticeSession = mutation({
         if (remainingAllowance <= 0 || candidates.length === 0) {
           throw new Error("You have completed all currently available free questions in this practice bank.");
         }
-        const pool = candidates.slice(0, remainingAllowance).map((q) => q.questionId);
+        const pool = [...candidates];
         for (let i = pool.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [pool[i], pool[j]] = [pool[j], pool[i]];
         }
-        stageIds = pool.slice(0, Math.min(EXAM_PRACTICE_FREE_JOURNEY_STAGE_SIZE, remainingAllowance));
+        // Prioritise curriculum-mapped items while keeping random order within each group.
+        pool.sort((a, b) => Number(Boolean(b.curriculumStrand)) - Number(Boolean(a.curriculumStrand)));
+        stageIds = pool.slice(0, Math.min(EXAM_PRACTICE_FREE_JOURNEY_STAGE_SIZE, remainingAllowance))
+          .map((question) => question.questionId);
         journey[journeyKey] = {
           ...current,
           currentQuestionIds: stageIds,
