@@ -32,6 +32,11 @@ import { ChatgptZeroZerogptExplainedBody } from "@/content/blog/chatgpt-zero-zer
 import { PhotoroomAiTutorialBody } from "@/content/blog/photoroom-ai-tutorial";
 import { ClaudeAiLoginGuideBody } from "@/content/blog/claude-ai-login-guide";
 import { GeminiAiLoginGuideBody } from "@/content/blog/gemini-ai-login-guide";
+import {
+  GigaSocialAwardsGuide,
+  GigaLearnAcademyGuide,
+  Giga3ExamRevisionGuide,
+} from "@/content/blog/giga3-product-guides";
 import type { ComponentType } from "react";
 
 export type BlogArticleBodyProps = {
@@ -46,6 +51,9 @@ type BlogEntry = {
 
 const BODY_BY_SLUG: Record<string, { Body: ComponentType<BlogArticleBodyProps>; plainText: string }> =
   {
+    "gigasocial-awards-nomination-voting-guide": GigaSocialAwardsGuide,
+    "gigalearn-academy-courses-guide": GigaLearnAcademyGuide,
+    "bece-wassce-25-minute-practice-routine": Giga3ExamRevisionGuide,
     "best-ai-tools-in-ghana-2026": BestAiToolsInGhana2026Body,
     "ai-for-bece-wassce-preparation-ghana": AiForBeceWassceBody,
     "top-ai-apps-in-ghana-2026": TopAiAppsInGhana2026Body,
