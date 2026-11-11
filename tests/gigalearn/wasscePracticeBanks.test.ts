@@ -6,7 +6,7 @@ const WASSCE_BANKS = [
   { slug: "exam-wassce-english", topic: "English Language", minimum: 60 },
   { slug: "exam-wassce-core-mathematics", topic: "Core Mathematics", minimum: 20 },
   { slug: "exam-wassce-integrated-science", topic: "Integrated Science", minimum: 110 },
-  { slug: "exam-wassce-social-studies", topic: "Social Studies", minimum: 220 },
+  { slug: "exam-wassce-social-studies", topic: "Social Studies", minimum: 90 },
 ] as const;
 
 describe("WASSCE four-core-subject practice banks", () => {

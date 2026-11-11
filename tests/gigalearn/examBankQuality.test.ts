@@ -18,9 +18,29 @@ describe("BECE and WASSCE question quality", () => {
     }
   });
 
+  it("retires malformed and miskeyed items from new sessions without losing their IDs", () => {
+    const retired = [
+      ["exam-bece-prep", "exam-bece-prep-q268"],
+      ["exam-bece-prep", "exam-bece-prep-q423"],
+      ["exam-wassce-integrated-science", "exam-wassce-integrated-science-q108"],
+      ["exam-wassce-integrated-science", "exam-wassce-integrated-science-q139"],
+    ];
+    for (const [course, id] of retired) {
+      expect(getTechBankQuestions(course).some((q) => q.questionId === id)).toBe(false);
+      expect(getTechBankQuestionById(course, id)).toBeDefined();
+    }
+  });
+
+  it("removes superficial Social Studies wrappers before selecting distinct stems", () => {
+    const questions = getTechBankQuestions("exam-wassce-social-studies");
+    const stems = questions.map((q) => q.questionText.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim());
+    expect(new Set(stems).size).toBe(questions.length);
+    expect(questions.every((q) => !/^(A district planning team receives a report that|An assembly member is asked to explain why)/i.test(q.questionText))).toBe(true);
+  });
+
   it("covers the five BECE Science strands and preserves historical question IDs", () => {
     const questions = getTechBankQuestions("exam-bece-prep", { topicId: "integrated-science", questionType: "mcq" });
-    expect(questions).toHaveLength(26);
+    expect(questions).toHaveLength(27);
     expect(new Set(questions.map((q) => q.curriculumStrand)).size).toBe(5);
     expect(new Set(questions.map((q) => q.curriculumSubStrand)).size).toBe(20);
     expect(getTechBankQuestionById("exam-bece-prep", "exam-bece-prep-q107")).toBeDefined();

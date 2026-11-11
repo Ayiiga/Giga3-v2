@@ -5,15 +5,15 @@
       "courseSlug": "exam-bece-prep",
       "title": "Ghana BECE Preparation",
       "sourceDocument": "Ghana_BECE_Preparation_500_Objective_Questions_Explained_c887.pdf",
-      "approvedQuestionCount": 102,
-      "pendingQuestionCount": 392,
-      "mcqCount": 424,
+      "approvedQuestionCount": 57,
+      "pendingQuestionCount": 442,
+      "mcqCount": 429,
       "trueFalseCount": 0,
       "topics": [
         {
           "id": "integrated-science",
           "label": "Integrated Science",
-          "questionCount": 26
+          "questionCount": 27
         },
         {
           "id": "social-studies",
@@ -28,7 +28,7 @@
         {
           "id": "computing",
           "label": "Computing",
-          "questionCount": 16
+          "questionCount": 18
         },
         {
           "id": "career-technology",
@@ -43,7 +43,7 @@
         {
           "id": "mathematics",
           "label": "Mathematics",
-          "questionCount": 54
+          "questionCount": 55
         },
         {
           "id": "french",
@@ -53,7 +53,7 @@
         {
           "id": "english",
           "label": "English",
-          "questionCount": 14
+          "questionCount": 15
         },
         {
           "id": "ghanaian-language-culture",
@@ -897,14 +897,14 @@
       "title": "WASSCE English Language Practice",
       "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
       "approvedQuestionCount": 0,
-      "pendingQuestionCount": 69,
-      "mcqCount": 69,
+      "pendingQuestionCount": 71,
+      "mcqCount": 71,
       "trueFalseCount": 0,
       "topics": [
         {
           "id": "wassce-english",
           "label": "English Language",
-          "questionCount": 69
+          "questionCount": 71
         }
       ]
     },
@@ -914,14 +914,14 @@
       "title": "WASSCE Core Mathematics Practice",
       "sourceDocument": "GigaLearn_SHS_Mathematics_New_Curriculum_400.pdf",
       "approvedQuestionCount": 0,
-      "pendingQuestionCount": 30,
-      "mcqCount": 30,
+      "pendingQuestionCount": 32,
+      "mcqCount": 32,
       "trueFalseCount": 0,
       "topics": [
         {
           "id": "wassce-core-mathematics",
           "label": "Core Mathematics",
-          "questionCount": 30
+          "questionCount": 32
         }
       ]
     },
@@ -931,14 +931,14 @@
       "title": "WASSCE Integrated Science Practice",
       "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
       "approvedQuestionCount": 0,
-      "pendingQuestionCount": 119,
-      "mcqCount": 119,
+      "pendingQuestionCount": 123,
+      "mcqCount": 123,
       "trueFalseCount": 0,
       "topics": [
         {
           "id": "wassce-integrated-science",
           "label": "Integrated Science",
-          "questionCount": 119
+          "questionCount": 123
         }
       ]
     },
@@ -948,14 +948,14 @@
       "title": "WASSCE Social Studies Practice",
       "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
       "approvedQuestionCount": 0,
-      "pendingQuestionCount": 226,
-      "mcqCount": 226,
+      "pendingQuestionCount": 90,
+      "mcqCount": 90,
       "trueFalseCount": 0,
       "topics": [
         {
           "id": "wassce-social-studies",
           "label": "Social Studies",
-          "questionCount": 226
+          "questionCount": 90
         }
       ]
     }
