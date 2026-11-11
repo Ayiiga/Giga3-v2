@@ -110,14 +110,8 @@ async function probeOnce(
         finish({ duration });
         return;
       }
-      if (Number.isFinite(video.duration) && video.duration <= 0) {
-        finish({ error: new Error("Could not read video duration.") });
-        return;
-      }
-      if (event.type === "loadeddata" && Number.isNaN(video.duration)) {
-        finish({ error: new Error("Could not read video duration.") });
-        return;
-      }
+      // Android may temporarily report NaN or zero while metadata settles.
+      // Keep listening for a finite duration instead of failing early.
       if (seekAttempted) return;
       // Some Android WebViews expose Infinity until forced seek.
       if (video.duration === Infinity || !Number.isFinite(video.duration)) {
