@@ -138,7 +138,7 @@ describe("client + server wiring for provisional reward suppression", () => {
     const convex = readFileSync(resolve(ROOT, "convex/gigaLearnTechBanks.ts"), "utf8");
     expect(convex).toContain("pendingReview: true");
     expect(convex).toContain("provisionalMatch");
-    expect(convex).toContain("provisional key");
+    expect(convex).toContain("explanation: cleanExplanation");
     expect(convex).toContain("correct: false");
   });
 
@@ -148,8 +148,8 @@ describe("client + server wiring for provisional reward suppression", () => {
       "utf8"
     );
     expect(ui).toContain("fb.pendingReview");
-    expect(ui).toContain("Provisional feedback —");
-    expect(ui).toContain("rewardForPracticeAttempt");
+    expect(ui).toContain("Practice answer —");
+    expect(ui).toContain("This question is unscored while its answer key is under review.");
     expect(ui).not.toContain('data-testid="exam-answer-under-review"');
     expect(ui).toContain("isVerifiedCorrect");
     expect(ui).toContain("goToQuestion");
