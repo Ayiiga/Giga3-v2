@@ -25,6 +25,8 @@ export type TechBankQuestion = {
   courseSlug: string;
   topicId: string;
   topicLabel: string;
+  curriculumStrand?: string;
+  curriculumSubStrand?: string;
   questionText: string;
   options: string[];
   /** Marking points shown after submission for structured-response self-assessment. */
@@ -92,6 +94,8 @@ export type TechPublicQuestion = {
   questionId: string;
   topicId: string;
   topicLabel: string;
+  curriculumStrand?: string;
+  curriculumSubStrand?: string;
   questionText: string;
   options: string[];
   difficulty: TechDifficulty;
