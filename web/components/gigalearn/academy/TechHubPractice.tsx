@@ -1,5 +1,6 @@
 "use client";
 
+import { recordExamPracticeCompletion } from "@/lib/analytics/recordExamPractice";
 import { AcademyChrome } from "@/components/gigalearn/academy/AcademyChrome";
 import { ExamPracticeShareButton } from "@/components/gigalearn/exam/ExamPracticeShareButton";
 import { PremiumPracticeNudge } from "@/components/gigalearn/exam/PremiumPracticeNudge";
@@ -236,6 +237,12 @@ function TechHubInner() {
     const id = window.setInterval(() => setNowTick(Date.now()), 1000);
     return () => window.clearInterval(id);
   }, [endsAt, results]);
+
+  useEffect(() => {
+    if (isExamCourse && results?.results.some((row) => row.selectedIndex != null)) {
+      recordExamPracticeCompletion();
+    }
+  }, [isExamCourse, results]);
 
   const secondsLeft =
     endsAt != null ? Math.max(0, Math.floor((endsAt - (nowTick + serverSkew)) / 1000)) : null;

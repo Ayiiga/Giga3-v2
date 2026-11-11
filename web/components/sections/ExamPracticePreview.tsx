@@ -37,6 +37,26 @@ export function ExamPracticePreview() {
           <p className="mt-3 text-xs text-muted">Original GigaLearn practice sample.</p>
         </div>
       </Container>
+      <Container className="mt-8 max-w-5xl">
+        <h3 className="text-xl font-semibold text-foreground">Turn a missed answer into a study resource</h3>
+        <ol className="mt-3 grid gap-3 sm:grid-cols-3">
+          <li className="rounded-xl border border-border bg-white p-4">
+            <p className="font-semibold text-foreground">Practise a topic</p>
+            <p className="mt-1 text-sm text-muted">Answer a set in GigaLearn and review the explanations for questions you missed.</p>
+            <a href="/gigalearn/exam/" className="mt-3 inline-block text-sm font-medium text-accent underline">Choose an exam</a>
+          </li>
+          <li className="rounded-xl border border-border bg-white p-4">
+            <p className="font-semibold text-foreground">Work through the reasoning</p>
+            <p className="mt-1 text-sm text-muted">In AI Chat, try “Explain why 41 × 7 equals 287. Give me a similar question and wait for my answer.”</p>
+            <a href="/chat/" className="mt-3 inline-block text-sm font-medium text-accent underline">Open AI Chat</a>
+          </li>
+          <li className="rounded-xl border border-border bg-white p-4">
+            <p className="font-semibold text-foreground">Make something to revise with</p>
+            <p className="mt-1 text-sm text-muted">Use Creator Studio to draft a short revision post with a worked example and a question for classmates.</p>
+            <a href="/creator-studio/" className="mt-3 inline-block text-sm font-medium text-accent underline">Open Creator Studio</a>
+          </li>
+        </ol>
+      </Container>
     </section>
   );
 }

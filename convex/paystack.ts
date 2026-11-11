@@ -519,6 +519,12 @@ export const fulfillPayment = internalMutation({
         : {}),
     });
 
+    if (record.type === "subscription" && record.planId && !record.isRenewal) {
+      await ctx.scheduler.runAfter(0, internal.platformStats.recordHomepageSubscription, {
+        paymentId: record._id,
+      });
+    }
+
     return { alreadyFulfilled: false as const };
   },
 });

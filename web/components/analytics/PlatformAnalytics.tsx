@@ -4,6 +4,7 @@ import { getOrCreateClientId, isStandalonePwa } from "@/lib/analytics/clientId";
 import { getSessionToken } from "@/lib/auth";
 import { api } from "convex/_generated/api";
 import { useMutation } from "convex/react";
+import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 
 const HEARTBEAT_MS = 45_000;
@@ -11,6 +12,7 @@ const PWA_INSTALL_KEY = "giga3_pwa_install_reported";
 
 /** Presence + PWA install telemetry for platform insights. */
 export function PlatformAnalytics() {
+  const pathname = usePathname();
   const heartbeat = useMutation(api.platformStats.heartbeat);
   const recordPwaInstall = useMutation(api.platformStats.recordPwaInstall);
 
@@ -22,6 +24,7 @@ export function PlatformAnalytics() {
       void heartbeat({
         clientId,
         isPwa,
+        isHomepage: pathname === "/",
         sessionToken: getSessionToken() ?? undefined,
         userAgent: typeof navigator !== "undefined" ? navigator.userAgent : undefined,
       }).catch(() => null);
@@ -51,7 +54,7 @@ export function PlatformAnalytics() {
       window.removeEventListener("appinstalled", onInstalled);
       window.clearInterval(timer);
     };
-  }, [heartbeat, recordPwaInstall]);
+  }, [heartbeat, pathname, recordPwaInstall]);
 
   return null;
 }

@@ -1,4 +1,4 @@
-import { internalMutation, mutation, query } from "./_generated/server";
+import { internalMutation, mutation, query, type MutationCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { requireSession } from "./auth";
 import { todayKey } from "./creditsConfig";
@@ -73,6 +73,47 @@ async function readCounter(ctx: { db: any }, key: string): Promise<number> {
   return row?.value ?? 0;
 }
 
+const GROWTH_WINDOW_MS = 30 * MS_PER_DAY;
+
+function homepageKey(clientId: string): string {
+  return `growth_homepage_${clientId}`;
+}
+
+async function recordGrowthOnce(ctx: MutationCtx, key: string, metric: string, timestamp: number) {
+  if (await readCounter(ctx, key)) return;
+  await incrementCounter(ctx, key, timestamp);
+  await incrementCounter(ctx, `growth_total_${metric}`);
+}
+
+export const recordExamPracticeCompletion = mutation({
+  args: { clientId: v.string() },
+  handler: async (ctx, { clientId }) => {
+    if (!/^[a-z0-9_-]{8,80}$/i.test(clientId)) return;
+    const firstVisit = await readCounter(ctx, homepageKey(clientId));
+    const now = Date.now();
+    if (firstVisit && now - firstVisit <= GROWTH_WINDOW_MS) {
+      await recordGrowthOnce(ctx, `growth_practice_${clientId}`, "practice", now);
+    }
+  },
+});
+
+export const recordHomepageSubscription = internalMutation({
+  args: { paymentId: v.id("payments") },
+  handler: async (ctx, { paymentId }) => {
+    const payment = await ctx.db.get(paymentId);
+    if (!payment || payment.status !== "success" || payment.type !== "subscription" ||
+        payment.isRenewal || !payment.planId || payment.amountGhs <= 0) return;
+    const user = await ctx.db.query("users")
+      .withIndex("by_email", (q) => q.eq("email", payment.userId))
+      .first();
+    if (!user) return;
+    const firstVisit = await readCounter(ctx, `growth_signup_${user._id}`);
+    if (!firstVisit || payment.createdAt < firstVisit ||
+        payment.createdAt - firstVisit > GROWTH_WINDOW_MS) return;
+    await recordGrowthOnce(ctx, `growth_paid_${user._id}`, "paid", Date.now());
+  },
+});
+
 function tallyBreakdown(
   rows: { deviceType?: string; browser?: string; os?: string; country?: string }[]
 ) {
@@ -106,6 +147,7 @@ export const heartbeat = mutation({
   args: {
     clientId: v.string(),
     isPwa: v.boolean(),
+    isHomepage: v.optional(v.boolean()),
     sessionToken: v.optional(v.string()),
     userAgent: v.optional(v.string()),
     country: v.optional(v.string()),
@@ -117,7 +159,7 @@ export const heartbeat = mutation({
     let userId: string | undefined;
     if (args.sessionToken?.trim()) {
       try {
-        userId = await requireSession(args.sessionToken);
+        userId = await requireSession(args.sessionToken, ctx);
       } catch {
         userId = undefined;
       }
@@ -153,6 +195,23 @@ export const heartbeat = mutation({
         country,
       });
       await incrementCounter(ctx, "site_visits");
+    }
+
+    if (/^[a-z0-9_-]{8,80}$/i.test(clientId)) {
+      if (args.isHomepage) {
+        await recordGrowthOnce(ctx, homepageKey(clientId), "homepage", now);
+      }
+      // Check on route changes and heartbeats so email and social signups share the same path.
+      const firstVisit = userId ? await readCounter(ctx, homepageKey(clientId)) : 0;
+      if (userId && firstVisit && now - firstVisit <= GROWTH_WINDOW_MS) {
+        const email = userId;
+        const account = await ctx.db.query("users")
+          .withIndex("by_email", (q) => q.eq("email", email))
+          .first();
+        if (account && account._creationTime >= firstVisit) {
+          await recordGrowthOnce(ctx, `growth_signup_${account._id}`, "signup", firstVisit);
+        }
+      }
     }
 
     if (userId) {
@@ -356,7 +415,12 @@ export const getDashboard = query({
     const subscriptions = await ctx.db.query("subscriptions").collect();
     const activeSubscriptions = subscriptions.filter((s) => s.status === "active").length;
 
+    const [homepages, practiceCompletions, signups, paidSubscriptions] = await Promise.all(
+      ["homepage", "practice", "signup", "paid"].map((stage) => readCounter(ctx, `growth_total_${stage}`))
+    );
+
     return {
+      homepageGrowth: { homepages, practiceCompletions, signups, paidSubscriptions },
       totalRegisteredUsers: users.length,
       pwaInstalls,
       siteVisits,
