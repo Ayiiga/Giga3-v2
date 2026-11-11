@@ -10,10 +10,7 @@ import {
 } from "../../convex/creditsConfig";
 import {
   EXAM_PRACTICE_FREE_QUESTION_COUNT,
-  EXAM_PRACTICE_FREE_JOURNEY_PASS_PERCENT,
-  EXAM_PRACTICE_FREE_JOURNEY_STAGE_SIZE,
-  EXAM_PRACTICE_FREE_JOURNEY_TOTAL,
-  isFreeProgressiveExamCourseSlug,
+  isOpenExamPracticeCourseSlug,
   EXAM_PRACTICE_MAX_CONCURRENT_IN_PROGRESS,
   EXAM_PRACTICE_MIN_PAID_PLAN_GHS,
   EXAM_PRACTICE_PAID_UNLOCK_COPY,
@@ -33,34 +30,21 @@ import { examPracticeShareUrl } from "../../web/lib/gigalearn/examPractice/share
 
 const ROOT = resolve(__dirname, "../..");
 
-describe("free BECE and WASSCE staged practice", () => {
-  it("targets 500 questions in 50-question stages with a 60% pass mark", () => {
-    expect(EXAM_PRACTICE_FREE_JOURNEY_TOTAL).toBe(500);
-    expect(EXAM_PRACTICE_FREE_JOURNEY_STAGE_SIZE).toBe(50);
-    expect(EXAM_PRACTICE_FREE_JOURNEY_PASS_PERCENT).toBe(60);
-  });
-
-  it("includes BECE and WASSCE, but not Teacher Promotion", () => {
-    expect(isFreeProgressiveExamCourseSlug("exam-bece-prep")).toBe(true);
-    expect(isFreeProgressiveExamCourseSlug("exam-wassce-english")).toBe(true);
-    expect(isFreeProgressiveExamCourseSlug("exam-wassce-core-mathematics")).toBe(true);
-    expect(isFreeProgressiveExamCourseSlug("exam-teacher-promotion")).toBe(false);
-  });
-
-  it("persists server-side stage progress and advances only on a verified score", () => {
-    const source = readFileSync(resolve(ROOT, "convex/gigaLearnTechBanks.ts"), "utf8");
-    expect(source).toContain("examPracticeJourneyJson");
-    expect(source).toContain("graded.percent >= EXAM_PRACTICE_FREE_JOURNEY_PASS_PERCENT");
-    expect(source).toContain("sessionIdsMatch");
-    expect(source).toContain("approvedOnly: true");
-  });
-
-  it("applies the same course-wide stage gate regardless of entry mode", () => {
-    const source = readFileSync(resolve(ROOT, "convex/gigaLearnTechBanks.ts"), "utf8");
-    expect(source).toContain("const progressiveFreeJourney = isFreeProgressiveExamCourseSlug(slug);");
-    expect(source).toContain('const journeyKey = `${slug}:${topicKey}`;');
-    expect(source).toContain('const topicKey = selectedTopicId ?? "all";');
-    expect(source).toContain('const key = `${session.courseSlug}:${session.topicId?.trim() || "all"}`;');
+describe("free BECE and WASSCE practice", () => {
+  it("opens BECE and all four WASSCE banks, while preserving Teacher Promotion entitlement", () => {
+    expect(isOpenExamPracticeCourseSlug("exam-teacher-promotion")).toBe(false);
+    for (const [courseSlug, topicId] of [
+      ["exam-bece-prep", "ghanaian-language-culture"],
+      ["exam-wassce-english", undefined],
+      ["exam-wassce-core-mathematics", undefined],
+      ["exam-wassce-integrated-science", undefined],
+      ["exam-wassce-social-studies", undefined],
+    ] as const) {
+      expect(isOpenExamPracticeCourseSlug(courseSlug)).toBe(true);
+      const rows = getTechBankQuestions(courseSlug, { topicId });
+      const ids = selectTechQuestionIds({ courseSlug, topicId, mode: "practice_test", count: 500, seed: 11, premiumAccess: false });
+      expect(new Set(ids)).toEqual(new Set(rows.map((q) => q.questionId)));
+    }
   });
 });
 
@@ -228,7 +212,7 @@ describe("resolveExamPracticeSessionCount free / premium / bank caps", () => {
   const beceBank = 468;
   const promoBank = 239;
 
-  it("clamps free users requesting 500 down to 50", () => {
+  it("allows a free BECE learner to request the full bank size", () => {
     const r = resolveExamPracticeSessionCount({
       requested: 500,
       courseSlug: "exam-bece-prep",
@@ -237,7 +221,7 @@ describe("resolveExamPracticeSessionCount free / premium / bank caps", () => {
       credits: 0,
     });
     expect(r.premiumAccess).toBe(false);
-    expect(r.count).toBe(EXAM_PRACTICE_FREE_QUESTION_COUNT);
+    expect(r.count).toBe(beceBank);
   });
 
   it("clamps free users with leftover credits requesting 500 down to 50", () => {
@@ -253,14 +237,14 @@ describe("resolveExamPracticeSessionCount free / premium / bank caps", () => {
     expect(r.count).toBe(50);
   });
 
-  it("allows active subscription up to bank size (not beyond 500)", () => {
+  it("offers subscribers the same free BECE access", () => {
     const r = resolveExamPracticeSessionCount({
       requested: 500,
       courseSlug: "exam-bece-prep",
       bankSize: beceBank,
       subscriptionActive: true,
     });
-    expect(r.premiumAccess).toBe(true);
+    expect(r.premiumAccess).toBe(false);
     expect(r.count).toBe(beceBank);
     expect(r.count).toBeLessThanOrEqual(EXAM_PRACTICE_PREMIUM_QUESTION_COUNT);
   });
@@ -303,7 +287,7 @@ describe("resolveExamPracticeSessionCount free / premium / bank caps", () => {
     expect(
       clampPracticeQuestionCount({
         requested: 200,
-        courseSlug: "exam-bece-prep",
+        courseSlug: "exam-teacher-promotion",
         premiumAccess: false,
         bankSize: 2000,
       })
@@ -314,17 +298,18 @@ describe("resolveExamPracticeSessionCount free / premium / bank caps", () => {
     const freeCount = resolveExamPracticeSessionCount({
       requested: 500,
       courseSlug: "exam-bece-prep",
-      bankSize: beceBank,
+      bankSize: 306,
       subscriptionActive: false,
     }).count;
     const ids = selectTechQuestionIds({
       courseSlug: "exam-bece-prep",
+      topicId: "ghanaian-language-culture",
       mode: "practice_test",
       count: freeCount,
       seed: 11,
     });
     expect(ids.length).toBe(freeCount);
-    expect(ids.length).toBeLessThanOrEqual(50);
+    expect(ids.length).toBe(306);
   });
 });
 

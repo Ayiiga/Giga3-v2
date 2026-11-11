@@ -262,7 +262,7 @@ describe("Technology Learning Hub question banks", () => {
     }
   });
 
-  it("keeps progressive BECE free-practice journeys isolated by selected subject", () => {
+  it("requires a BECE subject in the server start path", () => {
     const convex = read("convex/gigaLearnTechBanks.ts");
     const startBlock = convex.slice(
       convex.indexOf("export const startTechPracticeSession"),
@@ -270,10 +270,7 @@ describe("Technology Learning Hub question banks", () => {
     );
     expect(startBlock).toContain("const selectedTopicId = args.topicId?.trim() || undefined;");
     expect(startBlock).toContain("topicId: selectedTopicId,");
-    expect(startBlock).toContain("const topicKey = selectedTopicId ?? \"all\";");
-    expect(startBlock).toContain("const journeyKey = `${slug}:${topicKey}`;");
-    expect(startBlock).toContain("const candidates = getTechBankQuestions(slug, {");
-    expect(startBlock).toContain("}).filter((q) => !completed.has(q.questionId));");
+    expect(startBlock).toContain("Choose a BECE subject before starting practice.");
     expect(startBlock).toContain("questionIds = selectTechQuestionIds({");
   });
 

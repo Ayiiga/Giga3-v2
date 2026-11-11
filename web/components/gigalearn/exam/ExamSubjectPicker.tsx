@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft, BookOpen, LockKeyhole } from "lucide-react";
 
-type Subject = { id: string; label: string; questionCount?: number; href?: string; available?: boolean };
+type Subject = { id: string; label: string; questionCount?: number; structuredCount?: number; href?: string; available?: boolean };
 
 const SUBJECT_STYLES: Record<string, { card: string; icon: string; accent: string; mark: string }> = {
   english: { card: "border-rose-200 bg-gradient-to-br from-rose-50 via-white to-pink-50 hover:border-rose-400", icon: "bg-rose-100 text-rose-700", accent: "text-rose-700", mark: "bg-rose-600" },
@@ -16,7 +16,7 @@ export function ExamSubjectPicker({ title, description, backHref, subjects }: { 
       <Link href={backHref} className="inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-slate-600 hover:text-violet-700"><ArrowLeft className="h-4 w-4" aria-hidden />Back to examinations</Link>
       <p className="max-w-2xl px-1 text-sm leading-5 text-slate-600">{description}</p>
       <ul className="grid gap-3 sm:grid-cols-2">
-        {subjects.map((subject, index) => {
+        {subjects.map((subject) => {
           const style = SUBJECT_STYLES[subject.id] ?? { card: "border-slate-200 bg-white hover:border-violet-300", icon: "bg-violet-50 text-violet-700", accent: "text-violet-700", mark: "bg-violet-600" };
           return (
             <li key={subject.id}>
@@ -26,7 +26,7 @@ export function ExamSubjectPicker({ title, description, backHref, subjects }: { 
                   <span className={`ml-1 flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${style.icon}`}><BookOpen className="h-6 w-6" aria-hidden /></span>
                   <span className="min-w-0 flex-1">
                     <span className="block font-extrabold text-slate-900">{subject.label}</span>
-                    <span className="mt-1 block text-xs text-slate-600">{subject.questionCount ?? 0} objective practice questions</span>
+                    <span className="mt-1 block text-xs text-slate-600">{subject.structuredCount ? `${(subject.questionCount ?? 0) - subject.structuredCount} objective · ${subject.structuredCount} structured questions` : `${subject.questionCount ?? 0} objective practice questions` }</span>
                     <span className={`mt-3 inline-flex items-center gap-1 text-sm font-extrabold ${style.accent}`}>Start practising <span aria-hidden>→</span></span>
                   </span>
                   <span className="absolute right-3 top-3 rounded-full bg-white/80 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-600">Ready</span>

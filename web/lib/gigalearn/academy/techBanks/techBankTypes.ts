@@ -75,6 +75,7 @@ export type TechTopicMeta = {
   id: string;
   label: string;
   questionCount: number;
+  structuredCount?: number;
 };
 
 export type TechCourseMeta = {

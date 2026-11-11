@@ -28,13 +28,15 @@ export function examQuestionKey(question: TechBankQuestion): string {
   return `${question.topicId}:${stem.replace(/[^\p{L}\p{N}#]+/gu, " ").trim()}`;
 }
 
+export function normalizeExamQuestionStem(row: TechBankQuestion): TechBankQuestion {
+  if (row.courseSlug !== "exam-wassce-social-studies") return row;
+  const stem = row.questionText.replace(generatedSocialStudiesLeadIn, "");
+  return stem === row.questionText ? row : { ...row, questionText: stem.charAt(0).toUpperCase() + stem.slice(1) };
+}
+
 export function selectQualityExamQuestions(rows: TechBankQuestion[]): TechBankQuestion[] {
   const seen = new Set<string>();
-  return rows.map((row) => {
-    if (row.courseSlug !== "exam-wassce-social-studies") return row;
-    const stem = row.questionText.replace(generatedSocialStudiesLeadIn, "");
-    return stem === row.questionText ? row : { ...row, questionText: stem.charAt(0).toUpperCase() + stem.slice(1) };
-  }).filter((row) => {
+  return rows.map(normalizeExamQuestionStem).filter((row) => {
     if (generatedBeceLeadIn.test(row.questionText)) return false;
     if (retiredBeceItems.has(row.questionId) || retiredWassceScienceItems.has(row.questionId)) return false;
     if (row.topicId === "french" && /^Which French expression means .* in the context of the question:/i.test(row.questionText)) return false;

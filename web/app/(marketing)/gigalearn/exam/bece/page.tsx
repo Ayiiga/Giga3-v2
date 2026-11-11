@@ -7,6 +7,6 @@ export const metadata = publicMetadata({ path: "/gigalearn/exam/bece", title: "C
 
 export default function BeceSubjectPage() {
   const bank = getExamBankMeta("exam-bece-prep");
-  const subjects = (bank?.topics ?? []).map((topic) => ({ id: topic.id, label: topic.label, questionCount: topic.questionCount, available: (topic.questionCount ?? 0) > 0, href: examPracticeHref("exam-bece-prep", { mode: "learn", topic: topic.id }) }));
+  const subjects = (bank?.topics ?? []).map((topic) => ({ id: topic.id, label: topic.label, questionCount: topic.questionCount, structuredCount: topic.structuredCount, available: (topic.questionCount ?? 0) > 0, href: examPracticeHref("exam-bece-prep", { mode: "learn", topic: topic.id }) }));
   return <><ProductSeoHeader compact title="BECE Subject Selection" description="Choose the subject you want to practise." showProductNav={false} /><div className="marketing-stable gigalearn-stable section-padding pt-4 pb-6"><ExamSubjectPicker title="Choose your BECE subject" description="Select one subject. Your practice session will contain questions for that subject only." backHref="/gigalearn/exam/" subjects={subjects} /></div></>;
 }

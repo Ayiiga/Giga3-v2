@@ -34,12 +34,12 @@ describe("Exam practice question limits", () => {
     expect(isExamPracticeCourseSlug("website-pwa-development")).toBe(false);
   });
 
-  it("caps free learners at 50 and premium at 500 for exam packs", () => {
+  it("keeps Teacher Promotion trial limits and opens the BECE bank", () => {
     expect(EXAM_PRACTICE_FREE_QUESTION_COUNT).toBe(50);
     expect(EXAM_PRACTICE_PREMIUM_QUESTION_COUNT).toBe(500);
     expect(
       maxPracticeQuestionCount({
-        courseSlug: "exam-bece-prep",
+        courseSlug: "exam-teacher-promotion",
         premiumAccess: false,
       })
     ).toBe(50);
@@ -56,7 +56,7 @@ describe("Exam practice question limits", () => {
         premiumAccess: false,
         bankSize: 468,
       })
-    ).toBe(50);
+    ).toBe(468);
     expect(
       clampPracticeQuestionCount({
         requested: 500,

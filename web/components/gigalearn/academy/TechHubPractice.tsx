@@ -26,6 +26,7 @@ import {
   EXAM_PRACTICE_PREMIUM_QUESTION_COUNT,
   hasExamPracticePremiumAccess,
   isExamPracticeCourseSlug,
+  isOpenExamPracticeCourseSlug,
 } from "@/lib/gigalearn/examPractice/practiceLimits";
 import {
   rewardForCorrectAnswer,
@@ -70,6 +71,8 @@ function TechHubInner() {
   const params = useSearchParams();
   const courseSlug = (params.get("course") || "").trim().toLowerCase();
   const isExamCourse = isExamPracticeCourseSlug(courseSlug);
+  const openExamPractice = isOpenExamPracticeCourseSlug(courseSlug);
+  const requiresBeceSubject = courseSlug === "exam-bece-prep";
   const initialMode = (params.get("mode") || (isExamCourse ? "practice_test" : "learn")).trim() as TechPracticeMode;
   const urlCount = Number(params.get("count") || "");
   const urlQType = (params.get("qtype") || "").trim().toLowerCase();
@@ -91,7 +94,7 @@ function TechHubInner() {
   );
   const chatCredits = useQuery(
     api.users.getChatCredits,
-    sessionToken ? { sessionToken } : "skip"
+    sessionToken && isExamCourse && !openExamPractice ? { sessionToken } : "skip"
   );
   const enrol = useMutation(api.gigaLearnAcademy.enrolInCourse);
   const startSession = useMutation(api.gigaLearnTechBanks.startTechPracticeSession);
@@ -108,32 +111,33 @@ function TechHubInner() {
     examPracticePremiumExpiresAt: chatCredits?.examPracticePremiumExpiresAt,
   });
 
-  const countChoices = useMemo(() => {
-    if (!isExamCourse) return [5, 10, 15, 20, 30];
-    if (premiumAccess) {
-      return [10, 20, 50, 100, 200, EXAM_PRACTICE_PREMIUM_QUESTION_COUNT];
-    }
-    return [10, 20, 30, EXAM_PRACTICE_FREE_QUESTION_COUNT];
-  }, [isExamCourse, premiumAccess]);
-
-  const defaultCount = useMemo(() => {
-    if (Number.isFinite(urlCount) && urlCount > 0) {
-      return countChoices.includes(urlCount)
-        ? urlCount
-        : countChoices.reduce((best, n) =>
-            Math.abs(n - urlCount) < Math.abs(best - urlCount) ? n : best
-          );
-    }
-    return isExamCourse ? EXAM_PRACTICE_FREE_QUESTION_COUNT : 10;
-  }, [urlCount, countChoices, isExamCourse]);
-
   const [mode, setMode] = useState<TechPracticeMode>(
     MODES.some((m) => m.id === initialMode) ? initialMode : "learn"
   );
-  const [topicId, setTopicId] = useState(params.get("topic") || "");
+  const [topicId, setTopicId] = useState(requiresBeceSubject
+    ? meta?.topics.find((entry) => entry.id === params.get("topic"))?.id ?? meta?.topics[0]?.id ?? ""
+    : params.get("topic") || "");
   const [questionType, setQuestionType] = useState<TechQuestionType | "">(
     initialQuestionType
   );
+  const countChoices = useMemo(() => {
+    if (!isExamCourse) return [5, 10, 15, 20, 30];
+    if (openExamPractice) {
+      const topic = meta?.topics.find((entry) => entry.id === topicId);
+      const available = questionType === "structured" ? topic?.structuredCount ?? 0
+        : questionType === "mcq" && topic?.structuredCount ? topic.questionCount - topic.structuredCount
+        : topic?.questionCount ?? meta?.extractedFromSource ?? 0;
+      return [...new Set([5, 10, 20, 50, 100, 200, available].filter((n) => n > 0 && n <= available))];
+    }
+    return premiumAccess ? [10, 20, 50, 100, 200, EXAM_PRACTICE_PREMIUM_QUESTION_COUNT]
+      : [10, 20, 30, EXAM_PRACTICE_FREE_QUESTION_COUNT];
+  }, [isExamCourse, openExamPractice, premiumAccess, meta, topicId, questionType]);
+
+  const defaultCount = useMemo(() => {
+    const requested = urlCount > 0 ? urlCount : isExamCourse ? EXAM_PRACTICE_FREE_QUESTION_COUNT : 10;
+    return countChoices.reduce((best, n) => Math.abs(n - requested) < Math.abs(best - requested) ? n : best, countChoices[0] ?? 10);
+  }, [urlCount, countChoices, isExamCourse]);
+
   const [count, setCount] = useState(defaultCount);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -175,13 +179,6 @@ function TechHubInner() {
     rewardLabel?: string | null;
     totalXp?: number;
     sessionsCompleted?: number;
-    journey?: {
-      passed: boolean;
-      nextStage: number;
-      completedQuestions: number;
-      totalQuestionLimit: number;
-      passPercent: number;
-    } | null;
     results: Array<{
       questionId: string;
       selectedIndex: number | null;
@@ -224,7 +221,6 @@ function TechHubInner() {
             rewardLabel: r.rewardLabel,
             totalXp: r.totalXp,
             sessionsCompleted: r.sessionsCompleted,
-            journey: r.journey,
             results: r.results ?? [],
           });
         })
@@ -462,7 +458,6 @@ function TechHubInner() {
         rewardLabel: res.rewardLabel,
         totalXp: res.totalXp,
         sessionsCompleted: res.sessionsCompleted,
-        journey: res.journey,
         results: res.results ?? [],
       });
     } catch (e) {
@@ -507,13 +502,6 @@ function TechHubInner() {
                 }`
               : "No verified answer keys in this session — provisional items were not scored."}
           </p>
-          {results.journey ? (
-            <p className="rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-950" role="status">
-              {results.journey.passed
-                ? `Stage passed! You have completed ${results.journey.completedQuestions} of up to ${results.journey.totalQuestionLimit} available questions. Stage ${results.journey.nextStage} is now unlocked.`
-                : `You need at least ${results.journey.passPercent}% to unlock the next 50 questions. Retry this same stage to improve your score.`}
-            </p>
-          ) : null}
           <div className="grid gap-2 rounded-xl border border-emerald-200 bg-emerald-50/80 p-3 text-sm text-emerald-950 sm:grid-cols-2">
             <p>
               Questions attempted: <strong>{results.results.length}</strong>
@@ -1056,11 +1044,11 @@ function TechHubInner() {
                 ))}
               </div>
             </details>
-            {(mode === "topic" || mode === "challenge") && (
+            {(requiresBeceSubject || mode === "topic" || mode === "challenge") && (
               <label className="block text-sm">
-                <span className="mb-1 block font-medium">Choose a topic</span>
-                <select className="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3" value={topicId} onChange={(e) => setTopicId(e.target.value)}>
-                  <option value="">All topics / pick one</option>
+                <span className="mb-1 block font-medium">{requiresBeceSubject ? "Choose a subject" : "Choose a topic"}</span>
+                <select className="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3" value={topicId} onChange={(e) => { setTopicId(e.target.value); setQuestionType(""); }}>
+                  {!requiresBeceSubject ? <option value="">All topics / pick one</option> : null}
                   {meta.topics.map((t) => <option key={t.id} value={t.id}>{t.label} ({t.questionCount})</option>)}
                 </select>
               </label>
@@ -1074,7 +1062,7 @@ function TechHubInner() {
                     { id: "mcq" as const, label: "Multiple choice" },
                     { id: "true_false" as const, label: "True / False" },
                     { id: "structured" as const, label: "Structured response" },
-                  ]).map((opt) => (
+                  ]).filter((opt) => !openExamPractice || opt.id === "" || opt.id === "mcq" || (opt.id === "structured" && meta.topics.some((entry) => entry.id === topicId && entry.structuredCount))).map((opt) => (
                     <button key={opt.id || "mixed"} type="button" onClick={() => setQuestionType(opt.id)} aria-pressed={questionType === opt.id}
                       className={cn("min-h-11 rounded-xl border px-3 py-2 text-left text-sm font-semibold",
                         questionType === opt.id ? "border-teal-600 bg-teal-50 text-teal-950" : "border-slate-200 bg-white text-slate-800")}>
@@ -1088,17 +1076,17 @@ function TechHubInner() {
             <label className="block text-sm">
               <span className="mb-1 block font-semibold text-slate-800">Number of questions</span>
               <select className="min-h-12 w-full rounded-xl border border-slate-200 bg-white px-3 text-base" value={count} onChange={(e) => setCount(Number(e.target.value))}>
-                {countChoices.map((n) => <option key={n} value={n}>{n}{isExamCourse && n > EXAM_PRACTICE_FREE_QUESTION_COUNT ? " (Basic GHS 60+ / pack)" : n === EXAM_PRACTICE_FREE_QUESTION_COUNT ? " (Free)" : ""}</option>)}
+                {countChoices.map((n) => <option key={n} value={n}>{n}{isExamCourse && !openExamPractice && n > EXAM_PRACTICE_FREE_QUESTION_COUNT ? " (Basic GHS 60+ / pack)" : !openExamPractice && n === EXAM_PRACTICE_FREE_QUESTION_COUNT ? " (Free)" : ""}</option>)}
               </select>
             </label>
-            {isExamCourse ? (
+            {openExamPractice ? <p className="text-sm text-slate-600">All published questions are free to practise.</p> : isExamCourse ? (
               <p className="rounded-xl bg-violet-50 px-3 py-3 text-xs leading-5 text-slate-700">
                 Free practice includes up to {EXAM_PRACTICE_FREE_QUESTION_COUNT} questions. Premium access unlocks up to {EXAM_PRACTICE_PREMIUM_QUESTION_COUNT}, depending on bank size.
               </p>
             ) : null}
-            {isExamCourse && !premiumAccess ? <PremiumPracticeNudge variant="locked" /> : null}
+            {isExamCourse && !openExamPractice && !premiumAccess ? <PremiumPracticeNudge variant="locked" /> : null}
             {error ? <p className="text-sm text-rose-700" role="alert">{error}</p> : null}
-            <Button type="button" className="min-h-14 w-full rounded-xl text-base font-bold shadow-md" disabled={busy || (mode === "topic" && !topicId)} onClick={() => void onStart()}>
+            <Button type="button" className="min-h-14 w-full rounded-xl text-base font-bold shadow-md" disabled={busy || ((mode === "topic" || requiresBeceSubject) && !topicId) || countChoices.length === 0} onClick={() => void onStart()}>
               <Play className="mr-2 h-5 w-5" aria-hidden />
               {busy ? "Preparing your test…" : summary.enrolled ? "Start Practice Test" : "Enrol & Start Practice Test"}
             </Button>

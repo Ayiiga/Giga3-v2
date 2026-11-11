@@ -58,7 +58,8 @@
         {
           "id": "ghanaian-language-culture",
           "label": "Asante Twi",
-          "questionCount": 306
+          "questionCount": 306,
+          "structuredCount": 70
         }
       ],
       "structuredCount": 70
