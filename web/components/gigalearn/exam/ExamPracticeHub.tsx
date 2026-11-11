@@ -1,13 +1,22 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useQuery } from "convex/react";
+import { useEffect, useMemo, useState } from "react";
+import { getConvexClient } from "@/lib/convex";
 import { api } from "convex/_generated/api";
 import { BookOpen, GraduationCap, Users, Target, Timer, RotateCcw, Layers, Play } from "lucide-react";
 import { getExamBankMeta, examPracticeHref } from "@/lib/gigalearn/examPractice/examBankMeta";
 
 type Exam = "bece" | "wassce" | "promotion";
 type Mode = "practice_test" | "timed" | "revision";
+type FeaturedResource = {
+  _id: string;
+  slug: string;
+  title: string;
+  summary: string;
+  subject: string;
+  classes: string[];
+  access: "free" | "subscriber";
+};
 
 const WASSCE = [
   { id: "english", label: "English Language", slug: "exam-wassce-english" },
@@ -28,7 +37,22 @@ export function ExamPracticeHub() {
   const [subject, setSubject] = useState("");
   const [mode, setMode] = useState<Mode>("practice_test");
   const [count, setCount] = useState("50");
-  const featuredResources = useQuery(api.teachingResources.listPublished, {}) as Array<{_id:string;slug:string;title:string;summary:string;subject:string;classes:string[];access:"free"|"subscriber"}> | undefined;
+  const [featuredResources, setFeaturedResources] = useState<FeaturedResource[]>();
+
+  useEffect(() => {
+    let active = true;
+    async function loadFeaturedResources() {
+      try {
+        const client = getConvexClient();
+        const resources = client ? await client.query(api.teachingResources.listPublished, {}) : [];
+        if (active) setFeaturedResources(resources);
+      } catch {
+        if (active) setFeaturedResources([]);
+      }
+    }
+    void loadFeaturedResources();
+    return () => { active = false; };
+  }, []);
 
   const bece = getExamBankMeta("exam-bece-prep");
   const subjects = useMemo(() => {
@@ -126,7 +150,7 @@ export function ExamPracticeHub() {
         </label>
         {exam === "promotion" ? <select aria-label="Number of questions" value={count} onChange={(e) => setCount(e.target.value)} className="min-h-14 rounded-2xl border-2 border-slate-200 bg-white px-4 font-bold text-slate-950 outline-none focus:border-violet-500">
           <option value="50">50 (Free)</option><option value="100">100 (Premium)</option><option value="250">250 (Premium)</option><option value="500">500 (Premium)</option>
-        </select> : <select aria-label="Number of questions" value={freeCount} onChange={(e) => setCount(e.target.value)} className="min-h-14 rounded-2xl border-2 border-slate-200 bg-white px-4 font-bold">{freeCounts.map((n) => <option key={n} value={n}>{n === subjectCount ? `All ${n} questions (Free)` : `${n} questions (Free)`}</option>)}</select>}
+        </select> : <select aria-label="Number of questions" value={freeCount} onChange={(e) => setCount(e.target.value)} className="min-h-14 rounded-2xl border-2 border-slate-200 bg-white px-4 font-bold text-slate-950 outline-none focus:border-violet-500">{freeCounts.map((n) => <option key={n} value={n}>{n === subjectCount ? `All ${n} questions (Free)` : `${n} questions (Free)`}</option>)}</select>}
       </section>
 
       <a href={available ? href : undefined} aria-disabled={!available} data-testid="start-practice-test"

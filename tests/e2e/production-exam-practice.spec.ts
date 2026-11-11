@@ -38,27 +38,22 @@ test.describe("Production — Exam Practice public routes", () => {
     });
   }
 
-  test("Exam Centre links to the current promotion, BECE, and WASSCE centres", async ({ page }) => {
-    await page.goto("/gigalearn/exam/", { waitUntil: "domcontentloaded" });
-    await page.waitForLoadState("networkidle", { timeout: 45_000 }).catch(() => undefined);
-
-    const hub = page.getByTestId("exam-practice-hub");
-    await expect(hub).toBeVisible({ timeout: 45_000 });
-    for (const centre of ["promotion", "bece", "wassce"]) {
-      await expect(page.getByTestId(`exam-centre-${centre}`)).toBeVisible();
+  test("Practice Test setup is visible without JavaScript or a resources connection", async ({ browser, baseURL }) => {
+    const context = await browser.newContext({ baseURL, javaScriptEnabled: false });
+    try {
+      const page = await context.newPage();
+      await page.goto("/gigalearn/exam/");
+      const hub = page.getByTestId("exam-practice-hub");
+      await expect(hub.getByRole("heading", { name: "Practice Test" })).toBeVisible();
+      for (const name of ["BECE", "WASSCE", "Teacher Promotion", "Practice", "Timed", "Revision"]) {
+        await expect(hub.getByRole("button", { name: new RegExp(name === "Practice" ? "^Practice " : name) })).toBeVisible();
+      }
+      await expect(hub.getByRole("combobox", { name: "Subject", exact: true })).toBeVisible();
+      await expect(hub.getByRole("combobox", { name: "Number of questions", exact: true })).toBeVisible();
+      await expect(hub.getByTestId("start-practice-test")).toBeVisible();
+    } finally {
+      await context.close();
     }
-    await expect(page.getByTestId("exam-centre-promotion")).toHaveAttribute(
-      "href",
-      "/gigalearn/exam/promotion/"
-    );
-    await expect(page.getByTestId("exam-centre-bece")).toHaveAttribute(
-      "href",
-      "/gigalearn/exam/bece/"
-    );
-    await expect(page.getByTestId("exam-centre-wassce")).toHaveAttribute(
-      "href",
-      "/gigalearn/exam/wassce/"
-    );
   });
 
   test("Free practice: pre-start, option notes, reward on correct, no stale notes after Next", async ({
