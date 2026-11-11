@@ -211,6 +211,22 @@ function InsightsInner() {
         <StatCard label="Open feedback" value={stats.openFeedbackCount ?? 0} />
       </section>
 
+      {stats.homepageGrowth ? (
+        <section aria-labelledby="homepage-growth" className="space-y-3">
+          <h2 id="homepage-growth" className="text-lg font-semibold">Homepage growth</h2>
+          <p className="text-sm text-muted">
+            Cumulative since tracking began. Outcomes count within 30 days of a browser’s first
+            recorded homepage visit. Practice and signup are independent milestones.
+          </p>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <StatCard label="Homepage browsers" value={stats.homepageGrowth.homepages} />
+            <StatCard label="Browsers completing practice" value={stats.homepageGrowth.practiceCompletions} />
+            <StatCard label="New accounts" value={stats.homepageGrowth.signups} />
+            <StatCard label="New accounts with paid subscriptions" value={stats.homepageGrowth.paidSubscriptions} />
+          </div>
+        </section>
+      ) : null}
+
       <section className="grid gap-6 lg:grid-cols-2">
         <div className="rounded-2xl border bg-white p-6 shadow-sm dark:bg-card">
           <h2 className="text-lg font-semibold">Activity trend (14 days)</h2>

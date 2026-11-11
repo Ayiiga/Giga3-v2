@@ -4,6 +4,7 @@ import { ExamPracticeShareButton } from "@/components/gigalearn/exam/ExamPractic
 import { PremiumPracticeNudge } from "@/components/gigalearn/exam/PremiumPracticeNudge";
 import { PremiumUpgradeModal } from "@/components/gigalearn/exam/PremiumUpgradeModal";
 import { Button } from "@/components/ui/Button";
+import { recordExamPracticeCompletion } from "@/lib/analytics/recordExamPractice";
 import { getSessionToken } from "@/lib/auth";
 import { recordLocalExamPracticeResult } from "@/lib/gigalearn/examPractice/localProgress";
 import { isPremiumUpgradeModalSuppressed } from "@/lib/gigalearn/examPractice/premiumUpgradeDismiss";
@@ -125,6 +126,7 @@ export function ExamQuizSession({
   useEffect(() => {
     if (!finished || recordedRef.current) return;
     recordedRef.current = true;
+    if (!initialFinished && Object.keys(answers).length > 0) recordExamPracticeCompletion();
     recordLocalExamPracticeResult({
       setId: meta.id,
       category: meta.category,
@@ -133,7 +135,7 @@ export function ExamQuizSession({
       percent: score.percent,
       finishedAt: Date.now(),
     });
-  }, [finished, meta.category, meta.id, score.correct, score.percent, score.total]);
+  }, [answers, finished, initialFinished, meta.category, meta.id, score.correct, score.percent, score.total]);
 
   useEffect(() => {
     if (!finished || !enablePremiumUpgrade || completedEventRef.current) return;
