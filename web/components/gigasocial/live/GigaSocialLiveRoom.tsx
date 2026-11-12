@@ -2,6 +2,7 @@
 
 import { PreSnapEditBar } from "@/components/gigasocial/studio/PreSnapEditBar";
 import { GigaSocialTeleprompter } from "@/components/gigasocial/studio/GigaSocialTeleprompter";
+import { GigaSocialReportDialog } from "@/components/gigasocial/trust/GigaSocialReportDialog";
 import { Button } from "@/components/ui/Button";
 import { LoadingState } from "@/components/ui/LoadingState";
 import {
@@ -33,7 +34,7 @@ import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import { Gift, MessageCircle, MonitorUp, Radio, Shield, Type, Users, X } from "lucide-react";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 type PendingChatMessage = {
@@ -69,6 +70,10 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
   const recognitionRef = useRef<{ stop: () => void } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportNotice, setReportNotice] = useState<string | null>(null);
+  const reportTarget = useMemo(() => ({ targetType: "live" as const, streamId }), [streamId]);
+  const liveMediaAllowed = useRef(false);
   const [chatBody, setChatBody] = useState("");
   const [coHostHandle, setCoHostHandle] = useState("");
   const [busy, setBusy] = useState(false);
@@ -154,6 +159,10 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
 
   const attachHostMedia = useCallback(
     async (media: MediaStream, source: ScreenShareSource | null) => {
+      if (!liveMediaAllowed.current) {
+        media.getTracks().forEach((track) => track.stop());
+        return;
+      }
       stopMedia();
       mediaStreamRef.current = media;
       setScreenSource(source);
@@ -170,7 +179,7 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
           setAwaitingScreenShare(true);
         }, { once: true });
       }
-      startCaptions();
+      if (liveMediaAllowed.current) startCaptions();
     },
     [mode, startCaptions, stopMedia]
   );
@@ -270,7 +279,9 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
   }, [isHost, mode, sessionToken, startLive, stream?.status, streamId]);
 
   useEffect(() => {
-    if (!isHost || stream?.status !== "live") {
+    liveMediaAllowed.current = isHost && stream?.status === "live";
+    if (!liveMediaAllowed.current) {
+      stopMedia();
       if (stream?.status !== "live") {
         hostMediaStartedRef.current = false;
         setAwaitingScreenShare(false);
@@ -280,10 +291,13 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
     if (hostMediaStartedRef.current) return;
     hostMediaStartedRef.current = true;
     void startHostMedia();
-  }, [isHost, startHostMedia, stream?.status]);
+  }, [isHost, startHostMedia, stopMedia, stream?.status]);
 
   useEffect(() => {
-    return () => stopMedia();
+    return () => {
+      liveMediaAllowed.current = false;
+      stopMedia();
+    };
   }, [stopMedia]);
 
   if (data === undefined) {
@@ -485,6 +499,14 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
               {isHost && screenSource ? ` · ${screenSource === "display" ? "Display" : screenSource === "file" ? "File" : "Rear camera"} preview` : ""}
             </p>
           </div>
+          <div className="flex shrink-0 gap-2">
+            {!isHost ? (
+              <Button type="button" size="sm" variant="outline"
+                className="min-h-11 border-white/30 bg-black/70 text-white hover:bg-white/20 hover:text-white"
+                onClick={() => setReportOpen(true)}>
+                Report
+              </Button>
+            ) : null}
           <Button
             type="button"
             variant="outline"
@@ -495,7 +517,9 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
             <X className="h-4 w-4" aria-hidden />
             {isHost ? "End" : "Leave"}
           </Button>
+          </div>
         </div>
+        {reportNotice ? <p role="status" className="absolute left-3 right-3 top-24 rounded-lg bg-black/80 p-2 text-sm">{reportNotice}</p> : null}
 
         {stream.captionLines?.length ? (
           <div className="pointer-events-none absolute inset-x-3 bottom-3 rounded-xl bg-black/70 px-3 py-2 text-sm text-white">
@@ -740,6 +764,8 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
           </div>
         ) : null}
       </div>
+      <GigaSocialReportDialog open={reportOpen} sessionToken={sessionToken} target={reportTarget}
+        title="Report live stream" onClose={() => setReportOpen(false)} onSubmitted={setReportNotice} />
     </div>,
     document.body
   );

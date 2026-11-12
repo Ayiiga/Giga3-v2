@@ -17,9 +17,13 @@ import { memo, useEffect, useId, useState } from "react";
 import { createPortal } from "react-dom";
 
 const CYBER_CONTACTS = [
+  { id: "AU", country: "Australia", agency: "Australian Signals Directorate ReportCyber", url: "https://www.cyber.gov.au/submit-a-report" },
+  { id: "CA", country: "Canada", agency: "Canadian Centre for Cyber Security", url: "https://www.cyber.gc.ca/en/incident-management" },
   { id: "GH", country: "Ghana", agency: "Cyber Security Authority", url: "https://www.csa.gov.gh/report", phone: "Call or SMS 292 in Ghana." },
   { id: "NG", country: "Nigeria", agency: "ngCERT", url: "https://nccc.gov.ng/ngcert" },
+  { id: "KE", country: "Kenya", agency: "National KE-CIRT/CC", url: "https://ke-cirt.go.ke/contact-us/" },
   { id: "ZA", country: "South Africa", agency: "Cybersecurity Hub", url: "https://www.cybersecurityhub.gov.za/report-incident" },
+  { id: "US", country: "United States", agency: "FBI Internet Crime Complaint Center", url: "https://www.ic3.gov/" },
 ] as const;
 
 type GigaSocialReportDialogProps = {
@@ -91,6 +95,7 @@ export const GigaSocialReportDialog = memo(function GigaSocialReportDialog({
           activeTarget.targetType === "profile"
             ? activeTarget.profileUserId
             : undefined,
+        streamId: activeTarget.targetType === "live" ? activeTarget.streamId as Id<"socialLiveStreams"> : undefined,
         reason,
         details: details.trim() || undefined,
       });
@@ -108,7 +113,7 @@ export const GigaSocialReportDialog = memo(function GigaSocialReportDialog({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[80] flex items-end justify-center bg-black/50 p-3 sm:items-center"
+      className="fixed inset-0 z-[90] flex items-end justify-center bg-black/50 p-3 sm:items-center"
       role="presentation"
       onClick={onClose}
     >

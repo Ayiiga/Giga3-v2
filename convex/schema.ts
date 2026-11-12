@@ -1316,10 +1316,11 @@ export default defineSchema({
   /** UGC reports for GigaSocial posts/comments — moderation queue (not auto-resolving). */
   socialContentReports: defineTable({
     reporterId: v.string(),
-    targetType: v.union(v.literal("post"), v.literal("comment"), v.literal("profile")),
+    targetType: v.union(v.literal("post"), v.literal("comment"), v.literal("profile"), v.literal("live")),
     postId: v.optional(v.id("socialPosts")),
     commentId: v.optional(v.id("socialComments")),
     profileUserId: v.optional(v.string()),
+    streamId: v.optional(v.id("socialLiveStreams")),
     reason: v.string(),
     details: v.optional(v.string()),
     status: socialDmReportStatusValidator,
@@ -1345,6 +1346,7 @@ export default defineSchema({
     reactionCountsJson: v.optional(v.string()),
     captionLinesJson: v.optional(v.string()),
     replayUrl: v.optional(v.string()),
+    removedForSafetyAt: v.optional(v.number()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })

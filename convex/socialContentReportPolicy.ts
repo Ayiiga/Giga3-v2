@@ -17,7 +17,7 @@ export const SOCIAL_CONTENT_REPORT_REASONS = [
 
 export type SocialContentReportReason = (typeof SOCIAL_CONTENT_REPORT_REASONS)[number];
 
-export type SocialContentReportTargetType = "post" | "comment" | "profile";
+export type SocialContentReportTargetType = "post" | "comment" | "profile" | "live";
 
 /** Max open/recent reports a single user may submit per rolling window. */
 export const SOCIAL_REPORT_RATE_LIMIT_MAX = 20;
@@ -39,6 +39,7 @@ export function socialReportTargetKey(args: {
   postId?: string;
   commentId?: string;
   profileUserId?: string;
+  streamId?: string;
 }): string | null {
   if (args.targetType === "post") {
     const id = args.postId?.trim();
@@ -48,6 +49,7 @@ export function socialReportTargetKey(args: {
     const id = args.commentId?.trim();
     return id ? `comment:${id}` : null;
   }
+  if (args.targetType === "live") return args.streamId ? `live:${args.streamId}` : null;
   const profileUserId = args.profileUserId?.trim().toLowerCase();
   return profileUserId ? `profile:${profileUserId}` : null;
 }
@@ -57,6 +59,7 @@ export type ExistingSocialReportLike = {
   postId?: string;
   commentId?: string;
   profileUserId?: string;
+  streamId?: string;
   reason: string;
   status: string;
   createdAt: number;
@@ -69,6 +72,7 @@ export function isDuplicateSocialReport(
     postId?: string;
     commentId?: string;
     profileUserId?: string;
+    streamId?: string;
     reason: string;
     nowMs: number;
   }

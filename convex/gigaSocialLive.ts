@@ -2,6 +2,8 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import type { Doc, Id } from "./_generated/dataModel";
 import { requireSession } from "./auth";
+import { assertChildSafetyFeature } from "./childSafety";
+import { scanTextForSafetyHits } from "./childSafetyPolicy";
 import { sessionArgs } from "./validators";
 import { sanitizeSocialText, toPublicAuthor } from "./gigaSocialViews";
 import {
@@ -20,6 +22,14 @@ const liveStatusValidator = v.union(
   v.literal("live"),
   v.literal("ended")
 );
+
+function assertSafeLiveText(text: string) {
+  if (scanTextForSafetyHits(text).some((hit) =>
+    hit.category === "grooming" || hit.category === "child_sexual_exploitation"
+  )) {
+    throw new Error("This text cannot be published in a live room.");
+  }
+}
 
 async function resolveAuthor(
   ctx: { db: import("./_generated/server").QueryCtx["db"] },
@@ -137,6 +147,7 @@ export const listLiveStreams = query({
 
       const streams = [];
       for (const row of rows) {
+        if (row.removedForSafetyAt) continue;
         try {
           streams.push(await toPublicStream(ctx, row));
         } catch {
@@ -157,7 +168,7 @@ export const getLiveStream = query({
   },
   handler: async (ctx, args) => {
     const stream = await ctx.db.get(args.streamId);
-    if (!stream) return null;
+    if (!stream || stream.removedForSafetyAt) return null;
     const chat = await ctx.db
       .query("socialLiveChat")
       .withIndex("by_stream_created", (q) => q.eq("streamId", args.streamId))
@@ -202,8 +213,10 @@ export const scheduleLiveStream = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await requireSession(args.sessionToken, ctx);
+    await assertChildSafetyFeature(ctx, userId, "social_live");
     const title = sanitizeSocialText(args.title, 120);
     if (!title) throw new Error("Stream title is required.");
+    assertSafeLiveText(title);
     const now = Date.now();
     if (args.scheduledAt < now - 60_000) {
       throw new Error("Schedule time must be in the future.");
@@ -236,10 +249,11 @@ export const startLiveStream = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await requireSession(args.sessionToken, ctx);
+    await assertChildSafetyFeature(ctx, userId, "social_live");
     const now = Date.now();
     if (args.streamId) {
       const existing = await ctx.db.get(args.streamId);
-      if (!existing || existing.hostId !== userId) {
+      if (!existing || existing.removedForSafetyAt || existing.hostId !== userId) {
         throw new Error("Stream not found.");
       }
       await ctx.db.patch(existing._id, {
@@ -250,6 +264,7 @@ export const startLiveStream = mutation({
       return { streamId: existing._id };
     }
     const title = sanitizeSocialText(args.title ?? "GigaSocial Live", 120);
+    assertSafeLiveText(title);
     const streamId = await ctx.db.insert("socialLiveStreams", {
       hostId: userId,
       title,
@@ -278,7 +293,7 @@ export const endLiveStream = mutation({
   handler: async (ctx, args) => {
     const userId = await requireSession(args.sessionToken, ctx);
     const stream = await ctx.db.get(args.streamId);
-    if (!stream || stream.hostId !== userId) throw new Error("Stream not found.");
+    if (!stream || stream.removedForSafetyAt || stream.hostId !== userId) throw new Error("Stream not found.");
     const now = Date.now();
     await ctx.db.patch(stream._id, {
       status: "ended",
@@ -317,11 +332,13 @@ export const sendLiveChat = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await requireSession(args.sessionToken, ctx);
+    await assertChildSafetyFeature(ctx, userId, "social_live");
     const stream = await ctx.db.get(args.streamId);
     if (!stream || stream.status !== "live") throw new Error("Stream is not live.");
     if (stream.mutedUserIds?.includes(userId)) throw new Error("You are muted in this stream.");
     const body = sanitizeSocialText(args.body, 500);
     if (!body) throw new Error("Message cannot be empty.");
+    assertSafeLiveText(body);
     const isHostOrCoHost =
       stream.hostId === userId || stream.coHostIds?.includes(userId) === true;
     if (!isHostOrCoHost && body.length > 280) {
@@ -468,10 +485,12 @@ export const addLiveCaption = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await requireSession(args.sessionToken, ctx);
+    await assertChildSafetyFeature(ctx, userId, "social_live");
     const stream = await ctx.db.get(args.streamId);
     if (!stream || stream.hostId !== userId) throw new Error("Only the host can add captions.");
     const line = sanitizeSocialText(args.line, 200);
     if (!line) return { ok: false };
+    assertSafeLiveText(line);
     const lines = parseCaptionLines(stream.captionLinesJson);
     lines.push(line);
     await ctx.db.patch(stream._id, {
@@ -490,6 +509,7 @@ export const addLiveCoHost = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await requireSession(args.sessionToken, ctx);
+    await assertChildSafetyFeature(ctx, userId, "social_live");
     const stream = await ctx.db.get(args.streamId);
     if (!stream || stream.hostId !== userId) throw new Error("Only the host can add co-hosts.");
     const handle = args.coHostHandle.trim().toLowerCase().replace(/^@/, "");
@@ -498,6 +518,7 @@ export const addLiveCoHost = mutation({
       .withIndex("by_handle", (q) => q.eq("handle", handle))
       .first();
     if (!profile) throw new Error("Creator not found.");
+    await assertChildSafetyFeature(ctx, profile.userId, "social_live");
     const coHostIds = [...(stream.coHostIds ?? [])];
     if (!coHostIds.includes(profile.userId)) coHostIds.push(profile.userId);
     await ctx.db.patch(stream._id, { coHostIds, updatedAt: Date.now() });
