@@ -552,7 +552,7 @@ export const BLOG_POST_REGISTRY: readonly BlogPost[] = [
     title: "ChatGPT Zero and ZeroGPT Explained: How AI Text Detectors Work",
     seoTitle: "ChatGPT Zero vs ZeroGPT & GPTZero Explained",
     description:
-      "Clear up ChatGPT Zero, GPTZero, and ZeroGPT naming. Learn how AI detectors work, how to use official sites, what scores mean, and responsible guidance — no bypass tips.",
+      "Learn the difference between ChatGPT Zero, GPTZero, and ZeroGPT, how AI detectors work, and what their scores can tell you about a text.",
     excerpt:
       "GPTZero and ZeroGPT are different products. Learn how AI-text detection works, how to read scores, and why a percentage alone cannot prove authorship.",
     category: "Digital Literacy",
