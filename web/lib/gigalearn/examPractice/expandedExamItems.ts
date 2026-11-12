@@ -208,9 +208,11 @@ export const expandedExamItems: TechBankQuestion[] = ([["bece", bece], ["wassce"
       topicId, topicLabel, questionText, options: [answer, b, c, d], correctIndex: 0,
       explanation, difficulty: "intermediate", questionType: "mcq",
       sourceDocument: "Original GigaLearn curriculum-informed practice",
-      sourceQuestionNumber: index + 1, reviewStatus: "pending_review",
+      sourceQuestionNumber: index + 1,
+      // The seven original BECE Science items have had their keys and explanations checked.
+      reviewStatus: exam === "bece" && topicId === "integrated-science" ? "approved" : "pending_review",
       sourceType: "original_practice",
-      verificationStatus: "awaiting_verification",
+      ...(exam === "bece" && topicId === "integrated-science" ? {} : { verificationStatus: "awaiting_verification" as const }),
       tags: [strand, subStrand], curriculumStrand: strand, curriculumSubStrand: subStrand,
     })),
   ),
