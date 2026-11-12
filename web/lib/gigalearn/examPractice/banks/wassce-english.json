@@ -7923,6 +7923,526 @@
         "free",
         "premium"
       ]
+    },
+    {
+      "questionId": "exam-wassce-english-shs2027-paper1-01",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "The audit team's findings were inconclusive. In the sentence, “inconclusive” means the findings were ...",
+      "options": [
+        "not decisive",
+        "not recent",
+        "not detailed",
+        "not authorized"
+      ],
+      "correctIndex": 0,
+      "explanation": "Inconclusive findings do not establish a definite result.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Language_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 1,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-english-shs2027-paper1-02",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "The headteacher described the proposal as feasible. In context, it is ...",
+      "options": [
+        "certain to make a profit",
+        "free from every possible risk",
+        "practicable with available resources",
+        "already approved for use"
+      ],
+      "correctIndex": 2,
+      "explanation": "Feasible means capable of being carried out, not necessarily risk-free or approved.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Language_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 2,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-english-shs2027-paper1-03",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "The minister's response was equivocal. This means the response was ...",
+      "options": [
+        "unusually brief",
+        "supported by figures",
+        "open to more than one interpretation",
+        "deliberately insulting"
+      ],
+      "correctIndex": 2,
+      "explanation": "Equivocal language is deliberately or inherently ambiguous.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Language_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 3,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-english-shs2027-paper1-04",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "The committee reached a unanimous decision. This means that ...",
+      "options": [
+        "the public voted on it",
+        "every member agreed",
+        "a simple majority agreed",
+        "the chairperson decided alone"
+      ],
+      "correctIndex": 1,
+      "explanation": "Unanimity requires agreement by all members of the decision-making body.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Language_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 4,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-english-shs2027-paper1-05",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "The evidence was corroborated by the records. This means it was ...",
+      "options": [
+        "supported by independent information",
+        "kept from the public",
+        "rejected as irrelevant",
+        "reduced to a summary"
+      ],
+      "correctIndex": 0,
+      "explanation": "To corroborate evidence is to confirm or support it with other evidence.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Language_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 5,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-english-shs2027-paper1-06",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "The new system was introduced gradually. Its introduction was ...",
+      "options": [
+        "completed immediately",
+        "announced without warning",
+        "delayed indefinitely",
+        "carried out in stages"
+      ],
+      "correctIndex": 3,
+      "explanation": "Gradually means progressively rather than all at once.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Language_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 6,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-english-shs2027-paper1-07",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "The referee remained impartial throughout. This means the referee was ...",
+      "options": [
+        "free from bias between the sides",
+        "favouring the home team",
+        "unwilling to give a decision",
+        "unaware of the rules"
+      ],
+      "correctIndex": 0,
+      "explanation": "An impartial person treats competing parties fairly.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Language_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 7,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-english-shs2027-paper1-08",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "The lecturer's example made the principle explicit. This means it was ...",
+      "options": [
+        "put into a question",
+        "stated clearly and directly",
+        "expressed in symbolic language",
+        "left for listeners to guess"
+      ],
+      "correctIndex": 1,
+      "explanation": "Explicit means plainly expressed rather than implied.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Language_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 8,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-english-shs2027-paper1-09",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "The council called for a comprehensive review. Such a review is ...",
+      "options": [
+        "wide-ranging and thorough",
+        "restricted to one complaint",
+        "finished within one day",
+        "conducted without documents"
+      ],
+      "correctIndex": 0,
+      "explanation": "Comprehensive work deals with all or nearly all relevant aspects.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Language_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 9,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-english-shs2027-paper1-10",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "The figures were only provisional. This means they were ...",
+      "options": [
+        "recorded inaccurately",
+        "subject to later confirmation",
+        "taken from past years only",
+        "deliberately exaggerated"
+      ],
+      "correctIndex": 1,
+      "explanation": "Provisional figures are temporary and may change after confirmation.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Language_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 10,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-english-shs2027-paper1-11",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "When the organisers decided to call off the outdoor concert, they ...",
+      "options": [
+        "reduced ticket prices",
+        "shortened its duration",
+        "changed its venue",
+        "cancelled the concert"
+      ],
+      "correctIndex": 3,
+      "explanation": "To call off an event is to cancel it.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Language_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 11,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-english-shs2027-paper1-12",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "When the coordinator asked everyone to chip in, she wanted them to ...",
+      "options": [
+        "remain after the meeting",
+        "work without supervision",
+        "criticise the original proposal",
+        "contribute towards a common task"
+      ],
+      "correctIndex": 3,
+      "explanation": "To chip in is to contribute money, effort or ideas.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Language_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 12,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-english-shs2027-paper1-13",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "The negotiators agreed to meet halfway. They decided to ...",
+      "options": [
+        "divide the funds equally",
+        "hold another meeting",
+        "make mutual concessions",
+        "change the meeting place"
+      ],
+      "correctIndex": 2,
+      "explanation": "Meeting halfway means compromising rather than insisting on every demand.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Language_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 13,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-english-shs2027-paper1-14",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "When Ama said the plan was up in the air, she meant that it ...",
+      "options": [
+        "had been announced publicly",
+        "was too costly to implement",
+        "had been cancelled permanently",
+        "had not yet been settled"
+      ],
+      "correctIndex": 3,
+      "explanation": "Something up in the air remains undecided.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Language_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 14,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-english-shs2027-paper1-15",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "The assembly member urged them not to jump to conclusions. He urged them not to ...",
+      "options": [
+        "disagree with the chairperson",
+        "invite outside opinions",
+        "decide before examining the facts",
+        "make the decision too slowly"
+      ],
+      "correctIndex": 2,
+      "explanation": "Jumping to conclusions means forming a judgement prematurely.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Language_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 15,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-english-shs2027-paper1-16",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "After the unexpected rejection, Kojo had to start from scratch. He had to ...",
+      "options": [
+        "copy another person's report",
+        "continue from the final stage",
+        "begin the work again from the beginning",
+        "abandon the entire project"
+      ],
+      "correctIndex": 2,
+      "explanation": "Starting from scratch means starting again with no completed work carried forward.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Language_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 16,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-english-shs2027-paper1-17",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "The contractor was accused of cutting corners. He was accused of ...",
+      "options": [
+        "negotiating lower transport fares",
+        "reducing the number of workers lawfully",
+        "sacrificing proper standards to save effort or cost",
+        "changing the building's shape"
+      ],
+      "correctIndex": 2,
+      "explanation": "Cutting corners means taking improper shortcuts, often at the expense of quality.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Language_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 17,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-english-shs2027-paper1-18",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "The secretary said the proposal was on the table. She meant that it ...",
+      "options": [
+        "had already been approved",
+        "was physically stored in the office",
+        "needed to be typed again",
+        "was available for consideration"
+      ],
+      "correctIndex": 3,
+      "explanation": "On the table means presented for discussion or consideration.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Language_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 18,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-english-shs2027-paper1-19",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "The principal advised the students to keep their heads during the emergency. They should ...",
+      "options": [
+        "avoid looking behind them",
+        "remain calm and think clearly",
+        "follow the oldest student",
+        "stay together in one room"
+      ],
+      "correctIndex": 1,
+      "explanation": "Keeping one's head means remaining composed under pressure.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Language_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 19,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-english-shs2027-paper1-20",
+      "courseSlug": "exam-wassce-english",
+      "topicId": "wassce-english",
+      "topicLabel": "English Language",
+      "questionText": "When the report raised eyebrows, it ...",
+      "options": [
+        "caused surprise or suspicion",
+        "received formal certification",
+        "made everyone feel pleased",
+        "ended a disagreement"
+      ],
+      "correctIndex": 0,
+      "explanation": "Raising eyebrows means provoking surprise, doubt or disapproval.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_English_Language_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 20,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
     }
   ]
 }

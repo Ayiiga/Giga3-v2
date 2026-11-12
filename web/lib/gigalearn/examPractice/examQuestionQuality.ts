@@ -36,7 +36,7 @@ export function normalizeExamQuestionStem(row: TechBankQuestion): TechBankQuesti
 
 export function selectQualityExamQuestions(rows: TechBankQuestion[]): TechBankQuestion[] {
   const seen = new Set<string>();
-  return rows.map(normalizeExamQuestionStem).filter((row) => {
+  return [...rows].sort((a, b) => Number(b.reviewStatus === "approved") - Number(a.reviewStatus === "approved")).map(normalizeExamQuestionStem).filter((row) => {
     if (generatedBeceLeadIn.test(row.questionText)) return false;
     if (retiredBeceItems.has(row.questionId) || retiredWassceScienceItems.has(row.questionId)) return false;
     if (row.topicId === "french" && /^Which French expression means .* in the context of the question:/i.test(row.questionText)) return false;
