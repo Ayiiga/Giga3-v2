@@ -349,6 +349,9 @@ export const sendMessage = mutation({
     assertDmThreadParticipant(thread, userId);
     await assertPairNotBlocked(ctx, thread.participantAId, thread.participantBId);
 
+    const recipientId = thread.participantAId === userId ? thread.participantBId : thread.participantAId;
+    await assertChildSafetyFeature(ctx, recipientId, "social_dm");
+
     if (thread.requestStatus === "declined") {
       // Soft decline recovery: re-open as a message request from this sender.
       await ctx.db.patch(thread._id, {

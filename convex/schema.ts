@@ -1293,7 +1293,13 @@ export default defineSchema({
     createdAt: v.number(),
   })
     .index("by_blocker", ["blockerId", "createdAt"])
-    .index("by_pair", ["blockerId", "blockedId"]),
+    .index("by_pair", ["blockerId", "blockedId"])
+    .index("by_blocked", ["blockedId"]),
+
+  socialFeedMutes: defineTable({
+    userId: v.string(),
+    mutedUserId: v.string(),
+  }).index("by_user_target", ["userId", "mutedUserId"]),
 
   socialDmReports: defineTable({
     reporterId: v.string(),
@@ -1321,7 +1327,8 @@ export default defineSchema({
   })
     .index("by_reporter_created", ["reporterId", "createdAt"])
     .index("by_status", ["status", "createdAt"])
-    .index("by_post", ["postId", "createdAt"]),
+    .index("by_post", ["postId", "createdAt"])
+    .index("by_status_reason", ["status", "reason", "createdAt"]),
 
   socialLiveStreams: defineTable({
     hostId: v.string(),

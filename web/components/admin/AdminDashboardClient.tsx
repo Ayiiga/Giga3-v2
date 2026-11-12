@@ -14,6 +14,7 @@ import { AdminSecurityHealthPanel } from "@/components/admin/AdminSecurityHealth
 import { AdminAwardsPanel } from "@/components/admin/AdminAwardsPanel";
 import { AdminSocialEconomyPanel } from "@/components/admin/AdminSocialEconomyPanel";
 import { AdminCopyrightReviewPanel } from "@/components/admin/AdminCopyrightReviewPanel";
+import { AdminSocialSafetyPanel } from "@/components/admin/AdminSocialSafetyPanel";
 import { AdminUsersPanel } from "@/components/admin/AdminUsersPanel";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { AdminInvitesPanel } from "@/components/admin/AdminInvitesPanel";
@@ -458,6 +459,7 @@ function AdminInner() {
       </section>
 
       <AdminCopyrightReviewPanel />
+      <AdminSocialSafetyPanel adminSessionToken={adminCreds.adminSessionToken} />
 
       <AdminSocialEconomyPanel
         adminCreds={adminCreds}
