@@ -1,6 +1,6 @@
 import type { TechPracticeMode } from "@/lib/gigalearn/academy/techBanks/techBankTypes";
 
-/** Practice reveals feedback after each answer. Timed exams reveal it at submission. */
+/** All supported practice modes reveal feedback as each objective answer is saved. */
 export function techModeShowsImmediateFeedback(mode: TechPracticeMode): boolean {
-  return mode !== "timed";
+  return Boolean(mode);
 }

@@ -1,6 +1,6 @@
 /**
  * Premium Full pack / practice_test must deliver immediate answer feedback
- * and one praise pulse per question — matching Learn mode, not timed exams.
+ * and one praise pulse per question — including timed practice.
  */
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -15,10 +15,10 @@ import {
 const ROOT = resolve(__dirname, "../..");
 
 describe("techModeShowsImmediateFeedback", () => {
-  it("enables learn + practice_test; withholds timed", () => {
+  it("enables all practice modes, including timed", () => {
     expect(techModeShowsImmediateFeedback("learn")).toBe(true);
     expect(techModeShowsImmediateFeedback("practice_test")).toBe(true);
-    expect(techModeShowsImmediateFeedback("timed")).toBe(false);
+    expect(techModeShowsImmediateFeedback("timed")).toBe(true);
     for (const mode of ["topic", "random", "revision", "challenge"] as const) {
       expect(techModeShowsImmediateFeedback(mode)).toBe(true);
     }
@@ -50,7 +50,8 @@ describe("Convex + TechHubPractice wiring for practice_test feedback", () => {
     expect(convex).toContain(
       "techModeShowsImmediateFeedback(session.mode)"
     );
-    // Timed still falls through to feedback: null
+    // A timed answer submitted after the deadline is not saved.
+    expect(convex).toContain('finalizeSession(ctx, session, now, "timer")');
     expect(convex).toContain("return { saved: true, feedback: null };");
   });
 

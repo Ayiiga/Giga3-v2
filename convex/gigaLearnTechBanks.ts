@@ -498,6 +498,10 @@ export const saveTechPracticeAnswer = mutation({
     }
 
     const now = Date.now();
+    if (session.mode === "timed" && session.endsAt != null && now >= session.endsAt) {
+      const graded = await finalizeSession(ctx, session, now, "timer");
+      return { saved: true, feedback: null, autoSubmitted: graded };
+    }
     const answers = parseAnswers(session.answersJson);
     const showsFeedback = techModeShowsImmediateFeedback(session.mode);
     const savedAnswer = answers[args.questionId];
@@ -510,17 +514,6 @@ export const saveTechPracticeAnswer = mutation({
       answersJson: JSON.stringify(answers),
       updatedAt: now,
     });
-
-    if (session.mode === "timed" && session.endsAt != null && now >= session.endsAt) {
-      // Auto-grade on timeout — client cannot extend endsAt.
-      const graded = await finalizeSession(
-        ctx,
-        { ...session, answersJson: JSON.stringify(answers) },
-        now,
-        "timer"
-      );
-      return { saved: true, feedback: null, autoSubmitted: graded };
-    }
 
     if (bankQuestion.questionType === "structured") {
       return {
@@ -640,7 +633,8 @@ function computePracticeReward(args: {
   percent: number;
   questionCount: number;
 }): { xp: number; label: string } {
-  const base = Math.max(5, Math.min(40, args.questionCount));
+  if (args.questionCount === 0) return { xp: 0, label: "Answer a marked question to earn practice XP." };
+  const base = Math.min(40, args.questionCount);
   const accuracyBonus = Math.round((args.percent / 100) * base);
   const xp = base + accuracyBonus;
   let label = "Practice complete — keep building your streak.";
@@ -690,7 +684,7 @@ async function finalizeSession(
       score: graded.score,
       maxScore: graded.maxScore,
       percent: graded.percent,
-      questionCount: questionIds.length,
+      questionCount: graded.results.filter((result) => result.scored && result.selectedIndex != null).length,
     });
     rewardXp = reward.xp;
     rewardLabel = reward.label;

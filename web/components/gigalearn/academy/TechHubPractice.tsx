@@ -1027,7 +1027,7 @@ function TechHubInner() {
               <div className="grid grid-cols-3 gap-2">
                 {([
                   { id: "practice_test" as const, label: "Practice", hint: "Feedback" },
-                  { id: "timed" as const, label: "Timed", hint: "Exam feel" },
+                  { id: "timed" as const, label: "Timed", hint: "Instant feedback with a deadline" },
                   { id: "revision" as const, label: "Revision", hint: "Retry misses" },
                 ]).map((m) => (
                   <button key={m.id} type="button" onClick={() => setMode(m.id)} aria-pressed={mode === m.id}
