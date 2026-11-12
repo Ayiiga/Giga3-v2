@@ -212,6 +212,11 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   const [soundLibraryOpen, setSoundLibraryOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [uploadPercent, setUploadPercent] = useState<number | null>(null);
+  // Ignore repeated progress events so Android does not rerender the entire composer for each byte chunk.
+  const updateUploadPercent = (value: number) => {
+    const next = Math.max(0, Math.min(100, Math.round(value)));
+    setUploadPercent((previous) => previous === next ? previous : next);
+  };
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [initialPickerTarget, setInitialPickerTarget] =
@@ -1023,7 +1028,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           signal: controller.signal,
           onProgress: (progress) => {
             const overall = Math.round(((i + progress.percent / 100) / total) * 100);
-            setUploadPercent(overall);
+            updateUploadPercent(overall);
           },
         });
         let finalBody = episode.body.trim();
@@ -1084,7 +1089,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       if (pendingVideo) {
         const uploaded = await uploadSocialVideo(uploadDeps, pendingVideo.file, {
           signal: controller.signal,
-          onProgress: (progress) => setUploadPercent(progress.percent),
+          onProgress: (progress) => updateUploadPercent(progress.percent),
         });
         mediaItems = [uploaded];
         publishPostType = "video";
@@ -1099,13 +1104,13 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
               previewFilterId === "none" ? undefined : previewFilterId
             ),
             signal: controller.signal,
-            onProgress: (percent) => setUploadPercent(Math.round(percent * 70)),
+            onProgress: (percent) => updateUploadPercent(Math.round(percent * 70)),
           }
         );
         const uploaded = await uploadSocialVideo(uploadDeps, composed.file, {
           signal: controller.signal,
           onProgress: (progress) =>
-            setUploadPercent(70 + Math.round(progress.percent * 0.3)),
+            updateUploadPercent(70 + Math.round(progress.percent * 0.3)),
         });
         mediaItems = [
           {
@@ -1121,7 +1126,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           filterId: previewFilterId === "none" ? undefined : previewFilterId,
           signal: controller.signal,
           fastCompress: true,
-          onProgress: (_index, progress) => setUploadPercent(progress.percent),
+          onProgress: (_index, progress) => updateUploadPercent(progress.percent),
         });
         mediaItems = [...uploadedImages];
       }
@@ -1505,7 +1510,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       ) : null}
 
       {uploadPercent !== null && busy ? (
-        <div className="space-y-1.5" role="status" aria-live="polite">
+        <div className="min-h-[44px] space-y-1.5" role="status" aria-live="off">
           <div className="h-1.5 overflow-hidden rounded-full bg-muted/20">
             <div
               className="h-full rounded-full bg-accent"
@@ -1513,7 +1518,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
             />
           </div>
           <div className="flex items-center justify-between gap-2 text-xs text-muted">
-            <span>Uploading… {uploadPercent}%</span>
+            <span aria-live="polite" aria-atomic="true">Uploading… {uploadPercent}%</span>
             <button
               type="button"
               onClick={handleCancelUpload}
