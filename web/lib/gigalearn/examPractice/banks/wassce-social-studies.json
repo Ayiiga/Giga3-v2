@@ -9177,6 +9177,240 @@
         "free",
         "premium"
       ]
+    },
+    {
+      "questionId": "exam-wassce-social-studies-shs2027-paper1-02",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "Consider the following observation: A garment maker checks stitch strength against a stated standard before shipment. Which concept is BEST illustrated?",
+      "options": [
+        "Quality assurance",
+        "Break-even analysis",
+        "Customer discovery",
+        "Ethical labour practice"
+      ],
+      "correctIndex": 0,
+      "explanation": "Quality assurance: Systematic activities to ensure outputs consistently meet agreed requirements. A garment maker checks stitch strength against a stated standard before shipment.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_Social_Studies_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 2,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-social-studies-shs2027-paper1-03",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "In Social Studies, which description best defines Apprenticeship learning?",
+      "options": [
+        "Preservation of past events through spoken accounts across generations",
+        "Locally developed understanding of environments passed across generations",
+        "Skills transfer through supervised practice with an experienced craftsperson",
+        "Systematic recording of community uses of plants with ethical safeguards"
+      ],
+      "correctIndex": 2,
+      "explanation": "Apprenticeship learning refers to skills transfer through supervised practice with an experienced craftsperson.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_Social_Studies_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 3,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-social-studies-shs2027-paper1-05",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "Consider the following observation: A class studies Askia Muhammad's rule in a Niger River empire. Which concept is BEST illustrated?",
+      "options": [
+        "Ancient Egypt",
+        "Great Zimbabwe",
+        "Asante Kingdom",
+        "Songhai Empire"
+      ],
+      "correctIndex": 3,
+      "explanation": "Songhai Empire: West African empire that expanded along the Niger River and centred on Gao. A class studies Askia Muhammad's rule in a Niger River empire.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_Social_Studies_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 5,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-social-studies-shs2027-paper1-06",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "A learner reports: Traders carried salt southwards and gold northwards using caravan routes. What is the most appropriate Social Studies concept?",
+      "options": [
+        "Sahel zone",
+        "Nile Valley civilisation",
+        "Trans-Saharan trade",
+        "Bantu migrations"
+      ],
+      "correctIndex": 2,
+      "explanation": "Trans-Saharan trade: Historic exchange networks linking North and West Africa across the Sahara. Traders carried salt southwards and gold northwards using caravan routes.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_Social_Studies_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 6,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-social-studies-shs2027-paper1-07",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "Which concept most precisely describes this situation? Farmers evaluate high-yield seeds with irrigation and fertiliser systems.",
+      "options": [
+        "Scientific Revolution",
+        "American Revolution",
+        "Green Revolution",
+        "Industrial Revolution"
+      ],
+      "correctIndex": 2,
+      "explanation": "Green Revolution: Spread of improved crop varieties and farming inputs that increased yields in many regions. Farmers evaluate high-yield seeds with irrigation and fertiliser systems.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_Social_Studies_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 7,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-social-studies-shs2027-paper1-09",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "A class is asked to explain Remittances. Which explanation is most accurate?",
+      "options": [
+        "Unequal access to reliable digital tools connectivity and skills",
+        "Growing cross-border exchange of goods and services",
+        "Movement of know-how techniques and productive tools between countries",
+        "Money sent by people working away from home to recipients in another country"
+      ],
+      "correctIndex": 3,
+      "explanation": "Remittances refers to money sent by people working away from home to recipients in another country.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_Social_Studies_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 9,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-social-studies-shs2027-paper1-10",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "Which statement identifies the essential meaning of Data privacy in commerce?",
+      "options": [
+        "Protection of personal information collected in business transactions",
+        "A record that documents what was bought and when",
+        "Seeking an appropriate remedy for unsatisfactory goods or services",
+        "Providing marketing claims that are accurate rather than misleading"
+      ],
+      "correctIndex": 0,
+      "explanation": "Data privacy in commerce refers to protection of personal information collected in business transactions.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_Social_Studies_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 10,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-social-studies-shs2027-paper1-11",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "Select the description that most accurately distinguishes Household budgeting.",
+      "options": [
+        "Planning how limited income will be divided among spending and saving",
+        "Spreading financial exposure across suitable assets or institutions",
+        "Interest calculated only on the original principal over the agreed period",
+        "A general rise in prices that reduces what a given amount of money buys"
+      ],
+      "correctIndex": 0,
+      "explanation": "Household budgeting refers to planning how limited income will be divided among spending and saving.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_Social_Studies_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 11,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-social-studies-shs2027-paper1-12",
+      "courseSlug": "exam-wassce-social-studies",
+      "topicId": "wassce-social-studies",
+      "topicLabel": "Social Studies",
+      "questionText": "Which statement identifies the essential meaning of Wetland conservation?",
+      "options": [
+        "Protection of waterlogged ecosystems and their ecological functions",
+        "Actions that reduce greenhouse-gas emissions or increase their removal",
+        "Preventing the removal of topsoil by water or wind",
+        "Measures that reduce vulnerability to effects of climate change"
+      ],
+      "correctIndex": 0,
+      "explanation": "Wetland conservation refers to protection of waterlogged ecosystems and their ecological functions.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_Social_Studies_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 12,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
     }
   ]
 }

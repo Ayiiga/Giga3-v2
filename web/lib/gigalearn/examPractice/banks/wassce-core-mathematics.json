@@ -9969,6 +9969,396 @@
         "free",
         "premium"
       ]
+    },
+    {
+      "questionId": "exam-wassce-core-mathematics-shs2027-paper1-01",
+      "courseSlug": "exam-wassce-core-mathematics",
+      "topicId": "wassce-core-mathematics",
+      "topicLabel": "Core Mathematics",
+      "questionText": "A cylindrical tank has radius 4 cm and height 10 cm. Find its volume in terms of π.",
+      "options": [
+        "160π cm³",
+        "96π cm³",
+        "80π cm³",
+        "320π cm³"
+      ],
+      "correctIndex": 0,
+      "explanation": "Volume=πr²h=π×4²×10=160π cm³.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_Mathematics_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 1,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-core-mathematics-shs2027-paper1-02",
+      "courseSlug": "exam-wassce-core-mathematics",
+      "topicId": "wassce-core-mathematics",
+      "topicLabel": "Core Mathematics",
+      "questionText": "A sector has radius 4 cm and central angle 90°. Find its area in terms of π.",
+      "options": [
+        "12π cm²",
+        "8π cm²",
+        "4π cm²",
+        "1π cm²"
+      ],
+      "correctIndex": 2,
+      "explanation": "Sector area = 90/360×π×4² = 4π cm².",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_Mathematics_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 2,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-core-mathematics-shs2027-paper1-03",
+      "courseSlug": "exam-wassce-core-mathematics",
+      "topicId": "wassce-core-mathematics",
+      "topicLabel": "Core Mathematics",
+      "questionText": "A taxi charges GH₵4 plus GH₵5 for each kilometre. A trip costs GH₵54. Find the kilometres travelled.",
+      "options": [
+        "15 km",
+        "10 km",
+        "54/5 km",
+        "14 km"
+      ],
+      "correctIndex": 1,
+      "explanation": "Solve 5d+4=54: d=(54−4)/5=10.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_Mathematics_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 3,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-core-mathematics-shs2027-paper1-04",
+      "courseSlug": "exam-wassce-core-mathematics",
+      "topicId": "wassce-core-mathematics",
+      "topicLabel": "Core Mathematics",
+      "questionText": "Find the simple interest on GH₵6,000 at 5% per annum for 4 years.",
+      "options": [
+        "GH₵300",
+        "GH₵7200",
+        "GH₵1200",
+        "GH₵4800"
+      ],
+      "correctIndex": 2,
+      "explanation": "Simple interest = PRT/100 = 6000×5×4/100 = GH₵1200.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_Mathematics_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 4,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-core-mathematics-shs2027-paper1-05",
+      "courseSlug": "exam-wassce-core-mathematics",
+      "topicId": "wassce-core-mathematics",
+      "topicLabel": "Core Mathematics",
+      "questionText": "Convert (313) base 4 to base ten.",
+      "options": [
+        "55",
+        "52",
+        "16",
+        "59"
+      ],
+      "correctIndex": 0,
+      "explanation": "Place values give 3×4² + 1×4 + 3 = 55.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_Mathematics_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 5,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-core-mathematics-shs2027-paper1-06",
+      "courseSlug": "exam-wassce-core-mathematics",
+      "topicId": "wassce-core-mathematics",
+      "topicLabel": "Core Mathematics",
+      "questionText": "A cyclist covers 12 km in 5 minutes at constant speed. What is the speed in km/h?",
+      "options": [
+        "144 km/h",
+        "12/5 km/h",
+        "156 km/h",
+        "25 km/h"
+      ],
+      "correctIndex": 0,
+      "explanation": "Speed = distance/time = 12 ÷ (5/60) = 144 km/h.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_Mathematics_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 6,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-core-mathematics-shs2027-paper1-07",
+      "courseSlug": "exam-wassce-core-mathematics",
+      "topicId": "wassce-core-mathematics",
+      "topicLabel": "Core Mathematics",
+      "questionText": "A tablet marked GH₵2100 is sold at 10% discount. Find the sale price.",
+      "options": [
+        "GH₵1890",
+        "GH₵1995",
+        "GH₵2310",
+        "GH₵210"
+      ],
+      "correctIndex": 0,
+      "explanation": "10% of 2100 is 210; sale price = 2100−210 = GH₵1890.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_Mathematics_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 7,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-core-mathematics-shs2027-paper1-08",
+      "courseSlug": "exam-wassce-core-mathematics",
+      "topicId": "wassce-core-mathematics",
+      "topicLabel": "Core Mathematics",
+      "questionText": "Evaluate (8^7) ÷ (8^2).",
+      "options": [
+        "40",
+        "134217728",
+        "4096",
+        "32768"
+      ],
+      "correctIndex": 3,
+      "explanation": "Dividing powers with the same base gives 8^(7−2) = 32768.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_Mathematics_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 8,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-core-mathematics-shs2027-paper1-09",
+      "courseSlug": "exam-wassce-core-mathematics",
+      "topicId": "wassce-core-mathematics",
+      "topicLabel": "Core Mathematics",
+      "questionText": "For the straight line y=5x + 8, find y when x=4.",
+      "options": [
+        "17",
+        "33",
+        "28",
+        "12"
+      ],
+      "correctIndex": 2,
+      "explanation": "Substitute x=4: y=5(4)+(8)=28.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_Mathematics_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 9,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-core-mathematics-shs2027-paper1-10",
+      "courseSlug": "exam-wassce-core-mathematics",
+      "topicId": "wassce-core-mathematics",
+      "topicLabel": "Core Mathematics",
+      "questionText": "Find the arc length of a radius-11 cm circle subtended by 180°, in terms of π.",
+      "options": [
+        "11π cm",
+        "11/2π cm",
+        "22π cm",
+        "121/2π cm"
+      ],
+      "correctIndex": 0,
+      "explanation": "Arc = 180/360×2π×11 = 11π cm.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_Mathematics_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 10,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-core-mathematics-shs2027-paper1-11",
+      "courseSlug": "exam-wassce-core-mathematics",
+      "topicId": "wassce-core-mathematics",
+      "topicLabel": "Core Mathematics",
+      "questionText": "If y = (5x + 7)², find y when x = 8.",
+      "options": [
+        "369",
+        "1607",
+        "2256",
+        "2209"
+      ],
+      "correctIndex": 3,
+      "explanation": "Substitute x=8: y=(40+7)²=2209.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_Mathematics_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 11,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-core-mathematics-shs2027-paper1-12",
+      "courseSlug": "exam-wassce-core-mathematics",
+      "topicId": "wassce-core-mathematics",
+      "topicLabel": "Core Mathematics",
+      "questionText": "The measurements are 6, 25, 80, 11, 71, 62 cm. Find their range.",
+      "options": [
+        "74 cm",
+        "6 cm",
+        "86 cm",
+        "80 cm"
+      ],
+      "correctIndex": 0,
+      "explanation": "Range=largest−smallest=80−6=74.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_Mathematics_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 12,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-core-mathematics-shs2027-paper1-13",
+      "courseSlug": "exam-wassce-core-mathematics",
+      "topicId": "wassce-core-mathematics",
+      "topicLabel": "Core Mathematics",
+      "questionText": "Factorise x² − 10x + 16.",
+      "options": [
+        "(x − 10)(x − 16)",
+        "(x − 8)(x − 2)",
+        "(x − 8)(x + 2)",
+        "(x + 8)(x + 2)"
+      ],
+      "correctIndex": 1,
+      "explanation": "Two numbers add to 10 and multiply to 16: 8 and 2. Thus (x−8)(x−2).",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_Mathematics_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 13,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-core-mathematics-shs2027-paper1-14",
+      "courseSlug": "exam-wassce-core-mathematics",
+      "topicId": "wassce-core-mathematics",
+      "topicLabel": "Core Mathematics",
+      "questionText": "Two alarms ring every 110 and 220 minutes. If they ring together now, after how many minutes will they next ring together?",
+      "options": [
+        "44 minutes",
+        "330 minutes",
+        "220 minutes",
+        "110 minutes"
+      ],
+      "correctIndex": 2,
+      "explanation": "The next simultaneous ring occurs after LCM(110, 220) = 220 minutes.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_Mathematics_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 14,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-core-mathematics-shs2027-paper1-15",
+      "courseSlug": "exam-wassce-core-mathematics",
+      "topicId": "wassce-core-mathematics",
+      "topicLabel": "Core Mathematics",
+      "questionText": "A bag contains 6 red and 10 blue beads. A bead is chosen at random. Find P(red).",
+      "options": [
+        "5/8",
+        "3/5",
+        "1/16",
+        "3/8"
+      ],
+      "correctIndex": 3,
+      "explanation": "There are 16 beads, of which 6 are red; probability=3/8.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_Mathematics_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 15,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
     }
   ]
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getExamBankMeta } from "../../web/lib/gigalearn/examPractice/examBankMeta";
-import { getTechBankQuestions, listLoadedTechBankSlugs } from "../../web/lib/gigalearn/academy/techBanks/techBankServer";
+import { getTechBankQuestions, gradeTechAnswers, listLoadedTechBankSlugs } from "../../web/lib/gigalearn/academy/techBanks/techBankServer";
 
 const WASSCE_BANKS = [
   { slug: "exam-wassce-english", topic: "English Language", minimum: 60 },
@@ -32,7 +32,16 @@ describe("WASSCE four-core-subject practice banks", () => {
       const questions = getTechBankQuestions(bank.slug);
       expect(meta?.mcqCount).toBe(questions.length);
       expect(questions.length).toBeGreaterThanOrEqual(bank.minimum);
-      expect(questions.every((q) => q.reviewStatus === "pending_review")).toBe(true);
+      const scored = questions.filter((q) => q.reviewStatus === "approved");
+      expect(scored.length).toBeGreaterThan(0);
+      expect(meta?.approvedQuestionCount).toBe(scored.length);
+      const result = gradeTechAnswers({
+        courseSlug: bank.slug,
+        questionIds: scored.map((q) => q.questionId),
+        answers: Object.fromEntries(scored.map((q) => [q.questionId, q.correctIndex])),
+      });
+      expect(result.score).toBe(scored.length);
+      expect(result.maxScore).toBe(scored.length);
       expect(questions.every((q) => q.questionType === "mcq")).toBe(true);
       for (const q of questions) {
         expect(q.options).toHaveLength(4);
@@ -41,7 +50,7 @@ describe("WASSCE four-core-subject practice banks", () => {
         expect(q.questionText.trim().length).toBeGreaterThan(10);
         expect(q.explanation.trim().length).toBeGreaterThan(5);
         expect(q.sourceType).toBe("original_practice");
-        expect(q.verificationStatus).toBe("awaiting_verification");
+        if (q.reviewStatus === "pending_review") expect(q.verificationStatus).toBe("awaiting_verification");
       }
     });
   }

@@ -9573,6 +9573,318 @@
         "free",
         "premium"
       ]
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-shs2027-paper1-01",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "An object floats at rest in water. Which statement must be true?",
+      "options": [
+        "No fluid is displaced",
+        "Its density must be greater than water's",
+        "Upthrust equals its weight",
+        "The upthrust is always zero"
+      ],
+      "correctIndex": 2,
+      "explanation": "Floating equilibrium requires buoyant force to balance weight.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_General_Science_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 1,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-shs2027-paper1-02",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "Calculate gravitational potential energy gained when a 6 kg bag is raised 3 m (g = 10 m/s²).",
+      "options": [
+        "144 J",
+        "162 J",
+        "180 J",
+        "198 J"
+      ],
+      "correctIndex": 2,
+      "explanation": "GPE = mgh = 6×10×3 = 180 J.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_General_Science_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 2,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-shs2027-paper1-03",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A 1 kg material with specific heat capacity 900 J/(kg C) warms by 5 C. Calculate energy absorbed.",
+      "options": [
+        "3600 J",
+        "4050 J",
+        "4500 J",
+        "4950 J"
+      ],
+      "correctIndex": 2,
+      "explanation": "Q = mcΔT = 1×900×5 = 4,500 J.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_General_Science_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 3,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-shs2027-paper1-04",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "2 kg of a solid melts at constant temperature. Its specific latent heat is 200 kJ/kg. Find the heat required.",
+      "options": [
+        "440 kJ",
+        "360 kJ",
+        "420 kJ",
+        "400 kJ"
+      ],
+      "correctIndex": 3,
+      "explanation": "Q = mL = 2×200 = 400 kJ.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_General_Science_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 4,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-shs2027-paper1-05",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A person has a resting heart rate of 70 beats/min and a stroke volume is 80 mL/beat. Estimate cardiac output.",
+      "options": [
+        "5.04 L/min",
+        "6.16 L/min",
+        "5.6 L/min",
+        "4.48 L/min"
+      ],
+      "correctIndex": 2,
+      "explanation": "Cardiac output = heart rate × stroke volume = 70×80/1000 = 5.6 L/min.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_General_Science_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 5,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-shs2027-paper1-06",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "Why is thorough drying important when storing processed maize?",
+      "options": [
+        "It allows the starch to remain completely unaltered",
+        "It speeds up microbial fermentation in storage",
+        "It removes all aflatoxin already present",
+        "It discourages mould growth and spoilage"
+      ],
+      "correctIndex": 3,
+      "explanation": "Low moisture slows microbial growth and reduces spoilage.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_General_Science_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 6,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-shs2027-paper1-07",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A metal rod supported at one end bends under a downward load. Which force mainly causes deformation?",
+      "options": [
+        "Axial compression alone along the rod",
+        "Applied load producing a bending moment",
+        "Axial tensile force parallel to the rod",
+        "Shear load causing only sliding of support surfaces"
+      ],
+      "correctIndex": 1,
+      "explanation": "External loading generates internal stresses and bending.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_General_Science_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 7,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-shs2027-paper1-08",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "When water is electrolysed with an appropriate electrolyte, which gases are collected?",
+      "options": [
+        "Hydrogen at both electrodes",
+        "Nitrogen at the cathode and oxygen at the anode",
+        "Hydrogen at the cathode and oxygen at the anode",
+        "Oxygen at the cathode and hydrogen at the anode"
+      ],
+      "correctIndex": 2,
+      "explanation": "Reduction produces hydrogen at the cathode and oxidation produces oxygen at the anode.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_General_Science_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 8,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-shs2027-paper1-09",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "Why is silicon widely used in semiconductor devices?",
+      "options": [
+        "Its energy gap makes it completely insulating under all conditions",
+        "It conducts more strongly when perfectly pure than when suitably doped",
+        "Its conductivity can be controlled by doping",
+        "Its conductivity cannot change with temperature"
+      ],
+      "correctIndex": 2,
+      "explanation": "Adding controlled impurities changes silicon's charge-carrier concentration.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_General_Science_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 9,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-shs2027-paper1-10",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A force of 60 N acts normally on an area of 0.02 m². Determine pressure.",
+      "options": [
+        "2700 Pa",
+        "3000 Pa",
+        "3300 Pa",
+        "2400 Pa"
+      ],
+      "correctIndex": 1,
+      "explanation": "Pressure p = F/A = 60/0.02 = 3000 Pa.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_General_Science_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 10,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-shs2027-paper1-11",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A person has mass 49.5 kg and height 1.5 m. Calculate BMI to one decimal place.",
+      "options": [
+        "19.8 kg/m²",
+        "14.7 kg/m²",
+        "27.0 kg/m²",
+        "22.0 kg/m²"
+      ],
+      "correctIndex": 3,
+      "explanation": "BMI = mass/height² = 49.5/1.5² = 22 kg/m².",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_General_Science_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 11,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
+    },
+    {
+      "questionId": "exam-wassce-integrated-science-shs2027-paper1-12",
+      "courseSlug": "exam-wassce-integrated-science",
+      "topicId": "wassce-integrated-science",
+      "topicLabel": "Integrated Science",
+      "questionText": "A 500 W appliance operates for 4 hours. How much electrical energy does it use?",
+      "options": [
+        "2 kWh",
+        "1.6 kWh",
+        "1.8 kWh",
+        "2.2 kWh"
+      ],
+      "correctIndex": 0,
+      "explanation": "Energy in kWh = power in kW × time in hours = (500/1000)×4 = 2 kWh.",
+      "difficulty": "intermediate",
+      "questionType": "mcq",
+      "sourceDocument": "GigaLearn_WASSCE_General_Science_500_New_SHS_Curriculum_2027.pdf",
+      "sourceQuestionNumber": 12,
+      "reviewStatus": "approved",
+      "tags": [
+        "wassce",
+        "new-shs-curriculum",
+        "original-practice"
+      ],
+      "sourceType": "original_practice"
     }
   ]
 }

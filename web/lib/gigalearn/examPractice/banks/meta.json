@@ -897,15 +897,15 @@
       "courseSlug": "exam-wassce-english",
       "title": "WASSCE English Language Practice",
       "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
-      "approvedQuestionCount": 0,
+      "approvedQuestionCount": 20,
       "pendingQuestionCount": 71,
-      "mcqCount": 71,
+      "mcqCount": 91,
       "trueFalseCount": 0,
       "topics": [
         {
           "id": "wassce-english",
           "label": "English Language",
-          "questionCount": 71
+          "questionCount": 91
         }
       ]
     },
@@ -914,15 +914,15 @@
       "courseSlug": "exam-wassce-core-mathematics",
       "title": "WASSCE Core Mathematics Practice",
       "sourceDocument": "GigaLearn_SHS_Mathematics_New_Curriculum_400.pdf",
-      "approvedQuestionCount": 0,
+      "approvedQuestionCount": 15,
       "pendingQuestionCount": 32,
-      "mcqCount": 32,
+      "mcqCount": 47,
       "trueFalseCount": 0,
       "topics": [
         {
           "id": "wassce-core-mathematics",
           "label": "Core Mathematics",
-          "questionCount": 32
+          "questionCount": 47
         }
       ]
     },
@@ -931,15 +931,15 @@
       "courseSlug": "exam-wassce-integrated-science",
       "title": "WASSCE Integrated Science Practice",
       "sourceDocument": "GigaLearn_SHS_General_Science_New_Curriculum_400.pdf",
-      "approvedQuestionCount": 0,
+      "approvedQuestionCount": 12,
       "pendingQuestionCount": 123,
-      "mcqCount": 123,
+      "mcqCount": 135,
       "trueFalseCount": 0,
       "topics": [
         {
           "id": "wassce-integrated-science",
           "label": "Integrated Science",
-          "questionCount": 123
+          "questionCount": 135
         }
       ]
     },
@@ -948,15 +948,15 @@
       "courseSlug": "exam-wassce-social-studies",
       "title": "WASSCE Social Studies Practice",
       "sourceDocument": "GigaLearn_SHS_Social_Studies_New_Curriculum_400.pdf",
-      "approvedQuestionCount": 0,
+      "approvedQuestionCount": 9,
       "pendingQuestionCount": 90,
-      "mcqCount": 90,
+      "mcqCount": 99,
       "trueFalseCount": 0,
       "topics": [
         {
           "id": "wassce-social-studies",
           "label": "Social Studies",
-          "questionCount": 90
+          "questionCount": 99
         }
       ]
     }
