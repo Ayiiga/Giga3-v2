@@ -49,17 +49,17 @@ describe("BECE and WASSCE question quality", () => {
       optionPermutations: Object.fromEntries(questionIds.map((id) => [id, [1, 2, 0, 3]])),
     });
 
-    expect(grade.maxScore).toBe(27);
-    expect(grade.score).toBe(26);
+    expect(grade.maxScore).toBe(40);
+    expect(grade.score).toBe(39);
     expect(grade.results[0]).toMatchObject({ correct: false, correctIndex: 2, scored: true });
     expect(grade.results[1]).toMatchObject({ correct: true, correctIndex: 2, scored: true });
   });
 
   it("covers the five BECE Science strands and preserves historical question IDs", () => {
     const questions = getTechBankQuestions("exam-bece-prep", { topicId: "integrated-science", questionType: "mcq" });
-    expect(questions).toHaveLength(27);
+    expect(questions).toHaveLength(40);
     expect(new Set(questions.map((q) => q.curriculumStrand)).size).toBe(5);
-    expect(new Set(questions.map((q) => q.curriculumSubStrand)).size).toBe(20);
+    expect(new Set(questions.map((q) => q.curriculumSubStrand)).size).toBe(21);
     expect(getTechBankQuestionById("exam-bece-prep", "exam-bece-prep-q107")).toBeDefined();
   });
 });

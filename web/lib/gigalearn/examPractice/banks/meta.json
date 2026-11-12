@@ -5,15 +5,15 @@
       "courseSlug": "exam-bece-prep",
       "title": "Ghana BECE Preparation",
       "sourceDocument": "Ghana_BECE_Preparation_500_Objective_Questions_Explained_c887.pdf",
-      "approvedQuestionCount": 84,
+      "approvedQuestionCount": 97,
       "pendingQuestionCount": 415,
-      "mcqCount": 429,
+      "mcqCount": 442,
       "trueFalseCount": 0,
       "topics": [
         {
           "id": "integrated-science",
           "label": "Integrated Science",
-          "questionCount": 27
+          "questionCount": 40
         },
         {
           "id": "social-studies",
