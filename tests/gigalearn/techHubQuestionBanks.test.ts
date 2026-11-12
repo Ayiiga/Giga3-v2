@@ -355,8 +355,7 @@ describe("Technology Learning Hub question banks", () => {
       convex.indexOf("export const saveTechPracticeAnswer"),
       convex.indexOf("export const submitTechPracticeSession")
     );
-    expect(saveBlock).toContain('session.mode === "learn"');
-    expect(saveBlock).toContain('session.mode === "practice_test"');
+    expect(saveBlock).toContain("techModeShowsImmediateFeedback(session.mode)");
     expect(saveBlock).toContain("feedback: null");
     const practiceUi = read("web/components/gigalearn/academy/TechHubPractice.tsx");
     expect(practiceUi).toContain("startTechPracticeSession");

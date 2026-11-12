@@ -45,6 +45,7 @@ type LearnFeedback = {
   correct: boolean;
   explanation: string;
   correctIndex: number | null;
+  selectedIndex?: number;
   pendingReview?: boolean;
   selfAssessment?: boolean;
   /** Matched provisional key — never drives verified praise rewards. */
@@ -351,7 +352,8 @@ function TechHubInner() {
         questionId: current.questionId,
         selectedIndex,
       });
-      setAnswers((prev) => ({ ...prev, [current.questionId]: selectedIndex }));
+      const savedIndex = (res.feedback as LearnFeedback | null)?.selectedIndex ?? selectedIndex;
+      setAnswers((prev) => ({ ...prev, [current.questionId]: savedIndex }));
       if (res.autoSubmitted) {
         setResults({
           score: res.autoSubmitted.score ?? 0,
@@ -493,9 +495,9 @@ function TechHubInner() {
               {sessionPraise}
             </p>
           ) : null}
-          <p className="text-sm text-slate-600">
-            Written-response items are excluded from the automatic score; use their marking points for self-assessment. They have not been teacher graded.
-          </p>
+          {results.results.some((row) => row.requiresSelfAssessment) && (
+            <p className="text-sm text-slate-600">Use the marking points to review your written responses.</p>
+          )}
           <p className="text-sm text-slate-600">
             {results.maxScore > 0
               ? `Verified score ${results.score}/${results.maxScore}${
@@ -655,6 +657,10 @@ function TechHubInner() {
     const currentTextAnswer = textAnswers[current.questionId] ?? "";
     const activeFeedback = learnFeedback ?? feedbackByQuestion[current.questionId] ?? null;
     const revealed = immediateFeedback && activeFeedback != null;
+    const markedAnswers = Object.values(feedbackByQuestion).filter(
+      (feedback) => !feedback.pendingReview && !feedback.selfAssessment && feedback.correctIndex != null
+    );
+    const correctAnswers = markedAnswers.filter((feedback) => feedback.correct).length;
     const isTrueFalse =
       current.questionType === "true_false" ||
       (current.options.length === 2 &&
@@ -697,6 +703,7 @@ function TechHubInner() {
               </div>
               <p className="exam-session-toolbar-sub">
                 {Object.keys(answers).length} answered
+                {immediateFeedback && markedAnswers.length > 0 ? ` · ${correctAnswers}/${markedAnswers.length} correct` : ""}
                 {streak > 1 ? ` · streak ${streak}` : ""}
               </p>
             </div>
@@ -1020,7 +1027,7 @@ function TechHubInner() {
               <div className="grid grid-cols-3 gap-2">
                 {([
                   { id: "practice_test" as const, label: "Practice", hint: "Feedback" },
-                  { id: "timed" as const, label: "Timed", hint: "Exam feel" },
+                  { id: "timed" as const, label: "Timed", hint: "Instant feedback with a deadline" },
                   { id: "revision" as const, label: "Revision", hint: "Retry misses" },
                 ]).map((m) => (
                   <button key={m.id} type="button" onClick={() => setMode(m.id)} aria-pressed={mode === m.id}

@@ -21,6 +21,7 @@ import {
   displayCorrectIndex,
   toOriginalOptionIndex,
 } from "../web/lib/gigalearn/examPractice/optionShuffle";
+import { techModeShowsImmediateFeedback } from "../web/lib/gigalearn/academy/techBanks/immediateFeedback";
 import { getTechCourseMeta, listTechCourseMeta } from "../web/lib/gigalearn/academy/techBanks/techBankMeta";
 import { getBuiltinAcademyCourse } from "../web/lib/gigalearn/academy/courseCatalog";
 import type { TechPracticeMode } from "../web/lib/gigalearn/academy/techBanks/techBankTypes";
@@ -497,24 +498,22 @@ export const saveTechPracticeAnswer = mutation({
     }
 
     const now = Date.now();
+    if (session.mode === "timed" && session.endsAt != null && now >= session.endsAt) {
+      const graded = await finalizeSession(ctx, session, now, "timer");
+      return { saved: true, feedback: null, autoSubmitted: graded };
+    }
     const answers = parseAnswers(session.answersJson);
-    // Idempotent overwrite — repeated saves do not award duplicate score points.
+    const showsFeedback = techModeShowsImmediateFeedback(session.mode);
+    const savedAnswer = answers[args.questionId];
+    if (showsFeedback && typeof answerValue === "number" && typeof savedAnswer === "number") {
+      // A revealed answer cannot be changed. Retrying the save returns the original feedback.
+      answerValue = savedAnswer;
+    }
     answers[args.questionId] = answerValue;
     await ctx.db.patch(session._id, {
       answersJson: JSON.stringify(answers),
       updatedAt: now,
     });
-
-    if (session.mode === "timed" && session.endsAt != null && now >= session.endsAt) {
-      // Auto-grade on timeout — client cannot extend endsAt.
-      const graded = await finalizeSession(
-        ctx,
-        { ...session, answersJson: JSON.stringify(answers) },
-        now,
-        "timer"
-      );
-      return { saved: true, feedback: null, autoSubmitted: graded };
-    }
 
     if (bankQuestion.questionType === "structured") {
       return {
@@ -530,9 +529,7 @@ export const saveTechPracticeAnswer = mutation({
       };
     }
 
-    // Learn + practice_test: immediate per-answer feedback (premium Full pack
-    // and mode-picker Practice test). Timed exams still withhold until finish.
-    if (session.mode === "learn" || session.mode === "practice_test") {
+    if (showsFeedback && typeof answerValue === "number") {
       const q = bankQuestion;
       const perm = parseOptionPermutations(session.optionPermutationsJson)[args.questionId];
       if (
@@ -552,7 +549,7 @@ export const saveTechPracticeAnswer = mutation({
         };
       }
       const pendingReview = q.reviewStatus === "pending_review";
-      const originalSelected = toOriginalOptionIndex(args.selectedIndex, perm);
+      const originalSelected = toOriginalOptionIndex(answerValue, perm);
       const matchedKey = originalSelected === q.correctIndex;
       const displayOrder = perm ?? q.options.map((_, i) => i);
       const displayCorrect = displayCorrectIndex(q.correctIndex, displayOrder);
@@ -575,6 +572,7 @@ export const saveTechPracticeAnswer = mutation({
             provisionalMatch: matchedKey,
             explanation: cleanExplanation,
             correctIndex: displayCorrect,
+            selectedIndex: answerValue,
             optionExplanations: cleanOptionNotes,
           },
         };
@@ -587,6 +585,7 @@ export const saveTechPracticeAnswer = mutation({
           provisionalMatch: false,
           explanation: cleanExplanation,
           correctIndex: displayCorrect,
+          selectedIndex: answerValue,
           optionExplanations: cleanOptionNotes,
         },
       };
@@ -634,7 +633,8 @@ function computePracticeReward(args: {
   percent: number;
   questionCount: number;
 }): { xp: number; label: string } {
-  const base = Math.max(5, Math.min(40, args.questionCount));
+  if (args.questionCount === 0) return { xp: 0, label: "Answer a marked question to earn practice XP." };
+  const base = Math.min(40, args.questionCount);
   const accuracyBonus = Math.round((args.percent / 100) * base);
   const xp = base + accuracyBonus;
   let label = "Practice complete — keep building your streak.";
@@ -684,7 +684,7 @@ async function finalizeSession(
       score: graded.score,
       maxScore: graded.maxScore,
       percent: graded.percent,
-      questionCount: questionIds.length,
+      questionCount: graded.results.filter((result) => result.scored && result.selectedIndex != null).length,
     });
     rewardXp = reward.xp;
     rewardLabel = reward.label;
