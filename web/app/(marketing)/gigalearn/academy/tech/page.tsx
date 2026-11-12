@@ -1,9 +1,10 @@
-import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { ProductSeoHeader } from "@/components/seo/ProductSeoHeader";
 import { publicMetadata } from "@/lib/seo/publicMetadata";
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
+
+const loading = <p className="text-sm text-muted" role="status">Loading Technology Learning Hub…</p>;
 
 const TechHubPractice = dynamic(
   () =>
@@ -12,7 +13,7 @@ const TechHubPractice = dynamic(
     })),
   {
     ssr: false,
-    loading: () => <ClientAppHydrationNotice productName="Technology Learning Hub" />,
+    loading: () => loading,
   }
 );
 
@@ -49,8 +50,8 @@ export default function GigaLearnAcademyTechHubPage() {
         description="Interactive objective practice for GigaLearn technology courses."
         showProductNav={false}
       />
-      <div className="marketing-stable gigalearn-stable section-padding pt-4 pb-6 sm:pt-6">
-        <Suspense fallback={<ClientAppHydrationNotice productName="Technology Learning Hub" />}>
+      <div className="marketing-stable gigalearn-stable px-3 py-3 sm:px-6 sm:py-6">
+        <Suspense fallback={loading}>
           <TechHubPractice />
         </Suspense>
       </div>
