@@ -218,6 +218,6 @@ describe("TechHubPractice learn feedback wiring", () => {
     expect(ui).toContain("feedbackByQuestion");
     const convex = readFileSync(resolve(ROOT, "convex/gigaLearnTechBanks.ts"), "utf8");
     expect(convex).toContain("optionExplanations");
-    expect(convex).toContain('session.mode === "practice_test"');
+    expect(convex).toContain("techModeShowsImmediateFeedback(session.mode)");
   });
 });

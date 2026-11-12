@@ -10,7 +10,7 @@ const CORRECT_REWARDS = [
 ] as const;
 
 const INCORRECT_REWARDS = [
-  "Good try. Read the explanation and have another go.",
+  "Good effort. Use the explanation to check your reasoning.",
   "Keep practising. Take a moment to check your reasoning.",
   "Review the explanation and try a similar question.",
 ] as const;
@@ -42,7 +42,7 @@ export function rewardForSessionScore(percent: number): string | null {
   if (percent >= 75) return "SUPERB! — you are building strong exam habits.";
   if (percent >= 60) return "PROFICIENT! — review the misses and try again.";
   if (percent >= 40) return "KEEP PRACTISING! — review explanations carefully.";
-  return "YOU CAN DO BETTER! — revisit weak topics and try again.";
+  return "Start with one topic from this review and practise it again.";
 }
 
 

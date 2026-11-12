@@ -19,7 +19,9 @@ describe("techModeShowsImmediateFeedback", () => {
     expect(techModeShowsImmediateFeedback("learn")).toBe(true);
     expect(techModeShowsImmediateFeedback("practice_test")).toBe(true);
     expect(techModeShowsImmediateFeedback("timed")).toBe(false);
-    expect(techModeShowsImmediateFeedback("random")).toBe(false);
+    for (const mode of ["topic", "random", "revision", "challenge"] as const) {
+      expect(techModeShowsImmediateFeedback(mode)).toBe(true);
+    }
   });
 });
 
@@ -46,7 +48,7 @@ describe("Convex + TechHubPractice wiring for practice_test feedback", () => {
   it("server returns feedback for practice_test as well as learn", () => {
     const convex = readFileSync(resolve(ROOT, "convex/gigaLearnTechBanks.ts"), "utf8");
     expect(convex).toContain(
-      'session.mode === "learn" || session.mode === "practice_test"'
+      "techModeShowsImmediateFeedback(session.mode)"
     );
     // Timed still falls through to feedback: null
     expect(convex).toContain("return { saved: true, feedback: null };");
