@@ -73,6 +73,8 @@ function SubscribePageClientInner() {
             product={product}
             features={[
               `${product.credits} credits / month`,
+              ...(product.planId === "basic" ? ["One website monitor"] : []),
+              ...(product.planId === "premium" ? ["Five website or Outlook Calendar monitors"] : []),
               ...PLAN_FEATURE_HIGHLIGHTS,
             ]}
             onSelect={(id) => void checkout(id)}

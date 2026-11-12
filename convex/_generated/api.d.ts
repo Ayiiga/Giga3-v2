@@ -8,6 +8,10 @@
  * @module
  */
 
+import type * as githubRepository from "../githubRepository.js";
+import type * as monitoring from "../monitoring.js";
+import type * as monitoringPlans from "../monitoringPlans.js";
+import type * as monitoringWorker from "../monitoringWorker.js";
 import type * as accountDeletion from "../accountDeletion.js";
 import type * as adaptiveLearning from "../adaptiveLearning.js";
 import type * as adminAccess from "../adminAccess.js";
@@ -349,6 +353,10 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  githubRepository: typeof githubRepository;
+  monitoring: typeof monitoring;
+  monitoringPlans: typeof monitoringPlans;
+  monitoringWorker: typeof monitoringWorker;
   accountDeletion: typeof accountDeletion;
   adaptiveLearning: typeof adaptiveLearning;
   adminAccess: typeof adminAccess;

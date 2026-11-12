@@ -251,6 +251,27 @@ export const betaWaitlistStatusValidator = v.union(
 );
 
 export default defineSchema({
+  monitors: defineTable({
+    userId: v.string(),
+    kind: v.union(v.literal("website"), v.literal("calendar")),
+    target: v.string(),
+    calendarId: v.optional(v.string()),
+    leadMinutes: v.optional(v.number()),
+    nextCheckAt: v.number(),
+    lastCheckAt: v.optional(v.number()),
+    lastError: v.optional(v.string()),
+    digest: v.optional(v.string()),
+    enabled: v.boolean(),
+  }).index("by_user", ["userId"]).index("by_due", ["enabled", "nextCheckAt"]),
+  monitorAlerts: defineTable({
+    userId: v.string(),
+    monitorId: v.id("monitors"),
+    key: v.string(),
+    title: v.string(),
+    eventAt: v.optional(v.number()),
+    createdAt: v.number(),
+  }).index("by_user", ["userId", "createdAt"]).index("by_monitor_key", ["monitorId", "key"])
+    .index("by_created", ["createdAt"]),
   users: defineTable({
     email: v.string(),
     tokens: v.number(),

@@ -106,6 +106,11 @@ export const deleteMyAccount = mutation({
       deletedConversations += 1;
     }
 
+    const monitors = await ctx.db.query("monitors").withIndex("by_user", (q) => q.eq("userId", email)).collect();
+    for (const monitor of monitors) await ctx.db.delete(monitor._id);
+    const monitorAlerts = await ctx.db.query("monitorAlerts").withIndex("by_user", (q) => q.eq("userId", email)).collect();
+    for (const alert of monitorAlerts) await ctx.db.delete(alert._id);
+
     let deletedUser = false;
     const user = await ctx.db
       .query("users")

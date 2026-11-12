@@ -1,5 +1,7 @@
 "use client";
 
+import { MonitoringPanel } from "./MonitoringPanel";
+import { GitHubRepositoryPanel } from "./GitHubRepositoryPanel";
 import { ConnectorsPanel } from "@/components/automation/ConnectorsPanel";
 import { ExecutiveAssistantPanel } from "@/components/automation/ExecutiveAssistantPanel";
 import { PlatformSearchPanel } from "@/components/automation/PlatformSearchPanel";
@@ -29,7 +31,8 @@ type Tab =
   | "assistant"
   | "integrations"
   | "search"
-  | "notifications";
+  | "notifications"
+  | "monitoring";
 
 function AutomationPageInner() {
   const params = useSearchParams();
@@ -42,6 +45,7 @@ function AutomationPageInner() {
       "integrations",
       "search",
       "notifications",
+      "monitoring",
     ].includes(initialTab)
       ? initialTab
       : "workflows"
@@ -83,6 +87,7 @@ function AutomationPageInner() {
     { id: "assistant", label: "Assistant", icon: Briefcase },
     { id: "integrations", label: "Integrations", icon: Plug },
     { id: "search", label: "Search", icon: Search },
+    { id: "monitoring", label: "Monitoring", icon: Zap },
     { id: "notifications", label: "Alerts", icon: Zap },
   ];
 
@@ -250,7 +255,8 @@ function AutomationPageInner() {
 
       {tab === "assistant" && <ExecutiveAssistantPanel />}
 
-      {tab === "integrations" && <ConnectorsPanel />}
+      {tab === "integrations" && <><ConnectorsPanel /><GitHubRepositoryPanel /></>}
+      {tab === "monitoring" && <MonitoringPanel />}
 
       {tab === "search" && <PlatformSearchPanel />}
 
