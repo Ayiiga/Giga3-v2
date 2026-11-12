@@ -1003,15 +1003,14 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   );
 
   function handleCancelUpload() {
-    uploadAbortRef.current?.abort();
-    uploadAbortRef.current = null;
-    setBusy(false);
-    setUploadPercent(null);
+    const controller = uploadAbortRef.current;
+    if (!controller || controller.signal.aborted) return;
+    controller.abort();
     setError("Upload cancelled.");
   }
 
   async function publishEpisodeSeries(result: GigaSocialEpisodeConfirmResult) {
-    if (busy || disabled) return;
+    if (uploadAbortRef.current || busy || disabled) return;
     setBusy(true);
     setError(null);
     setSuccess(null);
@@ -1027,10 +1026,12 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         const uploaded = await uploadSocialVideo(uploadDeps, episode.file, {
           signal: controller.signal,
           onProgress: (progress) => {
+            if (controller.signal.aborted) return;
             const overall = Math.round(((i + progress.percent / 100) / total) * 100);
             updateUploadPercent(overall);
           },
         });
+        if (controller.signal.aborted) return;
         let finalBody = episode.body.trim();
         if (locationTag.trim()) {
           finalBody = `${finalBody}\n📍 ${locationTag.trim()}`.trim();
@@ -1047,6 +1048,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           profileId,
           ...(features.enableUseAsTemplate ? { templatePolicy } : {}),
         });
+        if (controller.signal.aborted) return;
       }
       setBody("");
       clearPendingMedia();
@@ -1055,7 +1057,9 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       setSuccess(`Published ${total} episodes successfully.`);
       onPosted?.();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not publish episodes.");
+      if (!controller.signal.aborted) {
+        setError(e instanceof Error ? e.message : "Could not publish episodes.");
+      }
     } finally {
       uploadAbortRef.current = null;
       setBusy(false);
@@ -1064,7 +1068,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   }
 
   async function handleSubmit() {
-    if (busy || disabled || imagePreparationBusy || audioPreparationBusy || !canPost) return;
+    if (uploadAbortRef.current || busy || disabled || imagePreparationBusy || audioPreparationBusy || !canPost) return;
     if (
       pendingVideo &&
       shouldOfferEpisodeSplit(pendingVideo.file.size, pendingVideo.durationSec)
@@ -1131,6 +1135,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         mediaItems = [...uploadedImages];
       }
 
+      if (controller.signal.aborted) return;
       let finalBody = body.trim();
       if (locationTag.trim()) {
         finalBody = `${finalBody}\n📍 ${locationTag.trim()}`.trim();
@@ -1169,6 +1174,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       setSuccess("Post published successfully.");
       onPosted?.();
     } catch (e) {
+      if (controller.signal.aborted) return;
       const message = e instanceof Error ? e.message : "Could not create post.";
       if (
         pendingVideo &&
@@ -1510,7 +1516,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       ) : null}
 
       {uploadPercent !== null && busy ? (
-        <div className="min-h-[44px] space-y-1.5" role="status" aria-live="off">
+        <div className="min-h-[44px] space-y-1.5 [overflow-anchor:none]">
           <div className="h-1.5 overflow-hidden rounded-full bg-muted/20">
             <div
               className="h-full rounded-full bg-accent"
@@ -1518,7 +1524,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
             />
           </div>
           <div className="flex items-center justify-between gap-2 text-xs text-muted">
-            <span aria-live="polite" aria-atomic="true">Uploading… {uploadPercent}%</span>
+            <span className="whitespace-nowrap tabular-nums" role="status">Uploading… {uploadPercent}%</span>
             <button
               type="button"
               onClick={handleCancelUpload}

@@ -104,7 +104,7 @@ async function probeOnce(
       finish({ error: new Error("Could not read video duration.") });
     };
 
-    const onDurationLikeEvent = (event: Event) => {
+    const onDurationLikeEvent = () => {
       const duration = readDuration();
       if (duration != null) {
         finish({ duration });
