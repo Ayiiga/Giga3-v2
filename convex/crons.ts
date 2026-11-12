@@ -3,6 +3,9 @@ import { internal } from "./_generated/api";
 
 const crons = cronJobs();
 
+crons.interval("check subscribed monitors", { minutes: 1 }, internal.monitoringWorker.run, {});
+crons.daily("expire monitoring alerts", { hourUTC: 4, minuteUTC: 20 }, internal.monitoring.expireAlerts, {});
+
 crons.daily(
   "generate queued GigaSEO editorial drafts",
   { hourUTC: 6, minuteUTC: 15 },
