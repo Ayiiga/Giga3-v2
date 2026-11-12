@@ -20,6 +20,13 @@ import {
 const root = resolve(__dirname, "../..");
 
 describe("socialContentReportPolicy", () => {
+  it("deduplicates reports for the same live stream without merging different streams", () => {
+    const target = { targetType: "live" as const, streamId: "stream-a", reason: "child_safety" };
+    const existing = { ...target, status: "open", createdAt: 100 };
+    expect(isDuplicateSocialReport(existing, { ...target, nowMs: 200 })).toBe(true);
+    expect(isDuplicateSocialReport(existing, { ...target, streamId: "stream-b", nowMs: 200 })).toBe(false);
+  });
+
   it("accepts known reasons including copyright and impersonation", () => {
     expect(normalizeSocialReportReason("Spam")).toBe("spam");
     expect(normalizeSocialReportReason("copyright")).toBe("copyright");

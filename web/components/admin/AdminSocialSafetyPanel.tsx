@@ -33,7 +33,7 @@ export function AdminSocialSafetyPanel({ adminSessionToken }: { adminSessionToke
         {reports?.map((report) => (
           <li key={report._id} className="space-y-2 rounded-xl border border-border p-3">
             <p className="font-medium capitalize">{report.reason.replaceAll("_", " ")} · {report.targetType}</p>
-            <p className="break-all text-sm text-muted">Target {report.commentId ?? report.postId ?? report.profileUserId}</p>
+            <p className="break-all text-sm text-muted">Target {report.commentId ?? report.postId ?? report.profileUserId ?? report.streamId}</p>
             {report.details ? <p className="whitespace-pre-wrap break-words text-sm">{report.details}</p> : null}
             {report.postId ? <a className="text-sm text-accent underline" href={`/gigasocial/post/?id=${encodeURIComponent(report.postId)}`} target="_blank" rel="noopener noreferrer">View reported post</a> : null}
             <div className="flex flex-wrap gap-2">
@@ -43,7 +43,7 @@ export function AdminSocialSafetyPanel({ adminSessionToken }: { adminSessionToke
                 <Button type="button" variant="secondary" disabled={busy}
                   onClick={() => {
                     if (window.confirm("Remove the reported content from GigaSocial?")) void review(report._id, "remove");
-                  }}>Remove content</Button>
+                  }}>{report.targetType === "live" ? "Stop and remove stream" : "Remove content"}</Button>
               ) : null}
             </div>
           </li>

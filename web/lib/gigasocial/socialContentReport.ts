@@ -18,7 +18,8 @@ export type SocialContentReportReasonId =
 export type SocialContentReportTarget =
   | { targetType: "post"; postId: string }
   | { targetType: "comment"; commentId: string }
-  | { targetType: "profile"; profileUserId: string };
+  | { targetType: "profile"; profileUserId: string }
+  | { targetType: "live"; streamId: string };
 
 export const SOCIAL_REPORT_SUCCESS_MESSAGE =
   "Thanks — your report was submitted for review. Content is not removed automatically.";

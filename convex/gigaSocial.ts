@@ -2155,11 +2155,13 @@ export const reportSocialContent = mutation({
     targetType: v.union(
       v.literal("post"),
       v.literal("comment"),
-      v.literal("profile")
+      v.literal("profile"),
+      v.literal("live")
     ),
     postId: v.optional(v.id("socialPosts")),
     commentId: v.optional(v.id("socialComments")),
     profileUserId: v.optional(v.string()),
+    streamId: v.optional(v.id("socialLiveStreams")),
     reason: v.string(),
     details: v.optional(v.string()),
   },
@@ -2194,6 +2196,10 @@ export const reportSocialContent = mutation({
       }
       relatedPostId = post._id;
       targetAuthorId = comment.authorId;
+    } else if (args.targetType === "live") {
+      const stream = args.streamId ? await ctx.db.get(args.streamId) : null;
+      if (!stream || stream.removedForSafetyAt) throw new ValidationError("Live stream not found.");
+      targetAuthorId = stream.hostId;
     } else {
       profileUserId = args.profileUserId?.trim().toLowerCase();
       if (!profileUserId || !await getProfileDoc(ctx, profileUserId)) {
@@ -2217,6 +2223,7 @@ export const reportSocialContent = mutation({
         postId: args.postId,
         commentId: args.commentId,
         profileUserId,
+        streamId: args.streamId,
       })
     ) {
       throw new ValidationError("Report target is required.");
@@ -2241,6 +2248,7 @@ export const reportSocialContent = mutation({
           postId: row.postId,
           commentId: row.commentId,
           profileUserId: row.profileUserId,
+          streamId: row.streamId,
           reason: row.reason,
           status: row.status,
           createdAt: row.createdAt,
@@ -2250,6 +2258,7 @@ export const reportSocialContent = mutation({
           postId: args.postId,
           commentId: args.commentId,
           profileUserId,
+          streamId: args.streamId,
           reason,
           nowMs,
         }
@@ -2269,6 +2278,7 @@ export const reportSocialContent = mutation({
       postId: relatedPostId,
       commentId: args.targetType === "comment" ? args.commentId : undefined,
       profileUserId,
+      streamId: args.targetType === "live" ? args.streamId : undefined,
       reason,
       details,
       status: "open",
@@ -2304,7 +2314,19 @@ export const resolveSafetyReport = mutation({
     await ensureAdminAccess(args);
     const report = await ctx.db.get(args.reportId);
     if (!report || report.status !== "open") return;
-    if (args.decision === "remove") {
+    if (args.decision === "remove" && report.targetType === "live") {
+      const stream = report.streamId ? await ctx.db.get(report.streamId) : null;
+      if (stream && !stream.removedForSafetyAt) {
+        const now = Date.now();
+        await ctx.db.patch(stream._id, {
+          status: "ended",
+          endedAt: stream.endedAt ?? now,
+          updatedAt: now,
+          removedForSafetyAt: now,
+          replayUrl: undefined,
+        });
+      }
+    } else if (args.decision === "remove") {
       const targetId = report.targetType === "post" ? report.postId
         : report.targetType === "comment" ? report.commentId : undefined;
       if (!targetId) throw new ValidationError("This action requires a post or comment.");
