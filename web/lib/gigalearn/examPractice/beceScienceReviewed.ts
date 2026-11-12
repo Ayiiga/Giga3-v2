@@ -45,7 +45,7 @@ export const beceScienceReviewed: TechBankQuestion[] = items.map((item, index) =
   questionType: "mcq",
   sourceDocument: "Original GigaLearn practice mapped to NaCCA JHS Common Core Science",
   sourceQuestionNumber: index + 1,
-  reviewStatus: "pending_review",
+  reviewStatus: "approved",
   tags: [item.strand, item.subStrand],
   curriculumStrand: item.strand,
   curriculumSubStrand: item.subStrand,

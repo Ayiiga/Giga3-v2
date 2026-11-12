@@ -768,8 +768,7 @@ function TechHubInner() {
                   const isVerifiedCorrect =
                     revealed &&
                     !pending &&
-                    activeFeedback?.correct &&
-                    activeFeedback.correctIndex === optIndex;
+                    activeFeedback?.correctIndex === optIndex;
                   const isVerifiedWrong =
                     revealed &&
                     !pending &&
@@ -853,9 +852,9 @@ function TechHubInner() {
                         ? "Practice answer — "
                         : activeFeedback.correct
                           ? "Correct — "
-                          : "Incorrect — "}
+                          : "Incorrect. Correct answer — "}
                     </span>
-                    {activeFeedback.pendingReview && activeFeedback.correctIndex != null
+                    {!activeFeedback.selfAssessment && activeFeedback.correctIndex != null
                       ? current.options[activeFeedback.correctIndex].replace(/[.!?]$/, "") + ". "
                       : null}
                     {activeFeedback.explanation}
@@ -989,8 +988,9 @@ function TechHubInner() {
             </p>
           ) : (
             <p className="text-xs text-slate-500">
-              Showing {meta.approvedQuestionCount} unique approved questions after extraction and
-              near-duplicate removal (source claimed 500). Not an official certification exam.
+              {requiresBeceSubject
+                ? "Counts include all published practice questions across subjects. Choose a subject to see its multiple-choice count."
+                : "Counts include all published practice questions in this bank."}
             </p>
           )}
         </section>
@@ -1050,7 +1050,7 @@ function TechHubInner() {
                 <span className="mb-1 block font-medium">{requiresBeceSubject ? "Choose a subject" : "Choose a topic"}</span>
                 <select className="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3" value={topicId} onChange={(e) => { setTopicId(e.target.value); setQuestionType(openExamPractice ? "mcq" : ""); }}>
                   {!requiresBeceSubject ? <option value="">All topics / pick one</option> : null}
-                  {meta.topics.map((t) => <option key={t.id} value={t.id}>{t.label} ({t.questionCount})</option>)}
+                  {meta.topics.map((t) => <option key={t.id} value={t.id}>{t.label} ({requiresBeceSubject ? `${t.questionCount - (t.structuredCount ?? 0)} multiple-choice` : t.questionCount})</option>)}
                 </select>
               </label>
             )}
