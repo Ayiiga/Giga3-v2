@@ -16,6 +16,12 @@ import { Flag, X } from "lucide-react";
 import { memo, useEffect, useId, useState } from "react";
 import { createPortal } from "react-dom";
 
+const CYBER_CONTACTS = [
+  { id: "GH", country: "Ghana", agency: "Cyber Security Authority", url: "https://www.csa.gov.gh/report", phone: "Call or SMS 292 in Ghana." },
+  { id: "NG", country: "Nigeria", agency: "ngCERT", url: "https://nccc.gov.ng/ngcert" },
+  { id: "ZA", country: "South Africa", agency: "Cybersecurity Hub", url: "https://www.cybersecurityhub.gov.za/report-incident" },
+] as const;
+
 type GigaSocialReportDialogProps = {
   open: boolean;
   sessionToken: string | null;
@@ -40,6 +46,7 @@ export const GigaSocialReportDialog = memo(function GigaSocialReportDialog({
   const [mounted, setMounted] = useState(false);
   const [reason, setReason] = useState<SocialContentReportReasonId>("spam");
   const [details, setDetails] = useState("");
+  const [country, setCountry] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -51,11 +58,13 @@ export const GigaSocialReportDialog = memo(function GigaSocialReportDialog({
     if (!open) return;
     setReason("spam");
     setDetails("");
+    setCountry("");
     setError(null);
     setSubmitting(false);
   }, [open, target]);
 
   if (!mounted || !open || !target) return null;
+  const countryContact = CYBER_CONTACTS.find((contact) => contact.id === country);
 
   async function handleSubmit() {
     if (!sessionToken) {
@@ -107,7 +116,7 @@ export const GigaSocialReportDialog = memo(function GigaSocialReportDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="w-full max-w-md rounded-2xl border border-border bg-card p-4 shadow-xl"
+        className="max-h-[calc(100dvh-1.5rem)] w-full max-w-md overflow-y-auto rounded-2xl border border-border bg-card p-4 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-3">
@@ -127,9 +136,28 @@ export const GigaSocialReportDialog = memo(function GigaSocialReportDialog({
           </button>
         </div>
         <p className="mt-2 text-xs text-muted">
-          Reports are reviewed by the Giga3 team. Submitting a report does not
-          remove the content automatically.
+          This sends a report to the GigaSocial team. Child safety and sexual content reports are prioritised.
         </p>
+
+        <details className="mt-3 rounded-xl border border-border p-3 text-sm">
+          <summary className="cursor-pointer font-medium">Report to a national cybersecurity agency</summary>
+          <p className="mt-2 text-muted">Contact the agency directly. GigaSocial keeps this report within the platform.</p>
+          <label className="mt-2 block">
+            Country
+            <select className="mt-1 block w-full rounded-lg border border-border bg-background p-2" value={country} onChange={(event) => setCountry(event.target.value)}>
+              <option value="">Select a country</option>
+              {CYBER_CONTACTS.map((contact) => <option key={contact.id} value={contact.id}>{contact.country}</option>)}
+              <option value="other">Another country</option>
+            </select>
+          </label>
+          {countryContact ? (
+            <p className="mt-2">
+              <a className="text-accent underline" href={countryContact.url} target="_blank" rel="noopener noreferrer">{countryContact.agency}</a>
+              {"phone" in countryContact ? ` · ${countryContact.phone}` : ""}
+            </p>
+          ) : null}
+          <a className="mt-2 inline-block text-accent underline" href="https://www.itu.int/en/ITU-D/Cybersecurity/Pages/CIRTs/List-of-National-CIRTs.aspx" target="_blank" rel="noopener noreferrer">Find national response teams in the ITU directory</a>
+        </details>
 
         <fieldset className="mt-4 space-y-2">
           <legend className="text-sm font-medium text-foreground">Reason</legend>
@@ -163,7 +191,7 @@ export const GigaSocialReportDialog = memo(function GigaSocialReportDialog({
             onChange={(e) => setDetails(e.target.value.slice(0, 2000))}
             rows={3}
             className="mt-1 w-full resize-y rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground"
-            placeholder="Add context that helps reviewers."
+            placeholder="Describe what happened. Keep passwords and private images out of the report."
           />
         </label>
 

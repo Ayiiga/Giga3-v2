@@ -1,5 +1,7 @@
 "use client";
 
+import { getSessionToken } from "@/lib/auth";
+
 import { GigaSocialPostCaption } from "@/components/gigasocial/GigaSocialPostCaption";
 import { GigaSocialPostMedia } from "@/components/gigasocial/GigaSocialPostMedia";
 import { BrandLogo } from "@/components/brand/BrandLogo";
@@ -34,10 +36,11 @@ function PublicPostInner({ initialPostId }: { initialPostId?: string }) {
     params.get("id")?.trim() ||
     "";
   const viewedRef = useRef(false);
+  const [sessionToken] = useState(() => getSessionToken());
 
   const post = useQuery(
     api.gigaSocial.getPublicPost,
-    postId ? { postId: postId as Id<"socialPosts"> } : "skip"
+    postId ? { postId: postId as Id<"socialPosts">, sessionToken: sessionToken ?? undefined } : "skip"
   );
   const recordView = useMutation(api.gigaSocial.recordPostView);
   const [sharing, setSharing] = useState(false);

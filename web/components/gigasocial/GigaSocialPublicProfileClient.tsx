@@ -56,6 +56,8 @@ export const GigaSocialPublicProfileClient = memo(function GigaSocialPublicProfi
     sessionToken: sessionToken ?? undefined,
   });
 
+  const setProfileSafety = useMutation(api.gigaSocial.setProfileSafety);
+  const [safetyBusy, setSafetyBusy] = useState(false);
   const toggleLike = useMutation(api.gigaSocial.toggleLike);
   const toggleBookmark = useMutation(api.gigaSocial.toggleBookmark);
   const recordShare = useMutation(api.gigaSocial.recordShare);
@@ -99,7 +101,23 @@ export const GigaSocialPublicProfileClient = memo(function GigaSocialPublicProfi
   const displayFanCount = fanCount ?? profile.fanCount ?? 0;
   const myUserId = getUserEmail();
   const isOwnProfile = Boolean(myUserId && profile.userId && myUserId === profile.userId);
-  const canFollow = Boolean(sessionToken && profile.userId && !isOwnProfile);
+  const canFollow = Boolean(sessionToken && profile.userId && !isOwnProfile && !data?.blocked);
+
+  async function changeSafety(control: "block" | "mute", enabled: boolean) {
+    if (!sessionToken || !profile || safetyBusy) return;
+    setSafetyBusy(true);
+    setReportStatus(null);
+    try {
+      await setProfileSafety({ sessionToken, target: profile.userId, control, enabled });
+      setReportStatus(control === "block"
+        ? enabled ? "Profile blocked." : "Profile unblocked."
+        : enabled ? "Profile muted in your feed." : "Profile unmuted.");
+    } catch {
+      setReportStatus("Could not update this setting. Please try again.");
+    } finally {
+      setSafetyBusy(false);
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -232,8 +250,20 @@ export const GigaSocialPublicProfileClient = memo(function GigaSocialPublicProfi
                 Report profile
               </Button>
             ) : null}
+            {sessionToken && !isOwnProfile ? (
+              <>
+                <Button type="button" variant="ghost" disabled={safetyBusy}
+                  onClick={() => void changeSafety("block", !data?.blocked)}>
+                  {data?.blocked ? "Unblock" : "Block"}
+                </Button>
+                <Button type="button" variant="ghost" disabled={safetyBusy}
+                  onClick={() => void changeSafety("mute", !data?.muted)}>
+                  {data?.muted ? "Unmute" : "Mute in feed"}
+                </Button>
+              </>
+            ) : null}
             {getGigaSocialFeatures().enableDirectMessages &&
-            myUserId &&
+            !data?.blocked && myUserId &&
             profile.userId !== myUserId ? (
               <Link
                 href={`/gigasocial/?tab=messages&to=${encodeURIComponent(profile.userId)}`}

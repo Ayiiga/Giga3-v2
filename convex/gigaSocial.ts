@@ -1,7 +1,8 @@
 import { matchesSocialBoost, socialBoostCountryValidator } from "./socialBoostOptions";
 import { internal } from "./_generated/api";
-import { internalQuery, mutation, query, type MutationCtx } from "./_generated/server";
+import { internalQuery, mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
 import { v } from "convex/values";
+import { adminCredentialArgs, ensureAdminAccess } from "./adminAccess";
 import { requireSession } from "./auth";
 import { isPlatformAdminEmail } from "./platformAdmin";
 import { sessionArgs } from "./validators";
@@ -64,11 +65,21 @@ function compareNewestWithPins(
   return b.createdAt - a.createdAt;
 }
 
+async function hasSocialBlock(ctx: QueryCtx, first: string, second: string) {
+  if (first === second) return false;
+  const [outgoing, incoming] = await Promise.all([
+    ctx.db.query("socialDmBlocks").withIndex("by_pair", (q) => q.eq("blockerId", first).eq("blockedId", second)).first(),
+    ctx.db.query("socialDmBlocks").withIndex("by_pair", (q) => q.eq("blockerId", second).eq("blockedId", first)).first(),
+  ]);
+  return Boolean(outgoing || incoming);
+}
+
 async function canViewSocialPost(
-  ctx: { db: import("./_generated/server").QueryCtx["db"] },
+  ctx: QueryCtx,
   post: Doc<"socialPosts">,
   viewerId: string | null
 ) {
+  if (viewerId && await hasSocialBlock(ctx, viewerId, post.authorId)) return false;
   if (post.visibility !== "followers" || post.authorId === viewerId) return true;
   if (!viewerId) return false;
   return Boolean(await ctx.db.query("socialFollows").withIndex("by_pair", (q) =>
@@ -385,6 +396,53 @@ export const listCommunities = query({
   },
 });
 
+async function feedHiddenAuthors(ctx: QueryCtx, userId: string) {
+  const [outgoing, incoming, muted] = await Promise.all([
+    ctx.db.query("socialDmBlocks").withIndex("by_blocker", (q) => q.eq("blockerId", userId)).collect(),
+    ctx.db.query("socialDmBlocks").withIndex("by_blocked", (q) => q.eq("blockedId", userId)).collect(),
+    ctx.db.query("socialFeedMutes").withIndex("by_user_target", (q) => q.eq("userId", userId)).collect(),
+  ]);
+  return new Set([
+    ...outgoing.map((row) => row.blockedId),
+    ...incoming.map((row) => row.blockerId),
+    ...muted.map((row) => row.mutedUserId),
+  ]);
+}
+
+export const setProfileSafety = mutation({
+  args: {
+    sessionToken: v.string(),
+    target: v.string(),
+    control: v.union(v.literal("block"), v.literal("mute")),
+    enabled: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireSession(args.sessionToken, ctx);
+    const target = args.target.trim().toLowerCase();
+    if (!target || target === userId || !await getProfileDoc(ctx, target)) {
+      throw new ValidationError("Choose another GigaSocial profile.");
+    }
+
+    if (args.control === "block") {
+      const existing = await ctx.db.query("socialDmBlocks")
+        .withIndex("by_pair", (q) => q.eq("blockerId", userId).eq("blockedId", target)).first();
+      if (args.enabled && !existing) {
+        await ctx.db.insert("socialDmBlocks", { blockerId: userId, blockedId: target, createdAt: Date.now() });
+      } else if (!args.enabled && existing) {
+        await ctx.db.delete(existing._id);
+      }
+    } else {
+      const existing = await ctx.db.query("socialFeedMutes")
+        .withIndex("by_user_target", (q) => q.eq("userId", userId).eq("mutedUserId", target)).first();
+      if (args.enabled && !existing) {
+        await ctx.db.insert("socialFeedMutes", { userId, mutedUserId: target });
+      } else if (!args.enabled && existing) {
+        await ctx.db.delete(existing._id);
+      }
+    }
+  },
+});
+
 export const listFeed = query({
   args: {
     sessionToken: v.optional(v.string()),
@@ -419,7 +477,9 @@ export const listFeed = query({
           .order("desc")
           .take(120);
 
-    rows = rows.filter((r) => !r.deletedAt);
+    const pageEnd = rows.length === 120 ? rows.at(-1)?.createdAt ?? null : null;
+    const hidden = userId ? await feedHiddenAuthors(ctx, userId) : new Set<string>();
+    rows = rows.filter((r) => !r.deletedAt && !hidden.has(r.authorId));
 
     let supportingIds = new Set<string>();
     if (userId) {
@@ -445,7 +505,7 @@ export const listFeed = query({
     }
 
     const organic = rows.slice(0, cap);
-    const nextCursor = organic.length === cap ? organic.at(-1)?.createdAt ?? null : null;
+    const nextCursor = organic.length === cap ? organic.at(-1)?.createdAt ?? null : pageEnd;
     let promotion: { postId: string; website?: string } | undefined;
     let promotedPost: Doc<"socialPosts"> | undefined;
     if (args.cursor === undefined && !args.communitySlug && !args.followingOnly) {
@@ -462,7 +522,7 @@ export const listFeed = query({
         const id = ctx.db.normalizeId("socialPosts", boost.targetId);
         const post = id ? await ctx.db.get(id) : null;
         if (!post || post.deletedAt || post.visibility === "followers" || post.authorId !== boost.creatorId ||
-            post.copyrightScreeningStatus === "rejected") continue;
+            hidden.has(post.authorId) || post.copyrightScreeningStatus === "rejected") continue;
         promotion = { postId: post._id, website: boost.options?.website };
         promotedPost = post;
         break;
@@ -637,8 +697,10 @@ export const listDiscover = query({
       supportingAuthors = new Set(follows.map((f) => f.followingId));
     }
 
-    const slice = rows.filter((post) => post.visibility !== "followers" ||
-      post.authorId === userId || supportingAuthors.has(post.authorId)).slice(0, cap);
+    const hidden = userId ? await feedHiddenAuthors(ctx, userId) : new Set<string>();
+    const slice = rows.filter((post) => !hidden.has(post.authorId) && (
+      post.visibility !== "followers" || post.authorId === userId || supportingAuthors.has(post.authorId)
+    )).slice(0, cap);
     const posts = await Promise.all(
       slice.map(async (post) => {
         const resolved = await resolveAuthor(ctx, post.authorId, post.profileId);
@@ -813,7 +875,7 @@ export const getProfileByHandle = query({
     let viewerId: string | null = null;
     if (args.sessionToken) {
       try {
-        viewerId = await requireSession(args.sessionToken);
+        viewerId = await requireSession(args.sessionToken, ctx);
       } catch {
         viewerId = null;
       }
@@ -823,6 +885,13 @@ export const getProfileByHandle = query({
       .withIndex("by_handle", (q) => q.eq("handle", handle))
       .first();
     if (!profile) return null;
+
+    const safety = viewerId && viewerId !== profile.userId ? await Promise.all([
+      ctx.db.query("socialDmBlocks").withIndex("by_pair", (q) => q.eq("blockerId", viewerId!).eq("blockedId", profile.userId)).first(),
+      ctx.db.query("socialDmBlocks").withIndex("by_pair", (q) => q.eq("blockerId", profile.userId).eq("blockedId", viewerId!)).first(),
+      ctx.db.query("socialFeedMutes").withIndex("by_user_target", (q) => q.eq("userId", viewerId!).eq("mutedUserId", profile.userId)).first(),
+    ]) : [null, null, null];
+    if (safety[1]) return null;
 
     const posts = await ctx.db
       .query("socialPosts")
@@ -834,7 +903,7 @@ export const getProfileByHandle = query({
 
     const visiblePosts = posts
       .filter((p) => {
-        if (p.deletedAt) return false;
+        if (p.deletedAt || safety[0]) return false;
         if (p.visibility === "followers" && !isOwner && !supporting) return false;
         return true;
       })
@@ -872,6 +941,8 @@ export const getProfileByHandle = query({
     }
 
     return {
+      blocked: Boolean(safety[0]),
+      muted: Boolean(safety[2]),
       profile: {
         displayName: profile.displayName,
         handle: profile.handle,
@@ -914,13 +985,12 @@ export const listComments = query({
     const post = await ctx.db.get(args.postId);
     if (!post || post.deletedAt) return { comments: [] };
 
-    if (post.visibility === "followers") {
-      let viewerId: string | null = null;
-      if (args.sessionToken) {
-        try { viewerId = await requireSession(args.sessionToken, ctx); } catch { /* Treat expired sessions as guests. */ }
-      }
-      if (!await canViewSocialPost(ctx, post, viewerId)) return { comments: [] };
+    let viewerId: string | null = null;
+    if (args.sessionToken) {
+      try { viewerId = await requireSession(args.sessionToken, ctx); } catch { /* Treat expired sessions as guests. */ }
     }
+    if (!await canViewSocialPost(ctx, post, viewerId)) return { comments: [] };
+    const hidden = viewerId ? await feedHiddenAuthors(ctx, viewerId) : new Set<string>();
 
     const rows = await ctx.db
       .query("socialComments")
@@ -928,7 +998,7 @@ export const listComments = query({
       .order("desc")
       .collect();
 
-    const visible = rows.filter((c) => !c.deletedAt).sort(compareNewestWithPins);
+    const visible = rows.filter((c) => !c.deletedAt && !hidden.has(c.authorId)).sort(compareNewestWithPins);
     const comments = await Promise.all(
       visible.map(async (comment) => {
         const author = await resolveAuthor(ctx, comment.authorId);
@@ -1639,7 +1709,7 @@ export const addComment = mutation({
 
     if (args.parentId) {
       const parent = await ctx.db.get(args.parentId);
-      if (!parent || parent.postId !== args.postId) {
+      if (!parent || parent.deletedAt || parent.postId !== args.postId || await hasSocialBlock(ctx, userId, parent.authorId)) {
         throw new Error("Invalid reply target.");
       }
     }
@@ -1794,11 +1864,17 @@ export const toggleBookmark = mutation({
 export const getPublicPost = query({
   args: {
     postId: v.id("socialPosts"),
+    sessionToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const post = await ctx.db.get(args.postId);
     if (!post || post.deletedAt) return null;
     if (post.visibility === "followers") return null;
+
+    if (args.sessionToken) {
+      const viewerId = await requireSession(args.sessionToken, ctx).catch(() => null);
+      if (!await canViewSocialPost(ctx, post, viewerId)) return null;
+    }
 
     const author = await resolveAuthor(ctx, post.authorId, post.profileId);
     return toPublicPost(post, author);
@@ -2098,11 +2174,13 @@ export const reportSocialContent = mutation({
 
     let targetAuthorId: string | undefined;
     let profileUserId: string | undefined;
+    let relatedPostId: Id<"socialPosts"> | undefined;
 
     if (args.targetType === "post") {
       if (!args.postId) throw new ValidationError("Post is required.");
       const post = await ctx.db.get(args.postId);
-      if (!post || post.deletedAt) throw new ValidationError("Post not found.");
+      if (!post || post.deletedAt || !await canViewSocialPost(ctx, post, reporterId)) throw new ValidationError("Post not found.");
+      relatedPostId = post._id;
       targetAuthorId = post.authorId;
     } else if (args.targetType === "comment") {
       if (!args.commentId) throw new ValidationError("Comment is required.");
@@ -2110,10 +2188,17 @@ export const reportSocialContent = mutation({
       if (!comment || comment.deletedAt) {
         throw new ValidationError("Comment not found.");
       }
+      const post = await ctx.db.get(comment.postId);
+      if (!post || post.deletedAt || !await canViewSocialPost(ctx, post, reporterId)) {
+        throw new ValidationError("Comment not found.");
+      }
+      relatedPostId = post._id;
       targetAuthorId = comment.authorId;
     } else {
       profileUserId = args.profileUserId?.trim().toLowerCase();
-      if (!profileUserId) throw new ValidationError("Profile is required.");
+      if (!profileUserId || !await getProfileDoc(ctx, profileUserId)) {
+        throw new ValidationError("Profile not found.");
+      }
       targetAuthorId = profileUserId;
     }
 
@@ -2181,8 +2266,8 @@ export const reportSocialContent = mutation({
     const reportId = await ctx.db.insert("socialContentReports", {
       reporterId,
       targetType: args.targetType,
-      postId: args.postId,
-      commentId: args.commentId,
+      postId: relatedPostId,
+      commentId: args.targetType === "comment" ? args.commentId : undefined,
       profileUserId,
       reason,
       details,
@@ -2190,5 +2275,42 @@ export const reportSocialContent = mutation({
       createdAt: nowMs,
     });
     return { ok: true as const, reportId, alreadyReported: false as const };
+  },
+});
+
+
+export const listOpenSafetyReports = query({
+  args: adminCredentialArgs,
+  handler: async (ctx, args) => {
+    await ensureAdminAccess(args);
+    const [childSafety, sexualContent, recent] = await Promise.all([
+      ctx.db.query("socialContentReports").withIndex("by_status_reason", (q) =>
+        q.eq("status", "open").eq("reason", "child_safety")).take(30),
+      ctx.db.query("socialContentReports").withIndex("by_status_reason", (q) =>
+        q.eq("status", "open").eq("reason", "sexual_content")).take(30),
+      ctx.db.query("socialContentReports").withIndex("by_status", (q) => q.eq("status", "open")).take(50),
+    ]);
+    return [...new Map([...childSafety, ...sexualContent, ...recent].map((row) => [row._id, row])).values()];
+  },
+});
+
+export const resolveSafetyReport = mutation({
+  args: {
+    ...adminCredentialArgs,
+    reportId: v.id("socialContentReports"),
+    decision: v.union(v.literal("dismiss"), v.literal("remove"), v.literal("reviewed")),
+  },
+  handler: async (ctx, args) => {
+    await ensureAdminAccess(args);
+    const report = await ctx.db.get(args.reportId);
+    if (!report || report.status !== "open") return;
+    if (args.decision === "remove") {
+      const targetId = report.targetType === "post" ? report.postId
+        : report.targetType === "comment" ? report.commentId : undefined;
+      if (!targetId) throw new ValidationError("This action requires a post or comment.");
+      const target = await ctx.db.get(targetId);
+      if (target && !target.deletedAt) await ctx.db.patch(target._id, { deletedAt: Date.now() });
+    }
+    await ctx.db.patch(report._id, { status: args.decision === "dismiss" ? "dismissed" : "reviewed" });
   },
 });
