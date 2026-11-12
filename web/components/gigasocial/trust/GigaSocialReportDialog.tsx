@@ -21,10 +21,20 @@ const CYBER_CONTACTS = [
   { id: "CA", country: "Canada", agency: "Canadian Centre for Cyber Security", url: "https://www.cyber.gc.ca/en/incident-management" },
   { id: "GH", country: "Ghana", agency: "Cyber Security Authority", url: "https://www.csa.gov.gh/report", phone: "Call or SMS 292 in Ghana." },
   { id: "NG", country: "Nigeria", agency: "ngCERT", url: "https://nccc.gov.ng/ngcert" },
+  { id: "FR", country: "France", agency: "Cybermalveillance.gouv.fr complaint guidance", url: "https://www.cybermalveillance.gouv.fr/tous-nos-contenus/deposer-plainte-cybermalveillance" },
+  { id: "DE", country: "Germany", agency: "Federal Office for Information Security reporting directory", url: "https://mip2.bsi.bund.de/de/meldestellen-uebersicht/" },
+  { id: "IN", country: "India", agency: "National Cyber Crime Reporting Portal", url: "https://www.cybercrime.gov.in/" },
+  { id: "NZ", country: "New Zealand", agency: "National Cyber Security Centre", url: "https://www.ncsc.govt.nz/report/business-and-individuals/" },
+  { id: "RW", country: "Rwanda", agency: "National Cyber Security Authority", url: "https://cyber.gov.rw/report-incident/", phone: "Call 9009 in Rwanda." },
+  { id: "SG", country: "Singapore", agency: "Cyber Security Agency of Singapore", url: "https://www.csa.gov.sg/contact-us/" },
+  { id: "TZ", country: "Tanzania", agency: "Tanzania Computer Emergency Response Team", url: "https://www.tzcert.go.tz/incident/report" },
+  { id: "GB", country: "United Kingdom", agency: "Report Fraud", url: "https://www.reportfraud.police.uk/reporting-a-fraud/", phone: "For Scotland, call Police Scotland on 101." },
   { id: "KE", country: "Kenya", agency: "National KE-CIRT/CC", url: "https://ke-cirt.go.ke/contact-us/" },
   { id: "ZA", country: "South Africa", agency: "Cybersecurity Hub", url: "https://www.cybersecurityhub.gov.za/report-incident" },
   { id: "US", country: "United States", agency: "FBI Internet Crime Complaint Center", url: "https://www.ic3.gov/" },
 ] as const;
+
+const sortedCyberContacts = [...CYBER_CONTACTS].sort((a, b) => a.country.localeCompare(b.country, "en"));
 
 type GigaSocialReportDialogProps = {
   open: boolean;
@@ -151,7 +161,7 @@ export const GigaSocialReportDialog = memo(function GigaSocialReportDialog({
             Country
             <select className="mt-1 block w-full rounded-lg border border-border bg-background p-2" value={country} onChange={(event) => setCountry(event.target.value)}>
               <option value="">Select a country</option>
-              {CYBER_CONTACTS.map((contact) => <option key={contact.id} value={contact.id}>{contact.country}</option>)}
+              {sortedCyberContacts.map((contact) => <option key={contact.id} value={contact.id}>{contact.country}</option>)}
               <option value="other">Another country</option>
             </select>
           </label>
@@ -160,6 +170,8 @@ export const GigaSocialReportDialog = memo(function GigaSocialReportDialog({
               <a className="text-accent underline" href={countryContact.url} target="_blank" rel="noopener noreferrer">{countryContact.agency}</a>
               {"phone" in countryContact ? ` · ${countryContact.phone}` : ""}
             </p>
+          ) : country === "other" ? (
+            <p className="mt-2 text-muted">Use the directory below to look up your national response team.</p>
           ) : null}
           <a className="mt-2 inline-block text-accent underline" href="https://www.itu.int/en/ITU-D/Cybersecurity/Pages/CIRTs/List-of-National-CIRTs.aspx" target="_blank" rel="noopener noreferrer">Find national response teams in the ITU directory</a>
         </details>
