@@ -33,7 +33,6 @@ import {
 import { composePhotoMusicVideo } from "@/lib/gigasocial/photoMusicVideo";
 import { needsVideoTrim, VIDEO_CLIP_LENGTH_OPTIONS_SEC } from "@/lib/gigasocial/videoTrim";
 import {
-  canOptionalEpisodeSplit,
   getRecommendedEpisodeCount,
   SOCIAL_EPISODE_SPLIT_COUNT,
   shouldOfferEpisodeSplit,
@@ -213,6 +212,11 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   const [soundLibraryOpen, setSoundLibraryOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [uploadPercent, setUploadPercent] = useState<number | null>(null);
+  // Ignore repeated progress events so Android does not rerender the entire composer for each byte chunk.
+  const updateUploadPercent = (value: number) => {
+    const next = Math.max(0, Math.min(100, Math.round(value)));
+    setUploadPercent((previous) => previous === next ? previous : next);
+  };
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [initialPickerTarget, setInitialPickerTarget] =
@@ -999,15 +1003,14 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   );
 
   function handleCancelUpload() {
-    uploadAbortRef.current?.abort();
-    uploadAbortRef.current = null;
-    setBusy(false);
-    setUploadPercent(null);
+    const controller = uploadAbortRef.current;
+    if (!controller || controller.signal.aborted) return;
+    controller.abort();
     setError("Upload cancelled.");
   }
 
   async function publishEpisodeSeries(result: GigaSocialEpisodeConfirmResult) {
-    if (busy || disabled) return;
+    if (uploadAbortRef.current || busy || disabled) return;
     setBusy(true);
     setError(null);
     setSuccess(null);
@@ -1023,10 +1026,12 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         const uploaded = await uploadSocialVideo(uploadDeps, episode.file, {
           signal: controller.signal,
           onProgress: (progress) => {
+            if (controller.signal.aborted) return;
             const overall = Math.round(((i + progress.percent / 100) / total) * 100);
-            setUploadPercent(overall);
+            updateUploadPercent(overall);
           },
         });
+        if (controller.signal.aborted) return;
         let finalBody = episode.body.trim();
         if (locationTag.trim()) {
           finalBody = `${finalBody}\n📍 ${locationTag.trim()}`.trim();
@@ -1043,6 +1048,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           profileId,
           ...(features.enableUseAsTemplate ? { templatePolicy } : {}),
         });
+        if (controller.signal.aborted) return;
       }
       setBody("");
       clearPendingMedia();
@@ -1051,7 +1057,9 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       setSuccess(`Published ${total} episodes successfully.`);
       onPosted?.();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not publish episodes.");
+      if (!controller.signal.aborted) {
+        setError(e instanceof Error ? e.message : "Could not publish episodes.");
+      }
     } finally {
       uploadAbortRef.current = null;
       setBusy(false);
@@ -1060,7 +1068,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   }
 
   async function handleSubmit() {
-    if (busy || disabled || imagePreparationBusy || audioPreparationBusy || !canPost) return;
+    if (uploadAbortRef.current || busy || disabled || imagePreparationBusy || audioPreparationBusy || !canPost) return;
     if (
       pendingVideo &&
       shouldOfferEpisodeSplit(pendingVideo.file.size, pendingVideo.durationSec)
@@ -1085,7 +1093,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       if (pendingVideo) {
         const uploaded = await uploadSocialVideo(uploadDeps, pendingVideo.file, {
           signal: controller.signal,
-          onProgress: (progress) => setUploadPercent(progress.percent),
+          onProgress: (progress) => updateUploadPercent(progress.percent),
         });
         mediaItems = [uploaded];
         publishPostType = "video";
@@ -1100,13 +1108,13 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
               previewFilterId === "none" ? undefined : previewFilterId
             ),
             signal: controller.signal,
-            onProgress: (percent) => setUploadPercent(Math.round(percent * 70)),
+            onProgress: (percent) => updateUploadPercent(Math.round(percent * 70)),
           }
         );
         const uploaded = await uploadSocialVideo(uploadDeps, composed.file, {
           signal: controller.signal,
           onProgress: (progress) =>
-            setUploadPercent(70 + Math.round(progress.percent * 0.3)),
+            updateUploadPercent(70 + Math.round(progress.percent * 0.3)),
         });
         mediaItems = [
           {
@@ -1122,11 +1130,12 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           filterId: previewFilterId === "none" ? undefined : previewFilterId,
           signal: controller.signal,
           fastCompress: true,
-          onProgress: (_index, progress) => setUploadPercent(progress.percent),
+          onProgress: (_index, progress) => updateUploadPercent(progress.percent),
         });
         mediaItems = [...uploadedImages];
       }
 
+      if (controller.signal.aborted) return;
       let finalBody = body.trim();
       if (locationTag.trim()) {
         finalBody = `${finalBody}\n📍 ${locationTag.trim()}`.trim();
@@ -1165,6 +1174,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       setSuccess("Post published successfully.");
       onPosted?.();
     } catch (e) {
+      if (controller.signal.aborted) return;
       const message = e instanceof Error ? e.message : "Could not create post.";
       if (
         pendingVideo &&
@@ -1450,7 +1460,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         onRemoveAudio={() => setPendingAudio(null)}
       />
 
-      {pendingVideo && canOptionalEpisodeSplit(pendingVideo.durationSec) ? (
+      {pendingVideo && shouldOfferEpisodeSplit(pendingVideo.file.size, pendingVideo.durationSec) ? (
         <Button
           type="button"
           variant="outline"
@@ -1506,7 +1516,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       ) : null}
 
       {uploadPercent !== null && busy ? (
-        <div className="space-y-1.5" role="status" aria-live="polite">
+        <div className="min-h-[44px] space-y-1.5 [overflow-anchor:none]">
           <div className="h-1.5 overflow-hidden rounded-full bg-muted/20">
             <div
               className="h-full rounded-full bg-accent"
@@ -1514,7 +1524,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
             />
           </div>
           <div className="flex items-center justify-between gap-2 text-xs text-muted">
-            <span>Uploading… {uploadPercent}%</span>
+            <span className="whitespace-nowrap tabular-nums" role="status">Uploading… {uploadPercent}%</span>
             <button
               type="button"
               onClick={handleCancelUpload}

@@ -244,16 +244,19 @@ describe("readSocialVideoDuration", () => {
     ).rejects.toThrow(/Could not read video duration/);
   });
 
-  it("rejects zero/invalid duration instead of bypassing validation", async () => {
+  it("rejects zero/invalid duration after the bounded metadata timeout", async () => {
+    vi.useFakeTimers();
     const file = new File([new Uint8Array([0])], "zero.mp4", { type: "video/mp4" });
-    await expect(
-      readSocialVideoDuration(file, {
-        createVideoElement: () => mockVideo({ duration: 0 }),
-        createObjectURL: () => "blob:mock-zero",
-        revokeObjectURL: vi.fn(),
-        retries: 1,
-      })
-    ).rejects.toThrow(/Could not read video duration/);
+    const promise = readSocialVideoDuration(file, {
+      createVideoElement: () => mockVideo({ duration: 0 }),
+      createObjectURL: () => "blob:mock-zero",
+      revokeObjectURL: vi.fn(),
+      retries: 1,
+      timeoutMs: 100,
+    });
+    const rejection = expect(promise).rejects.toThrow(/Could not read video duration/);
+    await vi.advanceTimersByTimeAsync(150);
+    await rejection;
   });
 });
 
