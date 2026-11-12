@@ -1,9 +1,10 @@
-import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
 import { ProductSeoHeader } from "@/components/seo/ProductSeoHeader";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { publicMetadata } from "@/lib/seo/publicMetadata";
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
+
+const loading = <p className="text-sm text-muted" role="status">Loading GigaLearn Academy…</p>;
 
 const AcademyHomeRoot = dynamic(
   () =>
@@ -12,7 +13,7 @@ const AcademyHomeRoot = dynamic(
     })),
   {
     ssr: false,
-    loading: () => <ClientAppHydrationNotice productName="GigaLearn Academy" />,
+    loading: () => loading,
   }
 );
 
@@ -47,7 +48,7 @@ export default function GigaLearnAcademyPage() {
         description="Learn by Doing. Build with AI. Create the Future. Practice, studios, and existing Academy pathways on GigaLearn."
         showProductNav={false}
       />
-      <div className="section-padding pt-4">
+      <div className="px-3 pt-3 sm:px-6">
         <a
           href="/gigalearn/academy/workspace/"
           className="inline-flex min-h-11 items-center rounded-xl bg-violet-700 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-800"
@@ -55,8 +56,8 @@ export default function GigaLearnAcademyPage() {
           Open Academy Workspace
         </a>
       </div>
-      <div className="marketing-stable gigalearn-stable section-padding pt-4 pb-6 sm:pt-6">
-        <Suspense fallback={<ClientAppHydrationNotice productName="GigaLearn Academy" />}>
+      <div className="marketing-stable gigalearn-stable px-3 py-3 sm:px-6 sm:py-6">
+        <Suspense fallback={loading}>
           <AcademyHomeRoot />
         </Suspense>
       </div>

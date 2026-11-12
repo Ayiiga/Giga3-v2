@@ -6,7 +6,6 @@ import { ExamPracticeShareButton } from "@/components/gigalearn/exam/ExamPractic
 import { PremiumPracticeNudge } from "@/components/gigalearn/exam/PremiumPracticeNudge";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { Button, ButtonLink } from "@/components/ui/Button";
-import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
 import { ProductSignInPrompt } from "@/components/seo/ProductSignInPrompt";
 import { getSessionToken } from "@/lib/auth";
 import { hasPersistedAuth } from "@/lib/auth/sessionRestore";
@@ -77,7 +76,9 @@ function TechHubInner() {
   const urlCount = Number(params.get("count") || "");
   const urlQType = (params.get("qtype") || "").trim().toLowerCase();
   const initialQuestionType: TechQuestionType | "" =
-    urlQType === "true_false" || urlQType === "mcq" || urlQType === "structured" ? urlQType : "";
+    urlQType === "true_false" || urlQType === "mcq" || urlQType === "structured"
+      ? urlQType
+      : openExamPractice ? "mcq" : "";
   const sessionToken = getSessionToken();
   const course = useMemo(
     () => (courseSlug ? getBuiltinAcademyCourse(courseSlug) : undefined),
@@ -270,7 +271,7 @@ function TechHubInner() {
   if (summary === undefined) {
     return (
       <AcademyChrome active="course" title={course.title}>
-        <ClientAppHydrationNotice productName="Technology Learning Hub" />
+        <p className="text-sm text-muted" role="status">Loading practice…</p>
       </AcademyChrome>
     );
   }
@@ -664,7 +665,7 @@ function TechHubInner() {
     const ss = secondsLeft != null ? String(secondsLeft % 60).padStart(2, "0") : null;
 
     return (
-      <AcademyChrome active="course" title={course.title}>
+      <AcademyChrome active="course" title={course.title} focused>
         <div
           className={cn(
             "exam-session",
@@ -711,7 +712,7 @@ function TechHubInner() {
             )}
           </div>
 
-          <div className="exam-session-body">
+          <div className="exam-session-body exam-session-body--compact">
             <article className="exam-session-card exam-session-card--pad">
               <div className="exam-session-chips">
                 <span className="exam-session-chip">{current.topicLabel}</span>
@@ -1047,7 +1048,7 @@ function TechHubInner() {
             {(requiresBeceSubject || mode === "topic" || mode === "challenge") && (
               <label className="block text-sm">
                 <span className="mb-1 block font-medium">{requiresBeceSubject ? "Choose a subject" : "Choose a topic"}</span>
-                <select className="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3" value={topicId} onChange={(e) => { setTopicId(e.target.value); setQuestionType(""); }}>
+                <select className="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3" value={topicId} onChange={(e) => { setTopicId(e.target.value); setQuestionType(openExamPractice ? "mcq" : ""); }}>
                   {!requiresBeceSubject ? <option value="">All topics / pick one</option> : null}
                   {meta.topics.map((t) => <option key={t.id} value={t.id}>{t.label} ({t.questionCount})</option>)}
                 </select>
@@ -1058,7 +1059,7 @@ function TechHubInner() {
                 <legend className="text-sm font-semibold text-slate-800">Question type</legend>
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                   {([
-                    { id: "" as const, label: "Mixed (recommended)" },
+                    { id: "" as const, label: openExamPractice ? "Mixed" : "Mixed (recommended)" },
                     { id: "mcq" as const, label: "Multiple choice" },
                     { id: "true_false" as const, label: "True / False" },
                     { id: "structured" as const, label: "Structured response" },
@@ -1117,7 +1118,7 @@ export function TechHubPractice() {
       <Suspense
         fallback={
           <AcademyChrome active="course" title="Technology Learning Hub">
-            <ClientAppHydrationNotice productName="Technology Learning Hub" />
+            <p className="text-sm text-muted" role="status">Loading practice…</p>
           </AcademyChrome>
         }
       >

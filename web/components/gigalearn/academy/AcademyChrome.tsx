@@ -40,21 +40,23 @@ export function AcademyChrome({
   title,
   subtitle,
   active,
+  focused = false,
 }: {
   children: ReactNode;
   title: string;
   subtitle?: string;
   active?: AcademyNavActive;
+  focused?: boolean;
 }) {
   return (
     <div
       className={cn(
-        ACADEMY_SURFACE_CLASS.shell,
+        !focused && ACADEMY_SURFACE_CLASS.shell,
         "gigalearn-stable document-compact mx-auto w-full min-w-0 max-w-6xl pb-[calc(var(--primary-nav-offset,0px)+1rem)]"
       )}
     >
-      <div className="academy-visual-panel min-w-0 space-y-4 p-3 sm:p-6">
-        <header className="space-y-3">
+      <div className={cn("min-w-0", !focused && "academy-visual-panel space-y-4 p-3 sm:p-6")}>
+        {!focused && <header className="space-y-3">
           <Link
             href={siteConfig.links.gigalearn}
             className="inline-flex min-h-9 items-center gap-2 text-sm text-muted hover:text-foreground"
@@ -100,7 +102,7 @@ export function AcademyChrome({
               })}
             </div>
           </nav>
-        </header>
+        </header>}
         <div className="min-w-0 space-y-4">{children}</div>
       </div>
     </div>
