@@ -51,6 +51,17 @@ function AutomationPageInner() {
       : "workflows"
   );
 
+  // Keep the visible tab in sync with same-page links (for example Outlook setup).
+  useEffect(() => {
+    const requested = params.get("tab");
+    if (requested && [
+      "workflows", "agents", "assistant", "integrations",
+      "search", "notifications", "monitoring",
+    ].includes(requested)) {
+      setTab(requested as Tab);
+    }
+  }, [params]);
+
   const agentId = params.get("agent");
   const workflowId = params.get("workflow");
   const agent = agentId ? getAgent(agentId) : null;
