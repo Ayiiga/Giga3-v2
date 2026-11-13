@@ -897,8 +897,8 @@
       "courseSlug": "exam-wassce-english",
       "title": "WASSCE English Language Practice",
       "sourceDocument": "GigaLearn_WASSCE_English_Current_Syllabus_400.pdf",
-      "approvedQuestionCount": 20,
-      "pendingQuestionCount": 71,
+      "approvedQuestionCount": 24,
+      "pendingQuestionCount": 67,
       "mcqCount": 91,
       "trueFalseCount": 0,
       "topics": [
