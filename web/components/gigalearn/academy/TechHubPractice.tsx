@@ -162,7 +162,6 @@ function TechHubInner() {
   const [textAnswers, setTextAnswers] = useState<Record<string, string>>({});
   const [reward, setReward] = useState<string | null>(null);
   const [streak, setStreak] = useState(0);
-  const [learnFeedback, setLearnFeedback] = useState<LearnFeedback | null>(null);
   /** Persist feedback per question so Previous/Next does not lose notes. */
   const [feedbackByQuestion, setFeedbackByQuestion] = useState<
     Record<string, LearnFeedback>
@@ -288,7 +287,6 @@ function TechHubInner() {
     setBusy(true);
     setError(null);
     setResults(null);
-    setLearnFeedback(null);
     try {
       await ensureEnrolled();
       const started = await startSession({
@@ -325,7 +323,6 @@ function TechHubInner() {
       setAnswers({});
       setTextAnswers({});
       setFeedbackByQuestion({});
-      setLearnFeedback(null);
       setReward(null);
       setStreak(0);
       rewardedQuestionIdsRef.current = new Set();
@@ -369,7 +366,6 @@ function TechHubInner() {
       }
       if (res.feedback) {
         const fb = res.feedback as LearnFeedback;
-        setLearnFeedback(fb);
         setFeedbackByQuestion((prev) => ({ ...prev, [current.questionId]: fb }));
         const alreadyRewarded = rewardedQuestionIdsRef.current.has(current.questionId);
         if (!alreadyRewarded) {
@@ -431,7 +427,6 @@ function TechHubInner() {
           correctIndex: null,
         },
       }));
-      setLearnFeedback((res.feedback as LearnFeedback) ?? null);
       setAnswers((prev) => ({ ...prev, [current.questionId]: -1 }));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not save written response.");
@@ -441,10 +436,8 @@ function TechHubInner() {
   }
 
   function goToQuestion(nextIndex: number) {
-    const q = localQuestions[nextIndex];
     setIndex(nextIndex);
     setReward(null);
-    setLearnFeedback(q ? feedbackByQuestion[q.questionId] ?? null : null);
   }
 
   async function onFinish() {
@@ -655,7 +648,7 @@ function TechHubInner() {
   if (sessionId && current) {
     const selected = answers[current.questionId];
     const currentTextAnswer = textAnswers[current.questionId] ?? "";
-    const activeFeedback = learnFeedback ?? feedbackByQuestion[current.questionId] ?? null;
+    const activeFeedback = feedbackByQuestion[current.questionId] ?? null;
     const revealed = immediateFeedback && activeFeedback != null;
     const markedAnswers = Object.values(feedbackByQuestion).filter(
       (feedback) => !feedback.pendingReview && !feedback.selfAssessment && feedback.correctIndex != null
@@ -815,8 +808,7 @@ function TechHubInner() {
                               ? "exam-session-tf--wrong"
                               : "exam-session-option--wrong"),
                           isProvisionalKey && "exam-session-option--provisional",
-                          !revealed &&
-                            isSelected &&
+                          isSelected && (!revealed || (pending && !isProvisionalKey)) &&
                             (isTrueFalse
                               ? "exam-session-tf--picked"
                               : "exam-session-option--picked")
@@ -832,6 +824,14 @@ function TechHubInner() {
                             <span className="exam-session-option-text">{opt}</span>
                           </>
                         )}
+                        {revealed && isSelected ? (
+                          <span className="shrink-0 text-xs font-semibold">Your choice</span>
+                        ) : null}
+                        {revealed && !isSelected && (isVerifiedCorrect || isProvisionalKey) ? (
+                          <span className="shrink-0 text-xs font-semibold">
+                            {isVerifiedCorrect ? "Correct answer" : "Practice answer"}
+                          </span>
+                        ) : null}
                         {isVerifiedCorrect ? (
                           <Check className="exam-session-icon-ok" aria-hidden />
                         ) : null}
