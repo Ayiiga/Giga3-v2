@@ -89,6 +89,7 @@ export function ConnectorsPanel() {
         window.location.href = result.authorizeUrl;
       } catch (e) {
         setError(e instanceof Error ? e.message : "Could not start connection.");
+      } finally {
         setBusyId(null);
       }
     },
