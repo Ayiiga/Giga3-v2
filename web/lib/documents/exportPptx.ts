@@ -21,7 +21,7 @@ function esc(value: string): string {
 function plain(value: string): string {
   return value.replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
     .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
-    .replace(/\*\*|__|\*|\x60/g, "").replace(/<[^>]*>/g, "").trim();
+    .replace(/\*\*|__|\*|\x60/g, "").trim();
 }
 
 type SlideContent = { title: string; lines: string[] };
