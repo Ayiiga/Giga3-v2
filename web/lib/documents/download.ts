@@ -4,11 +4,15 @@ import { tipTapJsonToMarkdown } from "@/lib/documents/model";
 import { exportDocumentPdf } from "@/lib/documents/exportPdf";
 import { exportDocumentDocx } from "@/lib/documents/exportDocx";
 import { analyzePdfUnicodeCoverage } from "@/lib/documents/pdfUnicode";
+import { PDFDocument } from "pdf-lib";
 
 export type DocumentExportFormat = "pdf" | "docx";
 
 export type DocumentExportResult = {
   filename: string;
+  /** Exact page count for PDF (Word pagination depends on the viewer). */
+  pageCount?: number;
+  pageTargetExceeded?: boolean;
   /** Present for PDF when WinAnsi cannot encode some characters. */
   pdfUnicode?: {
     substitutedCount: number;
@@ -39,10 +43,14 @@ export async function downloadDocumentExport(
     const source = doc.markdown || tipTapJsonToMarkdown(doc.content);
     const coverage = analyzePdfUnicodeCoverage(source);
     const bytes = await exportDocumentPdf(doc);
+    const pageCount = (await PDFDocument.load(bytes)).getPageCount();
+    const pageTarget = doc.templateKind === "cv" ? doc.paper.pageTarget ?? (doc.paper.onePageFit ? 1 : 2) : null;
     const filename = slugFilename(doc.title.replace(/\s+/g, "_"), "pdf");
     triggerDownload(bytes, filename, "application/pdf");
     return {
       filename,
+      pageCount,
+      pageTargetExceeded: pageTarget !== null && pageCount > pageTarget,
       pdfUnicode: coverage.hasUnsupported
         ? { substitutedCount: coverage.unsupportedCount, samples: coverage.samples }
         : undefined,
