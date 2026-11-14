@@ -47,6 +47,10 @@ export type DocumentTemplateKind =
   | "meeting-minutes"
   | "invoice"
   | "memo"
+  | "book"
+  | "research-paper"
+  | "thesis"
+  | "presentation"
   | "generic";
 
 export type GigaDocument = {
@@ -62,7 +66,7 @@ export type GigaDocument = {
   updatedAt: number;
   /** Soft warning when one-page fit cannot reasonably hold content. */
   fitWarning?: string | null;
-  /** Optional user-uploaded, locally stored, square-cropped JPEG portrait for CVs. */
+  /** Optional user-uploaded, locally stored, 4:5 JPEG portrait for CVs. */
   profilePhotoDataUrl?: string;
 };
 
