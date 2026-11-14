@@ -21,7 +21,7 @@ export function DocumentsPageRoot() {
         <p className="text-xs font-semibold uppercase tracking-wide text-accent">Shared across Chat · GigaLearn · Create</p>
         <h2 className="text-xl font-bold text-foreground">Document Studio</h2>
         <p className="text-sm text-muted">
-          Rich-text editing with A4/A5 setup, one-page CV fit, and real PDF / Word export.
+          Rich-text editing, professional one- or two-page CV targets, optional portrait photos, and PDF / Word / PowerPoint exports.
         </p>
       </header>
 
