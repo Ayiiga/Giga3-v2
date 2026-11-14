@@ -233,7 +233,7 @@ export function evaluateOnePageFit(doc: GigaDocument): string | null {
   const text = doc.markdown.replace(/\s+/g, " ").trim();
   const limit = (doc.paper.size === "A5" ? 1800 : 3200) * target;
   if (text.length <= limit) return null;
-  return `This ${doc.paper.size} ${target}-page target may be tight (${text.length.toLocaleString()} characters). Shorten wording if appropriate; no content will be deleted. Verify the PDF page count after export.`;
+  return `This ${doc.paper.size} ${target === 1 ? "one-page" : "two-page"} layout may be tight (${text.length.toLocaleString()} characters). Shorten wording if appropriate; content will not be deleted. Verify the PDF page count after export.`;
 }
 
 /**
