@@ -49,7 +49,7 @@ export function DocumentStudio({
   className,
 }: DocumentStudioProps) {
   const [doc, setDoc] = useState(initial);
-  const [busy, setBusy] = useState<"pdf" | "docx" | "share" | "save" | null>(null);
+  const [busy, setBusy] = useState<"pdf" | "docx" | "pptx" | "share" | "save" | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
@@ -128,7 +128,7 @@ export function DocumentStudio({
     [doc.markdown]
   );
 
-  async function runExport(kind: "pdf" | "docx", opts?: { acknowledgePdfUnicode?: boolean }) {
+  async function runExport(kind: "pdf" | "docx" | "pptx", opts?: { acknowledgePdfUnicode?: boolean }) {
     const latest = {
       ...doc,
       content: (editor?.getJSON() as DocJson) ?? doc.content,
@@ -159,6 +159,8 @@ export function DocumentStudio({
           ? ` ${result.pdfUnicode.substitutedCount} unsupported character(s) became “?” (e.g. ${result.pdfUnicode.samples.join(" ")}). Export Word to preserve all characters.`
           : "";
         setStatus(`PDF ready — ${result.filename} (${countLabel}).${fitLabel}${unicodeLabel}`);
+      } else if (kind === "pptx") {
+        setStatus(`Editable PowerPoint slides ready — ${result.filename}. Review layout in your presentation app before sharing.`);
       } else {
         setStatus(`Word file ready — ${result.filename}. Pagination may differ between Word viewers.`);
       }
@@ -459,6 +461,17 @@ export function DocumentStudio({
         >
           {busy === "docx" ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
           Export Word
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="secondary"
+          className="min-h-11"
+          disabled={busy !== null}
+          onClick={() => void runExport("pptx")}
+        >
+          {busy === "pptx" ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
+          Export Slides
         </Button>
         <Button
           type="button"
