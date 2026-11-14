@@ -110,7 +110,6 @@ function themeXml(): string {
   const clr = colors.map((item) => {
     const i = item.indexOf(":");
     const tag = item.slice(0, i);
-    const payload = item.slice(i + 1).replace(/^sysClr|^srgbClr/, x => x);
     const element = item.includes(":sysClr") ? "sysClr" : "srgbClr";
     const attrs = item.slice(i + 1 + element.length).trim();
     return `<a:${tag}><a:${element} ${attrs}/></a:${tag}>`;
