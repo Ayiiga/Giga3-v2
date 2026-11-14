@@ -4,6 +4,7 @@ import { DOC_TEXT_COLORS } from "@/lib/documents/types";
 import { mmToPt, paperDimensionsPt } from "@/lib/documents/paper";
 import { tipTapJsonToMarkdown } from "@/lib/documents/model";
 import { sanitizeForPdfExport } from "@/lib/documents/pdfUnicode";
+import { passportPhotoBytes } from "@/lib/documents/profilePhoto";
 
 type Rgb = { r: number; g: number; b: number };
 
@@ -195,6 +196,9 @@ export async function exportDocumentPdf(doc: GigaDocument): Promise<Uint8Array> 
   const italic = await pdf.embedFont(StandardFonts.TimesRomanItalic);
   const boldItalic = await pdf.embedFont(StandardFonts.TimesRomanBoldItalic);
   const fonts = { regular, bold, italic, boldItalic };
+  const profileImage = doc.templateKind === "cv" && doc.profilePhotoDataUrl
+    ? await pdf.embedJpg(passportPhotoBytes(doc.profilePhotoDataUrl))
+    : null;
 
   const pageSize = paperDimensionsPt(doc.paper);
   const margin = {
@@ -204,6 +208,12 @@ export async function exportDocumentPdf(doc: GigaDocument): Promise<Uint8Array> 
     left: mmToPt(doc.paper.marginsMm.left),
   };
   const contentWidth = pageSize.width - margin.left - margin.right;
+  const photoWidth = mmToPt(26);
+  const photoHeight = mmToPt(33);
+  const photoBottom = pageSize.height - margin.top - photoHeight;
+  const availableWidth = () => profileImage && pageIndex === 1 && y > photoBottom - 8
+    ? contentWidth - photoWidth - 12
+    : contentWidth;
 
   // Soft one-page fit: scale body size slightly, never delete.
   let bodySize = 11;
@@ -216,6 +226,14 @@ export async function exportDocumentPdf(doc: GigaDocument): Promise<Uint8Array> 
   let page: PDFPage = pdf.addPage([pageSize.width, pageSize.height]);
   let y = pageSize.height - margin.top;
   let pageIndex = 1;
+  if (profileImage) {
+    page.drawImage(profileImage, {
+      x: pageSize.width - margin.right - photoWidth,
+      y: photoBottom,
+      width: photoWidth,
+      height: photoHeight,
+    });
+  }
 
   const newPage = () => {
     // Footer page number on previous page
@@ -242,9 +260,10 @@ export async function exportDocumentPdf(doc: GigaDocument): Promise<Uint8Array> 
   ) => {
     for (const line of lines) {
       const lineW = line.reduce((s, r) => s + r.width, 0);
+      const lineWidth = availableWidth();
       let x = margin.left;
-      if (align === "center") x = margin.left + (contentWidth - lineW) / 2;
-      else if (align === "right") x = margin.left + contentWidth - lineW;
+      if (align === "center") x = margin.left + (lineWidth - lineW) / 2;
+      else if (align === "right") x = margin.left + lineWidth - lineW;
       const size = line[0]?.size ?? bodySize;
       ensureSpace(size * 1.35);
       for (const run of line) {
@@ -300,20 +319,20 @@ export async function exportDocumentPdf(doc: GigaDocument): Promise<Uint8Array> 
     if (block.kind === "heading") {
       const size = block.level === 1 ? bodySize + 7 : block.level === 2 ? bodySize + 4 : bodySize + 2;
       const runs = block.runs.map((r) => ({ ...r, bold: true, fontSize: size }));
-      drawLines(wrapRuns(runs, contentWidth, size, fonts), block.align, 8);
+      drawLines(wrapRuns(runs, availableWidth(), size, fonts), block.align, 8);
       continue;
     }
     if (block.kind === "listItem") {
       const bullet = block.ordered ? `${block.index}. ` : "- ";
       const prefixW = regular.widthOfTextAtSize(bullet, bodySize);
       const runs = [{ text: bullet, bold: true }, ...block.runs];
-      const lines = wrapRuns(runs, contentWidth - 4, bodySize, fonts);
+      const lines = wrapRuns(runs, availableWidth() - 4, bodySize, fonts);
       // indent subsequent wrapped lines
       drawLines(lines, "left", 4);
       void prefixW;
       continue;
     }
-    drawLines(wrapRuns(block.runs, contentWidth, bodySize, fonts), block.align, 6);
+    drawLines(wrapRuns(block.runs, availableWidth(), bodySize, fonts), block.align, 6);
   }
 
   // Footer on last page
