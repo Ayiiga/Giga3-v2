@@ -145,43 +145,64 @@ function paragraphsFromJson(doc: DocJson | null | undefined): Paragraph[] {
   return out;
 }
 
+/** Markdown-only imports should not combine separate CV bullets into one line. */
 function paragraphsFromMarkdown(markdown: string): Paragraph[] {
-  return markdown
-    .split(/\n{2,}/)
-    .filter(Boolean)
-    .map((block) => {
-      if (block.startsWith("# ")) {
-        return new Paragraph({
-          text: block.slice(2),
-          heading: HeadingLevel.HEADING_1,
-          spacing: { after: 160 },
-        });
-      }
-      if (block.startsWith("## ")) {
-        return new Paragraph({
-          text: block.slice(3),
-          heading: HeadingLevel.HEADING_2,
-          spacing: { after: 140 },
-        });
-      }
-      if (block.startsWith("### ")) {
-        return new Paragraph({
-          text: block.slice(4),
-          heading: HeadingLevel.HEADING_3,
-          spacing: { after: 120 },
-        });
-      }
-      if (/^[-*+]\s+/m.test(block)) {
-        return new Paragraph({
-          text: block.replace(/^[-*+]\s+/gm, "").replace(/\n/g, " "),
-          bullet: { level: 0 },
-        });
-      }
-      return new Paragraph({
-        text: block.replace(/\n/g, " "),
-        spacing: { after: 120, line: 276 },
-      });
-    });
+  const out: Paragraph[] = [];
+  let paragraph: string[] = [];
+  const clean = (value: string) => value
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/__([^_]+)__/g, "$1")
+    .replace(/\*([^*]+)\*/g, "$1");
+  const flush = () => {
+    if (!paragraph.length) return;
+    out.push(new Paragraph({
+      text: clean(paragraph.join(" ")),
+      spacing: { after: 120, line: 276 },
+    }));
+    paragraph = [];
+  };
+
+  for (const source of markdown.replace(/\r\n/g, "\n").split("\n")) {
+    const line = source.trim();
+    if (!line) {
+      flush();
+      continue;
+    }
+    const heading = /^(#{1,3})\s+(.+)$/.exec(line);
+    if (heading) {
+      flush();
+      const level = heading[1].length;
+      out.push(new Paragraph({
+        text: clean(heading[2]),
+        heading: level === 1 ? HeadingLevel.HEADING_1 : level === 2 ? HeadingLevel.HEADING_2 : HeadingLevel.HEADING_3,
+        spacing: { after: level === 1 ? 160 : level === 2 ? 140 : 120 },
+      }));
+      continue;
+    }
+    if (/^(-{3,}|\*{3,})$/.test(line)) {
+      flush();
+      out.push(new Paragraph({
+        border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: "A1A1AA" } },
+        spacing: { after: 160 },
+      }));
+      continue;
+    }
+    const bullet = /^[-*+]\s+(.+)$/.exec(line);
+    if (bullet) {
+      flush();
+      out.push(new Paragraph({ text: clean(bullet[1]), bullet: { level: 0 }, spacing: { after: 60 } }));
+      continue;
+    }
+    const numbered = /^\d+[.)]\s+(.+)$/.exec(line);
+    if (numbered) {
+      flush();
+      out.push(new Paragraph({ text: clean(numbered[1]), numbering: { reference: "doc-numbers", level: 0 }, spacing: { after: 60 } }));
+      continue;
+    }
+    paragraph.push(line);
+  }
+  flush();
+  return out;
 }
 
 /** Build a real OOXML .docx buffer from the structured document. */
