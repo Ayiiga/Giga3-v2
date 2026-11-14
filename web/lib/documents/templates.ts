@@ -8,6 +8,7 @@ type Seed = {
   markdown: string;
   paperSize?: "A4" | "A5";
   onePageFit?: boolean;
+  pageTarget?: 1 | 2;
 };
 
 export const DOCUMENT_STUDIO_TEMPLATES: Seed[] = [
@@ -17,6 +18,7 @@ export const DOCUMENT_STUDIO_TEMPLATES: Seed[] = [
     description: "One-page A4 CV for teaching and professional roles",
     paperSize: "A4",
     onePageFit: true,
+    pageTarget: 1,
     markdown: `# Professional CV
 
 ## Contact
@@ -48,6 +50,7 @@ Two to three sentences tailored to the target role.
     description: "A5 one-page fit mode for shorter CVs",
     paperSize: "A5",
     onePageFit: true,
+    pageTarget: 1,
     markdown: `# CV
 
 **Name** · Email · Phone · City
@@ -64,6 +67,44 @@ Key achievement.
 
 ## Education
 Qualification — Institution (Year)
+`,
+  },
+  {
+    kind: "cv",
+    title: "Experienced CV (2 pages)",
+    description: "Professional A4 CV for experienced candidates; two-page target without cutting content",
+    paperSize: "A4",
+    onePageFit: false,
+    pageTarget: 2,
+    markdown: `# Full Name
+
+Professional title · City, Country · Email · Phone · Portfolio
+
+## Professional profile
+Three to four natural, role-specific sentences with a clear professional focus. Use only confirmed experience.
+
+## Key skills
+- Relevant skill · Relevant skill · Relevant skill
+
+## Professional experience
+### Current role — Organisation (Year–Present)
+- Relevant accomplishment with evidence; include measurable outcomes only if verified
+- Scope of responsibilities and contribution
+
+### Previous role — Organisation (Year–Year)
+- Relevant accomplishment with evidence
+
+## Education
+### Qualification — Institution (Year)
+
+## Professional development
+- Relevant certification or training (if applicable)
+
+## Leadership and projects
+- Relevant leadership position or project (if applicable)
+
+## References
+Available upon request, unless names are specifically requested.
 `,
   },
   {
@@ -188,6 +229,114 @@ Yours sincerely,
 `,
   },
   {
+    kind: "book",
+    title: "Book manuscript",
+    description: "Full-length manuscript with chapters, front matter and end matter",
+    markdown: `# Book title
+
+## Subtitle
+
+## Author
+
+## Preface
+
+## Table of contents
+
+## Chapter 1 — Introduction
+
+## Chapter 2
+
+## Conclusion
+
+## References and further reading (when applicable)
+
+## About the author
+`,
+  },
+  {
+    kind: "research-paper",
+    title: "Research paper",
+    description: "Academic structure, methods, findings and verifiable references",
+    markdown: `# Research title
+
+## Author and affiliation
+
+## Abstract
+
+## Keywords
+
+## Introduction
+
+## Literature review
+
+## Methods
+
+## Results
+
+## Discussion and limitations
+
+## Conclusion
+
+## References (only verified sources)
+`,
+  },
+  {
+    kind: "thesis",
+    title: "Thesis / dissertation",
+    description: "Long-form academic work with chapters, ethics and references",
+    markdown: `# Thesis title
+
+## Candidate, institution and degree
+
+## Declaration and acknowledgements
+
+## Abstract
+
+## Table of contents
+
+## Chapter 1: Introduction
+
+## Chapter 2: Literature review
+
+## Chapter 3: Methodology
+
+## Chapter 4: Results
+
+## Chapter 5: Discussion
+
+## Chapter 6: Conclusions and recommendations
+
+## References (verified only)
+
+## Appendices
+`,
+  },
+  {
+    kind: "presentation",
+    title: "Professional presentation",
+    description: "Slide headings and concise speaker-ready bullet points",
+    markdown: `# Presentation title
+
+## Opening / overview
+- Main message
+- Audience and objective
+
+## Problem / context
+- Key point
+- Evidence or example
+
+## Findings
+- Finding one
+- Finding two
+
+## Recommendations
+- Action one
+- Action two
+
+## Questions
+`,
+  },
+  {
     kind: "memo",
     title: "Memo",
     description: "Internal memorandum",
@@ -213,5 +362,6 @@ export function createDocumentFromTemplate(kind: DocumentTemplateKind, variantTi
     templateKind: seed.kind,
     paperSize: seed.paperSize,
     onePageFit: seed.onePageFit,
+    pageTarget: seed.pageTarget,
   });
 }
