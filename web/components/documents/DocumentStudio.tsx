@@ -421,8 +421,9 @@ export function DocumentStudio({
         <div
           className="mx-auto rounded-sm border border-[#d4d4d8] bg-white shadow-md"
           style={{
-            width: preview.widthPx,
-            minHeight: preview.widthPx * (doc.paper.size === "A5" ? 1.414 : 1.414),
+            width: "100%",
+            maxWidth: preview.widthPx,
+            aspectRatio: preview.aspectRatio,
             padding: "12px 14px",
           }}
         >

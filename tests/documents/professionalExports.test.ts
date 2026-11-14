@@ -78,3 +78,36 @@ describe("editable slides export", () => {
     expect(slideXml).toContain("Lessons &lt;learned&gt;");
   });
 });
+
+describe("Android document quality regressions", () => {
+  it("retains independent bullet paragraphs from Markdown-only CVs in Word", async () => {
+    const doc = documentFromMarkdown(
+      "# Ama Mensah\n\n## Skills\n- Communication\n- Classroom management\n- Teamwork\n\n## Education\nDiploma in Education",
+      { templateKind: "cv" }
+    );
+    expect(doc.content.content).toEqual([]);
+    const bytes = await exportDocumentDocx(doc);
+    const zip = await JSZip.loadAsync(bytes);
+    const xml = await zip.file("word/document.xml")!.async("string");
+    expect(xml).toContain("Communication");
+    expect(xml).toContain("Classroom management");
+    expect(xml).toContain("Teamwork");
+    expect((xml.match(/<w:numPr>/g) ?? []).length).toBeGreaterThanOrEqual(3);
+    const pdf = await PDFDocument.load(await exportDocumentPdf(doc));
+    expect(pdf.getPageCount()).toBeGreaterThanOrEqual(1);
+  });
+
+  it("keeps long-form academic documents unrestricted by CV page targets", async () => {
+    for (const kind of ["book", "research-paper", "thesis", "presentation"] as const) {
+      const doc = createDocumentFromTemplate(kind);
+      expect(doc.templateKind).toBe(kind);
+      expect(doc.paper.pageTarget).toBeUndefined();
+    }
+    const long = documentFromMarkdown(
+      "# Thesis\n\n" + "## Chapter\n\n" + "An original academic paragraph. ".repeat(3000),
+      { templateKind: "thesis" }
+    );
+    const pdf = await PDFDocument.load(await exportDocumentPdf(long));
+    expect(pdf.getPageCount()).toBeGreaterThan(2);
+  });
+});

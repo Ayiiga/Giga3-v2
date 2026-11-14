@@ -1,0 +1,67 @@
+name: Document Studio Android Chrome QA
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "web/components/documents/**"
+      - "web/lib/documents/**"
+      - "tests/documents/**"
+      - "tests/e2e/document-studio-android.spec.ts"
+      - ".github/workflows/document-studio-android.yml"
+  push:
+    branches: [main]
+    paths:
+      - "web/components/documents/**"
+      - "web/lib/documents/**"
+      - "tests/documents/**"
+      - "tests/e2e/document-studio-android.spec.ts"
+      - ".github/workflows/document-studio-android.yml"
+  workflow_dispatch:
+
+jobs:
+  android-chrome:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      GIGA3_E2E_BASE_URL: http://127.0.0.1:3011
+      NEXT_PUBLIC_CONVEX_URL: https://perfect-lark-521.convex.cloud
+      NEXT_PUBLIC_CONVEX_SITE_URL: https://perfect-lark-521.convex.site
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install root dependencies
+        run: npm ci --legacy-peer-deps
+      - name: Install web dependencies
+        run: npm ci --legacy-peer-deps
+        working-directory: web
+      - name: Build the proposed static website
+        working-directory: web
+        run: npm run build
+      - name: Install mobile Chrome browser
+        run: npx playwright install chromium --with-deps
+      - name: Start local static website
+        run: |
+          python3 -m http.server 3011 --bind 127.0.0.1 --directory web/out > /tmp/giga3-docserver.log 2>&1 &
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:3011/documents/ > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/giga3-docserver.log
+          exit 1
+      - name: Android Chrome mobile E2E (photo, PDF, Word, PPTX, drafts, responsive controls)
+        run: npx playwright test tests/e2e/document-studio-android.spec.ts --project=mobile-chrome --reporter=list
+      - name: Upload failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: document-studio-android-${{ github.run_id }}
+          path: |
+            test-results/
+            playwright-report/
+          if-no-files-found: ignore
