@@ -159,6 +159,61 @@ function wrapRuns(
   return lines.filter((line) => line.length > 0 || lines.length === 1);
 }
 
+/** Parse Markdown-only documents without collapsing individual CV bullets. */
+function blocksFromMarkdown(markdown: string): Block[] {
+  const blocks: Block[] = [];
+  let paragraph: string[] = [];
+  const flush = () => {
+    if (paragraph.length) {
+      blocks.push({ kind: "paragraph", runs: [{ text: toWinAnsiSafe(paragraph.join(" ")) }] });
+      paragraph = [];
+    }
+  };
+
+  for (const source of markdown.replace(/\r\n/g, "\n").split("\n")) {
+    const line = source.trim();
+    if (!line) {
+      flush();
+      continue;
+    }
+    const heading = /^(#{1,3})\s+(.+)$/.exec(line);
+    if (heading) {
+      flush();
+      blocks.push({
+        kind: "heading",
+        level: heading[1].length,
+        runs: [{ text: toWinAnsiSafe(heading[2]) }],
+      });
+      continue;
+    }
+    if (/^(-{3,}|\*{3,})$/.test(line)) {
+      flush();
+      blocks.push({ kind: "hr" });
+      continue;
+    }
+    const bullet = /^[-*+]\s+(.+)$/.exec(line);
+    if (bullet) {
+      flush();
+      blocks.push({ kind: "listItem", ordered: false, index: 0, runs: [{ text: toWinAnsiSafe(bullet[1]) }] });
+      continue;
+    }
+    const number = /^(\d+)[.)]\s+(.+)$/.exec(line);
+    if (number) {
+      flush();
+      blocks.push({
+        kind: "listItem",
+        ordered: true,
+        index: Number(number[1]),
+        runs: [{ text: toWinAnsiSafe(number[2]) }],
+      });
+      continue;
+    }
+    paragraph.push(line);
+  }
+  flush();
+  return blocks;
+}
+
 /**
  * Build a real multi-page PDF from the structured document (pdf-lib).
  * Preserves paper size, margins, typography marks, lists, and colours.
@@ -172,22 +227,7 @@ export async function exportDocumentPdf(doc: GigaDocument): Promise<Uint8Array> 
   // Prefer structured TipTap JSON; fall back to markdown→paragraphs.
   let blocks = blocksFromJson(content);
   if (blocks.length === 0) {
-    const md = doc.markdown || tipTapJsonToMarkdown(doc.content);
-    blocks = md
-      .split(/\n{2,}/)
-      .filter(Boolean)
-      .map((p) => {
-        if (p.startsWith("# "))
-          return { kind: "heading" as const, level: 1, runs: [{ text: toWinAnsiSafe(p.slice(2)) }] };
-        if (p.startsWith("## "))
-          return { kind: "heading" as const, level: 2, runs: [{ text: toWinAnsiSafe(p.slice(3)) }] };
-        if (p.startsWith("### "))
-          return { kind: "heading" as const, level: 3, runs: [{ text: toWinAnsiSafe(p.slice(4)) }] };
-        return {
-          kind: "paragraph" as const,
-          runs: [{ text: toWinAnsiSafe(p.replace(/\n/g, " ")) }],
-        };
-      });
+    blocks = blocksFromMarkdown(doc.markdown || tipTapJsonToMarkdown(doc.content));
   }
 
   const pdf = await PDFDocument.create();
