@@ -182,6 +182,10 @@ export function inferTemplateKind(title: string, markdown: string): DocumentTemp
   if (/\bmeeting minutes\b/.test(hay)) return "meeting-minutes";
   if (/\binvoice\b/.test(hay)) return "invoice";
   if (/\bproposal\b/.test(hay)) return "proposal";
+  if (/\b(thesis|dissertation)\b/.test(hay)) return "thesis";
+  if (/\b(research paper|research study|academic research)\b/.test(hay)) return "research-paper";
+  if (/\b(book|manuscript)\b/.test(hay)) return "book";
+  if (/\b(presentation|slide deck|slides)\b/.test(hay)) return "presentation";
   if (/\breport\b/.test(hay)) return "report";
   if (/\bmemo\b/.test(hay)) return "memo";
   return "generic";
@@ -195,6 +199,7 @@ export function documentFromMarkdown(
     templateKind?: DocumentTemplateKind;
     paperSize?: "A4" | "A5";
     onePageFit?: boolean;
+    pageTarget?: 1 | 2;
     id?: string;
   }
 ): GigaDocument {
@@ -204,6 +209,8 @@ export function documentFromMarkdown(
   const paper = defaultPaper(options?.paperSize ?? (templateKind === "cv" ? "A4" : "A4"));
   if (options?.onePageFit != null) paper.onePageFit = options.onePageFit;
   else if (templateKind === "cv") paper.onePageFit = true;
+  if (options?.pageTarget) paper.pageTarget = options.pageTarget;
+  else if (templateKind === "cv") paper.pageTarget = paper.onePageFit ? 1 : 2;
 
   const now = Date.now();
   return {
@@ -221,11 +228,12 @@ export function documentFromMarkdown(
 
 /** Rough character budget for one-page CV warnings (not deletion). */
 export function evaluateOnePageFit(doc: GigaDocument): string | null {
-  if (!doc.paper.onePageFit) return null;
+  const target = doc.paper.pageTarget ?? (doc.paper.onePageFit ? 1 : null);
+  if (!target) return null;
   const text = doc.markdown.replace(/\s+/g, " ").trim();
-  const limit = doc.paper.size === "A5" ? 1800 : 3200;
+  const limit = (doc.paper.size === "A5" ? 1800 : 3200) * target;
   if (text.length <= limit) return null;
-  return `This ${doc.paper.size} one-page layout may be tight (${text.length.toLocaleString()} characters). Tighten wording or switch off one-page fit — content will not be deleted.`;
+  return `This ${doc.paper.size} ${target}-page target may be tight (${text.length.toLocaleString()} characters). Shorten wording if appropriate; no content will be deleted. Verify the PDF page count after export.`;
 }
 
 /**
