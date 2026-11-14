@@ -3,10 +3,11 @@ import { slugFilename } from "@/lib/documents/model";
 import { tipTapJsonToMarkdown } from "@/lib/documents/model";
 import { exportDocumentPdf } from "@/lib/documents/exportPdf";
 import { exportDocumentDocx } from "@/lib/documents/exportDocx";
+import { exportDocumentPptx } from "@/lib/documents/exportPptx";
 import { analyzePdfUnicodeCoverage } from "@/lib/documents/pdfUnicode";
 import { PDFDocument } from "pdf-lib";
 
-export type DocumentExportFormat = "pdf" | "docx";
+export type DocumentExportFormat = "pdf" | "docx" | "pptx";
 
 export type DocumentExportResult = {
   filename: string;
@@ -56,6 +57,12 @@ export async function downloadDocumentExport(
         : undefined,
     };
   }
+  if (format === "pptx") {
+    const bytes = await exportDocumentPptx(doc);
+    const filename = slugFilename(doc.title.replace(/\s+/g, "_"), "pptx");
+    triggerDownload(bytes, filename, "application/vnd.openxmlformats-officedocument.presentationml.presentation");
+    return { filename };
+  }
   const bytes = await exportDocumentDocx(doc);
   const filename = slugFilename(doc.title.replace(/\s+/g, "_"), "docx");
   triggerDownload(
@@ -68,7 +75,7 @@ export async function downloadDocumentExport(
 
 export async function shareDocumentFile(
   doc: GigaDocument,
-  format: DocumentExportFormat
+  format: Exclude<DocumentExportFormat, "pptx">
 ): Promise<"shared" | "downloaded"> {
   const bytes =
     format === "pdf" ? await exportDocumentPdf(doc) : await exportDocumentDocx(doc);
