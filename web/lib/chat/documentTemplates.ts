@@ -66,7 +66,7 @@ Write a 2–3 sentence summary tailored to the target role.
 ## Certifications (optional)
 
 ---
-Instructions for AI: Improve clarity, use strong action verbs, and keep formatting ATS-friendly. Ask me for my target role if missing.`,
+Instructions for AI: Write naturally and professionally, preserve verified qualifications and dates, and never invent metrics or achievements. Aim for one A4 page if the content fits or two for experienced candidates. Use clean ATS-friendly headings and include a passport photo only if supplied and requested. Ask for a target role if essential.`,
   },
   {
     id: "cover-letter",
@@ -171,7 +171,7 @@ Summarize problem, method, findings, and contribution in 250 words.
 ## Timeline ({{YEAR}})
 
 ---
-Instructions for AI: Strengthen academic tone, suggest citations to search for, and flag gaps in argument.`,
+Instructions for AI: Use a credible academic voice, keep the full thesis length where necessary, identify unverified claims, suggest sources to locate, and never invent references, data or results.`,
   },
   {
     id: "research-paper",
@@ -211,7 +211,7 @@ Interpretation, limitations, future work.
 ## References (only verified sources)
 
 ---
-Instructions for AI: Improve clarity, suggest section transitions, and highlight where evidence is needed. Never fabricate citations. If sources are unavailable, say so and draft from general knowledge with a brief note.`,
+Instructions for AI: Use an appropriate scholarly voice and sections, maintain the full length needed, improve transitions, and flag evidence gaps. Never fabricate citations. If sources are unavailable, say so plainly.`,
   },
   {
     id: "business-plan",

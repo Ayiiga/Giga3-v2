@@ -3,12 +3,17 @@ import { slugFilename } from "@/lib/documents/model";
 import { tipTapJsonToMarkdown } from "@/lib/documents/model";
 import { exportDocumentPdf } from "@/lib/documents/exportPdf";
 import { exportDocumentDocx } from "@/lib/documents/exportDocx";
+import { exportDocumentPptx } from "@/lib/documents/exportPptx";
 import { analyzePdfUnicodeCoverage } from "@/lib/documents/pdfUnicode";
+import { PDFDocument } from "pdf-lib";
 
-export type DocumentExportFormat = "pdf" | "docx";
+export type DocumentExportFormat = "pdf" | "docx" | "pptx";
 
 export type DocumentExportResult = {
   filename: string;
+  /** Exact page count for PDF (Word pagination depends on the viewer). */
+  pageCount?: number;
+  pageTargetExceeded?: boolean;
   /** Present for PDF when WinAnsi cannot encode some characters. */
   pdfUnicode?: {
     substitutedCount: number;
@@ -39,14 +44,24 @@ export async function downloadDocumentExport(
     const source = doc.markdown || tipTapJsonToMarkdown(doc.content);
     const coverage = analyzePdfUnicodeCoverage(source);
     const bytes = await exportDocumentPdf(doc);
+    const pageCount = (await PDFDocument.load(bytes)).getPageCount();
+    const pageTarget = doc.templateKind === "cv" ? doc.paper.pageTarget ?? (doc.paper.onePageFit ? 1 : 2) : null;
     const filename = slugFilename(doc.title.replace(/\s+/g, "_"), "pdf");
     triggerDownload(bytes, filename, "application/pdf");
     return {
       filename,
+      pageCount,
+      pageTargetExceeded: pageTarget !== null && pageCount > pageTarget,
       pdfUnicode: coverage.hasUnsupported
         ? { substitutedCount: coverage.unsupportedCount, samples: coverage.samples }
         : undefined,
     };
+  }
+  if (format === "pptx") {
+    const bytes = await exportDocumentPptx(doc);
+    const filename = slugFilename(doc.title.replace(/\s+/g, "_"), "pptx");
+    triggerDownload(bytes, filename, "application/vnd.openxmlformats-officedocument.presentationml.presentation");
+    return { filename };
   }
   const bytes = await exportDocumentDocx(doc);
   const filename = slugFilename(doc.title.replace(/\s+/g, "_"), "docx");
@@ -60,7 +75,7 @@ export async function downloadDocumentExport(
 
 export async function shareDocumentFile(
   doc: GigaDocument,
-  format: DocumentExportFormat
+  format: Exclude<DocumentExportFormat, "pptx">
 ): Promise<"shared" | "downloaded"> {
   const bytes =
     format === "pdf" ? await exportDocumentPdf(doc) : await exportDocumentDocx(doc);

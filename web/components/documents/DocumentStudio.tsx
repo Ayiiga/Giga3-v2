@@ -10,6 +10,7 @@ import {
   tipTapJsonToMarkdown,
 } from "@/lib/documents/model";
 import { previewPageCss } from "@/lib/documents/paper";
+import { preparePassportPhoto } from "@/lib/documents/profilePhoto";
 import {
   analyzePdfUnicodeCoverage,
   PDF_UNICODE_LIMITATION,
@@ -48,10 +49,11 @@ export function DocumentStudio({
   className,
 }: DocumentStudioProps) {
   const [doc, setDoc] = useState(initial);
-  const [busy, setBusy] = useState<"pdf" | "docx" | "share" | "save" | null>(null);
+  const [busy, setBusy] = useState<"pdf" | "docx" | "pptx" | "share" | "save" | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
+  const [photoBusy, setPhotoBusy] = useState(false);
   /** Explicit user consent required before PDF export substitutes unsupported glyphs. */
   const [pdfUnicodeConfirm, setPdfUnicodeConfirm] = useState(false);
 
@@ -126,7 +128,7 @@ export function DocumentStudio({
     [doc.markdown]
   );
 
-  async function runExport(kind: "pdf" | "docx", opts?: { acknowledgePdfUnicode?: boolean }) {
+  async function runExport(kind: "pdf" | "docx" | "pptx", opts?: { acknowledgePdfUnicode?: boolean }) {
     const latest = {
       ...doc,
       content: (editor?.getJSON() as DocJson) ?? doc.content,
@@ -147,12 +149,20 @@ export function DocumentStudio({
     setPdfUnicodeConfirm(false);
     try {
       const result = await downloadDocumentExport(latest, kind);
-      if (kind === "pdf" && result.pdfUnicode) {
-        setStatus(
-          `PDF ready — ${result.filename}. ${result.pdfUnicode.substitutedCount} character(s) outside PDF font support were shown as “?” (e.g. ${result.pdfUnicode.samples.join(" ")}). Prefer Export Word for full Unicode.`
-        );
+      if (kind === "pdf") {
+        const count = result.pageCount ?? 1;
+        const countLabel = `${count} page${count === 1 ? "" : "s"}`;
+        const fitLabel = result.pageTargetExceeded
+          ? " This exceeds your CV page target; shorten the content or choose two pages. No content was removed."
+          : "";
+        const unicodeLabel = result.pdfUnicode
+          ? ` ${result.pdfUnicode.substitutedCount} unsupported character(s) became “?” (e.g. ${result.pdfUnicode.samples.join(" ")}). Export Word to preserve all characters.`
+          : "";
+        setStatus(`PDF ready — ${result.filename} (${countLabel}).${fitLabel}${unicodeLabel}`);
+      } else if (kind === "pptx") {
+        setStatus(`Editable PowerPoint slides ready — ${result.filename}. Review layout in your presentation app before sharing.`);
       } else {
-        setStatus(`${kind.toUpperCase()} ready — ${result.filename}`);
+        setStatus(`Word file ready — ${result.filename}. Pagination may differ between Word viewers.`);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Export failed. Please try again.");
@@ -195,6 +205,21 @@ export function DocumentStudio({
       setError(err instanceof Error ? err.message : "Share failed.");
     } finally {
       setBusy(null);
+    }
+  }
+
+  async function handlePhotoSelected(file: File | undefined) {
+    if (!file) return;
+    setPhotoBusy(true);
+    setError(null);
+    try {
+      const photo = await preparePassportPhoto(file);
+      emit({ ...doc, profilePhotoDataUrl: photo, updatedAt: Date.now() });
+      setStatus("Passport photo added for this CV. Export to include it in PDF or Word.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not read photo.");
+    } finally {
+      setPhotoBusy(false);
     }
   }
 
@@ -267,20 +292,68 @@ export function DocumentStudio({
             <option value="landscape">Landscape</option>
           </select>
         </label>
-        <label className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-border px-2 text-xs font-medium">
-          <input
-            type="checkbox"
-            checked={Boolean(doc.paper.onePageFit)}
-            onChange={(e) =>
-              emit({
-                ...doc,
-                paper: { ...doc.paper, onePageFit: e.target.checked },
-              })
-            }
-          />
-          One-page fit
-        </label>
+        {doc.templateKind === "cv" ? (
+          <label className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-border px-2 text-xs font-medium">
+            CV length
+            <select
+              aria-label="Preferred CV pages"
+              className="bg-transparent outline-none"
+              value={doc.paper.pageTarget ?? (doc.paper.onePageFit ? 1 : 2)}
+              onChange={(e) => {
+                const pages = Number(e.target.value) as 1 | 2;
+                emit({ ...doc, paper: { ...doc.paper, pageTarget: pages, onePageFit: pages === 1 } });
+              }}
+            >
+              <option value={1}>1 page</option>
+              <option value={2}>2 pages</option>
+            </select>
+          </label>
+        ) : (
+          <label className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-border px-2 text-xs font-medium">
+            <input
+              type="checkbox"
+              checked={Boolean(doc.paper.onePageFit)}
+              onChange={(e) => emit({ ...doc, paper: { ...doc.paper, onePageFit: e.target.checked } })}
+            />
+            One-page fit
+          </label>
+        )}
       </div>
+
+      {doc.templateKind === "cv" ? (
+        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border/70 px-3 py-2 text-xs">
+          {doc.profilePhotoDataUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element -- local, user-provided data URL
+            <img src={doc.profilePhotoDataUrl} alt="CV portrait preview" width={48} height={60} className="rounded border object-cover" />
+          ) : null}
+          <label className="inline-flex min-h-10 cursor-pointer items-center rounded-lg border border-border px-3 font-medium">
+            {photoBusy ? "Preparing photo…" : doc.profilePhotoDataUrl ? "Change passport photo" : "Add passport photo (optional)"}
+            <input
+              type="file"
+              accept="image/jpeg,image/png"
+              disabled={photoBusy || busy !== null}
+              className="sr-only"
+              aria-label="Upload optional passport-style CV photo"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                e.target.value = "";
+                void handlePhotoSelected(file);
+              }}
+            />
+          </label>
+          {doc.profilePhotoDataUrl ? (
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => emit({ ...doc, profilePhotoDataUrl: undefined, updatedAt: Date.now() })}
+            >
+              Remove photo
+            </Button>
+          ) : null}
+          <span className="text-muted">Added only when you choose a photo. A photograph is not required for every country or employer.</span>
+        </div>
+      ) : null}
 
       {doc.fitWarning ? (
         <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950" role="status">
@@ -388,6 +461,17 @@ export function DocumentStudio({
         >
           {busy === "docx" ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
           Export Word
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="secondary"
+          className="min-h-11"
+          disabled={busy !== null}
+          onClick={() => void runExport("pptx")}
+        >
+          {busy === "pptx" ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
+          Export Slides
         </Button>
         <Button
           type="button"

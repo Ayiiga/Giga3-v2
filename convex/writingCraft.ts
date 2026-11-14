@@ -50,10 +50,10 @@ export function hasTranslationIntent(query: string): boolean {
 /** Document deliverables (CV, report, proposal, export PDF/Word). */
 export function hasDocumentDeliverableIntent(query: string): boolean {
   return (
-    /\b(create|write|draft|prepare|generate|make|build|compose|format|export)\b[\s\S]{0,60}\b(cv|resume|curriculum vitae|application letter|cover letter|business plan|proposal|report|lesson notes?|meeting minutes|invoice|memo|document|word(?: document)?|pdf|docx)\b/i.test(
+    /\b(create|write|draft|prepare|generate|make|build|compose|format|export)\b[\s\S]{0,60}\b(cv|resume|curriculum vitae|application letter|cover letter|business plan|proposal|report|lesson notes?|meeting minutes|invoice|memo|thesis|dissertation|book|manuscript|research (?:paper|report)|slide deck|slides?|presentation|document|word(?: document)?|pdf|docx|pptx)\b/i.test(
       query
     ) ||
-    /\b(export as (?:word|pdf|docx)|download as (?:word|pdf|docx)|as a (?:pdf|word|docx)(?: document)?)\b/i.test(
+    /\b(export as (?:word|pdf|docx|pptx|slides?)|download as (?:word|pdf|docx|pptx|slides?)|as a (?:pdf|word|docx|pptx)(?: document)?)\b/i.test(
       query
     )
   );
@@ -125,7 +125,10 @@ export const WRITING_CRAFT_SYSTEM_ADDON = [
   "- For translations: return the translation first; add brief notes only if useful. Do not teach a language lesson unless asked.",
   "- For emails and short messages: output only the message (subject line optional if natural).",
   "- For tributes, obituaries, eulogies, and condolences: write with dignity and warmth — a carefully crafted personal piece, not a generic AI essay.",
-  "- For documents (CV, letter, report, proposal, business plan, etc.): use clear markdown headings and lists ready for PDF/Word export. Do not claim a file was generated unless an export actually ran.",
+  "- For documents (CV, letter, report, proposal, business plan, book, research, thesis, presentation): use clear markdown headings and lists ready for editable exports. Use a human, credible voice, with accurate dates and achievements; never fabricate citations, measurable impact, or qualifications.",
+  "- CVs: aim for a concise ATS-friendly one-page A4 document, or two pages when the person has extensive relevant experience. Never discard facts merely to force a page length. A passport photo is optional based on user preference and local hiring practice.",
+  "- Books, research and theses: preserve the appropriate long-form structure; a two-page limit applies only to suitable CVs, not academic or book content.",
+  "- Never claim a PDF, Word or PowerPoint file exists until the file has actually been exported.",
   "- For follow-ups like “make it shorter/more professional”: revise the previous draft; do not restart from scratch or drop important facts.",
 ].join("\n");
 

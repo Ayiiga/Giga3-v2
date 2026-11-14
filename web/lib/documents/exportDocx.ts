@@ -2,6 +2,7 @@ import {
   AlignmentType,
   Document,
   HeadingLevel,
+  ImageRun,
   Packer,
   Paragraph,
   TextRun,
@@ -11,6 +12,7 @@ import {
 import type { DocJson, GigaDocument } from "@/lib/documents/types";
 import { DOC_TEXT_COLORS } from "@/lib/documents/types";
 import { tipTapJsonToMarkdown } from "@/lib/documents/model";
+import { passportPhotoBytes } from "@/lib/documents/profilePhoto";
 
 function alignOf(value?: string) {
   switch (value) {
@@ -192,6 +194,22 @@ export async function exportDocumentDocx(doc: GigaDocument): Promise<Uint8Array>
   }
   if (children.length === 0) {
     children = [new Paragraph({ text: doc.title })];
+  }
+  if (doc.templateKind === "cv" && doc.profilePhotoDataUrl) {
+    children.unshift(new Paragraph({
+      children: [new ImageRun({
+        type: "jpg",
+        data: passportPhotoBytes(doc.profilePhotoDataUrl),
+        transformation: { width: 98, height: 124 },
+        altText: {
+          title: "Passport-style CV photograph",
+          description: "Applicant-provided portrait",
+          name: "CV portrait",
+        },
+      })],
+      alignment: AlignmentType.RIGHT,
+      spacing: { after: 80 },
+    }));
   }
 
   const widthTwip = convertInchesToTwip(doc.paper.size === "A5" ? 5.83 : 8.27);

@@ -27,6 +27,8 @@ export type DocPaper = {
   marginsMm: DocMarginsMm;
   /** Soft one-page fit for CV — never silently deletes content. */
   onePageFit?: boolean;
+  /** Preferred CV length; never truncate content to force a page count. */
+  pageTarget?: 1 | 2;
 };
 
 /** TipTap / ProseMirror JSON document body. */
@@ -60,6 +62,8 @@ export type GigaDocument = {
   updatedAt: number;
   /** Soft warning when one-page fit cannot reasonably hold content. */
   fitWarning?: string | null;
+  /** Optional user-uploaded, locally stored, square-cropped JPEG portrait for CVs. */
+  profilePhotoDataUrl?: string;
 };
 
 export const DEFAULT_MARGINS_MM: DocMarginsMm = {
