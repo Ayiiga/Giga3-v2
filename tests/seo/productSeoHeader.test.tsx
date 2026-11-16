@@ -102,7 +102,8 @@ describe("ProductSeoHeader compact Learn more", () => {
     expect(catalogue).toContain("/marketplace/sell");
     expect(page).toMatch(/ProductSeoHeader[\s\S]*compact/);
     expect(page).toContain("MARKETPLACE_PAGE_SHELL");
-    expect(page).toContain("Digital Products for Learning, Business, and Creativity");
+    expect(page).toContain("Digital Products, Clothing, Shoes and More");
+    expect(page).toContain("Physical goods are enquiry-only for now");
     expect(page).toMatch(/publicMetadata\(/);
     expect(page).toContain("JsonLd");
   });
