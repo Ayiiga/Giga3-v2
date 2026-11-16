@@ -69,55 +69,55 @@ const diagrams: Readonly<Record<string, { asset: string; alt: string }>> = {
   },
   "measuring-cylinder": {
     asset: "measuring-cylinder",
-    alt: "Measuring cylinder. Graduated scale. Liquid level. Wide base. Read the bottom of the water meniscus at eye level..",
+    alt: "Measuring cylinder. Graduated scale. Liquid level. Wide base. Read the bottom of the water meniscus at eye level.",
   },
   "conical-flask": {
     asset: "conical-flask",
-    alt: "Conical flask. Narrow neck. Sloping shoulder. Flat base. The narrow neck helps prevent splashing when swirling..",
+    alt: "Conical flask. Narrow neck. Sloping shoulder. Flat base. The narrow neck helps prevent splashing when swirling.",
   },
   "volumetric-flask": {
     asset: "volumetric-flask",
-    alt: "Volumetric flask. Stopper. Single calibration mark. Bulb. Make a solution up to the marked volume..",
+    alt: "Volumetric flask. Stopper. Single calibration mark. Bulb. Make a solution up to the marked volume.",
   },
   "watch-glass": {
     asset: "watch-glass",
-    alt: "Watch glass. Circular rim. Shallow concave surface. It can hold a small sample or cover a beaker..",
+    alt: "Watch glass. Circular rim. Shallow concave surface. It can hold a small sample or cover a beaker.",
   },
   "spatula": {
     asset: "spatula",
-    alt: "Spatula. Scoop end. Handle. Flat end. Transfer small amounts of solid reagent..",
+    alt: "Spatula. Scoop end. Handle. Flat end. Transfer small amounts of solid reagent.",
   },
   "wash-bottle": {
     asset: "wash-bottle",
-    alt: "Wash bottle. Bent delivery nozzle. Screw cap. Squeezable bottle. Internal dip tube. Use a controlled jet for rinsing..",
+    alt: "Wash bottle. Bent delivery nozzle. Screw cap. Squeezable bottle. Internal dip tube. Use a controlled jet for rinsing.",
   },
   "reagent-bottle": {
     asset: "reagent-bottle",
-    alt: "Reagent bottle. Tight-fitting cap. Contents label. Storage bottle. Choose compatible glass or plastic for the reagent..",
+    alt: "Reagent bottle. Tight-fitting cap. Contents label. Storage bottle. Choose compatible glass or plastic for the reagent.",
   },
   "desiccator": {
     asset: "desiccator",
-    alt: "Desiccator. Lid handle. Sealed rim. Perforated shelf. Desiccant. The sample sits above the moisture-absorbing material..",
+    alt: "Desiccator. Lid handle. Sealed rim. Perforated shelf. Desiccant. The sample sits above the moisture-absorbing material.",
   },
   "crucible-tongs": {
     asset: "crucible-tongs",
-    alt: "Crucible tongs. Finger loops. Pivot. Curved gripping jaws. Grip a hot crucible with the jaws..",
+    alt: "Crucible tongs. Finger loops. Pivot. Curved gripping jaws. Grip a hot crucible with the jaws.",
   },
   "digital-thermometer": {
     asset: "digital-thermometer",
-    alt: "Digital thermometer. Digital display. Power button. Temperature-sensing tip. Wait for a stable reading before recording it..",
+    alt: "Digital thermometer. Digital display. Power button. Temperature-sensing tip. Wait for a stable reading before recording it.",
   },
   "ph-meter-and-ph-paper": {
     asset: "ph-meter-and-ph-paper",
-    alt: "pH meter and pH paper. Meter display. pH electrode. Indicator paper. Comparison colour chart. A meter gives a reading; paper gives an estimate..",
+    alt: "pH meter and pH paper. Meter display. pH electrode. Indicator paper. Comparison colour chart. A meter gives a reading; paper gives an estimate.",
   },
   "microscope": {
     asset: "microscope",
-    alt: "Compound microscope. Eyepiece. Objective lenses. Slide stage. Focus knob. Light source. Begin focusing with the lowest-power objective..",
+    alt: "Compound microscope. Eyepiece. Objective lenses. Slide stage. Focus knob. Light source. Begin focusing with the lowest-power objective.",
   },
   "beaker": {
     asset: "beaker",
-    alt: "Laboratory beaker. Pouring spout. Approximate graduations. Flat base. Use it to hold or mix liquids..",
+    alt: "Laboratory beaker. Pouring spout. Approximate graduations. Flat base. Use it to hold or mix liquids.",
   },
   "test-tube": {
     asset: "test-tube",
@@ -193,7 +193,7 @@ const diagrams: Readonly<Record<string, { asset: string; alt: string }>> = {
   },
   "graduated-measuring-pipette": {
     asset: "graduated-measuring-pipette",
-    alt: "Graduated pipette. Upper opening. Graduated scale. Delivery tip. Use a pipette filler..",
+    alt: "Graduated pipette. Upper opening. Graduated scale. Delivery tip. Use a pipette filler.",
   },
   "magnetic-stirrer-with-hot-plate": {
     asset: "magnetic-stirrer-with-hot-plate",
@@ -213,7 +213,7 @@ const diagrams: Readonly<Record<string, { asset: string; alt: string }>> = {
   },
   "human-muscular-system-organs-and-functions": {
     asset: "human-muscular-system-organs-and-functions",
-    alt: "Three types of muscle. Skeletal: striated, usually voluntary. Smooth: tapered, involuntary. Cardiac: branched, involuntary. Compare the shape and markings of the fibres..",
+    alt: "Three types of muscle. Skeletal: striated, usually voluntary. Smooth: tapered, involuntary. Cardiac: branched, involuntary. Compare the shape and markings of the fibres.",
   },
   "human-reproductive-system-organs-and-functions": {
     asset: "human-reproductive-system-organs-and-functions",
@@ -233,7 +233,7 @@ const diagrams: Readonly<Record<string, { asset: string; alt: string }>> = {
   },
   "human-nervous-system-organs-and-functions": {
     asset: "human-nervous-system-organs-and-functions",
-    alt: "Nervous system. Brain. Spinal cord. Peripheral nerves. Signals travel between the brain, spinal cord and body..",
+    alt: "Nervous system. Brain. Spinal cord. Peripheral nerves. Signals travel between the brain, spinal cord and body.",
   },
   "human-skeletal-system-organs-and-functions": {
     asset: "human-skeletal-system-organs-and-functions",
@@ -241,11 +241,11 @@ const diagrams: Readonly<Record<string, { asset: string; alt: string }>> = {
   },
   "science-laboratory-rules-and-safety-precautions": {
     asset: "science-laboratory-rules-and-safety-precautions",
-    alt: "Laboratory safety rules. Check risks before starting. Tell the teacher about incidents. Know where the eyewash and emergency equipment are..",
+    alt: "Laboratory safety rules. Check risks before starting. Tell the teacher about incidents. Know where the eyewash and emergency equipment are.",
   },
   "laboratory-safety-symbols-and-meanings": {
     asset: "laboratory-safety-symbols-and-meanings",
-    alt: "Chemical hazard pictograms. Read the complete chemical label..",
+    alt: "Nine GHS pictograms: flame, exploding bomb, corrosion, acute toxicity, irritant, oxidiser, gas cylinder, environmental hazard and serious health hazard. The chart also shows separate ionising radiation and biological hazard warnings.",
   },
 };
 
