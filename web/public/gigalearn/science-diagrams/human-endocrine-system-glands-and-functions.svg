@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 640" role="img" aria-labelledby="title description">
+<title id="title">Endocrine glands</title>
+<desc id="description">Pituitary gland; Thyroid gland; Adrenal glands; Pancreas; Ovaries; Testes</desc>
+<rect width="360" height="640" fill="white"/>
+<rect width="360" height="132" fill="#eef2ff"/>
+<text x="180" y="45" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="600" fill="#162c46">GIGALEARN · INTEGRATED SCIENCE</text>
+<text x="180" y="81" text-anchor="middle" font-family="sans-serif" font-size="24" font-weight="600" fill="#162c46">Endocrine glands</text>
+<path d="M159 195v23q-49 9-65 32l-14 98 28 5 17-68 11 112h88l11-112 17 68 28-5-14-98q-16-23-65-32v-23" fill="#f2f4f6" stroke="#aebdca" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<ellipse cx="180" cy="175" rx="30" ry="38" fill="#f2f4f6" stroke="#27405b" stroke-width="3"/>
+<ellipse cx="180" cy="184" rx="7" ry="6" fill="#d96783" stroke="#27405b" stroke-width="3"/>
+<path d="M180 239q-24-15-23 8t23 0q24 23 23 0t-23-8Z" fill="#f4acb4" stroke="#27405b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M139 300l17-20 12 24Zm82 0-17-20-12 24Z" fill="#f8d483" stroke="#27405b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M151 325q21-10 31-7 22 4 38-12-5 19-26 24l-40 8Z" fill="#f8d483" stroke="#27405b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<ellipse cx="154" cy="374" rx="8" ry="7" fill="#d96783" stroke="#27405b" stroke-width="3"/>
+<ellipse cx="206" cy="374" rx="8" ry="7" fill="#d96783" stroke="#27405b" stroke-width="3"/>
+<ellipse cx="255" cy="414" rx="8" ry="12" fill="#d96783" stroke="#27405b" stroke-width="3"/>
+<ellipse cx="274" cy="414" rx="8" ry="12" fill="#d96783" stroke="#27405b" stroke-width="3"/>
+<text x="263" y="437" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="600" fill="#162c46">Male inset</text>
+<path d="M179 183l-21 -13" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="158" cy="170" r="8.5" fill="#41367b"/>
+<text x="158" y="173.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">1</text>
+<path d="M190 247l22 12" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="212" cy="259" r="8.5" fill="#41367b"/>
+<text x="212" y="262.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">2</text>
+<path d="M152 293l-21 -13" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="131" cy="280" r="8.5" fill="#41367b"/>
+<text x="131" y="283.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">3</text>
+<path d="M190 325l22 12" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="212" cy="337" r="8.5" fill="#41367b"/>
+<text x="212" y="340.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">4</text>
+<path d="M210 371l22 -13" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="232" cy="358" r="8.5" fill="#41367b"/>
+<text x="232" y="361.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">5</text>
+<path d="M274 412l22 12" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="296" cy="424" r="8.5" fill="#41367b"/>
+<text x="296" y="427.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">6</text>
+<path d="M32 449h296" stroke="#d7daef" stroke-width="2"/>
+<text x="36" y="467" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">1.  Pituitary gland</text>
+<text x="36" y="483.5" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">2.  Thyroid gland</text>
+<text x="36" y="500" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">3.  Adrenal glands</text>
+<text x="36" y="516.5" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">4.  Pancreas</text>
+<text x="36" y="533" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">5.  Ovaries</text>
+<text x="36" y="549.5" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">6.  Testes</text>
+</svg>

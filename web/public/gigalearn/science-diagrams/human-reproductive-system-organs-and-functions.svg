@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 640" role="img" aria-labelledby="title description">
+<title id="title">Reproductive systems</title>
+<desc id="description">Ovary; Fallopian tube; Uterus; Cervix; Vagina; Testis; Sperm duct; Prostate; Penis</desc>
+<rect width="360" height="640" fill="white"/>
+<rect width="360" height="132" fill="#eef2ff"/>
+<text x="180" y="45" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="600" fill="#162c46">GIGALEARN · INTEGRATED SCIENCE</text>
+<text x="180" y="81" text-anchor="middle" font-family="sans-serif" font-size="24" font-weight="600" fill="#162c46">Reproductive systems</text>
+<text x="180" y="211" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="600" fill="#162c46">Female organs · front view</text>
+<path d="M147 242q-40-27-68-7m98 7q36-27 64-7" fill="none" stroke="#b34b6c" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<ellipse cx="72" cy="244" rx="12" ry="8" fill="#f4acb4" stroke="#27405b" stroke-width="3"/>
+<ellipse cx="250" cy="244" rx="12" ry="8" fill="#f4acb4" stroke="#27405b" stroke-width="3"/>
+<path d="M139 233q22 9 44 0l-6 31-10 25v16h-12v-16l-10-25Z" fill="#f4acb4" stroke="#27405b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M151 303h20l5 28h-30Z" fill="#f4acb4" stroke="#27405b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="180" y="345" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="600" fill="#162c46">Male organs · side view</text>
+<ellipse cx="188" cy="361" rx="29" ry="22" fill="#e6f5fa" stroke="#27405b" stroke-width="3"/>
+<ellipse cx="140" cy="422" rx="15" ry="18" fill="#f4acb4" stroke="#27405b" stroke-width="3"/>
+<path d="M143 416q-31-46 9-78 18-10 31 3l10 8" fill="none" stroke="#a04461" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<ellipse cx="187" cy="388" rx="12" ry="8" fill="#f4acb4" stroke="#27405b" stroke-width="3"/>
+<path d="M187 389v22h42q10 0 10 9t-10 9h-52q-11 0-11-11v-22" fill="none" stroke="#b0506a" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M72 244l-21 -13" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="51" cy="231" r="8.5" fill="#41367b"/>
+<text x="51" y="234.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">1</text>
+<path d="M224 229l22 12" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="246" cy="241" r="8.5" fill="#41367b"/>
+<text x="246" y="244.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">2</text>
+<path d="M164 253l-21 -13" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="143" cy="240" r="8.5" fill="#41367b"/>
+<text x="143" y="243.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">3</text>
+<path d="M164 291l-21 12" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="143" cy="303" r="8.5" fill="#41367b"/>
+<text x="143" y="306.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">4</text>
+<path d="M160 324l-21 -13" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="139" cy="311" r="8.5" fill="#41367b"/>
+<text x="139" y="314.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">5</text>
+<path d="M139 423l-21 12" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="118" cy="435" r="8.5" fill="#41367b"/>
+<text x="118" y="438.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">6</text>
+<path d="M130 377l-21 -13" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="109" cy="364" r="8.5" fill="#41367b"/>
+<text x="109" y="367.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">7</text>
+<path d="M187 389l22 12" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="209" cy="401" r="8.5" fill="#41367b"/>
+<text x="209" y="404.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">8</text>
+<path d="M230 421l22 -13" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="252" cy="408" r="8.5" fill="#41367b"/>
+<text x="252" y="411.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">9</text>
+<path d="M32 449h296" stroke="#d7daef" stroke-width="2"/>
+<text x="36" y="467" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">1.  Ovary</text>
+<text x="36" y="483.5" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">2.  Fallopian tube</text>
+<text x="36" y="500" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">3.  Uterus</text>
+<text x="36" y="516.5" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">4.  Cervix</text>
+<text x="36" y="533" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">5.  Vagina</text>
+<text x="36" y="549.5" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">6.  Testis</text>
+<text x="36" y="566" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">7.  Sperm duct</text>
+<text x="36" y="582.5" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">8.  Prostate</text>
+<text x="36" y="599" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">9.  Penis</text>
+</svg>

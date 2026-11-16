@@ -57,7 +57,8 @@ function ResourceVisual({ slug, title, category, imageUrl, large = false }: {
 }) {
   const [zoomed, setZoomed] = useState(false);
   const diagram = scienceDiagramFor(slug);
-  const commons = useCommonsImage(title, category, !diagram && !imageUrl && category !== "Laboratory Set-ups");
+  const requiresCuratedImage = ["Laboratory Equipment", "Laboratory Set-ups", "Laboratory Safety", "Laboratory Symbols", "Human Biology"].includes(category);
+  const commons = useCommonsImage(title, category, !diagram && !imageUrl && !requiresCuratedImage);
   const resolvedImage = diagram?.src || imageUrl || commons?.thumb;
   const visual = resolvedImage
     ? <img src={resolvedImage} alt={diagram?.alt ?? ("Learning aid: " + title)} className="block h-full w-full bg-white object-contain" loading="lazy" />
@@ -75,7 +76,7 @@ function ResourceVisual({ slug, title, category, imageUrl, large = false }: {
         ) : <div className="rounded-2xl border border-violet-200">{visual}</div>}
         {resolvedImage ? <button type="button" onClick={() => setZoomed(true)} className="mt-2 w-full rounded-lg border border-violet-300 bg-white px-3 py-2 text-sm font-semibold text-violet-900">Zoom illustration</button> : null}
       </div>
-      {commons && !diagram && !imageUrl && category !== "Laboratory Set-ups" && <div className="mx-auto mt-1 max-w-[420px] text-[10px] leading-4 text-slate-600">
+      {commons && !diagram && !imageUrl && !requiresCuratedImage && <div className="mx-auto mt-1 max-w-[420px] text-[10px] leading-4 text-slate-600">
         Photo: {commons.artist} · {commons.license} · <a href={commons.page} target="_blank" rel="noreferrer" className="font-semibold text-violet-800 underline">Source & licence</a>
         {" · "}<a href={commons.original} target="_blank" rel="noreferrer" download className="font-semibold text-violet-800 underline">Download original</a>
       </div>}
@@ -171,7 +172,7 @@ export function TeachingResourcesLibrary() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-6xl space-y-5 pb-12" data-testid="teaching-resources-library">
+    <main className="mx-auto w-full max-w-6xl space-y-5 pb-28" data-testid="teaching-resources-library">
       <header className="overflow-hidden rounded-2xl border border-violet-200 bg-white p-4 text-slate-950 shadow-sm sm:p-5">
         <div className="flex items-center gap-3"><span className="rounded-xl bg-violet-100 p-2.5 text-violet-800"><FlaskConical className="h-6 w-6" /></span><div><p className="text-[10px] font-bold uppercase tracking-widest text-violet-700">GigaLearn · Learning library</p><h1 className="text-xl font-black text-slate-950 sm:text-2xl">Teaching & Practical Materials</h1></div></div>
         <p className="mt-2 max-w-3xl text-sm leading-5 text-slate-700">Explore equipment, practical guides and learning aids for JHS and SHS.</p>

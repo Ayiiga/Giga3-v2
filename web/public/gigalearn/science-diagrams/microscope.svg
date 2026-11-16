@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 640" role="img" aria-labelledby="title description">
+<title id="title">Compound microscope</title>
+<desc id="description">Eyepiece; Objective lenses; Slide stage; Focus knob; Light source</desc>
+<rect width="360" height="640" fill="white"/>
+<rect width="360" height="132" fill="#eef2ff"/>
+<text x="180" y="45" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="600" fill="#162c46">GIGALEARN · INTEGRATED SCIENCE</text>
+<text x="180" y="81" text-anchor="middle" font-family="sans-serif" font-size="24" font-weight="600" fill="#162c46">Compound microscope</text>
+<path d="M196 194q88 12 76 108-8 62-68 82h-44v-31h38q48-24 44-73-1-40-56-50Z" fill="#c5d6df" stroke="#27405b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M156 181l57 33-18 31-57-33Z" fill="#c5d6df" stroke="#27405b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M143 210l57 33-11 20-58-33Z" fill="#e6f5fa" stroke="#27405b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M144 239l-13 24m34-12-11 24" fill="none" stroke="#27405b" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="94" y="286" width="129" height="11" rx="4" fill="#c5d6df" stroke="#27405b" stroke-width="3"/>
+<ellipse cx="153" cy="319" rx="27" ry="8" fill="#f8d483" stroke="#27405b" stroke-width="3"/>
+<ellipse cx="240" cy="305" rx="18" ry="18" fill="#e6f5fa" stroke="#27405b" stroke-width="3"/>
+<rect x="95" y="381" width="177" height="19" rx="4" fill="#c5d6df" stroke="#27405b" stroke-width="3"/>
+<path d="M176 207l-21 -13" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="155" cy="194" r="8.5" fill="#41367b"/>
+<text x="155" y="197.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">1</text>
+<path d="M153 254l-21 12" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="132" cy="266" r="8.5" fill="#41367b"/>
+<text x="132" y="269.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">2</text>
+<path d="M130 290l-21 -13" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="109" cy="277" r="8.5" fill="#41367b"/>
+<text x="109" y="280.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">3</text>
+<path d="M237 307l22 12" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="259" cy="319" r="8.5" fill="#41367b"/>
+<text x="259" y="322.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">4</text>
+<path d="M153 319l-21 -13" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="132" cy="306" r="8.5" fill="#41367b"/>
+<text x="132" y="309.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">5</text>
+<path d="M32 449h296" stroke="#d7daef" stroke-width="2"/>
+<text x="36" y="467" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">1.  Eyepiece</text>
+<text x="36" y="483.5" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">2.  Objective lenses</text>
+<text x="36" y="500" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">3.  Slide stage</text>
+<text x="36" y="516.5" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">4.  Focus knob</text>
+<text x="36" y="533" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">5.  Light source</text>
+<text x="180" y="624" text-anchor="middle" font-family="sans-serif" font-size="10.5" font-weight="600" fill="#162c46">Begin focusing with the lowest-power objective.</text>
+</svg>

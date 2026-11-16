@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 640" role="img" aria-labelledby="title description">
+<title id="title">Wash bottle</title>
+<desc id="description">Bent delivery nozzle; Screw cap; Squeezable bottle; Internal dip tube</desc>
+<rect width="360" height="640" fill="white"/>
+<rect width="360" height="132" fill="#eef2ff"/>
+<text x="180" y="45" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="600" fill="#162c46">GIGALEARN · INTEGRATED SCIENCE</text>
+<text x="180" y="81" text-anchor="middle" font-family="sans-serif" font-size="24" font-weight="600" fill="#162c46">Wash bottle</text>
+<path d="M139 270q-29 15-29 45v77q0 12 15 12h108q15 0 15-12v-77q0-30-29-45Z" fill="#e6f5fa" stroke="#27405b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="137" y="248" width="85" height="23" rx="4" fill="#c5d6df" stroke="#27405b" stroke-width="3"/>
+<path d="M175 249v-28q0-28 27-28h65l28 24" fill="none" stroke="#456985" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M175 272v112" fill="none" stroke="#7199b0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M115 334h128v59q0 6-13 6H128q-13 0-13-6Z" fill="#8cd5ea" stroke="none" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M175 334v50" fill="none" stroke="#7199b0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M272 196l22 -13" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="294" cy="183" r="8.5" fill="#41367b"/>
+<text x="294" y="186.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">1</text>
+<path d="M178 259l-21 12" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="157" cy="271" r="8.5" fill="#41367b"/>
+<text x="157" y="274.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">2</text>
+<path d="M132 354l-21 -13" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="111" cy="341" r="8.5" fill="#41367b"/>
+<text x="111" y="344.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">3</text>
+<path d="M175 377l-21 12" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="154" cy="389" r="8.5" fill="#41367b"/>
+<text x="154" y="392.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">4</text>
+<path d="M32 449h296" stroke="#d7daef" stroke-width="2"/>
+<text x="36" y="467" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">1.  Bent delivery nozzle</text>
+<text x="36" y="483.5" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">2.  Screw cap</text>
+<text x="36" y="500" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">3.  Squeezable bottle</text>
+<text x="36" y="516.5" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">4.  Internal dip tube</text>
+<text x="180" y="624" text-anchor="middle" font-family="sans-serif" font-size="10.5" font-weight="600" fill="#162c46">Use a controlled jet for rinsing.</text>
+</svg>

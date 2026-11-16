@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 640" role="img" aria-labelledby="title description">
+<title id="title">Skeletal system</title>
+<desc id="description">Skull; Rib cage; Vertebral column; Pelvis; Femur; Knee joint</desc>
+<rect width="360" height="640" fill="white"/>
+<rect width="360" height="132" fill="#eef2ff"/>
+<text x="180" y="45" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="600" fill="#162c46">GIGALEARN · INTEGRATED SCIENCE</text>
+<text x="180" y="81" text-anchor="middle" font-family="sans-serif" font-size="24" font-weight="600" fill="#162c46">Skeletal system</text>
+<ellipse cx="180" cy="169" rx="33" ry="36" fill="#e9ddbb" stroke="#27405b" stroke-width="3"/>
+<rect x="157" y="184" width="46" height="24" rx="8" fill="#e9ddbb" stroke="#27405b" stroke-width="3"/>
+<ellipse cx="169" cy="168" rx="6" ry="7" fill="#50667b" stroke="#27405b" stroke-width="3"/>
+<ellipse cx="191" cy="168" rx="6" ry="7" fill="#50667b" stroke="#27405b" stroke-width="3"/>
+<path d="M180 208v147M124 225l-34 82-18 57m164-139 34 82 18 57m-129-7-18 51-3 43m63-94 18 51 3 43" fill="none" stroke="#9e8464" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M179 224q-52-18-44 9 9 12 44 17m2-26q52-18 44 9-9 12-44 17" fill="none" stroke="#ae9674" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M179 236q-52-18-44 9 9 12 44 17m2-26q52-18 44 9-9 12-44 17" fill="none" stroke="#ae9674" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M179 248q-52-18-44 9 9 12 44 17m2-26q52-18 44 9-9 12-44 17" fill="none" stroke="#ae9674" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M179 260q-52-18-44 9 9 12 44 17m2-26q52-18 44 9-9 12-44 17" fill="none" stroke="#ae9674" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M179 272q-52-18-44 9 9 12 44 17m2-26q52-18 44 9-9 12-44 17" fill="none" stroke="#ae9674" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M140 319q42 20 80 0l-12 37-28 13-28-13Z" fill="#e9ddbb" stroke="#27405b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<ellipse cx="141" cy="407" rx="8" ry="8" fill="#e9ddbb" stroke="#27405b" stroke-width="3"/>
+<ellipse cx="219" cy="407" rx="8" ry="8" fill="#e9ddbb" stroke="#27405b" stroke-width="3"/>
+<path d="M180 150l22 -13" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="202" cy="137" r="8.5" fill="#41367b"/>
+<text x="202" y="140.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">1</text>
+<path d="M141 252l-21 12" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="120" cy="264" r="8.5" fill="#41367b"/>
+<text x="120" y="267.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">2</text>
+<path d="M180 300l22 -13" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="202" cy="287" r="8.5" fill="#41367b"/>
+<text x="202" y="290.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">3</text>
+<path d="M190 346l22 12" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="212" cy="358" r="8.5" fill="#41367b"/>
+<text x="212" y="361.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">4</text>
+<path d="M216 384l22 -13" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="238" cy="371" r="8.5" fill="#41367b"/>
+<text x="238" y="374.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">5</text>
+<path d="M221 408l22 12" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="243" cy="420" r="8.5" fill="#41367b"/>
+<text x="243" y="423.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">6</text>
+<path d="M32 449h296" stroke="#d7daef" stroke-width="2"/>
+<text x="36" y="467" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">1.  Skull</text>
+<text x="36" y="483.5" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">2.  Rib cage</text>
+<text x="36" y="500" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">3.  Vertebral column</text>
+<text x="36" y="516.5" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">4.  Pelvis</text>
+<text x="36" y="533" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">5.  Femur</text>
+<text x="36" y="549.5" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">6.  Knee joint</text>
+</svg>

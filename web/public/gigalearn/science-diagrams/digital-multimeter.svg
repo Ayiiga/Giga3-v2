@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 640" role="img" aria-labelledby="title description">
+<title id="title">Digital multimeter</title>
+<desc id="description">Display; Mode selector; COM socket; Voltage/resistance socket</desc>
+<rect width="360" height="640" fill="white"/>
+<rect width="360" height="132" fill="#eef2ff"/>
+<text x="180" y="45" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="600" fill="#162c46">GIGALEARN · INTEGRATED SCIENCE</text>
+<text x="180" y="81" text-anchor="middle" font-family="sans-serif" font-size="24" font-weight="600" fill="#162c46">Digital multimeter</text>
+<rect x="105" y="165" width="150" height="232" rx="16" fill="#c5d6df" stroke="#27405b" stroke-width="3"/>
+<rect x="124" y="186" width="112" height="45" rx="4" fill="#dcf1cb" stroke="#27405b" stroke-width="3"/>
+<text x="180" y="216" text-anchor="middle" font-family="sans-serif" font-size="20" font-weight="600" fill="#162c46">1.50 V</text>
+<ellipse cx="180" cy="278" rx="27" ry="27" fill="#e6f5fa" stroke="#27405b" stroke-width="3"/>
+<path d="M180 279l17-14" fill="none" stroke="#27405b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<ellipse cx="142" cy="365" rx="7" ry="7" fill="white" stroke="#27405b" stroke-width="3"/>
+<ellipse cx="180" cy="365" rx="7" ry="7" fill="white" stroke="#27405b" stroke-width="3"/>
+<ellipse cx="218" cy="365" rx="7" ry="7" fill="white" stroke="#27405b" stroke-width="3"/>
+<text x="142" y="349" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="#162c46">A</text>
+<text x="180" y="349" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="#162c46">COM</text>
+<text x="218" y="349" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="#162c46">V Ω</text>
+<path d="M129 208l-21 -13" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="108" cy="195" r="8.5" fill="#41367b"/>
+<text x="108" y="198.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">1</text>
+<path d="M180 278l22 12" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="202" cy="290" r="8.5" fill="#41367b"/>
+<text x="202" y="293.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">2</text>
+<path d="M180 365l22 -13" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="202" cy="352" r="8.5" fill="#41367b"/>
+<text x="202" y="355.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">3</text>
+<path d="M220 365l22 12" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="242" cy="377" r="8.5" fill="#41367b"/>
+<text x="242" y="380.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">4</text>
+<path d="M32 449h296" stroke="#d7daef" stroke-width="2"/>
+<text x="36" y="467" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">1.  Display</text>
+<text x="36" y="483.5" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">2.  Mode selector</text>
+<text x="36" y="500" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">3.  COM socket</text>
+<text x="36" y="516.5" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">4.  Voltage/resistance socket</text>
+</svg>

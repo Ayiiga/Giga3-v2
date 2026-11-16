@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 640" role="img" aria-labelledby="title description">
+<title id="title">Pipette dropper</title>
+<desc id="description">Squeeze bulb; Dropper tube; Fine tip</desc>
+<rect width="360" height="640" fill="white"/>
+<rect width="360" height="132" fill="#eef2ff"/>
+<text x="180" y="45" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="600" fill="#162c46">GIGALEARN · INTEGRATED SCIENCE</text>
+<text x="180" y="81" text-anchor="middle" font-family="sans-serif" font-size="24" font-weight="600" fill="#162c46">Pipette dropper</text>
+<ellipse cx="180" cy="213" rx="29" ry="43" fill="#c5d6df" stroke="#27405b" stroke-width="3"/>
+<path d="M163 239h34v78l-13 49v21h-8v-21l-13-49Z" fill="#e6f5fa" stroke="#27405b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<ellipse cx="180" cy="404" rx="5" ry="7" fill="#8cd5ea" stroke="#27405b" stroke-width="3"/>
+<path d="M180 207l22 -13" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="202" cy="194" r="8.5" fill="#41367b"/>
+<text x="202" y="197.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">1</text>
+<path d="M192 294l22 12" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="214" cy="306" r="8.5" fill="#41367b"/>
+<text x="214" y="309.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">2</text>
+<path d="M180 381l22 -13" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="202" cy="368" r="8.5" fill="#41367b"/>
+<text x="202" y="371.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">3</text>
+<path d="M32 449h296" stroke="#d7daef" stroke-width="2"/>
+<text x="36" y="467" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">1.  Squeeze bulb</text>
+<text x="36" y="483.5" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">2.  Dropper tube</text>
+<text x="36" y="500" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">3.  Fine tip</text>
+</svg>

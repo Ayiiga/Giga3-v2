@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 640" role="img" aria-labelledby="title description">
+<title id="title">Bunsen burner</title>
+<desc id="description">Flame; Air inlet; Gas inlet; Base</desc>
+<rect width="360" height="640" fill="white"/>
+<rect width="360" height="132" fill="#eef2ff"/>
+<text x="180" y="45" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="600" fill="#162c46">GIGALEARN · INTEGRATED SCIENCE</text>
+<text x="180" y="81" text-anchor="middle" font-family="sans-serif" font-size="24" font-weight="600" fill="#162c46">Bunsen burner</text>
+<rect x="160" y="255" width="40" height="125" rx="4" fill="#c5d6df" stroke="#27405b" stroke-width="3"/>
+<ellipse cx="180" cy="382" rx="67" ry="14" fill="#c5d6df" stroke="#27405b" stroke-width="3"/>
+<path d="M166 334h27m-13 30h46l22-15" fill="none" stroke="#49647c" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M180 254c-26-19-14-38-8-49 7-11 11-26 11-36 22 35 34 64-3 85Z" fill="#8cd5ea" stroke="#27405b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M181 220l22 -13" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="203" cy="207" r="8.5" fill="#41367b"/>
+<text x="203" y="210.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">1</text>
+<path d="M179 333l-21 12" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="158" cy="345" r="8.5" fill="#41367b"/>
+<text x="158" y="348.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">2</text>
+<path d="M232 361l22 -13" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="254" cy="348" r="8.5" fill="#41367b"/>
+<text x="254" y="351.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">3</text>
+<path d="M180 384l22 12" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="202" cy="396" r="8.5" fill="#41367b"/>
+<text x="202" y="399.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">4</text>
+<path d="M32 449h296" stroke="#d7daef" stroke-width="2"/>
+<text x="36" y="467" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">1.  Flame</text>
+<text x="36" y="483.5" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">2.  Air inlet</text>
+<text x="36" y="500" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">3.  Gas inlet</text>
+<text x="36" y="516.5" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">4.  Base</text>
+</svg>

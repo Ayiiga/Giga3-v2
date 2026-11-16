@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 640" role="img" aria-labelledby="title description">
+<title id="title">Chemical hazard pictograms</title>
+<desc id="description">Nine GHS chemical hazard pictograms and separate warnings for radiation and biological hazards.</desc>
+<rect width="360" height="640" fill="white"/>
+<rect width="360" height="132" fill="#eef2ff"/>
+<text x="180" y="45" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="600" fill="#162c46">GIGALEARN · INTEGRATED SCIENCE</text>
+<text x="180" y="81" text-anchor="middle" font-family="sans-serif" font-size="24" font-weight="600" fill="#162c46">Chemical hazard pictograms</text>
+<g transform="translate(70 202)">
+<path d="M0-35l35 35-35 35-35-35Z" fill="#fff" stroke="#cf2943" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M0 14c-15-6-12-19-4-28 0 8 5 9 6 4 2-4 0-9 0-13 18 19 19 32 4 37Z" fill="#111" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="0" y="54" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="600" fill="#162c46">Flame</text>
+</g>
+<g transform="translate(180 202)">
+<path d="M0-35l35 35-35 35-35-35Z" fill="#fff" stroke="#cf2943" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M-12 11l6-12 10 8-7 9ZM-2-4l10-16-2 14 15-5-10 10 10 6-16-3Z" fill="#111" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="0" y="54" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="600" fill="#162c46">Exploding bomb</text>
+</g>
+<g transform="translate(290 202)">
+<path d="M0-35l35 35-35 35-35-35Z" fill="#fff" stroke="#cf2943" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M-20-14l14 5-2 4-14-5ZM3-16l14 5-2 4-14-5ZM-16 13l8-7 6 1 5 4H-8l-3 4ZM5 10h15v5H5ZM-10 0l2 4h-4ZM11-2l2 5H9Z" fill="#111" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="0" y="54" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="600" fill="#162c46">Corrosion</text>
+</g>
+<g transform="translate(70 304)">
+<path d="M0-35l35 35-35 35-35-35Z" fill="#fff" stroke="#cf2943" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M-10-9q0-9 10-9t10 9q0 6-5 8v5H-5V-1q-5-2-5-8Z M-16 7l31 10m0-10-31 10" fill="#111" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<ellipse cx="-4" cy="-8" rx="2" ry="2" fill="white" stroke="#27405b" stroke-width="3"/>
+<ellipse cx="4" cy="-8" rx="2" ry="2" fill="white" stroke="#27405b" stroke-width="3"/>
+<text x="0" y="54" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="600" fill="#162c46">Acute toxicity</text>
+</g>
+<g transform="translate(180 304)">
+<path d="M0-35l35 35-35 35-35-35Z" fill="#fff" stroke="#cf2943" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M-3-18h6L2 5h-4ZM-3 9h6v6h-6Z" fill="#111" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="0" y="54" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="600" fill="#162c46">Irritant</text>
+</g>
+<g transform="translate(290 304)">
+<path d="M0-35l35 35-35 35-35-35Z" fill="#fff" stroke="#cf2943" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M0-1q-12-5-4-15 1 6 5 3 3-2 2-9 12 12 7 19-3 4-10 2Z" fill="#111" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M10 9a10 10 0 1 1-20 0 10 10 0 1 1 20 0Z" fill="white" stroke="#111" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="0" y="54" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="600" fill="#162c46">Oxidiser</text>
+</g>
+<g transform="translate(70 406)">
+<path d="M0-35l35 35-35 35-35-35Z" fill="#fff" stroke="#cf2943" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M-16-1q-4-3 0-6h26l3 3h6v5h-6l-3 3h-26q-4-2 0-5Z" fill="#111" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="0" y="54" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="600" fill="#162c46">Gas cylinder</text>
+</g>
+<g transform="translate(180 406)">
+<path d="M0-35l35 35-35 35-35-35Z" fill="#fff" stroke="#cf2943" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M-12-18v25m-9-20 9 5 9-5m-15 0 6 5 8 1M-19 11h37m-9 3q9-6 14 1-6 6-14 0l-4 4v-8Z" fill="#111" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="0" y="54" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="600" fill="#162c46">Environment</text>
+</g>
+<g transform="translate(290 406)">
+<path d="M0-35l35 35-35 35-35-35Z" fill="#fff" stroke="#cf2943" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M-19 16V8q2-11 13-14a8 8 0 1 1 12 0Q17-3 19 8v8Z" fill="#111" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M0-2l2 7 8-2-5 6 5 5-8-1-2 7-2-7-8 1 5-5-5-6 8 2Z" fill="white" stroke="white" stroke-width="0" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="0" y="54" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="600" fill="#162c46">Health hazard</text>
+</g>
+<path d="M32 449h296" stroke="#d7daef" stroke-width="2"/>
+<text x="180" y="624" text-anchor="middle" font-family="sans-serif" font-size="10.5" font-weight="600" fill="#162c46">Read the complete chemical label.</text>
+<g font-family="sans-serif" text-anchor="middle" fill="#162c46">
+<text x="180" y="478" font-size="15" font-weight="600">Other laboratory warnings</text>
+<path d="M100 491l34 59H66Z M260 491l34 59h-68Z" fill="#ffdb63" stroke="#111" stroke-width="3"/>
+<text x="100" y="542" font-size="35" fill="#111">☢</text>
+<text x="260" y="542" font-size="35" fill="#111">☣</text>
+<text x="100" y="572" font-size="13">Ionising radiation</text>
+<text x="260" y="572" font-size="13">Biological hazard</text>
+</g>
+</svg>

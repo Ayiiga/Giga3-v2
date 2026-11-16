@@ -64,7 +64,7 @@ describe("GigaLearn teaching materials library", () => {
     expect(ui).toContain("function ResourceVisual");
     expect(ui).toContain("scienceDiagramFor(slug)");
     expect(ui).toContain("diagram?.src || imageUrl || commons?.thumb");
-    expect(ui).toContain('!diagram && !imageUrl && category !== "Laboratory Set-ups"');
+    expect(ui).toContain("!diagram && !imageUrl && !requiresCuratedImage");
     expect(ui).toContain("aspect-[9/16]");
     expect(ui).toContain("Pinch with two fingers to zoom");
     expect(ui).toContain("https://commons.wikimedia.org/w/api.php");
@@ -118,4 +118,29 @@ describe("curated science diagrams", () => {
     );
     expect(scienceDiagramFor("equipment-evaporation-set-up")).toBeUndefined();
   });
+});
+
+it("bundles a labelled portrait aid for every seeded equipment and human biology resource", async () => {
+  const { scienceDiagramFor } = await import("../../web/lib/gigalearn/scienceDiagrams");
+  const seed = read("convex/teachingResources.ts");
+  const equipment: [string, string, string][] = JSON.parse(seed.match(/const equipment = (.*);/)?.[1] ?? "[]");
+  const anatomy = [...seed.matchAll(/make\("(human-[^"]+)"/g)].map((match) => match[1]);
+  expect(equipment).toHaveLength(32);
+  expect(anatomy).toHaveLength(9);
+  const slugs = [
+    ...equipment.map(([, slug]) => `equipment-${slug}`),
+    ...anatomy,
+    "microscope",
+    "parts-of-a-compound-microscope",
+    "laboratory-thermometer",
+    "measuring-beaker",
+    "digital-multimeter",
+    "science-laboratory-rules-and-safety-precautions",
+    "laboratory-safety-symbols-and-meanings",
+  ];
+  for (const slug of slugs) {
+    const diagram = scienceDiagramFor(slug);
+    expect(diagram?.alt, slug).toBeTruthy();
+    expect(read("web/public" + diagram?.src)).toContain('viewBox="0 0 360 640"');
+  }
 });

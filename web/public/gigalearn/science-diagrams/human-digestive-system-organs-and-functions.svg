@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 640" role="img" aria-labelledby="title description">
+<title id="title">Digestive system</title>
+<desc id="description">Mouth; Oesophagus; Liver; Gallbladder; Stomach; Pancreas; Small intestine; Large intestine; Rectum and anus</desc>
+<rect width="360" height="640" fill="white"/>
+<rect width="360" height="132" fill="#eef2ff"/>
+<text x="180" y="45" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="600" fill="#162c46">GIGALEARN · INTEGRATED SCIENCE</text>
+<text x="180" y="81" text-anchor="middle" font-family="sans-serif" font-size="24" font-weight="600" fill="#162c46">Digestive system</text>
+<ellipse cx="180" cy="176" rx="23" ry="8" fill="#f4acb4" stroke="#27405b" stroke-width="3"/>
+<path d="M180 184v78" fill="none" stroke="#b75770" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M179 255q15-14 27 7 14 12 34-6 10 33-15 56-21 16-44-3-18-17-2-54Z" fill="#f4acb4" stroke="#27405b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M110 246q34-31 70-9l-8 36q-20 24-60 13Z" fill="#d96783" stroke="#27405b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<ellipse cx="152" cy="288" rx="8" ry="14" fill="#96ba79" stroke="#27405b" stroke-width="3"/>
+<path d="M166 315q37-18 64-3-23 15-64 13Z" fill="#f8d483" stroke="#27405b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M187 409q52 15 57-25v-43H113v65q26 29 75 9v21" fill="none" stroke="#825a80" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M130 356h88q21 9 0 15h-76q-22 7 0 15h76q12 7 0 13h-82" fill="none" stroke="#c77c8a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M180 175l22 -13" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="202" cy="162" r="8.5" fill="#41367b"/>
+<text x="202" y="165.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">1</text>
+<path d="M180 217l22 12" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="202" cy="229" r="8.5" fill="#41367b"/>
+<text x="202" y="232.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">2</text>
+<path d="M131 259l-21 -13" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="110" cy="246" r="8.5" fill="#41367b"/>
+<text x="110" y="249.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">3</text>
+<path d="M152 290l-21 12" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="131" cy="302" r="8.5" fill="#41367b"/>
+<text x="131" y="305.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">4</text>
+<path d="M216 285l22 -13" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="238" cy="272" r="8.5" fill="#41367b"/>
+<text x="238" y="275.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">5</text>
+<path d="M207 317l22 12" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="229" cy="329" r="8.5" fill="#41367b"/>
+<text x="229" y="332.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">6</text>
+<path d="M191 372l22 -13" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="213" cy="359" r="8.5" fill="#41367b"/>
+<text x="213" y="362.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">7</text>
+<path d="M113 383l-21 12" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="92" cy="395" r="8.5" fill="#41367b"/>
+<text x="92" y="398.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">8</text>
+<path d="M188 429l22 -13" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="210" cy="416" r="8.5" fill="#41367b"/>
+<text x="210" y="419.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">9</text>
+<path d="M32 449h296" stroke="#d7daef" stroke-width="2"/>
+<text x="36" y="467" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">1.  Mouth</text>
+<text x="36" y="483.5" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">2.  Oesophagus</text>
+<text x="36" y="500" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">3.  Liver</text>
+<text x="36" y="516.5" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">4.  Gallbladder</text>
+<text x="36" y="533" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">5.  Stomach</text>
+<text x="36" y="549.5" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">6.  Pancreas</text>
+<text x="36" y="566" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">7.  Small intestine</text>
+<text x="36" y="582.5" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">8.  Large intestine</text>
+<text x="36" y="599" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">9.  Rectum and anus</text>
+</svg>
