@@ -10,7 +10,8 @@ export type DiscoveryCollectionId =
   | "ai-prompts"
   | "design-templates"
   | "software-dev"
-  | "creator-resources";
+  | "creator-resources"
+  | "physical-goods";
 
 export type DiscoveryCollection = {
   id: DiscoveryCollectionId;
@@ -23,6 +24,13 @@ export type DiscoveryCollection = {
 };
 
 export const DISCOVERY_COLLECTIONS: DiscoveryCollection[] = [
+  {
+    id: "physical-goods",
+    label: "Clothes, Shoes & Goods",
+    description: "Physical items — enquire with sellers inside Giga3 AI",
+    categories: ["Clothing", "Shoes", "Bags & Accessories", "Home Goods", "Other Goods"],
+    productTypes: ["physical_item"],
+  },
   {
     id: "ebooks-learning",
     label: "eBooks and Learning Materials",
