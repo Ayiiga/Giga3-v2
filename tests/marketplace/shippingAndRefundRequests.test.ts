@@ -22,7 +22,7 @@ describe("Marketplace shipping and refunds: no unverified paid physical orders",
     const helpers = source("convex/marketplaceListingHelpers.ts");
     const paystack = source("convex/paystack.ts");
     expect(market).toContain('isPhysicalMarketplaceListing(listing)) return null');
-    expect(market).toContain('isPhysicalMarketplaceListing(listing)) return { allowed: false');
+    expect(market).toContain('if (!listing || isPhysicalMarketplaceListing(listing)) return { allowed: false');
     expect(helpers).toContain('if (isPhysicalMarketplaceListing(listing)) return false');
     expect(paystack).toContain('type: "marketplace"');
     expect(paystack).not.toContain('type: "physical_order"');
