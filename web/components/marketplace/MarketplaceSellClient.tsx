@@ -415,11 +415,10 @@ function MarketplaceSellInner() {
             <div className="max-w-xl">
               <p className="text-sm font-medium text-emerald-200">Creator studio</p>
               <h1 className="mt-2 font-serif text-3xl tracking-tight text-white sm:text-4xl">
-                Sell digital products
+                Sell digital and physical products
               </h1>
               <p className="mt-2 text-sm text-emerald-100/90">
-                Complete creator identity review, upload a PDF, set a price in GHS — buyers pay through Paystack and
-                download from their library.
+                List ebooks and digital guides with verified Paystack downloads, or post clothes, shoes and other goods for in-app enquiries. Physical payments are not available yet.
               </p>
               <p className="mt-2 text-xs text-emerald-200/70">{formatCurrentDateTime()}</p>
             </div>
@@ -716,8 +715,7 @@ function MarketplaceSellInner() {
 
           {verificationStatus === "approved" && (
             <p className="mt-4 text-sm text-emerald-800">
-              Verified creator — you can create and publish listings. Product files must be attached
-              before publish; buyers only unlock downloads after Paystack payment is verified.
+              Verified seller — you can publish digital products with approved files or physical goods with a real photo and stock. Only digital downloads use Paystack.
             </p>
           )}
         </section>
