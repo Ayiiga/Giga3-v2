@@ -943,6 +943,43 @@ function MarketplaceSellInner() {
           </div>
         </section>
 
+        {physicalInquiries && physicalInquiries.length > 0 ? (
+          <section className="rounded-2xl border border-violet-200 bg-card p-4 sm:p-5" aria-label="Physical item enquiries">
+            <h2 className="text-lg font-semibold">Buyer enquiries</h2>
+            <p className="mt-1 text-xs text-muted">These are enquiries, not paid orders. Do not request payments or private addresses through messages.</p>
+            <div className="mt-3 space-y-3">
+              {physicalInquiries.map((inquiry) => (
+                <article key={inquiry._id} className="rounded-xl border border-border p-3">
+                  <p className="text-sm font-semibold">{inquiry.listingTitle}</p>
+                  <p className="mt-1 whitespace-pre-wrap text-sm text-muted">{inquiry.message}</p>
+                  {inquiry.response ? <p className="mt-2 whitespace-pre-wrap text-sm text-violet-800 dark:text-violet-200">Your reply: {inquiry.response}</p> : null}
+                  <textarea
+                    aria-label={`Reply to enquiry for ${inquiry.listingTitle}`}
+                    rows={2}
+                    maxLength={800}
+                    value={inquiryReplies[inquiry._id] ?? ""}
+                    onChange={(e) => setInquiryReplies((v) => ({ ...v, [inquiry._id]: e.target.value }))}
+                    className="mt-2 w-full rounded-xl border border-border px-3 py-2 text-sm"
+                    placeholder="Reply with availability or sizing details"
+                  />
+                  <Button type="button" size="sm" variant="secondary" onClick={() => {
+                    void replyPhysicalInquiry({
+                      sessionToken,
+                      inquiryId: inquiry._id,
+                      response: inquiryReplies[inquiry._id] ?? "",
+                    }).then(() => {
+                      setMessage("Your reply was saved for the buyer.");
+                      setInquiryReplies((v) => ({ ...v, [inquiry._id]: "" }));
+                    }).catch((e) => setError(e instanceof Error ? e.message : "Could not reply."));
+                  }}>
+                    Send reply
+                  </Button>
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
         {listings && listings.length > 0 && (
           <section>
             <h2 className="mb-4 text-lg font-semibold">Your listings</h2>
@@ -959,7 +996,11 @@ function MarketplaceSellInner() {
                           : ""}
                       </p>
                       <p className="mt-1 text-xs">
-                        {!listing.hasFile ? (
+                        {listing.productType === "physical_item" ? (
+                          <span className="text-violet-700 dark:text-violet-300">
+                            {listing.status === "published" ? "✓ Open for in-app enquiries (no online payment)" : "Upload a photo and publish to receive enquiries"}
+                          </span>
+                        ) : !listing.hasFile ? (
                           <span className="text-amber-600">⚠ Upload a PDF to sell</span>
                         ) : listing.fileReviewLabel === "pending" ? (
                           <span className="text-amber-600">⏳ PDF awaiting admin review</span>
@@ -987,7 +1028,8 @@ function MarketplaceSellInner() {
                         </Button>
                       ) : null}
                       {listing.status === "draft" &&
-                        listing.fileReviewLabel === "approved" && (
+                        (listing.fileReviewLabel === "approved" ||
+                         (listing.productType === "physical_item" && Boolean(listing.coverImageUrl) && (listing.stockQuantity ?? 0) > 0)) && (
                           <Button
                             type="button"
                             size="sm"
@@ -997,6 +1039,7 @@ function MarketplaceSellInner() {
                             Publish
                           </Button>
                         )}
+                      {listing.productType !== "physical_item" ? (
                       <label className="cursor-pointer rounded-xl border px-4 py-2 text-sm">
                         Upload PDF
                         <input
@@ -1011,6 +1054,7 @@ function MarketplaceSellInner() {
                           }}
                         />
                       </label>
+                      ) : null}
                       <label className="cursor-pointer rounded-xl border px-4 py-2 text-sm">
                         Upload cover
                         <input
