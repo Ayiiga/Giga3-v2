@@ -95,10 +95,44 @@ Use this matrix when testing the **Internal testing** track build on physical de
 | External links (e.g. legal, social) | ☐ | May open Custom Tab |
 | Deep link to `https://www.giga3ai.com/chat/` | ☐ | Intent filter |
 | Launcher shortcuts — Chat | ☐ | |
-| Launcher shortcuts — Video AI | ☐ | |
+| Launcher shortcuts — Exam Practice | ☐ | |
 | Launcher shortcuts — Marketplace | ☐ | |
 | Launcher shortcuts — GigaLearn | ☐ | |
 | In-app navigation (header/footer links) | ☐ | |
+
+---
+
+## Full mobile product smoke matrix (all must be run on installed Play test build)
+
+Run each visible tab and its primary actions on a physical Android phone. Record
+**pass/fail, Android version, build versionCode, steps to reproduce, screenshot
+or screen recording**, and a link to the corresponding issue. Do not mark a
+feature as passing solely because unit tests or desktop web tests pass.
+
+| Area | Minimum on-device action path | Pass | Evidence |
+|------|-------------------------------|------|----------|
+| Main navigation | Open and return from every visible top/bottom tab; verify Android Back | ☐ | |
+| Chat | New conversation, send/receive, retry, attach image/file, settings, conversation history | ☐ | |
+| GigaLearn | Academy lesson, learning progress, exam selection, question choice, immediate scoring, next set | ☐ | |
+| GigaEdits | Open editor, edit, save, recover and export an actual file | ☐ | |
+| Document Studio | CV with optional photo; export/open PDF and DOCX; presentation export/open PPTX | ☐ | |
+| Media Studio | Upload and generate media, preview result, save/share, recover from a failed job | ☐ | |
+| GigaSocial | Create post, video upload progress, publish, view, comment, report, block, mute | ☐ | |
+| GigaSocial safety | Report harmful post/user; verify server receipt, moderation queue and child restrictions | ☐ | |
+| Marketplace | Browse, view item, back navigation, safe checkout path | ☐ | |
+| Connectors | Open integrations, OAuth handoff/cancel/retry; accurate unavailable-provider feedback | ☐ | |
+| Account | Sign up, sign in/out, password reset, profile settings; test-account deletion end-to-end | ☐ | |
+| Billing and credits | Free/paid gate, balance, renewal terms, purchase/failed-payment handling; **do not charge real money** | ☐ | |
+| AI safety | Report an unsafe AI reply, verify receipt; test refused unsafe requests | ☐ | |
+| Reliability | 3G/slow network, airplane mode, app cold start, Android keyboard, rotate/return, permission denial | ☐ | |
+| Accessibility | Touch targets, contrast, focus/keyboard navigation, screen-reader labels, error messages | ☐ | |
+| Console compliance | Data Safety, content rating, target audience, reviewer access, billing decision, native asset links | ☐ | |
+
+**Production stop conditions:** failed critical flow, unreviewed Play Billing
+strategy for digital purchases, missing tester evidence, missing moderation
+coverage, data-safety mismatch, or a red Android vitals/CI gate. Re-test the
+specific failed path after any fix. A passed web build does not replace
+physical-device verification.
 
 ---
 

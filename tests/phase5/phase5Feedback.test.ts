@@ -59,4 +59,17 @@ describe("Phase 5 feedback workflow", () => {
     expect(modal).toContain("content_report");
     expect(modal).toContain("usePhase5Flags");
   });
+  it("shows actionable feedback errors without claiming a failed report was sent", () => {
+    const modal = readFileSync(
+      resolve(__dirname, "../../web/components/feedback/FeedbackModal.tsx"),
+      "utf8"
+    );
+    expect(modal).toContain("Report unsafe AI reply");
+    expect(modal).toContain("Please sign in again to send feedback.");
+    expect(modal).toContain("Feedback was not sent. Check your connection and try again.");
+    expect(modal).toContain('role="alert"');
+    expect(modal).toContain("catch {");
+    expect(modal).toContain("setSubmitting(false)");
+  });
+
 });

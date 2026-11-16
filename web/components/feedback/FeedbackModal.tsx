@@ -53,6 +53,7 @@ export function FeedbackModal({
   const [screenshot, setScreenshot] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const submitFeedback = useMutation(api.platformFeedback.submitFeedback);
 
   if (!open) return null;
@@ -60,8 +61,12 @@ export function FeedbackModal({
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     const sessionToken = getSessionToken();
-    if (!sessionToken) return;
+    if (!sessionToken) {
+      setSubmitError("Please sign in again to send feedback.");
+      return;
+    }
     setSubmitting(true);
+    setSubmitError(null);
     try {
       await submitFeedback({
         sessionToken,
@@ -74,6 +79,8 @@ export function FeedbackModal({
         rating: rating > 0 ? rating : undefined,
       });
       setSubmitted(true);
+    } catch {
+      setSubmitError("Feedback was not sent. Check your connection and try again.");
     } finally {
       setSubmitting(false);
     }
@@ -169,6 +176,12 @@ export function FeedbackModal({
               </Button>
               {screenshot && <span className="self-center text-xs text-muted">Screenshot attached</span>}
             </div>
+
+            {submitError ? (
+              <p role="alert" className="text-sm text-rose-700 dark:text-rose-300">
+                {submitError}
+              </p>
+            ) : null}
 
             <Button type="submit" className="w-full" disabled={submitting || !body.trim()}>
               {submitting ? "Sending…" : "Submit feedback"}
