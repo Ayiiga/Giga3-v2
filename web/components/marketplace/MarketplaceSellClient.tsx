@@ -58,6 +58,10 @@ function MarketplaceSellInner() {
     api.marketplace.getMyListings,
     sessionToken ? { sessionToken } : "skip"
   );
+  const physicalInquiries = useQuery(
+    api.marketplacePhysicalInquiries.getSellerInquiries,
+    sessionToken ? { sessionToken } : "skip"
+  );
   const revenue = useQuery(
     api.marketplace.getCreatorRevenue,
     sessionToken ? { sessionToken } : "skip"
@@ -92,6 +96,8 @@ function MarketplaceSellInner() {
   const submitCreatorVerification = useMutation(api.creatorProfiles.submitCreatorVerification);
   const generateVerificationUploadUrl = useMutation(api.creatorProfiles.generateVerificationUploadUrl);
   const createListing = useMutation(api.marketplace.createListing);
+  const replyPhysicalInquiry = useMutation(api.marketplacePhysicalInquiries.replyToInquiry);
+  const [inquiryReplies, setInquiryReplies] = useState<Record<string, string>>({});
   const updateListing = useMutation(api.marketplace.updateListing);
   const prepareListingUpload = useMutation(api.marketplaceUploadIntents.prepareListingUpload);
   const completeListingUpload = useMutation(api.marketplaceUploadIntents.completeListingUpload);
@@ -104,6 +110,12 @@ function MarketplaceSellInner() {
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState<string>(SIMPLE_CATEGORIES[0]);
   const [productType, setProductType] = useState<string>(SIMPLE_PRODUCT_TYPES[0].id);
+  const physicalItem = productType === "physical_item";
+  const [condition, setCondition] = useState<"new" | "like_new" | "good" | "fair">("new");
+  const [sizeOrVariant, setSizeOrVariant] = useState("");
+  const [stockQuantity, setStockQuantity] = useState(1);
+  const [sellerRegion, setSellerRegion] = useState("");
+  const [deliveryNote, setDeliveryNote] = useState("");
   const [priceGhs, setPriceGhs] = useState(20);
   const [license, setLicense] = useState("personal");
   const [tags, setTags] = useState("");
@@ -202,12 +214,16 @@ function MarketplaceSellInner() {
     setError(null);
     setPublishing(true);
     try {
+      if (physicalItem && !asDraft && !coverImageFile && !coverImageUrl.trim()) {
+        throw new Error("Upload a clear product photo before publishing.");
+      }
       const listingId = await createListing({
         sessionToken,
         title,
         description,
         category,
         productType: productType as any,
+        ...(physicalItem ? { condition, sizeOrVariant, stockQuantity, sellerRegion, deliveryNote } : {}),
         priceGhs,
         license: license as any,
         copyrightNotice: copyrightNotice || undefined,
@@ -221,7 +237,7 @@ function MarketplaceSellInner() {
       if (coverImageFile) {
         await uploadViaIntent(listingId, coverImageFile, "cover_image");
       }
-      if (productFile) {
+      if (productFile && !physicalItem) {
         const uploadResult = await uploadViaIntent(listingId, productFile, "product_file");
         setMessage(uploadResult.message);
       }
@@ -237,9 +253,13 @@ function MarketplaceSellInner() {
 
       if (!asDraft) {
         await updateListing({ sessionToken, listingId, status: "published" });
-        setMessage("Published — buyers can purchase and download your PDF.");
+        setMessage(physicalItem
+          ? "Item listed for enquiries. No payment or delivery order is created."
+          : "Published — buyers can purchase and download your PDF.");
       } else if (!productFile) {
-        setMessage("Draft saved. Upload a PDF under Your listings when ready.");
+        setMessage(physicalItem
+          ? "Draft saved. Add a product photo and publish when ready."
+          : "Draft saved. Upload a PDF under Your listings when ready.");
       }
 
       setTitle("");
@@ -705,7 +725,8 @@ function MarketplaceSellInner() {
         <section className="rounded-2xl border bg-card p-6">
           <h2 className="font-serif text-xl font-semibold">New product</h2>
           <p className="mt-2 text-sm text-muted">
-            PDFs and digital guides work best. Official Creator Academy guides are GHS 150 each.
+            List a downloadable digital product, or show clothing, shoes and other physical goods
+            to interested buyers. Physical items use in-app enquiries only — no payment or shipping yet.
           </p>
           {verificationStatus === "none" || verificationStatus === "rejected" ? (
             <p className="mt-2 text-sm text-amber-700">
