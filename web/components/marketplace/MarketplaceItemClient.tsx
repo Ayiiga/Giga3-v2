@@ -105,12 +105,14 @@ function MarketplaceItemInner({ initialListingId }: { initialListingId?: string 
     setInquirySending(true);
     setError(null);
     try {
+      const effectiveMethod = (listing.shippingMethods ?? ["pickup"]).includes(shippingMethod)
+        ? shippingMethod : (listing.shippingMethods ?? ["pickup"])[0];
       const result = await requestPhysicalItem({
         sessionToken: token,
         listingId: listingId!,
         message: inquiryMessage,
-        shippingMethod,
-        destinationCity: shippingMethod === "pickup" ? undefined : destinationCity.trim(),
+        shippingMethod: effectiveMethod,
+        destinationCity: effectiveMethod === "pickup" ? undefined : destinationCity.trim(),
       });
       setInquiryNotice(result.message);
       setInquiryMessage("");
