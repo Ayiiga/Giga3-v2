@@ -29,7 +29,7 @@ export const PRODUCT_GROUPS: readonly { id: ProductGroupId; title: string; lead:
   {
     id: "share",
     title: "Share and sell",
-    lead: "Publish to the community and sell digital products with GHS payments.",
+    lead: "Publish to the community, sell digital products via Paystack, and list physical goods for enquiries.",
   },
   {
     id: "business",
@@ -131,9 +131,9 @@ export const PRODUCT_CATALOG: readonly ProductEntry[] = [
   {
     href: "/marketplace",
     name: "Marketplace",
-    tagline: "Digital products, paid in GHS",
+    tagline: "Digital downloads & physical listings",
     description:
-      "Browse digital products — ebooks, templates, and educational resources from verified creators. Pay with Paystack in GHS.",
+      "Pay with Paystack for approved digital downloads, or enquire about clothes, shoes and other physical goods. Physical checkout and delivery are not available yet.",
     group: "share",
   },
   {
