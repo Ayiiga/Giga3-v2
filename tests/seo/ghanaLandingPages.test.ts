@@ -38,9 +38,9 @@ describe("Ghana SEO landing pages", () => {
   it("registers Ghana landing paths in footer product links", () => {
     const hrefs = FOOTER_PRODUCT_LINKS.map((l) => l.href);
     for (const path of [
-      "/ai-for-teachers-ghana",
-      "/ai-for-bece-wassce-ghana",
-      "/african-ai-tools",
+      "/ai-for-teachers-ghana/",
+      "/ai-for-bece-wassce-ghana/",
+      "/african-ai-tools/",
     ]) {
       expect(hrefs).toContain(path);
     }
