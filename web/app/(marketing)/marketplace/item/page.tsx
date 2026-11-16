@@ -14,7 +14,7 @@ export const metadata = publicMetadata({
   path: "/marketplace/item",
   title: "Marketplace product",
   description:
-    "View a digital product listing on the Giga3 AI Marketplace. Pay with Paystack in GHS to unlock downloads after purchase.",
+    "Browse digital downloads and physical goods in Giga3 AI Marketplace. Digital purchases use verified Paystack checkout; physical goods support enquiries only.",
   // Legacy ?id= redirect shell — the per-item static pages carry the indexable content.
   index: false,
 });
