@@ -169,7 +169,7 @@ describe("noindex app shells avoid homepage canonical leak", () => {
 
   it("links the indexable press page from the footer product map", () => {
     const links = readFileSync(resolve(root, "web/lib/seo/productLinks.ts"), "utf8");
-    expect(links).toContain('href: "/press"');
+    expect(links).toContain('href: "/press/"');
   });
 });
 
