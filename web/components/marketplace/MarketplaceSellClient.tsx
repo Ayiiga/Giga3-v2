@@ -753,21 +753,30 @@ function MarketplaceSellInner() {
               className="w-full rounded-xl border px-4 py-3"
             />
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <select value={category} onChange={(e) => setCategory(e.target.value as any)} className="rounded-xl border px-4 py-3">
-                {SIMPLE_CATEGORIES.map((c) => (
+              <select aria-label="Product category" value={category} onChange={(e) => setCategory(e.target.value)} className="rounded-xl border px-4 py-3">
+                {SIMPLE_CATEGORIES.filter((c) => physicalItem
+                  ? ["Clothing", "Shoes", "Bags & Accessories", "Home Goods", "Other Goods"].includes(c)
+                  : !["Clothing", "Shoes", "Bags & Accessories", "Home Goods", "Other Goods"].includes(c)
+                ).map((c) => (
                   <option key={c} value={c}>{c}</option>
                 ))}
               </select>
-              <select value={productType} onChange={(e) => setProductType(e.target.value)} className="rounded-xl border px-4 py-3">
+              <select aria-label="Product type" value={productType} onChange={(e) => {
+                const next = e.target.value;
+                setProductType(next);
+                setCategory(next === "physical_item" ? "Clothing" : "Education");
+              }} className="rounded-xl border px-4 py-3">
                 {SIMPLE_PRODUCT_TYPES.map((t) => (
                   <option key={t.id} value={t.id}>{t.label}</option>
                 ))}
               </select>
-              <select value={license} onChange={(e) => setLicense(e.target.value)} className="rounded-xl border px-4 py-3">
-                {SIMPLE_LICENSE_TYPES.map((l) => (
-                  <option key={l.id} value={l.id}>{l.label}</option>
-                ))}
-              </select>
+              {!physicalItem ? (
+                <select aria-label="Digital license" value={license} onChange={(e) => setLicense(e.target.value)} className="rounded-xl border px-4 py-3">
+                  {SIMPLE_LICENSE_TYPES.map((l) => (
+                    <option key={l.id} value={l.id}>{l.label}</option>
+                  ))}
+                </select>
+              ) : null}
               <input
                 type="number"
                 min={1}
@@ -777,12 +786,45 @@ function MarketplaceSellInner() {
                 aria-label="Price GHS"
               />
             </div>
+            {physicalItem ? (
+              <div className="grid gap-3 rounded-2xl border border-violet-200 bg-violet-50/40 p-3 sm:grid-cols-2 dark:border-violet-900 dark:bg-violet-950/20">
+                <label className="space-y-1 text-sm font-medium">
+                  <span>Condition</span>
+                  <select aria-label="Item condition" value={condition} onChange={(e) => setCondition(e.target.value as typeof condition)} className="w-full rounded-xl border px-3 py-3">
+                    <option value="new">New</option>
+                    <option value="like_new">Like new</option>
+                    <option value="good">Used — good</option>
+                    <option value="fair">Used — fair</option>
+                  </select>
+                </label>
+                <label className="space-y-1 text-sm font-medium">
+                  <span>Size, colour or variant</span>
+                  <input aria-label="Size or variant" value={sizeOrVariant} onChange={(e) => setSizeOrVariant(e.target.value)} placeholder="e.g. UK 8, black" maxLength={100} className="w-full rounded-xl border px-3 py-3" />
+                </label>
+                <label className="space-y-1 text-sm font-medium">
+                  <span>Available quantity</span>
+                  <input aria-label="Stock quantity" type="number" min={1} max={1000} value={stockQuantity} onChange={(e) => setStockQuantity(Number(e.target.value))} className="w-full rounded-xl border px-3 py-3" />
+                </label>
+                <label className="space-y-1 text-sm font-medium">
+                  <span>City or region (not home address)</span>
+                  <input aria-label="Item city or region" value={sellerRegion} onChange={(e) => setSellerRegion(e.target.value)} placeholder="e.g. Kumasi, Ghana" maxLength={90} className="w-full rounded-xl border px-3 py-3" />
+                </label>
+                <label className="space-y-1 text-sm font-medium sm:col-span-2">
+                  <span>Delivery area (optional)</span>
+                  <textarea aria-label="Delivery information" value={deliveryNote} onChange={(e) => setDeliveryNote(e.target.value)} rows={2} maxLength={300} placeholder="Delivery locations, not a private address" className="w-full rounded-xl border px-3 py-3" />
+                </label>
+                <p className="text-xs text-amber-800 dark:text-amber-200 sm:col-span-2">
+                  In-app enquiries only. Physical checkout, shipping and refunds are not active. Never collect money outside Giga3 AI.
+                </p>
+              </div>
+            ) : null}
             <input
               value={tags}
               onChange={(e) => setTags(e.target.value)}
               placeholder="Tags (comma separated)"
               className="rounded-xl border px-4 py-3"
             />
+            {!physicalItem ? (
             <div className="space-y-3 rounded-xl border border-border bg-background/60 p-3">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted">
                 Public preview (optional — never attach the paid PDF here)
@@ -809,23 +851,26 @@ function MarketplaceSellInner() {
                 className="w-full rounded-xl border px-4 py-3"
               />
             </div>
+            ) : null}
+            {!physicalItem ? (
             <input
               value={copyrightNotice}
               onChange={(e) => setCopyrightNotice(e.target.value)}
               placeholder="Copyright notice"
               className="rounded-xl border px-4 py-3"
             />
+            ) : null}
             <input
               value={coverImageUrl}
               onChange={(e) => setCoverImageUrl(e.target.value)}
-              placeholder="Cover image URL (required for ebooks if not uploading)"
+              placeholder={physicalItem ? "Product photo URL (or upload below)" : "Cover image URL (required for ebooks if not uploading)"}
               className="rounded-xl border px-4 py-3"
             />
             <label className="flex cursor-pointer flex-col gap-2 rounded-xl border border-dashed px-4 py-4 text-sm">
-              <span className="font-medium">Cover image upload</span>
+              <span className="font-medium">{physicalItem ? "Product photo upload" : "Cover image upload"}</span>
               <span className="text-muted">
                 {coverImageFile?.name ??
-                  "JPG or PNG book cover — required before publishing ebooks"}
+                  (physicalItem ? "Clear photo of the actual item (required to publish)" : "JPG or PNG book cover — required before publishing ebooks")}
               </span>
               <input
                 type="file"
@@ -835,6 +880,7 @@ function MarketplaceSellInner() {
                 onChange={(e) => setCoverImageFile(e.target.files?.[0] ?? null)}
               />
             </label>
+            {!physicalItem ? (
             <label className="flex cursor-pointer flex-col gap-2 rounded-xl border border-dashed px-4 py-4 text-sm">
               <span className="font-medium">Product PDF</span>
               <span className="text-muted">
@@ -848,11 +894,14 @@ function MarketplaceSellInner() {
                 onChange={(e) => setProductFile(e.target.files?.[0] ?? null)}
               />
             </label>
+            ) : null}
+            {!physicalItem ? (
             <p className="text-sm text-muted">
               {uploadStatus?.requiresAdminReview
                 ? "PDFs are reviewed by Giga3 before buyers can purchase. Paystack checkout stays fraud-safe."
                 : "Upload a PDF after verification is approved."}
             </p>
+            ) : null}
             {showCreatePreview && title.trim() ? (
               <div className="rounded-xl border border-dashed border-border bg-background p-4">
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted">Preview</p>
@@ -886,7 +935,7 @@ function MarketplaceSellInner() {
               <Button
                 type="button"
                 onClick={() => saveListing(false)}
-                disabled={publishing || verificationStatus !== "approved" || !productFile}
+                disabled={publishing || verificationStatus !== "approved" || (physicalItem ? !coverImageFile && !coverImageUrl.trim() : !productFile)}
               >
                 {publishing ? "Publishing…" : "Publish"}
               </Button>
