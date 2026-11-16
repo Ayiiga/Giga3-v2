@@ -4,7 +4,28 @@ export const OFFICIAL_MARKETPLACE_TAG = "giga3-official-series";
 
 export type MarketplaceFileReviewStatus = "pending" | "approved" | "rejected";
 
-type ListingLike = Pick<Doc<"marketplaceListings">, "tags" | "fileStorageId" | "fileReviewStatus">;
+type ListingLike = Pick<Doc<"marketplaceListings">, "tags" | "fileStorageId" | "fileReviewStatus"> & {
+  productType?: string;
+};
+
+export function isPhysicalMarketplaceListing(listing: { productType?: string }): boolean {
+  return listing.productType === "physical_item";
+}
+
+/** Public visibility for physical listings is independent of PDF download approval. */
+export function isMarketplaceListingVisible(listing: ListingLike & {
+  status: string;
+  coverImageUrl?: string;
+  coverStorageId?: unknown;
+  stockQuantity?: number;
+}): boolean {
+  if (listing.status !== "published") return false;
+  if (isPhysicalMarketplaceListing(listing)) {
+    return Boolean(listing.coverStorageId || listing.coverImageUrl) &&
+      Number.isInteger(listing.stockQuantity) && (listing.stockQuantity ?? 0) > 0;
+  }
+  return isListingFileApproved(listing);
+}
 
 export function isOfficialMarketplaceListing(listing: Pick<ListingLike, "tags">): boolean {
   return listing.tags.includes(OFFICIAL_MARKETPLACE_TAG);
@@ -12,6 +33,8 @@ export function isOfficialMarketplaceListing(listing: Pick<ListingLike, "tags">)
 
 /** Whether a stored file may be sold or downloaded by buyers. */
 export function isListingFileApproved(listing: ListingLike): boolean {
+  // Absolute separation: a physical listing must never unlock digital checkout.
+  if (isPhysicalMarketplaceListing(listing)) return false;
   if (!listing.fileStorageId) return false;
   if (isOfficialMarketplaceListing(listing)) return true;
   const status = listing.fileReviewStatus ?? "approved";
