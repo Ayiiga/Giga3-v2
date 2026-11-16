@@ -65,6 +65,7 @@ export const marketplaceProductTypeValidator = v.union(
   v.literal("business_document"),
   v.literal("educational_resource"),
   v.literal("motivational_book"),
+  v.literal("physical_item"),
   v.literal("other")
 );
 
@@ -890,6 +891,12 @@ export default defineSchema({
     description: v.string(),
     category: v.string(),
     productType: marketplaceProductTypeValidator,
+    /** Physical inventory uses separate inquiry flow, NEVER digital Paystack download checkout. */
+    condition: v.optional(v.union(v.literal("new"), v.literal("like_new"), v.literal("good"), v.literal("fair"))),
+    sizeOrVariant: v.optional(v.string()),
+    stockQuantity: v.optional(v.number()),
+    sellerRegion: v.optional(v.string()),
+    deliveryNote: v.optional(v.string()),
     priceGhs: v.number(),
     license: marketplaceLicenseValidator,
     copyrightNotice: v.optional(v.string()),
@@ -927,6 +934,21 @@ export default defineSchema({
     .index("by_creator_status", ["creatorId", "status", "updatedAt"])
     .index("by_status", ["status", "updatedAt"])
     .index("by_category", ["category", "updatedAt"]),
+
+  /** Buyers enquire about physical items; no charge, delivery or entitlement implied. */
+  marketplacePhysicalInquiries: defineTable({
+    listingId: v.id("marketplaceListings"),
+    buyerId: v.string(),
+    sellerId: v.string(),
+    message: v.string(),
+    response: v.optional(v.string()),
+    status: v.union(v.literal("open"), v.literal("replied"), v.literal("closed")),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_buyer_listing", ["buyerId", "listingId"])
+    .index("by_seller", ["sellerId", "createdAt"])
+    .index("by_listing", ["listingId"]),
 
   marketplaceUploadIntents: defineTable({
     ownerId: v.string(),
