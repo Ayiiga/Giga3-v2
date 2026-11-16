@@ -2,7 +2,7 @@
 
 import { ProductCover } from "@/components/marketplace/ProductCover";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
-import { ButtonLink } from "@/components/ui/Button";
+import { Button, ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingState } from "@/components/ui/LoadingState";
@@ -10,7 +10,7 @@ import { formatGhs } from "@/lib/marketplace/catalog";
 import { formatTimestampDateTime } from "@/lib/datetime";
 import { getSessionToken } from "@/lib/auth";
 import { api } from "convex/_generated/api";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { Download, ExternalLink, ShoppingBag, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -33,6 +33,17 @@ function MarketplacePurchasesInner() {
     api.marketplace.getMyPurchases,
     sessionToken ? { sessionToken } : "skip"
   );
+  const refundRequests = useQuery(
+    api.marketplaceRefundRequests.myRefundRequests,
+    sessionToken ? { sessionToken } : "skip"
+  );
+  const requestRefund = useMutation(api.marketplaceRefundRequests.requestRefund);
+  const [refundFor, setRefundFor] = useState<string | null>(null);
+  const [refundReason, setRefundReason] = useState<"duplicate_charge" | "file_unavailable" | "not_as_described" | "other">("file_unavailable");
+  const [refundDetails, setRefundDetails] = useState("");
+  const [refundBusy, setRefundBusy] = useState(false);
+  const [refundNotice, setRefundNotice] = useState<string | null>(null);
+  const [refundError, setRefundError] = useState<string | null>(null);
 
   return (
     <Container className="document-compact py-4 pb-[calc(var(--primary-nav-offset,0px)+1.25rem)] sm:py-8">
@@ -75,6 +86,7 @@ function MarketplacePurchasesInner() {
             {purchases.map((row: NonNullable<typeof purchases>[number]) => {
               const canDownload = Boolean(row.hasDownload && row.downloadUrl);
               const pendingReview = Boolean(row.downloadPendingReview);
+              const refundCase = refundRequests?.find(request => request.purchaseId === row.purchase._id);
               return (
                 <article
                   key={row.purchase._id}
@@ -140,6 +152,55 @@ function MarketplacePurchasesInner() {
                       <ExternalLink className="mr-2 h-4 w-4" aria-hidden />
                       Details
                     </ButtonLink>
+                    {refundCase ? (
+                      <p className="w-full rounded-lg border border-amber-200 bg-amber-50 p-2 text-xs text-amber-900">
+                        Refund case: {refundCase.status.replace(/_/g, " ")}. This is not confirmation of money refunded.
+                        {refundCase.adminNote ? ` · Review: ${refundCase.adminNote}` : ""}
+                      </p>
+                    ) : (
+                      <Button type="button" variant="secondary" size="sm"
+                        onClick={() => { setRefundFor(refundFor === row.purchase._id ? null : row.purchase._id);
+                          setRefundNotice(null); setRefundError(null); }}>
+                        Request refund review
+                      </Button>
+                    )}
+                    {refundFor === row.purchase._id && !refundCase ? (
+                      <div className="w-full space-y-2 rounded-xl border border-border bg-background p-3">
+                        <p className="text-xs text-muted">
+                          Submit a review request for this paid digital product. Approval is not guaranteed;
+                          refunds are processed separately through Paystack where applicable.
+                        </p>
+                        <select aria-label="Reason for refund" value={refundReason}
+                          onChange={e => setRefundReason(e.target.value as typeof refundReason)}
+                          className="w-full rounded-xl border px-3 py-2 text-sm">
+                          <option value="file_unavailable">Paid file unavailable</option>
+                          <option value="duplicate_charge">Duplicate charge</option>
+                          <option value="not_as_described">Product not as described</option>
+                          <option value="other">Other issue</option>
+                        </select>
+                        <textarea aria-label="Refund reason details" rows={3} maxLength={1000}
+                          value={refundDetails} onChange={e => setRefundDetails(e.target.value)}
+                          placeholder="Explain the issue (at least 10 characters)"
+                          className="w-full rounded-xl border px-3 py-2 text-sm"/>
+                        <Button size="sm" disabled={refundBusy || refundDetails.trim().length < 10}
+                          onClick={() => {
+                            if (!sessionToken) return;
+                            setRefundBusy(true); setRefundError(null); setRefundNotice(null);
+                            void requestRefund({
+                              sessionToken, purchaseId: row.purchase._id,
+                              reason: refundReason, details: refundDetails,
+                            }).then(result => {
+                              setRefundNotice(result.message);
+                              setRefundFor(null); setRefundDetails("");
+                            }).catch(err => setRefundError(err instanceof Error ? err.message : "Could not submit refund request."))
+                            .finally(() => setRefundBusy(false));
+                          }}>
+                          {refundBusy ? "Submitting…" : "Submit for review"}
+                        </Button>
+                        {refundError ? <p role="alert" className="text-xs text-red-600">{refundError}</p> : null}
+                      </div>
+                    ) : null}
+                    {refundNotice ? <p className="w-full text-xs text-emerald-700" role="status">{refundNotice}</p> : null}
                   </div>
                 </article>
               );

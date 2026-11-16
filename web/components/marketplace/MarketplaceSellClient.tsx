@@ -116,6 +116,19 @@ function MarketplaceSellInner() {
   const [stockQuantity, setStockQuantity] = useState(1);
   const [sellerRegion, setSellerRegion] = useState("");
   const [deliveryNote, setDeliveryNote] = useState("");
+  const [shippingMethods, setShippingMethods] = useState<Array<"pickup" | "seller_delivery" | "courier">>(["pickup"]);
+  const [shippingFee, setShippingFee] = useState("");
+  const [shippingDays, setShippingDays] = useState("");
+  const [returnWindowDays, setReturnWindowDays] = useState("");
+  const [returnTerms, setReturnTerms] = useState("");
+  const [editShippingMethods, setEditShippingMethods] = useState<Array<"pickup" | "seller_delivery" | "courier">>(["pickup"]);
+  const [editShippingFee, setEditShippingFee] = useState("");
+  const [editShippingDays, setEditShippingDays] = useState("");
+  const [editReturnDays, setEditReturnDays] = useState("");
+  const [editReturnTerms, setEditReturnTerms] = useState("");
+  const [quotedFees, setQuotedFees] = useState<Record<string, string>>({});
+  const [quotedDays, setQuotedDays] = useState<Record<string, string>>({});
+  const [quotedCarrier, setQuotedCarrier] = useState<Record<string, string>>({});
   const [priceGhs, setPriceGhs] = useState(20);
   const [license, setLicense] = useState("personal");
   const [tags, setTags] = useState("");
@@ -223,7 +236,14 @@ function MarketplaceSellInner() {
         description,
         category,
         productType: productType as any,
-        ...(physicalItem ? { condition, sizeOrVariant, stockQuantity, sellerRegion, deliveryNote } : {}),
+        ...(physicalItem ? {
+          condition, sizeOrVariant, stockQuantity, sellerRegion, deliveryNote,
+          shippingMethods,
+          shippingFeeGhs: shippingFee.trim() === "" ? undefined : Number(shippingFee),
+          shippingDays: shippingDays.trim() === "" ? undefined : Number(shippingDays),
+          returnWindowDays: returnWindowDays.trim() === "" ? undefined : Number(returnWindowDays),
+          returnTerms: returnTerms.trim() || undefined,
+        } : {}),
         priceGhs,
         license: license as any,
         copyrightNotice: copyrightNotice || undefined,
@@ -298,6 +318,11 @@ function MarketplaceSellInner() {
     setEditPreviewToc(listing.previewToc ?? "");
     setEditPreviewIntro(listing.previewIntro ?? "");
     setEditCategory(listing.category);
+    setEditShippingMethods(listing.shippingMethods ?? ["pickup"]);
+    setEditShippingFee(listing.shippingFeeGhs == null ? "" : String(listing.shippingFeeGhs));
+    setEditShippingDays(listing.shippingDays == null ? "" : String(listing.shippingDays));
+    setEditReturnDays(listing.returnWindowDays == null ? "" : String(listing.returnWindowDays));
+    setEditReturnTerms(listing.returnTerms ?? "");
     setMessage(null);
     setError(null);
   }
@@ -316,6 +341,14 @@ function MarketplaceSellInner() {
         previewToc: editPreviewToc || undefined,
         previewIntro: editPreviewIntro || undefined,
         category: editCategory,
+        ...(listings?.find(row => row._id === editingId)?.productType === "physical_item"
+          ? {
+            shippingMethods: editShippingMethods,
+            shippingFeeGhs: editShippingFee.trim() === "" ? undefined : Number(editShippingFee),
+            shippingDays: editShippingDays.trim() === "" ? undefined : Number(editShippingDays),
+            returnWindowDays: editReturnDays.trim() === "" ? undefined : Number(editReturnDays),
+            returnTerms: editReturnTerms,
+          } : {}),
       });
       setMessage("Listing updated.");
       setEditingId(null);
@@ -811,8 +844,45 @@ function MarketplaceSellInner() {
                   <span>Delivery area (optional)</span>
                   <textarea aria-label="Delivery information" value={deliveryNote} onChange={(e) => setDeliveryNote(e.target.value)} rows={2} maxLength={300} placeholder="Delivery locations, not a private address" className="w-full rounded-xl border px-3 py-3" />
                 </label>
+                <div className="space-y-2 sm:col-span-2">
+                  <p className="text-sm font-semibold">Delivery methods offered</p>
+                  <div className="flex flex-wrap gap-3">
+                    {([["pickup", "Collection / pickup"], ["seller_delivery", "Local delivery"], ["courier", "Courier shipping"]] as const).map(([id, label]) => (
+                      <label key={id} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-border bg-card px-3 text-sm">
+                        <input type="checkbox" checked={shippingMethods.includes(id)}
+                          onChange={e => setShippingMethods(x => e.target.checked ? [...x.filter(m => m !== id), id] : x.filter(m => m !== id))} />
+                        {label}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <label className="space-y-1 text-sm font-medium">
+                  <span>Delivery fee in GHS (optional)</span>
+                  <input aria-label="Standard shipping fee GHS" inputMode="numeric" type="number" min="0" max="10000"
+                    value={shippingFee} onChange={e => setShippingFee(e.target.value)} placeholder="Blank: quote per buyer"
+                    className="w-full rounded-xl border px-3 py-3"/>
+                </label>
+                <label className="space-y-1 text-sm font-medium">
+                  <span>Estimated delivery days (optional)</span>
+                  <input aria-label="Estimated delivery days" type="number" min="1" max="60" value={shippingDays}
+                    onChange={e => setShippingDays(e.target.value)} placeholder="e.g. 3"
+                    className="w-full rounded-xl border px-3 py-3"/>
+                </label>
+                <label className="space-y-1 text-sm font-medium">
+                  <span>Seller return window in days (optional)</span>
+                  <input aria-label="Seller return window days" type="number" min="0" max="90" value={returnWindowDays}
+                    onChange={e => setReturnWindowDays(e.target.value)} placeholder="e.g. 7"
+                    className="w-full rounded-xl border px-3 py-3"/>
+                </label>
+                <label className="space-y-1 text-sm font-medium sm:col-span-2">
+                  <span>Return conditions (optional)</span>
+                  <textarea aria-label="Seller return conditions" rows={2} maxLength={500} value={returnTerms}
+                    onChange={e => setReturnTerms(e.target.value)} placeholder="e.g. Unworn items with tags. Statutory rights still apply."
+                    className="w-full rounded-xl border px-3 py-3"/>
+                </label>
                 <p className="text-xs text-amber-800 dark:text-amber-200 sm:col-span-2">
-                  In-app enquiries only. Physical checkout, shipping and refunds are not active. Never collect money outside Giga3 AI.
+                  These are seller-provided options and a voluntary return policy. Shipping quotes are not paid orders.
+                  Physical checkout and money refunds are not yet enabled.
                 </p>
               </div>
             ) : null}
@@ -950,6 +1020,10 @@ function MarketplaceSellInner() {
                 <article key={inquiry._id} className="rounded-xl border border-border p-3">
                   <p className="text-sm font-semibold">{inquiry.listingTitle}</p>
                   <p className="mt-1 whitespace-pre-wrap text-sm text-muted">{inquiry.message}</p>
+                  <p className="mt-1 text-xs text-muted">
+                    Requested: {inquiry.requestedShippingMethod?.replace(/_/g, " ") ?? "pickup"}
+                    {inquiry.destinationCity ? ` · City: ${inquiry.destinationCity}` : ""}
+                  </p>
                   {inquiry.response ? <p className="mt-2 whitespace-pre-wrap text-sm text-violet-800 dark:text-violet-200">Your reply: {inquiry.response}</p> : null}
                   <textarea
                     aria-label={`Reply to enquiry for ${inquiry.listingTitle}`}
@@ -960,11 +1034,27 @@ function MarketplaceSellInner() {
                     className="mt-2 w-full rounded-xl border border-border px-3 py-2 text-sm"
                     placeholder="Reply with availability or sizing details"
                   />
+                  {inquiry.requestedShippingMethod !== "pickup" ? (
+                    <div className="mt-2 grid gap-2 sm:grid-cols-3">
+                      <input aria-label="Shipping quote GHS" type="number" min="0" max="10000"
+                        placeholder="Shipping fee GHS" value={quotedFees[inquiry._id] ?? ""}
+                        onChange={e => setQuotedFees(v => ({...v, [inquiry._id]: e.target.value}))} className="rounded-xl border border-border px-3 py-2 text-sm"/>
+                      <input aria-label="Quoted delivery days" type="number" min="1" max="60"
+                        placeholder="Delivery days" value={quotedDays[inquiry._id] ?? ""}
+                        onChange={e => setQuotedDays(v => ({...v, [inquiry._id]: e.target.value}))} className="rounded-xl border border-border px-3 py-2 text-sm"/>
+                      <input aria-label="Delivery carrier name" maxLength={100}
+                        placeholder="Courier (optional)" value={quotedCarrier[inquiry._id] ?? ""}
+                        onChange={e => setQuotedCarrier(v => ({...v, [inquiry._id]: e.target.value}))} className="rounded-xl border border-border px-3 py-2 text-sm"/>
+                    </div>
+                  ) : null}
                   <Button type="button" size="sm" variant="secondary" onClick={() => {
                     void replyPhysicalInquiry({
                       sessionToken,
                       inquiryId: inquiry._id,
                       response: inquiryReplies[inquiry._id] ?? "",
+                      shippingFeeGhs: quotedFees[inquiry._id] ? Number(quotedFees[inquiry._id]) : undefined,
+                      deliveryDays: quotedDays[inquiry._id] ? Number(quotedDays[inquiry._id]) : undefined,
+                      carrier: quotedCarrier[inquiry._id] || undefined,
                     }).then(() => {
                       setMessage("Your reply was saved for the buyer.");
                       setInquiryReplies((v) => ({ ...v, [inquiry._id]: "" }));
@@ -1080,6 +1170,31 @@ function MarketplaceSellInner() {
                   )}
                   {editingId === listing._id ? (
                     <div className="mt-4 grid gap-3 border-t border-border pt-4">
+                      {listing.productType === "physical_item" ? (
+                        <div className="space-y-3 rounded-xl border border-violet-200 p-3">
+                          <p className="font-semibold text-sm">Shipping & returns</p>
+                          <div className="flex flex-wrap gap-3">
+                            {([["pickup","Pickup"],["seller_delivery","Local delivery"],["courier","Courier"]] as const).map(([id, label]) => (
+                              <label key={id} className="flex items-center gap-2 text-sm">
+                                <input type="checkbox" checked={editShippingMethods.includes(id)}
+                                  onChange={e => setEditShippingMethods(x => e.target.checked ? [...x.filter(m => m !== id), id] : x.filter(m => m !== id))}/>
+                                {label}
+                              </label>
+                            ))}
+                          </div>
+                          <div className="grid gap-2 sm:grid-cols-3">
+                            <input aria-label="Edit shipping fee GHS" type="number" min="0" max="10000"
+                              placeholder="Shipping fee GHS" value={editShippingFee} onChange={e => setEditShippingFee(e.target.value)} className="rounded-xl border px-3 py-2"/>
+                            <input aria-label="Edit delivery days" type="number" min="1" max="60"
+                              placeholder="Delivery days" value={editShippingDays} onChange={e => setEditShippingDays(e.target.value)} className="rounded-xl border px-3 py-2"/>
+                            <input aria-label="Edit return window days" type="number" min="0" max="90"
+                              placeholder="Return days" value={editReturnDays} onChange={e => setEditReturnDays(e.target.value)} className="rounded-xl border px-3 py-2"/>
+                          </div>
+                          <textarea aria-label="Edit return conditions" rows={2} maxLength={500}
+                            placeholder="Seller return conditions" value={editReturnTerms} onChange={e => setEditReturnTerms(e.target.value)}
+                            className="w-full rounded-xl border px-3 py-2"/>
+                        </div>
+                      ) : null}
                       <input
                         value={editTitle}
                         onChange={(e) => setEditTitle(e.target.value)}

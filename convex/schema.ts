@@ -897,6 +897,12 @@ export default defineSchema({
     stockQuantity: v.optional(v.number()),
     sellerRegion: v.optional(v.string()),
     deliveryNote: v.optional(v.string()),
+    /** Seller-provided shipping options; information only until paid orders launch. */
+    shippingMethods: v.optional(v.array(v.union(v.literal("pickup"), v.literal("seller_delivery"), v.literal("courier")))),
+    shippingFeeGhs: v.optional(v.number()),
+    shippingDays: v.optional(v.number()),
+    returnWindowDays: v.optional(v.number()),
+    returnTerms: v.optional(v.string()),
     priceGhs: v.number(),
     license: marketplaceLicenseValidator,
     copyrightNotice: v.optional(v.string()),
@@ -942,6 +948,11 @@ export default defineSchema({
     sellerId: v.string(),
     message: v.string(),
     response: v.optional(v.string()),
+    requestedShippingMethod: v.optional(v.union(v.literal("pickup"), v.literal("seller_delivery"), v.literal("courier"))),
+    destinationCity: v.optional(v.string()),
+    quotedShippingFeeGhs: v.optional(v.number()),
+    quotedDeliveryDays: v.optional(v.number()),
+    quotedCarrier: v.optional(v.string()),
     status: v.union(v.literal("open"), v.literal("replied"), v.literal("closed")),
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -1000,6 +1011,28 @@ export default defineSchema({
     .index("by_listing", ["listingId"])
     .index("by_creator", ["creatorId", "createdAt"])
     .index("by_reference", ["paymentReference"]),
+
+  /** Buyer refund request for an existing successful Paystack digital purchase.
+   * This is NOT a payment reversal. Only Paystack can confirm money returned.
+   */
+  marketplaceRefundRequests: defineTable({
+    purchaseId: v.id("marketplacePurchases"),
+    buyerId: v.string(),
+    sellerId: v.string(),
+    paymentReference: v.string(),
+    reason: v.union(
+      v.literal("duplicate_charge"), v.literal("file_unavailable"),
+      v.literal("not_as_described"), v.literal("other")
+    ),
+    details: v.string(),
+    status: v.union(v.literal("requested"), v.literal("in_review"), v.literal("declined"), v.literal("referred_to_paystack")),
+    adminNote: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_buyer", ["buyerId", "createdAt"])
+    .index("by_purchase", ["purchaseId"])
+    .index("by_status", ["status", "createdAt"]),
 
   marketplaceReviews: defineTable({
     listingId: v.id("marketplaceListings"),

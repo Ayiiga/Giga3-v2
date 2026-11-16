@@ -56,6 +56,8 @@ function MarketplaceItemInner({ initialListingId }: { initialListingId?: string 
 
   const [buying, setBuying] = useState(false);
   const [inquiryMessage, setInquiryMessage] = useState("");
+  const [shippingMethod, setShippingMethod] = useState<"pickup" | "seller_delivery" | "courier">("pickup");
+  const [destinationCity, setDestinationCity] = useState("");
   const [inquirySending, setInquirySending] = useState(false);
   const [inquiryNotice, setInquiryNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -103,10 +105,14 @@ function MarketplaceItemInner({ initialListingId }: { initialListingId?: string 
     setInquirySending(true);
     setError(null);
     try {
+      const effectiveMethod = (listing.shippingMethods ?? ["pickup"]).includes(shippingMethod)
+        ? shippingMethod : (listing.shippingMethods ?? ["pickup"])[0];
       const result = await requestPhysicalItem({
         sessionToken: token,
         listingId: listingId!,
         message: inquiryMessage,
+        shippingMethod: effectiveMethod,
+        destinationCity: effectiveMethod === "pickup" ? undefined : destinationCity.trim(),
       });
       setInquiryNotice(result.message);
       setInquiryMessage("");
@@ -314,7 +320,23 @@ function MarketplaceItemInner({ initialListingId }: { initialListingId?: string 
           ) : (
             <>
               <p className="mt-1 text-sm text-muted capitalize">License: {listing.license.replace(/_/g, " ")}</p>
-              <p className="mt-1 text-sm text-muted">{listing.purchaseCount} purchases</p>
+              {isPhysical ? (
+            <div className="mt-3 space-y-2 rounded-xl border border-violet-200 bg-violet-50/50 p-3 text-sm dark:border-violet-900 dark:bg-violet-950/20">
+              <p className="font-semibold">Shipping & returns</p>
+              <p className="text-muted">Seller offers: {(listing.shippingMethods ?? ["pickup"]).map(method =>
+                method === "pickup" ? "Collection / pickup" : method === "seller_delivery" ? "Local delivery" : "Courier shipping"
+              ).join(" · ")}</p>
+              {listing.shippingFeeGhs != null ? (
+                <p>Seller-listed shipping fee: {formatGhs(listing.shippingFeeGhs)} (confirm for your destination)</p>
+              ) : <p className="text-muted">Shipping fee: request a quote</p>}
+              {listing.shippingDays != null ? <p>Estimated delivery: {listing.shippingDays} day(s), seller-provided</p> : null}
+              <p>Seller return window: {listing.returnWindowDays == null
+                ? "Not specified"
+                : `${listing.returnWindowDays} day(s)`}</p>
+              {listing.returnTerms ? <p className="whitespace-pre-wrap text-muted">{listing.returnTerms}</p> : null}
+              <p className="text-xs text-muted">These terms do not remove consumer rights under applicable law. There is no paid physical checkout or shipment booking yet.</p>
+            </div>
+          ) : <p className="mt-1 text-sm text-muted">{listing.purchaseCount} purchases</p>}
             </>
           )}
           {creator?.verified ? (
@@ -386,17 +408,51 @@ function MarketplaceItemInner({ initialListingId }: { initialListingId?: string 
           {isPhysical ? (
             <div className="mt-4 rounded-xl border border-violet-200 bg-violet-50/50 p-3 dark:border-violet-900 dark:bg-violet-950/20">
               <p className="font-semibold text-sm">Ask about this item</p>
-              <p className="mt-1 text-xs text-muted">No payment is taken. Giga3 AI has not enabled physical-goods checkout, shipment tracking or refunds. Do not send money outside the platform or share your home address.</p>
+              <p className="mt-1 text-xs text-muted">Choose a seller-offered delivery method and ask for the total shipping quote. This is not a paid order. Never send money outside Giga3 AI or share your home address.</p>
               {myInquiry ? (
                 <div className="mt-3 space-y-2 text-sm">
                   <p className="font-semibold">Your enquiry · {myInquiry.status}</p>
                   <p className="whitespace-pre-wrap text-muted">{myInquiry.message}</p>
+                  <p className="text-xs text-muted">
+                    {myInquiry.requestedShippingMethod?.replace(/_/g, " ") ?? "pickup"}
+                    {myInquiry.destinationCity ? ` · ${myInquiry.destinationCity}` : ""}
+                  </p>
+                  {myInquiry.quotedShippingFeeGhs != null ? (
+                    <p className="rounded-lg bg-background p-2 font-semibold">
+                      Seller shipping quote: {formatGhs(myInquiry.quotedShippingFeeGhs)}
+                      {myInquiry.quotedDeliveryDays ? ` · ${myInquiry.quotedDeliveryDays} day(s)` : ""}
+                      {myInquiry.quotedCarrier ? ` · ${myInquiry.quotedCarrier}` : ""}
+                    </p>
+                  ) : null}
+                  <p className="text-xs text-muted">Quotes are informational only. You have not paid or booked delivery.</p>
                   {myInquiry.response ? (
                     <p className="whitespace-pre-wrap rounded-lg bg-background p-2">Seller reply: {myInquiry.response}</p>
                   ) : <p className="text-xs text-muted">No seller reply yet. Return to this listing to check.</p>}
                 </div>
               ) : (
                 <>
+                  <label className="mt-3 block space-y-1 text-xs font-semibold">
+                    <span>Delivery preference</span>
+                    <select aria-label="Delivery preference"
+                      value={(listing.shippingMethods ?? ["pickup"]).includes(shippingMethod) ? shippingMethod : (listing.shippingMethods ?? ["pickup"])[0]}
+                      onChange={e => setShippingMethod(e.target.value as typeof shippingMethod)}
+                      className="w-full rounded-xl border border-border bg-card px-3 py-3 text-sm">
+                      {(listing.shippingMethods ?? ["pickup"]).map(method => (
+                        <option key={method} value={method}>
+                          {method === "pickup" ? "Collection / pickup" : method === "seller_delivery" ? "Local delivery" : "Courier shipping"}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  {((listing.shippingMethods ?? ["pickup"]).includes(shippingMethod)
+                    ? shippingMethod : (listing.shippingMethods ?? ["pickup"])[0]) !== "pickup" ? (
+                    <label className="mt-2 block space-y-1 text-xs font-semibold">
+                      <span>Delivery city or region — not your home address</span>
+                      <input aria-label="Delivery city or region" maxLength={90} value={destinationCity}
+                        onChange={e => setDestinationCity(e.target.value)} placeholder="e.g. Kumasi, Ghana"
+                        className="w-full rounded-xl border border-border bg-card px-3 py-3 text-sm"/>
+                    </label>
+                  ) : null}
                   <textarea
                     aria-label="Message the seller about this item"
                     rows={3}

@@ -50,6 +50,6 @@ describe("physical listings never enter digital PDF/Paystack sales", () => {
     expect(market).toContain('|| isPhysicalMarketplaceListing(listing)) return null;');
     expect(upload).toContain('listing.productType === "physical_item" && args.purpose === "product_file"');
     expect(details).toContain("Request availability");
-    expect(details).toContain("No payment is taken");
+    expect(details).toContain("This is not a paid order");
   });
 });

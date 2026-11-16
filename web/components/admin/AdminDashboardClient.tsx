@@ -50,6 +50,9 @@ function AdminInner() {
   const setListingStatus = useMutation(api.adminMarketplace.setListingStatus);
   const setListingFileReview = useMutation(api.adminMarketplace.setListingFileReview);
   const resolveListingReport = useMutation(api.adminMarketplace.resolveListingReport);
+  const refundCases = useQuery(api.marketplaceRefundRequests.adminListRefundRequests, adminCreds ?? "skip");
+  const reviewRefund = useMutation(api.marketplaceRefundRequests.adminReviewRefundRequest);
+  const [refundNotes, setRefundNotes] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -321,6 +324,46 @@ function AdminInner() {
         </section>
       )}
 
+      {refundCases && refundCases.length > 0 ? (
+        <section className="space-y-3 rounded-2xl border border-amber-200 bg-card p-4">
+          <h2 className="text-lg font-semibold">Marketplace refund-review requests</h2>
+          <p className="text-xs text-muted">
+            These are verified paid digital purchase cases. Review Paystack transaction references
+            manually; changing case status here DOES NOT issue, confirm or complete a refund.
+          </p>
+          {refundCases.map(item => (
+            <article key={item._id} className="space-y-2 rounded-xl border border-border p-3">
+              <p className="text-sm font-semibold">Case {item._id} · {item.status.replace(/_/g, " ")}</p>
+              <p className="text-xs text-muted">Purchase reference: {item.paymentReference}</p>
+              <p className="text-xs text-muted">Reason: {item.reason.replace(/_/g," ")}</p>
+              <p className="whitespace-pre-wrap text-sm">{item.details}</p>
+              {item.adminNote ? <p className="text-xs text-muted">Admin note: {item.adminNote}</p> : null}
+              {item.status === "requested" || item.status === "in_review" ? (
+                <>
+                  <textarea aria-label={`Review note for ${item.paymentReference}`}
+                    value={refundNotes[item._id] ?? ""}
+                    onChange={e => setRefundNotes(v => ({...v, [item._id]: e.target.value}))}
+                    placeholder="Review outcome, Paystack dashboard check, and next action"
+                    rows={2} maxLength={800} className="w-full rounded-xl border p-2 text-sm"/>
+                  <div className="flex flex-wrap gap-2">
+                    {([["in_review","Mark reviewing"],["referred_to_paystack","Record Paystack follow-up"],["declined","Decline request"]] as const).map(([status,label]) => (
+                      <Button key={status} size="sm" variant="secondary"
+                        disabled={busy === item._id || (refundNotes[item._id] ?? "").trim().length < 8}
+                        onClick={() => void run(item._id,
+                          () => reviewRefund({
+                            ...adminCreds!, requestId: item._id,
+                            status, note: refundNotes[item._id] ?? "",
+                          }),
+                          "Review status saved. No refund was issued by this action."
+                        )}>{label}</Button>
+                    ))}
+                  </div>
+                </>
+              ) : null}
+            </article>
+          ))}
+        </section>
+      ) : null}
       {overview.openReports.length > 0 && (
         <section>
           <h2 className="mb-4 text-lg font-semibold">Listing reports</h2>
