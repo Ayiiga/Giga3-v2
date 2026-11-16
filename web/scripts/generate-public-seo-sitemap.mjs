@@ -384,8 +384,19 @@ function loadBlogSitemapEntries() {
   return entries;
 }
 
+function studyGuideRoutes() {
+  const registry = path.join(webRoot, "lib/seo/educationGuides.ts");
+  const source = readFileSync(registry, "utf8");
+  const slugs = [...source.matchAll(/^\s*(?:"slug"|slug)\s*:\s*"([a-z0-9]+(?:-[a-z0-9]+)*)"/gm)]
+    .map((match) => match[1]);
+  if (!slugs.length || new Set(slugs).size !== slugs.length) {
+    throw new Error("Expected unique study guide slugs in educationGuides.ts");
+  }
+  return ["/study-guides/", ...slugs.map((slug) => `/study-guides/${slug}/`)];
+}
+
 function writeStaticSitemap() {
-  const uniquePaths = [...new Set(STATIC_SITEMAP_PATHS)];
+  const uniquePaths = [...new Set([...STATIC_SITEMAP_PATHS, ...studyGuideRoutes()])];
   const urls = uniquePaths.map((route) => {
     const loc = `${siteOrigin}${route === "/" ? "/" : route}`;
     return {

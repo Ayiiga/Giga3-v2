@@ -127,7 +127,7 @@ describe("AI for Ghana landing page", () => {
   });
 
   it("is listed in footer product links", () => {
-    expect(FOOTER_PRODUCT_LINKS.map((l) => l.href)).toContain("/ai-for-ghana");
+    expect(FOOTER_PRODUCT_LINKS.map((l) => l.href)).toContain("/ai-for-ghana/");
   });
 });
 
@@ -157,7 +157,7 @@ describe("Best AI tools for students in Ghana article", () => {
   });
 
   it("is registered in footer and cross-links the Ghana landing page", () => {
-    expect(FOOTER_PRODUCT_LINKS.map((l) => l.href)).toContain("/ai-tools-for-students-ghana");
+    expect(FOOTER_PRODUCT_LINKS.map((l) => l.href)).toContain("/ai-tools-for-students-ghana/");
     expect(src).toContain('href: "/ai-for-ghana"');
     const landing = readFileSync(
       resolve(__dirname, "../../web/app/(marketing)/ai-for-ghana/page.tsx"),
@@ -185,9 +185,9 @@ describe("productLinks", () => {
     expect(hrefs).toContain("/chat");
     expect(hrefs).toContain("/gigalearn/academy/");
     expect(hrefs).toContain("/gigalearn/exam/");
-    expect(hrefs).toContain("/gigasocial");
-    expect(hrefs).toContain("/discover");
-    expect(hrefs).toContain("/enterprise");
+    expect(hrefs).toContain("/gigasocial/");
+    expect(hrefs).toContain("/discover/");
+    expect(hrefs).toContain("/enterprise/");
     expect(hrefs).not.toContain("/media");
     expect(hrefs).not.toContain("/gigaedit");
     expect(hrefs).not.toContain("/video");
@@ -198,11 +198,11 @@ describe("productLinks", () => {
     for (const path of [
       "/gigalearn/academy/",
       "/gigalearn/exam/",
-      "/trending",
-      "/prompts",
-      "/developers",
-      "/enterprise",
-      "/ai-for-schools-ghana",
+      "/trending/",
+      "/prompts/",
+      "/developers/",
+      "/enterprise/",
+      "/ai-for-schools-ghana/",
     ]) {
       expect(hrefs).toContain(path);
     }
