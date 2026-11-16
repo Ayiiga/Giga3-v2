@@ -120,7 +120,7 @@ function MarketplaceItemInner({ initialListingId }: { initialListingId?: string 
   async function handleBuy() {
     const token = getSessionToken();
     if (!token) {
-      router.push(`/chat/login?next=${encodeURIComponent(marketplacePhysicalItemPath(listingId!))}`);
+      router.push(`/chat/login?next=${encodeURIComponent(isPhysical ? marketplacePhysicalItemPath(listingId!) : `/marketplace/item/${listingId}/`)}`);
       return;
     }
     setBuying(true);
@@ -137,7 +137,7 @@ function MarketplaceItemInner({ initialListingId }: { initialListingId?: string 
   async function handleReport() {
     const token = getSessionToken();
     if (!token) {
-      router.push(`/chat/login?next=${encodeURIComponent(marketplacePhysicalItemPath(listingId!))}`);
+      router.push(`/chat/login?next=${encodeURIComponent(isPhysical ? marketplacePhysicalItemPath(listingId!) : `/marketplace/item/${listingId}/`)}`);
       return;
     }
     setReporting(true);
