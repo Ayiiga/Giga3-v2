@@ -352,7 +352,7 @@ export function ExamQuizSession({
                 <span className="exam-session-explain-label">
                   {selected === current.correct ? "Correct. " : "Incorrect. "}
                 </span>
-                {current.explanation}
+                Explanation: {current.explanation}
               </p>
               <p className="exam-session-explain-key">
                 Correct answer: <strong>{current.correct}</strong>.{" "}
