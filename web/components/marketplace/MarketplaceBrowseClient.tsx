@@ -23,6 +23,7 @@ import { BadgeCheck, Search, ShieldCheck, ShoppingBag, Store } from "lucide-reac
 import Link from "next/link";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { marketplacePhysicalItemPath } from "@/lib/seo/publicPaths";
 
 const PAGE_SIZE = 24;
 
@@ -225,7 +226,7 @@ function MarketplaceBrowseInner() {
                     key={item._id}
                     className="saas-card group flex flex-col overflow-hidden rounded-2xl p-2.5 sm:p-3 hover:border-violet-400/40"
                   >
-                    <Link href={`/marketplace/item/${item._id}/`} className="block">
+                    <Link href={item.productType === "physical_item" ? marketplacePhysicalItemPath(item._id) : `/marketplace/item/${item._id}/`} className="block">
                       <ProductCover
                         src={item.coverImageUrl}
                         title={item.title}
@@ -240,7 +241,7 @@ function MarketplaceBrowseInner() {
                     </Link>
                     <div className="mt-2 flex min-h-0 flex-1 flex-col gap-1 px-0.5">
                       <div className="flex items-start justify-between gap-2">
-                        <Link href={`/marketplace/item/${item._id}/`}>
+                        <Link href={item.productType === "physical_item" ? marketplacePhysicalItemPath(item._id) : `/marketplace/item/${item._id}/`}>
                           <h2 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground group-hover:text-violet-800 dark:group-hover:text-violet-300 sm:text-[0.95rem]">
                             {item.title}
                           </h2>
@@ -274,7 +275,7 @@ function MarketplaceBrowseInner() {
                           </Link>
                         ) : null}
                         <Link
-                          href={`/marketplace/item/${item._id}/`}
+                          href={item.productType === "physical_item" ? marketplacePhysicalItemPath(item._id) : `/marketplace/item/${item._id}/`}
                           className="inline-flex min-h-8 flex-1 items-center justify-center rounded-lg bg-violet-700 px-2 text-[11px] font-semibold text-white hover:bg-violet-800"
                         >
                           {item.productType === "physical_item" ? "Enquire / details" : item.purchaseReady ? "Buy / details" : "View details"}
