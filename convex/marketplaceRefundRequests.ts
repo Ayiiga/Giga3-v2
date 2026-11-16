@@ -62,8 +62,13 @@ export const adminListRefundRequests = query({
   args: adminCredentialArgs,
   handler: async (ctx, args) => {
     await ensureAdminAccess(args);
-    return ctx.db.query("marketplaceRefundRequests")
-      .withIndex("by_status", q => q.eq("status", "requested")).order("desc").take(100);
+    const [requested, reviewing, provider] = await Promise.all([
+      ctx.db.query("marketplaceRefundRequests").withIndex("by_status", q => q.eq("status", "requested")).order("desc").take(100),
+      ctx.db.query("marketplaceRefundRequests").withIndex("by_status", q => q.eq("status", "in_review")).order("desc").take(100),
+      ctx.db.query("marketplaceRefundRequests").withIndex("by_status", q => q.eq("status", "referred_to_paystack")).order("desc").take(100),
+    ]);
+    return [...requested, ...reviewing, ...provider]
+      .sort((a, b) => b.createdAt - a.createdAt).slice(0, 100);
   },
 });
 
