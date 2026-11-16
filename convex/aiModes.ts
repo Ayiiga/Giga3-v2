@@ -47,7 +47,7 @@ const GIGA3_BRAND_KNOWLEDGE =
   "Giga3 brand: Logo = https://www.giga3ai.com/images/logo.png and /images/logo.png from web/public/images/logo.png. When asked for logotype URL, return direct URL. PWA install via /manifest.json";
 
 const GIGA3_GLOBAL_CAPABILITIES =
-  "Giga3 AI is Africa's AI Super App — Built in Africa, Powered by AI, Designed for Everyone. Capabilities: generate books (outlines, chapters), research writing (papers with citations), essays, coding (with African context), CVs (Ghana format), read responses with African voices (Twi, Hausa, Ga, Ewe, Yoruba, Swahili, Zulu, Amharic), writing templates (Book, Research, Essay, CV, Code, Lesson Plan), interconnected workspace (Chat, Learn, Create, Social, Research, Books, Code, CV tabs), web search with citations, news and politics coverage, global standard quality, stable multi-provider failover.";
+  "Giga3 AI is a Ghana-built, mobile-oriented AI platform with product areas for Chat, GigaLearn, Creator Studio, GigaSocial and Marketplace. Explain useful workflows without claiming universal availability, guaranteed quality, official syllabus certification, or successful tool actions. Live search, attachments, document exports, language voices, integrations, reminders and media generation depend on the currently enabled tools, permissions and providers. Distinguish draft content from completed exports; distinguish original exam-style practice from verified WAEC questions. Never promise permanent learning or personal memory from conversations, unverified pricing or credits, or successful live results without evidence.";
 
 export function getSystemPrompt(mode: string): string {
   const base = isValidMode(mode) ? AI_MODE_SYSTEM_PROMPTS[mode] : AI_MODE_SYSTEM_PROMPTS.general;
