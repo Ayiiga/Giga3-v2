@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { AwardsHomeBanner } from "@/components/gigasocial/awards/AwardsHomeBanner";
 import { Contact } from "@/components/sections/Contact";
 import { ExamPracticePreview } from "@/components/sections/ExamPracticePreview";
@@ -46,6 +47,7 @@ export default function HomePage() {
       <SiteStructuredData offers={HOME_OFFERS} homeDescription={HOME_DESCRIPTION} homeTitle={HOME_TITLE} />
       <Hero />
       <ExamPracticePreview />
+      <section className="mx-auto max-w-5xl px-5 py-8 text-center"><h2 className="text-2xl font-bold">Free BECE, WASSCE and teacher study guides</h2><p className="mt-3">Explore 30 original worked examples and classroom revision tips.</p><Link className="mt-4 inline-block rounded-lg bg-emerald-700 px-5 py-3 font-semibold text-white" href="/study-guides/">Browse free study guides</Link></section>
       <Pricing />
       <AwardsHomeBanner />
       <Contact />
