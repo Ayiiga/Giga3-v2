@@ -263,8 +263,9 @@ export function ExamQuizSession({
           <div className="exam-session-progress" aria-hidden>
             <div className="exam-session-progress-fill" style={{ width: `${progressPct}%` }} />
           </div>
-          <p className="exam-session-toolbar-sub">
+          <p className="exam-session-toolbar-sub" aria-live="polite">
             {score.answered} answered
+            {score.answered > 0 ? ` · ${score.correct}/${score.answered} correct` : ""}
             {streak > 1 ? ` · streak ${streak}` : ""}
           </p>
         </div>
@@ -348,7 +349,9 @@ export function ExamQuizSession({
           {revealed ? (
             <div className="exam-session-explain" role="status">
               <p>
-                <span className="exam-session-explain-label">Explanation: </span>
+                <span className="exam-session-explain-label">
+                  {selected === current.correct ? "Correct. " : "Incorrect. "}
+                </span>
                 {current.explanation}
               </p>
               <p className="exam-session-explain-key">
