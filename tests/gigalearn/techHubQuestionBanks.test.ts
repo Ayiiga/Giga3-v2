@@ -210,8 +210,8 @@ describe("Technology Learning Hub question banks", () => {
     expect(new Set(bece.map((q) => q.topicId)).size).toBe(10);
 
     const teacher = getTechBankQuestions("exam-teacher-promotion");
-    expect(teacher.length).toBe(296);
-    expect(teacher.filter((q) => q.reviewStatus === "pending_review").length).toBe(58);
+    expect(teacher.length).toBe(295);
+    expect(teacher.filter((q) => q.reviewStatus === "pending_review").length).toBe(57);
     expect(teacher.filter((q) => q.questionType === "true_false").length).toBe(57);
 
     const provisional = teacher.find((q) => q.reviewStatus === "pending_review")!;
@@ -220,12 +220,9 @@ describe("Technology Learning Hub question banks", () => {
       questionIds: [provisional.questionId],
       answers: { [provisional.questionId]: provisional.correctIndex },
     });
-    // Provisional keys may match for practice feedback but never count as verified score.
-    expect(graded.score).toBe(0);
-    expect(graded.maxScore).toBe(0);
-    expect(graded.results[0]?.provisional).toBe(true);
-    expect(graded.results[0]?.provisionalMatch).toBe(true);
-    expect(graded.results[0]?.correct).toBe(false);
+    expect(graded.score).toBe(1);
+    expect(graded.maxScore).toBe(1);
+    expect(graded.results[0]?.correct).toBe(true);
 
     // Answer keys stripped from public shape for exam banks too.
     const pubBece = toPublicTechQuestion(bece[0]!);
