@@ -81,13 +81,34 @@ describe("gradeTechAnswers — verified vs provisional", () => {
     expect(gradedBad.results[0]?.correct).toBe(false);
   });
 
-  it("does not score pending_review items as verified-correct", () => {
-    const pending = getTechBankQuestions("exam-ad-ii", { includePending: true }).find(
-      (q) => q.reviewStatus === "pending_review"
+  it.each([
+    ["exam-wassce-english-q007", "managed"],
+    ["exam-wassce-english-q014", "convincing"],
+    ["exam-wassce-english-q083", "are"],
+    ["exam-wassce-english-q085", "would begin"],
+  ])("scores the reported WASSCE question %s with shuffled choices", (questionId, answer) => {
+    const courseSlug = "exam-wassce-english";
+    const question = getTechBankQuestionById(courseSlug, questionId)!;
+    const permutation = [2, 3, 1, 0];
+    const selected = permutation.indexOf(question.correctIndex);
+    expect(question.options[question.correctIndex]).toBe(answer);
+    const params = { courseSlug, questionIds: [questionId], optionPermutations: { [questionId]: permutation } };
+    const correct = gradeTechAnswers({ ...params, answers: { [questionId]: selected } });
+    const incorrect = gradeTechAnswers({ ...params, answers: { [questionId]: (selected + 1) % permutation.length } });
+    expect(correct).toMatchObject({ score: 1, maxScore: 1 });
+    expect(correct.results[0]).toMatchObject({ correct: true, correctIndex: selected, scored: true });
+    expect(correct.results[0]?.explanation).toBeTruthy();
+    expect(incorrect).toMatchObject({ score: 0, maxScore: 1 });
+    expect(incorrect.results[0]).toMatchObject({ correct: false, correctIndex: selected, scored: true });
+  });
+
+  it("does not score editorially held items in historical sessions", () => {
+    const pending = getTechBankQuestions("exam-teacher-promotion", { approvedOnly: false, forExistingSession: true }).find(
+      (q) => q.tags?.includes("editorial_hold")
     );
     expect(pending, "expected pending_review AD II item").toBeTruthy();
     const graded = gradeTechAnswers({
-      courseSlug: "exam-ad-ii",
+      courseSlug: "exam-teacher-promotion",
       questionIds: [pending!.questionId],
       answers: { [pending!.questionId]: pending!.correctIndex },
     });
@@ -151,7 +172,7 @@ describe("client + server wiring for provisional reward suppression", () => {
     expect(ui).toContain("Practice answer —");
     expect(ui).toContain("Not counted in your score.");
     expect(ui).not.toContain('data-testid="exam-answer-under-review"');
-    expect(ui).toContain("isVerifiedCorrect");
+    expect(ui).toContain("isScoredCorrect");
     expect(ui).toContain("goToQuestion");
     expect(ui).toContain("rewardedQuestionIdsRef");
     expect(ui).toMatch(/if \(fb\.pendingReview\)[\s\S]*setReward\(null\)/);

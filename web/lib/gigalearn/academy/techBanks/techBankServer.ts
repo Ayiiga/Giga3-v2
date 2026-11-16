@@ -81,7 +81,7 @@ const BANKS: Record<string, BankFile> = {
   },
 };
 
-/** Exam Practice banks allow pending_review items with provisional feedback. */
+/** Exam practice can score against published practice keys before editorial verification. */
 const INCLUDE_PENDING_SLUGS = new Set([
   "exam-bece-prep",
   "exam-teacher-promotion",
@@ -143,7 +143,8 @@ export function getTechBankQuestions(
   // Retired / draft items stay in JSON for recovery but never enter practice pools.
   rows = rows.filter((q) => {
     const pub = q.publicationStatus;
-    return pub == null || pub === "published_practice";
+    return (pub == null || pub === "published_practice") &&
+      (opts?.approvedOnly === false || opts?.forExistingSession || !q.tags?.includes("editorial_hold"));
   });
   const includePending = opts?.includePending ?? INCLUDE_PENDING_SLUGS.has(slug);
   if (opts?.approvedOnly === false) {
@@ -301,8 +302,6 @@ export function selectTechQuestionIds(args: {
     const allowed = new Set(
       getTechBankQuestions(args.courseSlug, {
         approvedOnly: true,
-        // Teacher Promotion banks are awaiting editorial verification; keep
-        // them available for practice with explicitly provisional feedback.
         freeTierOnly,
         // Keep BECE subject selection even when revising previously missed items.
         topicId: isExam && args.topicId ? args.topicId : undefined,
@@ -314,12 +313,8 @@ export function selectTechQuestionIds(args: {
     return ids.slice(0, count);
   }
 
-  // Practice sessions only include human-approved answer keys. Pending-review
-  // items remain in the editorial queue and cannot create ambiguous learner feedback.
   let pool = getTechBankQuestions(args.courseSlug, {
     approvedOnly: true,
-    // Pending-review exam items remain practiceable but are never scored as
-    // verified-correct; gradeTechAnswers marks them provisional.
     // An explicit topic on an exam course represents the selected subject
     // and must apply in Practice, Timed, Learn, Random, and Topic modes.
     topicId: isExam && args.topicId ? args.topicId : args.mode === "topic" || args.mode === "challenge" ? args.topicId : undefined,
@@ -348,8 +343,19 @@ export function selectTechQuestionIds(args: {
   return ids.slice(0, Math.min(count, ids.length));
 }
 
-function isScorableReviewStatus(status: TechBankQuestion["reviewStatus"]): boolean {
-  return status === "approved" || status === "pending_review";
+export function hasPracticeAnswerKey(question: TechBankQuestion): boolean {
+  return Number.isInteger(question.correctIndex) &&
+    Boolean(question.options[question.correctIndex]?.trim());
+}
+
+export function scoresAgainstPracticeKey(question: TechBankQuestion): boolean {
+  return hasPracticeAnswerKey(question) && (
+    question.reviewStatus === "approved" || (
+      question.reviewStatus === "pending_review" &&
+      isExamPracticeCourseSlug(question.courseSlug) &&
+      !question.tags?.includes("editorial_hold")
+    )
+  );
 }
 
 export function gradeTechAnswers(args: {
@@ -380,7 +386,7 @@ export function gradeTechAnswers(args: {
     provisional?: boolean;
     /** Matched the provisional key — never treated as a verified correct score. */
     provisionalMatch?: boolean;
-    /** Counts toward session score (approved keys only). */
+    /** Counts toward the practice session score. */
     scored?: boolean;
   }>;
 } {
@@ -413,7 +419,7 @@ export function gradeTechAnswers(args: {
         questionText: cleanStem, options: [], scored: false,
       };
     }
-    if (!q || !isScorableReviewStatus(q.reviewStatus)) {
+    if (!q || !hasPracticeAnswerKey(q) || (q.reviewStatus !== "approved" && q.reviewStatus !== "pending_review")) {
       return {
         questionId: id,
         selectedIndex: selectedDisplay,
@@ -427,7 +433,7 @@ export function gradeTechAnswers(args: {
         scored: false,
       };
     }
-    const provisional = q.reviewStatus === "pending_review";
+    const provisional = !scoresAgainstPracticeKey(q);
     const matchedKey = selectedOriginal === q.correctIndex;
     if (provisional) {
       return {

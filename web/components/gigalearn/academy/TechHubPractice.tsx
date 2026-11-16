@@ -474,7 +474,10 @@ function TechHubInner() {
           courseSlug.includes("director")
         ? ("teacher_promotion" as const)
         : null;
-    const incorrect = results.results.filter((r) => !r.correct && !r.provisional && !r.requiresSelfAssessment);
+    const incorrect = results.results.filter(
+      (r) => !r.correct && r.scored !== false && !r.provisional && !r.requiresSelfAssessment
+    );
+    const attempted = results.results.filter((r) => r.selectedIndex != null || r.writtenAnswer?.trim()).length;
     const reviewRows = showIncorrectOnly ? incorrect : results.results;
     return (
       <AcademyChrome active="course" title={`${course.title} · Results`}>
@@ -493,14 +496,14 @@ function TechHubInner() {
           )}
           <p className="text-sm text-slate-600">
             {results.maxScore > 0
-              ? `Verified score ${results.score}/${results.maxScore}${
+              ? `Practice score ${results.score}/${results.maxScore}${
                   results.percent != null ? ` · ${results.percent}%` : ""
                 }`
-              : "No verified answer keys in this session — provisional items were not scored."}
+              : "No objective answers were scored in this session."}
           </p>
           <div className="grid gap-2 rounded-xl border border-emerald-200 bg-emerald-50/80 p-3 text-sm text-emerald-950 sm:grid-cols-2">
             <p>
-              Questions attempted: <strong>{results.results.length}</strong>
+              Questions attempted: <strong>{attempted}</strong>
             </p>
             <p>
               Correct answers: <strong>{results.score}</strong>
@@ -694,7 +697,7 @@ function TechHubInner() {
                   }}
                 />
               </div>
-              <p className="exam-session-toolbar-sub">
+              <p className="exam-session-toolbar-sub" aria-live="polite">
                 {Object.keys(answers).length} answered
                 {immediateFeedback && markedAnswers.length > 0 ? ` · ${correctAnswers}/${markedAnswers.length} correct` : ""}
                 {streak > 1 ? ` · streak ${streak}` : ""}
@@ -765,7 +768,7 @@ function TechHubInner() {
                 {current.options.map((opt, optIndex) => {
                   const isSelected = selected === optIndex;
                   const pending = Boolean(activeFeedback?.pendingReview);
-                  const isVerifiedCorrect =
+                  const isScoredCorrect =
                     revealed &&
                     !pending &&
                     activeFeedback?.correctIndex === optIndex;
@@ -799,7 +802,7 @@ function TechHubInner() {
                         }}
                         className={cn(
                           isTrueFalse ? "exam-session-tf" : "exam-session-option",
-                          isVerifiedCorrect &&
+                          isScoredCorrect &&
                             (isTrueFalse
                               ? "exam-session-tf--correct"
                               : "exam-session-option--correct"),
@@ -827,12 +830,12 @@ function TechHubInner() {
                         {revealed && isSelected ? (
                           <span className="shrink-0 text-xs font-semibold">Your choice</span>
                         ) : null}
-                        {revealed && !isSelected && (isVerifiedCorrect || isProvisionalKey) ? (
+                        {revealed && !isSelected && (isScoredCorrect || isProvisionalKey) ? (
                           <span className="shrink-0 text-xs font-semibold">
-                            {isVerifiedCorrect ? "Correct answer" : "Practice answer"}
+                            {isScoredCorrect ? "Correct answer" : "Practice answer"}
                           </span>
                         ) : null}
-                        {isVerifiedCorrect ? (
+                        {isScoredCorrect ? (
                           <Check className="exam-session-icon-ok" aria-hidden />
                         ) : null}
                         {isVerifiedWrong ? (
@@ -861,7 +864,7 @@ function TechHubInner() {
                           ? "Correct — "
                           : "Incorrect. Correct answer — "}
                     </span>
-                    {!activeFeedback.selfAssessment && activeFeedback.correctIndex != null
+                    {!activeFeedback.selfAssessment && activeFeedback.correctIndex != null && current.options[activeFeedback.correctIndex]
                       ? current.options[activeFeedback.correctIndex].replace(/[.!?]$/, "") + ". "
                       : null}
                     {activeFeedback.explanation}

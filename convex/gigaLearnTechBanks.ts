@@ -12,6 +12,8 @@ import {
   getTechBankQuestionById,
   getTechBankQuestions,
   gradeTechAnswers,
+  hasPracticeAnswerKey,
+  scoresAgainstPracticeKey,
   listLoadedTechBankSlugs,
   presentTechQuestion,
   selectTechQuestionIds,
@@ -533,7 +535,7 @@ export const saveTechPracticeAnswer = mutation({
       const q = bankQuestion;
       const perm = parseOptionPermutations(session.optionPermutationsJson)[args.questionId];
       if (
-        !q ||
+        !hasPracticeAnswerKey(q) ||
         (q.reviewStatus !== "approved" && q.reviewStatus !== "pending_review")
       ) {
         return {
@@ -548,7 +550,7 @@ export const saveTechPracticeAnswer = mutation({
           },
         };
       }
-      const pendingReview = q.reviewStatus === "pending_review";
+      const pendingReview = !scoresAgainstPracticeKey(q);
       const originalSelected = toOriginalOptionIndex(answerValue, perm);
       const matchedKey = originalSelected === q.correctIndex;
       const displayOrder = perm ?? q.options.map((_, i) => i);
