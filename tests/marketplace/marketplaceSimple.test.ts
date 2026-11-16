@@ -11,7 +11,10 @@ describe("marketplace simple catalog", () => {
   it("keeps seller UI to a small product and license set", () => {
     expect(SIMPLE_PRODUCT_TYPES.length).toBeLessThanOrEqual(6);
     expect(SIMPLE_LICENSE_TYPES.map((l) => l.id)).toEqual(["personal", "commercial"]);
-    expect(SIMPLE_CATEGORIES.length).toBeLessThanOrEqual(6);
+    expect(SIMPLE_CATEGORIES.length).toBeLessThanOrEqual(10);
+    expect(SIMPLE_CATEGORIES).toContain("Clothing");
+    expect(SIMPLE_CATEGORIES).toContain("Shoes");
+    expect(SIMPLE_PRODUCT_TYPES.map((p) => p.id)).toContain("physical_item");
   });
 });
 
