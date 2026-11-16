@@ -54,6 +54,9 @@ export const prepareListingUpload = mutation({
     if (isOfficialMarketplaceListing(listing)) {
       throw new Error("Official catalog listings cannot be edited by sellers.");
     }
+    if (listing.productType === "physical_item" && args.purpose === "product_file") {
+      throw new Error("Physical items use product photos; PDF product uploads are not available.");
+    }
 
     const profile = await ctx.db
       .query("creatorProfiles")

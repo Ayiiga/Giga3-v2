@@ -8,7 +8,7 @@ import {
   copyTextToClipboard,
   type ShareChannel,
 } from "@/lib/marketplace/promotionalCaption";
-import { marketplaceItemUrl } from "@/lib/seo/publicPaths";
+import { marketplaceItemUrl, marketplacePhysicalItemUrl, marketplacePhysicalItemPath } from "@/lib/seo/publicPaths";
 import { getSessionToken } from "@/lib/auth";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
@@ -65,7 +65,7 @@ export function ProductPromotionPanel({
   const [error, setError] = useState<string | null>(null);
   const [caption, setCaption] = useState<string | null>(null);
 
-  const productUrl = useMemo(() => marketplaceItemUrl(listing._id), [listing._id]);
+  const productUrl = useMemo(() => listing.productType === "physical_item" ? marketplacePhysicalItemUrl(listing._id) : marketplaceItemUrl(listing._id), [listing._id, listing.productType]);
   const baseCaption = useMemo(
     () =>
       buildPromotionalCaption({
@@ -183,7 +183,7 @@ export function ProductPromotionPanel({
             Share the public link. Giga3 does not post to social networks for you.
           </p>
         </div>
-        <ButtonLink href={`/marketplace/item/${listing._id}/`} size="sm" variant="secondary">
+        <ButtonLink href={listing.productType === "physical_item" ? marketplacePhysicalItemPath(listing._id) : `/marketplace/item/${listing._id}/`} size="sm" variant="secondary">
           View product
         </ButtonLink>
       </div>

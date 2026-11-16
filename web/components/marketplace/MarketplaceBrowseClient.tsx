@@ -23,6 +23,7 @@ import { BadgeCheck, Search, ShieldCheck, ShoppingBag, Store } from "lucide-reac
 import Link from "next/link";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { marketplacePhysicalItemPath } from "@/lib/seo/publicPaths";
 
 const PAGE_SIZE = 24;
 
@@ -88,7 +89,7 @@ function MarketplaceBrowseInner() {
                 Marketplace
               </p>
               <h2 className="text-lg font-bold tracking-tight text-foreground sm:text-xl">
-                Buy, pay, download
+                Discover. Buy. Sell.
               </h2>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -105,8 +106,8 @@ function MarketplaceBrowseInner() {
           <div className="flex items-start gap-2 rounded-xl border border-accent/20 bg-accent/5 px-3 py-2.5 text-sm text-foreground">
             <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-accent" aria-hidden />
             <span>
-              Secure checkout with Paystack. Digital downloads unlock after verified payment.
-              Prefer <strong>Verified</strong> creators — never pay sellers outside the app.
+              Digital downloads use verified Paystack checkout. Clothes, shoes and physical goods
+              use enquiries only — payments and deliveries are not yet supported. Never pay sellers outside the app.
             </span>
           </div>
         </header>
@@ -202,7 +203,7 @@ function MarketplaceBrowseInner() {
             <EmptyState
               icon={Store}
               title="No products found"
-              description="Try another search, collection, or price range — or list your own digital product."
+              description="Try another search, collection or price — or start a new listing."
             />
             <div className="flex justify-center">
               <ButtonLink href="/marketplace/sell" size="sm">
@@ -225,7 +226,7 @@ function MarketplaceBrowseInner() {
                     key={item._id}
                     className="saas-card group flex flex-col overflow-hidden rounded-2xl p-2.5 sm:p-3 hover:border-violet-400/40"
                   >
-                    <Link href={`/marketplace/item/${item._id}/`} className="block">
+                    <Link href={item.productType === "physical_item" ? marketplacePhysicalItemPath(item._id) : `/marketplace/item/${item._id}/`} className="block">
                       <ProductCover
                         src={item.coverImageUrl}
                         title={item.title}
@@ -234,13 +235,13 @@ function MarketplaceBrowseInner() {
                           item.productType ? String(item.productType) : null
                         }
                         className="w-full"
-                        aspectClassName="aspect-[3/4]"
-                        fit="contain"
+                        aspectClassName={item.productType === "physical_item" ? "aspect-[4/5]" : "aspect-[3/4]"}
+                        fit={item.productType === "physical_item" ? "cover" : "contain"}
                       />
                     </Link>
                     <div className="mt-2 flex min-h-0 flex-1 flex-col gap-1 px-0.5">
                       <div className="flex items-start justify-between gap-2">
-                        <Link href={`/marketplace/item/${item._id}/`}>
+                        <Link href={item.productType === "physical_item" ? marketplacePhysicalItemPath(item._id) : `/marketplace/item/${item._id}/`}>
                           <h2 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground group-hover:text-violet-800 dark:group-hover:text-violet-300 sm:text-[0.95rem]">
                             {item.title}
                           </h2>
@@ -254,6 +255,9 @@ function MarketplaceBrowseInner() {
                         <span className="rounded-md bg-violet-500/10 px-1.5 py-0.5 text-violet-800 dark:text-violet-200">
                           {item.category}
                         </span>
+                        {item.productType === "physical_item" ? (
+                          <span className="rounded-md bg-amber-50 px-1.5 py-0.5 font-medium text-amber-800">Enquiry only</span>
+                        ) : null}
                         {item.creator?.verified ? (
                           <span className="inline-flex items-center gap-0.5 font-medium text-violet-700 dark:text-violet-300">
                             <BadgeCheck className="h-3.5 w-3.5" aria-hidden />
@@ -271,10 +275,10 @@ function MarketplaceBrowseInner() {
                           </Link>
                         ) : null}
                         <Link
-                          href={`/marketplace/item/${item._id}/`}
+                          href={item.productType === "physical_item" ? marketplacePhysicalItemPath(item._id) : `/marketplace/item/${item._id}/`}
                           className="inline-flex min-h-8 flex-1 items-center justify-center rounded-lg bg-violet-700 px-2 text-[11px] font-semibold text-white hover:bg-violet-800"
                         >
-                          {item.purchaseReady ? "Buy / details" : "View details"}
+                          {item.productType === "physical_item" ? "Enquire / details" : item.purchaseReady ? "Buy / details" : "View details"}
                         </Link>
                       </div>
                     </div>

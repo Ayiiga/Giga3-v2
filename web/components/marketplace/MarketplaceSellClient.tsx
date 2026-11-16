@@ -58,6 +58,10 @@ function MarketplaceSellInner() {
     api.marketplace.getMyListings,
     sessionToken ? { sessionToken } : "skip"
   );
+  const physicalInquiries = useQuery(
+    api.marketplacePhysicalInquiries.getSellerInquiries,
+    sessionToken ? { sessionToken } : "skip"
+  );
   const revenue = useQuery(
     api.marketplace.getCreatorRevenue,
     sessionToken ? { sessionToken } : "skip"
@@ -92,6 +96,8 @@ function MarketplaceSellInner() {
   const submitCreatorVerification = useMutation(api.creatorProfiles.submitCreatorVerification);
   const generateVerificationUploadUrl = useMutation(api.creatorProfiles.generateVerificationUploadUrl);
   const createListing = useMutation(api.marketplace.createListing);
+  const replyPhysicalInquiry = useMutation(api.marketplacePhysicalInquiries.replyToInquiry);
+  const [inquiryReplies, setInquiryReplies] = useState<Record<string, string>>({});
   const updateListing = useMutation(api.marketplace.updateListing);
   const prepareListingUpload = useMutation(api.marketplaceUploadIntents.prepareListingUpload);
   const completeListingUpload = useMutation(api.marketplaceUploadIntents.completeListingUpload);
@@ -104,6 +110,12 @@ function MarketplaceSellInner() {
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState<string>(SIMPLE_CATEGORIES[0]);
   const [productType, setProductType] = useState<string>(SIMPLE_PRODUCT_TYPES[0].id);
+  const physicalItem = productType === "physical_item";
+  const [condition, setCondition] = useState<"new" | "like_new" | "good" | "fair">("new");
+  const [sizeOrVariant, setSizeOrVariant] = useState("");
+  const [stockQuantity, setStockQuantity] = useState(1);
+  const [sellerRegion, setSellerRegion] = useState("");
+  const [deliveryNote, setDeliveryNote] = useState("");
   const [priceGhs, setPriceGhs] = useState(20);
   const [license, setLicense] = useState("personal");
   const [tags, setTags] = useState("");
@@ -202,12 +214,16 @@ function MarketplaceSellInner() {
     setError(null);
     setPublishing(true);
     try {
+      if (physicalItem && !asDraft && !coverImageFile && !coverImageUrl.trim()) {
+        throw new Error("Upload a clear product photo before publishing.");
+      }
       const listingId = await createListing({
         sessionToken,
         title,
         description,
         category,
         productType: productType as any,
+        ...(physicalItem ? { condition, sizeOrVariant, stockQuantity, sellerRegion, deliveryNote } : {}),
         priceGhs,
         license: license as any,
         copyrightNotice: copyrightNotice || undefined,
@@ -221,7 +237,7 @@ function MarketplaceSellInner() {
       if (coverImageFile) {
         await uploadViaIntent(listingId, coverImageFile, "cover_image");
       }
-      if (productFile) {
+      if (productFile && !physicalItem) {
         const uploadResult = await uploadViaIntent(listingId, productFile, "product_file");
         setMessage(uploadResult.message);
       }
@@ -237,9 +253,13 @@ function MarketplaceSellInner() {
 
       if (!asDraft) {
         await updateListing({ sessionToken, listingId, status: "published" });
-        setMessage("Published — buyers can purchase and download your PDF.");
+        setMessage(physicalItem
+          ? "Item listed for enquiries. No payment or delivery order is created."
+          : "Published — buyers can purchase and download your PDF.");
       } else if (!productFile) {
-        setMessage("Draft saved. Upload a PDF under Your listings when ready.");
+        setMessage(physicalItem
+          ? "Draft saved. Add a product photo and publish when ready."
+          : "Draft saved. Upload a PDF under Your listings when ready.");
       }
 
       setTitle("");
@@ -395,11 +415,10 @@ function MarketplaceSellInner() {
             <div className="max-w-xl">
               <p className="text-sm font-medium text-emerald-200">Creator studio</p>
               <h1 className="mt-2 font-serif text-3xl tracking-tight text-white sm:text-4xl">
-                Sell digital products
+                Sell digital and physical products
               </h1>
               <p className="mt-2 text-sm text-emerald-100/90">
-                Complete creator identity review, upload a PDF, set a price in GHS — buyers pay through Paystack and
-                download from their library.
+                List ebooks and digital guides with verified Paystack downloads, or post clothes, shoes and other goods for in-app enquiries. Physical payments are not available yet.
               </p>
               <p className="mt-2 text-xs text-emerald-200/70">{formatCurrentDateTime()}</p>
             </div>
@@ -696,8 +715,7 @@ function MarketplaceSellInner() {
 
           {verificationStatus === "approved" && (
             <p className="mt-4 text-sm text-emerald-800">
-              Verified creator — you can create and publish listings. Product files must be attached
-              before publish; buyers only unlock downloads after Paystack payment is verified.
+              Verified seller — you can publish digital products with approved files or physical goods with a real photo and stock. Only digital downloads use Paystack.
             </p>
           )}
         </section>
@@ -705,7 +723,8 @@ function MarketplaceSellInner() {
         <section className="rounded-2xl border bg-card p-6">
           <h2 className="font-serif text-xl font-semibold">New product</h2>
           <p className="mt-2 text-sm text-muted">
-            PDFs and digital guides work best. Official Creator Academy guides are GHS 150 each.
+            List a downloadable digital product, or show clothing, shoes and other physical goods
+            to interested buyers. Physical items use in-app enquiries only — no payment or shipping yet.
           </p>
           {verificationStatus === "none" || verificationStatus === "rejected" ? (
             <p className="mt-2 text-sm text-amber-700">
@@ -732,21 +751,30 @@ function MarketplaceSellInner() {
               className="w-full rounded-xl border px-4 py-3"
             />
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <select value={category} onChange={(e) => setCategory(e.target.value as any)} className="rounded-xl border px-4 py-3">
-                {SIMPLE_CATEGORIES.map((c) => (
+              <select aria-label="Product category" value={category} onChange={(e) => setCategory(e.target.value)} className="rounded-xl border px-4 py-3">
+                {SIMPLE_CATEGORIES.filter((c) => physicalItem
+                  ? ["Clothing", "Shoes", "Bags & Accessories", "Home Goods", "Other Goods"].includes(c)
+                  : !["Clothing", "Shoes", "Bags & Accessories", "Home Goods", "Other Goods"].includes(c)
+                ).map((c) => (
                   <option key={c} value={c}>{c}</option>
                 ))}
               </select>
-              <select value={productType} onChange={(e) => setProductType(e.target.value)} className="rounded-xl border px-4 py-3">
+              <select aria-label="Product type" value={productType} onChange={(e) => {
+                const next = e.target.value;
+                setProductType(next);
+                setCategory(next === "physical_item" ? "Clothing" : "Education");
+              }} className="rounded-xl border px-4 py-3">
                 {SIMPLE_PRODUCT_TYPES.map((t) => (
                   <option key={t.id} value={t.id}>{t.label}</option>
                 ))}
               </select>
-              <select value={license} onChange={(e) => setLicense(e.target.value)} className="rounded-xl border px-4 py-3">
-                {SIMPLE_LICENSE_TYPES.map((l) => (
-                  <option key={l.id} value={l.id}>{l.label}</option>
-                ))}
-              </select>
+              {!physicalItem ? (
+                <select aria-label="Digital license" value={license} onChange={(e) => setLicense(e.target.value)} className="rounded-xl border px-4 py-3">
+                  {SIMPLE_LICENSE_TYPES.map((l) => (
+                    <option key={l.id} value={l.id}>{l.label}</option>
+                  ))}
+                </select>
+              ) : null}
               <input
                 type="number"
                 min={1}
@@ -756,12 +784,45 @@ function MarketplaceSellInner() {
                 aria-label="Price GHS"
               />
             </div>
+            {physicalItem ? (
+              <div className="grid gap-3 rounded-2xl border border-violet-200 bg-violet-50/40 p-3 sm:grid-cols-2 dark:border-violet-900 dark:bg-violet-950/20">
+                <label className="space-y-1 text-sm font-medium">
+                  <span>Condition</span>
+                  <select aria-label="Item condition" value={condition} onChange={(e) => setCondition(e.target.value as typeof condition)} className="w-full rounded-xl border px-3 py-3">
+                    <option value="new">New</option>
+                    <option value="like_new">Like new</option>
+                    <option value="good">Used — good</option>
+                    <option value="fair">Used — fair</option>
+                  </select>
+                </label>
+                <label className="space-y-1 text-sm font-medium">
+                  <span>Size, colour or variant</span>
+                  <input aria-label="Size or variant" value={sizeOrVariant} onChange={(e) => setSizeOrVariant(e.target.value)} placeholder="e.g. UK 8, black" maxLength={100} className="w-full rounded-xl border px-3 py-3" />
+                </label>
+                <label className="space-y-1 text-sm font-medium">
+                  <span>Available quantity</span>
+                  <input aria-label="Stock quantity" type="number" min={1} max={1000} value={stockQuantity} onChange={(e) => setStockQuantity(Number(e.target.value))} className="w-full rounded-xl border px-3 py-3" />
+                </label>
+                <label className="space-y-1 text-sm font-medium">
+                  <span>City or region (not home address)</span>
+                  <input aria-label="Item city or region" value={sellerRegion} onChange={(e) => setSellerRegion(e.target.value)} placeholder="e.g. Kumasi, Ghana" maxLength={90} className="w-full rounded-xl border px-3 py-3" />
+                </label>
+                <label className="space-y-1 text-sm font-medium sm:col-span-2">
+                  <span>Delivery area (optional)</span>
+                  <textarea aria-label="Delivery information" value={deliveryNote} onChange={(e) => setDeliveryNote(e.target.value)} rows={2} maxLength={300} placeholder="Delivery locations, not a private address" className="w-full rounded-xl border px-3 py-3" />
+                </label>
+                <p className="text-xs text-amber-800 dark:text-amber-200 sm:col-span-2">
+                  In-app enquiries only. Physical checkout, shipping and refunds are not active. Never collect money outside Giga3 AI.
+                </p>
+              </div>
+            ) : null}
             <input
               value={tags}
               onChange={(e) => setTags(e.target.value)}
               placeholder="Tags (comma separated)"
               className="rounded-xl border px-4 py-3"
             />
+            {!physicalItem ? (
             <div className="space-y-3 rounded-xl border border-border bg-background/60 p-3">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted">
                 Public preview (optional — never attach the paid PDF here)
@@ -788,23 +849,26 @@ function MarketplaceSellInner() {
                 className="w-full rounded-xl border px-4 py-3"
               />
             </div>
+            ) : null}
+            {!physicalItem ? (
             <input
               value={copyrightNotice}
               onChange={(e) => setCopyrightNotice(e.target.value)}
               placeholder="Copyright notice"
               className="rounded-xl border px-4 py-3"
             />
+            ) : null}
             <input
               value={coverImageUrl}
               onChange={(e) => setCoverImageUrl(e.target.value)}
-              placeholder="Cover image URL (required for ebooks if not uploading)"
+              placeholder={physicalItem ? "Product photo URL (or upload below)" : "Cover image URL (required for ebooks if not uploading)"}
               className="rounded-xl border px-4 py-3"
             />
             <label className="flex cursor-pointer flex-col gap-2 rounded-xl border border-dashed px-4 py-4 text-sm">
-              <span className="font-medium">Cover image upload</span>
+              <span className="font-medium">{physicalItem ? "Product photo upload" : "Cover image upload"}</span>
               <span className="text-muted">
                 {coverImageFile?.name ??
-                  "JPG or PNG book cover — required before publishing ebooks"}
+                  (physicalItem ? "Clear photo of the actual item (required to publish)" : "JPG or PNG book cover — required before publishing ebooks")}
               </span>
               <input
                 type="file"
@@ -814,6 +878,7 @@ function MarketplaceSellInner() {
                 onChange={(e) => setCoverImageFile(e.target.files?.[0] ?? null)}
               />
             </label>
+            {!physicalItem ? (
             <label className="flex cursor-pointer flex-col gap-2 rounded-xl border border-dashed px-4 py-4 text-sm">
               <span className="font-medium">Product PDF</span>
               <span className="text-muted">
@@ -827,11 +892,14 @@ function MarketplaceSellInner() {
                 onChange={(e) => setProductFile(e.target.files?.[0] ?? null)}
               />
             </label>
+            ) : null}
+            {!physicalItem ? (
             <p className="text-sm text-muted">
               {uploadStatus?.requiresAdminReview
                 ? "PDFs are reviewed by Giga3 before buyers can purchase. Paystack checkout stays fraud-safe."
                 : "Upload a PDF after verification is approved."}
             </p>
+            ) : null}
             {showCreatePreview && title.trim() ? (
               <div className="rounded-xl border border-dashed border-border bg-background p-4">
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted">Preview</p>
@@ -865,13 +933,50 @@ function MarketplaceSellInner() {
               <Button
                 type="button"
                 onClick={() => saveListing(false)}
-                disabled={publishing || verificationStatus !== "approved" || !productFile}
+                disabled={publishing || verificationStatus !== "approved" || (physicalItem ? !coverImageFile && !coverImageUrl.trim() : !productFile)}
               >
                 {publishing ? "Publishing…" : "Publish"}
               </Button>
             </div>
           </div>
         </section>
+
+        {physicalInquiries && physicalInquiries.length > 0 ? (
+          <section className="rounded-2xl border border-violet-200 bg-card p-4 sm:p-5" aria-label="Physical item enquiries">
+            <h2 className="text-lg font-semibold">Buyer enquiries</h2>
+            <p className="mt-1 text-xs text-muted">These are enquiries, not paid orders. Do not request payments or private addresses through messages.</p>
+            <div className="mt-3 space-y-3">
+              {physicalInquiries.map((inquiry) => (
+                <article key={inquiry._id} className="rounded-xl border border-border p-3">
+                  <p className="text-sm font-semibold">{inquiry.listingTitle}</p>
+                  <p className="mt-1 whitespace-pre-wrap text-sm text-muted">{inquiry.message}</p>
+                  {inquiry.response ? <p className="mt-2 whitespace-pre-wrap text-sm text-violet-800 dark:text-violet-200">Your reply: {inquiry.response}</p> : null}
+                  <textarea
+                    aria-label={`Reply to enquiry for ${inquiry.listingTitle}`}
+                    rows={2}
+                    maxLength={800}
+                    value={inquiryReplies[inquiry._id] ?? ""}
+                    onChange={(e) => setInquiryReplies((v) => ({ ...v, [inquiry._id]: e.target.value }))}
+                    className="mt-2 w-full rounded-xl border border-border px-3 py-2 text-sm"
+                    placeholder="Reply with availability or sizing details"
+                  />
+                  <Button type="button" size="sm" variant="secondary" onClick={() => {
+                    void replyPhysicalInquiry({
+                      sessionToken,
+                      inquiryId: inquiry._id,
+                      response: inquiryReplies[inquiry._id] ?? "",
+                    }).then(() => {
+                      setMessage("Your reply was saved for the buyer.");
+                      setInquiryReplies((v) => ({ ...v, [inquiry._id]: "" }));
+                    }).catch((e) => setError(e instanceof Error ? e.message : "Could not reply."));
+                  }}>
+                    Send reply
+                  </Button>
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         {listings && listings.length > 0 && (
           <section>
@@ -889,7 +994,11 @@ function MarketplaceSellInner() {
                           : ""}
                       </p>
                       <p className="mt-1 text-xs">
-                        {!listing.hasFile ? (
+                        {listing.productType === "physical_item" ? (
+                          <span className="text-violet-700 dark:text-violet-300">
+                            {listing.status === "published" ? "✓ Open for in-app enquiries (no online payment)" : "Upload a photo and publish to receive enquiries"}
+                          </span>
+                        ) : !listing.hasFile ? (
                           <span className="text-amber-600">⚠ Upload a PDF to sell</span>
                         ) : listing.fileReviewLabel === "pending" ? (
                           <span className="text-amber-600">⏳ PDF awaiting admin review</span>
@@ -917,7 +1026,8 @@ function MarketplaceSellInner() {
                         </Button>
                       ) : null}
                       {listing.status === "draft" &&
-                        listing.fileReviewLabel === "approved" && (
+                        (listing.fileReviewLabel === "approved" ||
+                         (listing.productType === "physical_item" && Boolean(listing.coverImageUrl) && (listing.stockQuantity ?? 0) > 0)) && (
                           <Button
                             type="button"
                             size="sm"
@@ -927,6 +1037,7 @@ function MarketplaceSellInner() {
                             Publish
                           </Button>
                         )}
+                      {listing.productType !== "physical_item" ? (
                       <label className="cursor-pointer rounded-xl border px-4 py-2 text-sm">
                         Upload PDF
                         <input
@@ -941,6 +1052,7 @@ function MarketplaceSellInner() {
                           }}
                         />
                       </label>
+                      ) : null}
                       <label className="cursor-pointer rounded-xl border px-4 py-2 text-sm">
                         Upload cover
                         <input

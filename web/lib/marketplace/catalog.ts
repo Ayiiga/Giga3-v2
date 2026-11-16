@@ -7,6 +7,11 @@ export const MARKETPLACE_CATEGORIES = [
   "Research",
   "Marketing",
   "Productivity",
+  "Clothing",
+  "Shoes",
+  "Bags & Accessories",
+  "Home Goods",
+  "Other Goods",
 ] as const;
 
 export const PRODUCT_TYPES = [
@@ -24,6 +29,7 @@ export const PRODUCT_TYPES = [
   { id: "business_document", label: "Business Document" },
   { id: "educational_resource", label: "Educational Resource" },
   { id: "motivational_book", label: "Motivational Book" },
+  { id: "physical_item", label: "Clothes, shoes & other goods" },
   { id: "other", label: "Other" },
 ] as const;
 
@@ -36,7 +42,7 @@ export const LICENSE_TYPES = [
 
 /** Shown in seller UI — keep the marketplace simple for v1. */
 export const SIMPLE_PRODUCT_TYPES = PRODUCT_TYPES.filter((t) =>
-  (["ebook", "template", "educational_resource", "business_document", "other"] as const).includes(
+  (["ebook", "template", "educational_resource", "business_document", "physical_item", "other"] as const).includes(
     t.id as (typeof PRODUCT_TYPES)[number]["id"]
   )
 );
@@ -51,6 +57,11 @@ export const SIMPLE_CATEGORIES = [
   "Technology",
   "Marketing",
   "Faith & Inspiration",
+  "Clothing",
+  "Shoes",
+  "Bags & Accessories",
+  "Home Goods",
+  "Other Goods",
 ] as const;
 
 export function formatGhs(amount: number): string {

@@ -192,6 +192,7 @@ import type * as marketplaceCover from "../marketplaceCover.js";
 import type * as marketplaceCoverBackfill from "../marketplaceCoverBackfill.js";
 import type * as marketplaceListingHelpers from "../marketplaceListingHelpers.js";
 import type * as marketplacePayments from "../marketplacePayments.js";
+import type * as marketplacePhysicalInquiries from "../marketplacePhysicalInquiries.js";
 import type * as marketplacePublishCopy from "../marketplacePublishCopy.js";
 import type * as marketplacePublishEmail from "../marketplacePublishEmail.js";
 import type * as marketplacePublishNotify from "../marketplacePublishNotify.js";
@@ -537,6 +538,7 @@ declare const fullApi: ApiFromModules<{
   marketplaceCoverBackfill: typeof marketplaceCoverBackfill;
   marketplaceListingHelpers: typeof marketplaceListingHelpers;
   marketplacePayments: typeof marketplacePayments;
+  marketplacePhysicalInquiries: typeof marketplacePhysicalInquiries;
   marketplacePublishCopy: typeof marketplacePublishCopy;
   marketplacePublishEmail: typeof marketplacePublishEmail;
   marketplacePublishNotify: typeof marketplacePublishNotify;

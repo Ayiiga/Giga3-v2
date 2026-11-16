@@ -98,7 +98,7 @@ describe("marketplace Phase 2 Convex storefront + analytics", () => {
     expect(block).toContain("toPublicListingResolved");
     expect(block).toContain("toPublicCreatorProfile(profile)");
     expect(block).toContain('eq("status", "published")');
-    expect(block).toContain("isListingFileApproved");
+    expect(block).toContain("isMarketplaceListingVisible");
   });
 
   it("sales analytics strips buyer identity and discloses refund limits", () => {

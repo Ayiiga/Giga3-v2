@@ -17,6 +17,8 @@ import {
 } from "./marketplaceCover";
 import {
   isListingFileApproved,
+  isMarketplaceListingVisible,
+  isPhysicalMarketplaceListing,
   sanitizePublicHttpUrl,
 } from "./marketplaceListingHelpers";
 import {
@@ -47,6 +49,15 @@ const MARKETPLACE_CATEGORIES = [
   "Research",
   "Marketing",
   "Productivity",
+  "Clothing",
+  "Shoes",
+  "Bags & Accessories",
+  "Home Goods",
+  "Other Goods",
+] as const;
+
+const PHYSICAL_CATEGORIES = [
+  "Clothing", "Shoes", "Bags & Accessories", "Home Goods", "Other Goods"
 ] as const;
 
 export const listCategories = query({
@@ -136,11 +147,11 @@ export const searchListings = query({
       ? rows.filter((listing) => creators.get(listing.creatorId)?.verified === true)
       : rows;
 
-    const purchasable = filtered.filter(
-      (listing) => listing.status === "published" && isListingFileApproved(listing)
-    );
+    // Physical listings can be discovered for in-app enquiries but are never
+    // purchasable through the PDF/Paystack path.
+    const visible = filtered.filter(isMarketplaceListingVisible);
 
-    const page = purchasable.slice(offset, offset + cap);
+    const page = visible.slice(offset, offset + cap);
 
     return await Promise.all(
       page.map(async (listing) => {
@@ -162,7 +173,7 @@ export const getListing = query({
   args: { listingId: v.id("marketplaceListings") },
   handler: async (ctx, args) => {
     const listing = await ctx.db.get(args.listingId);
-    if (!listing || listing.status !== "published") return null;
+    if (!listing || !isMarketplaceListingVisible(listing)) return null;
     const creator = await ctx.db
       .query("creatorProfiles")
       .withIndex("by_user", (q) => q.eq("userId", listing.creatorId))
@@ -243,7 +254,7 @@ export const listPublishedByHandle = query({
       pickEligibleStorefrontListings(
         publishedRows,
         cap,
-        isListingFileApproved
+        isMarketplaceListingVisible
       ).map(async (listing) => {
         const coverIntentStorageId = listing.coverStorageId
           ? undefined
@@ -268,6 +279,11 @@ export const createListing = mutation({
     description: v.string(),
     category: v.string(),
     productType: marketplaceProductTypeValidator,
+    condition: v.optional(v.union(v.literal("new"), v.literal("like_new"), v.literal("good"), v.literal("fair"))),
+    sizeOrVariant: v.optional(v.string()),
+    stockQuantity: v.optional(v.number()),
+    sellerRegion: v.optional(v.string()),
+    deliveryNote: v.optional(v.string()),
     priceGhs: v.number(),
     license: marketplaceLicenseValidator,
     copyrightNotice: v.optional(v.string()),
@@ -307,7 +323,24 @@ export const createListing = mutation({
     const title = args.title.trim().slice(0, 120);
     const description = args.description.trim().slice(0, 4000);
     if (!title || !description) throw new Error("Title and description are required.");
-    if (args.priceGhs < 1) throw new Error("Minimum price is GHS 1.");
+    if (!Number.isFinite(args.priceGhs) || args.priceGhs < 1 || args.priceGhs > 100_000) {
+      throw new Error("Price must be between GHS 1 and GHS 100,000.");
+    }
+    if (!(MARKETPLACE_CATEGORIES as readonly string[]).includes(args.category)) {
+      throw new Error("Invalid category.");
+    }
+    if (args.productType === "physical_item") {
+      if (!(PHYSICAL_CATEGORIES as readonly string[]).includes(args.category)) {
+        throw new Error("Select a physical goods category for clothes, shoes or household items.");
+      }
+      if (!args.condition || !args.sellerRegion?.trim()) {
+        throw new Error("Condition and city/region are required for physical items.");
+      }
+      if (!Number.isInteger(args.stockQuantity) || (args.stockQuantity ?? 0) < 1 ||
+          (args.stockQuantity ?? 0) > 1_000) {
+        throw new Error("Stock quantity must be between 1 and 1,000.");
+      }
+    }
 
     if (args.coverStorageId) {
       throw new Error("Use prepareListingUpload for cover images.");
@@ -322,6 +355,13 @@ export const createListing = mutation({
       description,
       category: args.category,
       productType: args.productType,
+      ...(args.productType === "physical_item" ? {
+        condition: args.condition,
+        sizeOrVariant: args.sizeOrVariant?.trim().slice(0, 100) || undefined,
+        stockQuantity: args.stockQuantity,
+        sellerRegion: args.sellerRegion?.trim().slice(0, 90),
+        deliveryNote: args.deliveryNote?.trim().slice(0, 300) || undefined,
+      } : {}),
       priceGhs: Math.round(args.priceGhs),
       license: args.license,
       copyrightNotice: args.copyrightNotice?.trim().slice(0, 500),
@@ -352,6 +392,11 @@ export const updateListing = mutation({
     description: v.optional(v.string()),
     category: v.optional(v.string()),
     priceGhs: v.optional(v.number()),
+    condition: v.optional(v.union(v.literal("new"), v.literal("like_new"), v.literal("good"), v.literal("fair"))),
+    sizeOrVariant: v.optional(v.string()),
+    stockQuantity: v.optional(v.number()),
+    sellerRegion: v.optional(v.string()),
+    deliveryNote: v.optional(v.string()),
     status: v.optional(
       v.union(v.literal("draft"), v.literal("published"), v.literal("archived"))
     ),
@@ -381,11 +426,23 @@ export const updateListing = mutation({
       if (!profile || verificationStatusOf(profile) !== "approved") {
         throw new Error("Approved verification is required before publishing.");
       }
-      if (!listing.fileStorageId) {
-        throw new Error("Attach a product file before publishing.");
-      }
-      if (!isListingFileApproved(listing)) {
-        throw new Error("Attach and upload your PDF before publishing.");
+      if (isPhysicalMarketplaceListing(listing)) {
+        const nextCoverUrl = args.coverImageUrl !== undefined ? args.coverImageUrl : listing.coverImageUrl;
+        if (!hasDurableCover({ coverStorageId: listing.coverStorageId, coverImageUrl: nextCoverUrl })) {
+          throw new Error("Upload a product photo before publishing physical goods.");
+        }
+        if (!listing.sellerRegion || !listing.condition ||
+            !Number.isInteger(args.stockQuantity ?? listing.stockQuantity) ||
+            (args.stockQuantity ?? listing.stockQuantity ?? 0) < 1) {
+          throw new Error("Physical item needs condition, location and available stock.");
+        }
+      } else {
+        if (!listing.fileStorageId) {
+          throw new Error("Attach a product file before publishing.");
+        }
+        if (!isListingFileApproved(listing)) {
+          throw new Error("Attach and upload your PDF before publishing.");
+        }
       }
       const productType = String(listing.productType || "").toLowerCase();
       const ebookLike = productType.includes("ebook") || productType === "book";
@@ -424,6 +481,22 @@ export const updateListing = mutation({
       patch.priceGhs = price;
     }
     if (args.status !== undefined) patch.status = args.status;
+    if (isPhysicalMarketplaceListing(listing)) {
+      if (args.condition !== undefined) patch.condition = args.condition;
+      if (args.sizeOrVariant !== undefined) patch.sizeOrVariant = args.sizeOrVariant.trim().slice(0, 100);
+      if (args.sellerRegion !== undefined) patch.sellerRegion = args.sellerRegion.trim().slice(0, 90);
+      if (args.deliveryNote !== undefined) patch.deliveryNote = args.deliveryNote.trim().slice(0, 300);
+      if (args.stockQuantity !== undefined) {
+        if (!Number.isInteger(args.stockQuantity) || args.stockQuantity < 0 || args.stockQuantity > 1_000) {
+          throw new Error("Stock must be between 0 and 1,000.");
+        }
+        patch.stockQuantity = args.stockQuantity;
+        if (args.stockQuantity === 0 && listing.status === "published") patch.status = "draft";
+      }
+      if (args.category !== undefined && !(PHYSICAL_CATEGORIES as readonly string[]).includes(args.category)) {
+        throw new Error("Physical items must stay in a physical goods category.");
+      }
+    }
     if (args.previewText !== undefined) patch.previewText = args.previewText?.slice(0, 2000);
     if (args.previewUrl !== undefined) {
       patch.previewUrl = sanitizePublicHttpUrl(args.previewUrl, "Preview URL");
@@ -696,7 +769,7 @@ export const getDownloadAccess = query({
   handler: async (ctx, args) => {
     const email = await requireSession(args.sessionToken, ctx);
     const listing = await ctx.db.get(args.listingId);
-    if (!listing) return { allowed: false as const };
+    if (!listing || isPhysicalMarketplaceListing(listing)) return { allowed: false as const };
 
     const isCreator = listing.creatorId === email;
     const purchases = await ctx.db
@@ -738,7 +811,7 @@ export const getListingForCheckoutInternal = internalQuery({
   args: { listingId: v.id("marketplaceListings") },
   handler: async (ctx, args) => {
     const listing = await ctx.db.get(args.listingId);
-    if (!listing || listing.status !== "published") return null;
+    if (!listing || listing.status !== "published" || isPhysicalMarketplaceListing(listing)) return null;
     return {
       _id: listing._id,
       title: listing.title,

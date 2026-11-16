@@ -135,7 +135,7 @@ function CreatorStorefrontInner() {
             {listings.map((item) => (
               <Link
                 key={item._id}
-                href={`/marketplace/item/${item._id}/`}
+                href={item.productType === "physical_item" ? `/marketplace/item/?id=${encodeURIComponent(item._id)}` : `/marketplace/item/${item._id}/`}
                 className="saas-card flex flex-col rounded-2xl p-2.5 hover:border-emerald-600/35 sm:p-3"
               >
                 <ProductCover

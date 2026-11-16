@@ -13,8 +13,9 @@ import {
 } from "../../web/lib/marketplace/discovery";
 
 describe("marketplace discovery collections", () => {
-  it("defines the six Phase 1 discovery collections", () => {
+  it("defines digital discovery plus physical goods collection", () => {
     expect(DISCOVERY_COLLECTIONS.map((c) => c.id)).toEqual([
+      "physical-goods",
       "ebooks-learning",
       "courses-training",
       "ai-prompts",
