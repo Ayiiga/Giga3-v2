@@ -28,6 +28,7 @@ import {
   toSellerRevenueProfile,
 } from "./marketplaceCompleteness";
 import { requireEntitlementForEmail } from "./entitlements";
+import { validatePhysicalShipping, type PhysicalShippingMethod } from "./marketplaceShippingPolicy";
 import {
   toCreatorListingResolved,
   toPublicCreatorProfile,
@@ -284,6 +285,11 @@ export const createListing = mutation({
     stockQuantity: v.optional(v.number()),
     sellerRegion: v.optional(v.string()),
     deliveryNote: v.optional(v.string()),
+    shippingMethods: v.optional(v.array(v.union(v.literal("pickup"), v.literal("seller_delivery"), v.literal("courier")))),
+    shippingFeeGhs: v.optional(v.number()),
+    shippingDays: v.optional(v.number()),
+    returnWindowDays: v.optional(v.number()),
+    returnTerms: v.optional(v.string()),
     priceGhs: v.number(),
     license: marketplaceLicenseValidator,
     copyrightNotice: v.optional(v.string()),
@@ -340,6 +346,13 @@ export const createListing = mutation({
           (args.stockQuantity ?? 0) > 1_000) {
         throw new Error("Stock quantity must be between 1 and 1,000.");
       }
+      validatePhysicalShipping({
+        methods: args.shippingMethods as PhysicalShippingMethod[] | undefined,
+        feeGhs: args.shippingFeeGhs,
+        days: args.shippingDays,
+        returnWindowDays: args.returnWindowDays,
+        returnTerms: args.returnTerms,
+      });
     }
 
     if (args.coverStorageId) {
@@ -361,6 +374,11 @@ export const createListing = mutation({
         stockQuantity: args.stockQuantity,
         sellerRegion: args.sellerRegion?.trim().slice(0, 90),
         deliveryNote: args.deliveryNote?.trim().slice(0, 300) || undefined,
+        shippingMethods: args.shippingMethods ?? ["pickup"],
+        shippingFeeGhs: args.shippingFeeGhs,
+        shippingDays: args.shippingDays,
+        returnWindowDays: args.returnWindowDays,
+        returnTerms: args.returnTerms?.trim().slice(0, 500) || undefined,
       } : {}),
       priceGhs: Math.round(args.priceGhs),
       license: args.license,
@@ -397,6 +415,11 @@ export const updateListing = mutation({
     stockQuantity: v.optional(v.number()),
     sellerRegion: v.optional(v.string()),
     deliveryNote: v.optional(v.string()),
+    shippingMethods: v.optional(v.array(v.union(v.literal("pickup"), v.literal("seller_delivery"), v.literal("courier")))),
+    shippingFeeGhs: v.optional(v.number()),
+    shippingDays: v.optional(v.number()),
+    returnWindowDays: v.optional(v.number()),
+    returnTerms: v.optional(v.string()),
     status: v.optional(
       v.union(v.literal("draft"), v.literal("published"), v.literal("archived"))
     ),
@@ -486,6 +509,18 @@ export const updateListing = mutation({
       if (args.sizeOrVariant !== undefined) patch.sizeOrVariant = args.sizeOrVariant.trim().slice(0, 100);
       if (args.sellerRegion !== undefined) patch.sellerRegion = args.sellerRegion.trim().slice(0, 90);
       if (args.deliveryNote !== undefined) patch.deliveryNote = args.deliveryNote.trim().slice(0, 300);
+      validatePhysicalShipping({
+        methods: (args.shippingMethods ?? listing.shippingMethods) as PhysicalShippingMethod[] | undefined,
+        feeGhs: args.shippingFeeGhs ?? listing.shippingFeeGhs,
+        days: args.shippingDays ?? listing.shippingDays,
+        returnWindowDays: args.returnWindowDays ?? listing.returnWindowDays,
+        returnTerms: args.returnTerms ?? listing.returnTerms,
+      });
+      if (args.shippingMethods !== undefined) patch.shippingMethods = args.shippingMethods;
+      if (args.shippingFeeGhs !== undefined) patch.shippingFeeGhs = args.shippingFeeGhs;
+      if (args.shippingDays !== undefined) patch.shippingDays = args.shippingDays;
+      if (args.returnWindowDays !== undefined) patch.returnWindowDays = args.returnWindowDays;
+      if (args.returnTerms !== undefined) patch.returnTerms = args.returnTerms.trim().slice(0, 500);
       if (args.stockQuantity !== undefined) {
         if (!Number.isInteger(args.stockQuantity) || args.stockQuantity < 0 || args.stockQuantity > 1_000) {
           throw new Error("Stock must be between 0 and 1,000.");
