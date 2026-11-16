@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 640" role="img" aria-labelledby="title description">
+<title id="title">Reagent bottle</title>
+<desc id="description">Tight-fitting cap; Contents label; Storage bottle</desc>
+<rect width="360" height="640" fill="white"/>
+<rect width="360" height="132" fill="#eef2ff"/>
+<text x="180" y="45" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="600" fill="#162c46">GIGALEARN · INTEGRATED SCIENCE</text>
+<text x="180" y="81" text-anchor="middle" font-family="sans-serif" font-size="24" font-weight="600" fill="#162c46">Reagent bottle</text>
+<path d="M141 235v45l-25 22v91q0 13 13 13h102q13 0 13-13v-91l-25-22v-45Z" fill="#f8d483" stroke="#27405b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="136" y="203" width="88" height="34" rx="7" fill="#c5d6df" stroke="#27405b" stroke-width="3"/>
+<rect x="132" y="324" width="96" height="53" rx="4" fill="#fff8dd" stroke="#27405b" stroke-width="3"/>
+<text x="180" y="346" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="600" fill="#162c46">REAGENT</text>
+<path d="M146 357h68" fill="none" stroke="#718195" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M180 219l22 -13" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="202" cy="206" r="8.5" fill="#41367b"/>
+<text x="202" y="209.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">1</text>
+<path d="M179 343l-21 12" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="158" cy="355" r="8.5" fill="#41367b"/>
+<text x="158" y="358.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">2</text>
+<path d="M230 389l22 -13" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="252" cy="376" r="8.5" fill="#41367b"/>
+<text x="252" y="379.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">3</text>
+<path d="M32 449h296" stroke="#d7daef" stroke-width="2"/>
+<text x="36" y="467" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">1.  Tight-fitting cap</text>
+<text x="36" y="483.5" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">2.  Contents label</text>
+<text x="36" y="500" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">3.  Storage bottle</text>
+<text x="180" y="624" text-anchor="middle" font-family="sans-serif" font-size="10.5" font-weight="600" fill="#162c46">Choose compatible glass or plastic for the reagent.</text>
+</svg>

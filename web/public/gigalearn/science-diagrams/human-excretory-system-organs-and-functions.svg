@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 640" role="img" aria-labelledby="title description">
+<title id="title">Urinary system</title>
+<desc id="description">Kidneys form urine; Ureters carry urine; Bladder stores urine; Urethra carries urine out</desc>
+<rect width="360" height="640" fill="white"/>
+<rect width="360" height="132" fill="#eef2ff"/>
+<text x="180" y="45" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="600" fill="#162c46">GIGALEARN · INTEGRATED SCIENCE</text>
+<text x="180" y="81" text-anchor="middle" font-family="sans-serif" font-size="24" font-weight="600" fill="#162c46">Urinary system</text>
+<path d="M135 200c-29-27-65-3-63 46 2 48 38 63 59 35 11-13 7-25-6-30-8-6-7-12 1-20 9-8 17-21 9-31Z" fill="#d96783" stroke="#27405b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(360 0) scale(-1 1)">
+<path d="M135 200c-29-27-65-3-63 46 2 48 38 63 59 35 11-13 7-25-6-30-8-6-7-12 1-20 9-8 17-21 9-31Z" fill="#d96783" stroke="#27405b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<path d="M127 252q30 23 31 110m75-110q-30 23-31 110" fill="none" stroke="#bd852d" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M152 357q28-16 56 0 24 24-15 49h-26q-39-25-15-49Z" fill="#f8d483" stroke="#27405b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M180 405v38" fill="none" stroke="#bd852d" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M92 244l-21 -13" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="71" cy="231" r="8.5" fill="#41367b"/>
+<text x="71" y="234.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">1</text>
+<path d="M151 313l-21 12" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="130" cy="325" r="8.5" fill="#41367b"/>
+<text x="130" y="328.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">2</text>
+<path d="M179 377l-21 -13" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="158" cy="364" r="8.5" fill="#41367b"/>
+<text x="158" y="367.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">3</text>
+<path d="M180 433l22 12" fill="none" stroke="#42496e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="202" cy="445" r="8.5" fill="#41367b"/>
+<text x="202" y="448.4" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="white">4</text>
+<path d="M32 449h296" stroke="#d7daef" stroke-width="2"/>
+<text x="36" y="467" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">1.  Kidneys form urine</text>
+<text x="36" y="483.5" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">2.  Ureters carry urine</text>
+<text x="36" y="500" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">3.  Bladder stores urine</text>
+<text x="36" y="516.5" text-anchor="start" font-family="sans-serif" font-size="13.2" font-weight="600" fill="#162c46">4.  Urethra carries urine out</text>
+</svg>
