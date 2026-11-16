@@ -251,9 +251,9 @@ export const ChatInput = memo(function ChatInput({
         files.map((file) => prepareChatAttachment(file, uploadUsage?.limits))
       );
       setAttachments((prev) => [...prev, ...prepared]);
-      setNotice(
-        `Attached ${prepared.length} file${prepared.length === 1 ? "" : "s"}. Ask what you want Giga3 AI to analyze, summarize, solve, compare, or explain.`
-      );
+      // Attachment cards below the composer show upload success. Avoid a second
+      // large yellow notice covering the keyboard on small Android screens.
+      setNotice(null);
     } catch (err) {
       setNotice(err instanceof Error ? err.message : "Could not attach file.");
     } finally {
@@ -296,13 +296,21 @@ export const ChatInput = memo(function ChatInput({
     return () => el.removeEventListener("paste", onPaste);
   }, []);
 
+  // Keep existing object URLs alive when adding another attachment. Revoking
+  // all URLs whenever the array changes caused the first thumbnail to break.
+  const previewUrlsRef = useRef<Set<string>>(new Set());
   useEffect(() => {
-    return () => {
-      for (const attachment of attachments) {
-        if (attachment.previewUrl) URL.revokeObjectURL(attachment.previewUrl);
-      }
-    };
+    for (const attachment of attachments) {
+      if (attachment.previewUrl) previewUrlsRef.current.add(attachment.previewUrl);
+    }
   }, [attachments]);
+  useEffect(() => {
+    const urls = previewUrlsRef.current;
+    return () => {
+      for (const url of urls) URL.revokeObjectURL(url);
+      urls.clear();
+    };
+  }, []);
 
   // Ordinary text chat is credit-free — never block the composer on chat balance.
   const canSend = Boolean(value.trim() || attachments.length > 0);
@@ -375,7 +383,11 @@ export const ChatInput = memo(function ChatInput({
           <NoticeBanner message={notice} onDismiss={() => setNotice(null)} />
         )}
         {attachments.length > 0 && (
-          <div className="flex max-h-32 flex-wrap gap-2 overflow-y-auto rounded-xl border border-border bg-card p-2">
+          <div className="space-y-2 rounded-2xl border border-violet-200/70 bg-violet-50/50 p-2.5 dark:border-violet-900/50 dark:bg-violet-950/20" aria-label="Attached files">
+            <p className="px-1 text-xs font-semibold text-violet-800 dark:text-violet-200" role="status">
+              {attachments.length} file{attachments.length === 1 ? "" : "s"} ready · Add a question or send to analyze
+            </p>
+            <div className="flex max-h-44 flex-wrap gap-2 overflow-y-auto">
             {attachments.map((attachment, index) => (
               <AttachmentChip
                 key={`${attachment.name}-${index}`}
@@ -389,6 +401,7 @@ export const ChatInput = memo(function ChatInput({
                 }}
               />
             ))}
+            </div>
           </div>
         )}
 
@@ -609,17 +622,17 @@ function AttachmentChip({
   onRemove: () => void;
 }) {
   return (
-    <span className="inline-flex max-w-full items-center gap-2 rounded-lg border border-border bg-background px-2 py-1 text-xs text-foreground">
+    <span className="inline-flex max-w-full min-w-0 items-center gap-2 rounded-xl border border-border bg-background p-1.5 text-xs text-foreground shadow-sm">
       {attachment.previewUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={attachment.previewUrl}
           alt=""
-          className="h-7 w-7 rounded-md object-cover"
+          className="h-12 w-12 shrink-0 rounded-lg bg-zinc-100 object-contain dark:bg-zinc-900"
         />
       ) : null}
       <span className="min-w-0">
-        <span className="block max-w-[10rem] truncate font-medium">
+        <span className="block max-w-[8rem] truncate font-medium sm:max-w-[12rem]">
           {attachment.name}
         </span>
         <span className="block text-muted">
@@ -628,7 +641,7 @@ function AttachmentChip({
       </span>
       <button
         type="button"
-        className="rounded-md p-1 text-muted hover:bg-accent/10 hover:text-foreground"
+        className="touch-target rounded-lg p-1.5 text-muted hover:bg-accent/10 hover:text-foreground"
         aria-label={`Remove ${attachment.name}`}
         onClick={onRemove}
       >
