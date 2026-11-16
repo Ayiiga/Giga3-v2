@@ -42,14 +42,22 @@ function MarketplaceItemInner({ initialListingId }: { initialListingId?: string 
     api.marketplace.getDownloadAccess,
     listingId && sessionToken ? { sessionToken, listingId } : "skip"
   );
+  const myInquiry = useQuery(
+    api.marketplacePhysicalInquiries.getMyInquiryForListing,
+    listingId && sessionToken ? { sessionToken, listingId } : "skip"
+  );
   const recordView = useMutation(api.marketplace.recordView);
   const recordPreviewOpen = useMutation(api.marketplace.recordPreviewOpen);
   const recordPromoClick = useMutation(api.marketplace.recordPromoClick);
   const addReview = useMutation(api.marketplace.addReview);
   const reportListing = useMutation(api.marketplace.reportListing);
   const initPurchase = useAction(api.paystack.initializeMarketplacePayment);
+  const requestPhysicalItem = useMutation(api.marketplacePhysicalInquiries.requestItem);
 
   const [buying, setBuying] = useState(false);
+  const [inquiryMessage, setInquiryMessage] = useState("");
+  const [inquirySending, setInquirySending] = useState(false);
+  const [inquiryNotice, setInquiryNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [reportReason, setReportReason] = useState<"scam" | "copyright" | "misleading" | "other">("scam");
   const [reportDetails, setReportDetails] = useState("");
@@ -83,6 +91,31 @@ function MarketplaceItemInner({ initialListingId }: { initialListingId?: string 
   }
 
   const { listing, creator, reviews } = data;
+  const isPhysical = listing.productType === "physical_item";
+
+  async function handlePhysicalInquiry() {
+    const token = getSessionToken();
+    if (!token) {
+      router.push(`/chat/login?next=${encodeURIComponent(`/marketplace/item/${listingId}/`)}`);
+      return;
+    }
+    if (!isPhysical) return;
+    setInquirySending(true);
+    setError(null);
+    try {
+      const result = await requestPhysicalItem({
+        sessionToken: token,
+        listingId: listingId!,
+        message: inquiryMessage,
+      });
+      setInquiryNotice(result.message);
+      setInquiryMessage("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not send your enquiry.");
+    } finally {
+      setInquirySending(false);
+    }
+  }
 
   async function handleBuy() {
     const token = getSessionToken();
@@ -196,7 +229,9 @@ function MarketplaceItemInner({ initialListingId }: { initialListingId?: string 
               fit={bookLike ? "contain" : "cover"}
             />
             <p className="mt-2 text-xs text-muted">
-              {listing.coverImageUrl
+              {isPhysical
+                ? "Photo provided by the seller. Confirm condition and size before making any arrangements."
+                : listing.coverImageUrl
                 ? bookLike
                   ? "Book cover for this listing. Sample pages below are author-controlled previews."
                   : "Listing cover image. Purchasing unlocks the full paid file."
@@ -268,10 +303,20 @@ function MarketplaceItemInner({ initialListingId }: { initialListingId?: string 
 
         <aside className="h-fit rounded-2xl border border-border bg-card p-6">
           <div className="text-3xl font-bold">{formatGhs(listing.priceGhs)}</div>
-          <p className="mt-1 text-sm text-muted capitalize">
-            License: {listing.license.replace(/_/g, " ")}
-          </p>
-          <p className="mt-1 text-sm text-muted">{listing.purchaseCount} purchases</p>
+          {isPhysical ? (
+            <div className="mt-2 space-y-1 text-sm text-muted">
+              <p>Condition: {String(listing.condition ?? "Not specified").replace(/_/g, " ")}</p>
+              {listing.sizeOrVariant ? <p>Size / variant: {listing.sizeOrVariant}</p> : null}
+              <p>Available: {listing.stockQuantity ?? 0}</p>
+              <p>Location: {listing.sellerRegion ?? "Not specified"}</p>
+              {listing.deliveryNote ? <p>Delivery area: {listing.deliveryNote}</p> : null}
+            </div>
+          ) : (
+            <>
+              <p className="mt-1 text-sm text-muted capitalize">License: {listing.license.replace(/_/g, " ")}</p>
+              <p className="mt-1 text-sm text-muted">{listing.purchaseCount} purchases</p>
+            </>
+          )}
           {creator?.verified ? (
             <p className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-emerald-700 dark:text-emerald-300">
               <BadgeCheck className="h-4 w-4" aria-hidden />
@@ -338,7 +383,37 @@ function MarketplaceItemInner({ initialListingId }: { initialListingId?: string 
             </Button>
           </div>
           {shareMessage ? <p className="mt-2 text-xs text-emerald-700">{shareMessage}</p> : null}
-          {download?.allowed && download.url ? (
+          {isPhysical ? (
+            <div className="mt-4 rounded-xl border border-violet-200 bg-violet-50/50 p-3 dark:border-violet-900 dark:bg-violet-950/20">
+              <p className="font-semibold text-sm">Ask about this item</p>
+              <p className="mt-1 text-xs text-muted">No payment is taken. Giga3 AI has not enabled physical-goods checkout, shipment tracking or refunds. Do not send money outside the platform or share your home address.</p>
+              {myInquiry ? (
+                <div className="mt-3 space-y-2 text-sm">
+                  <p className="font-semibold">Your enquiry · {myInquiry.status}</p>
+                  <p className="whitespace-pre-wrap text-muted">{myInquiry.message}</p>
+                  {myInquiry.response ? (
+                    <p className="whitespace-pre-wrap rounded-lg bg-background p-2">Seller reply: {myInquiry.response}</p>
+                  ) : <p className="text-xs text-muted">No seller reply yet. Return to this listing to check.</p>}
+                </div>
+              ) : (
+                <>
+                  <textarea
+                    aria-label="Message the seller about this item"
+                    rows={3}
+                    maxLength={500}
+                    value={inquiryMessage}
+                    onChange={(e) => setInquiryMessage(e.target.value)}
+                    placeholder="Is this still available? Please confirm the size and condition."
+                    className="mt-3 w-full rounded-lg border border-border bg-card p-3 text-sm"
+                  />
+                  <Button type="button" className="mt-2 w-full min-h-12" onClick={() => void handlePhysicalInquiry()} disabled={inquirySending || inquiryMessage.trim().length < 5}>
+                    {inquirySending ? "Sending enquiry…" : "Request availability"}
+                  </Button>
+                  {inquiryNotice ? <p className="mt-2 text-xs font-medium text-emerald-700">{inquiryNotice}</p> : null}
+                </>
+              )}
+            </div>
+          ) : download?.allowed && download.url ? (
             <>
               <a
                 href={download.url}
