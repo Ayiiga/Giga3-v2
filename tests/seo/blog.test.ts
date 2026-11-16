@@ -264,6 +264,6 @@ describe("blog navigation", () => {
     expect(site).toContain('href: "/blog"');
 
     const productLinks = readFileSync(resolve(WEB_ROOT, "lib/seo/productLinks.ts"), "utf8");
-    expect(productLinks).toContain('href: "/blog"');
+    expect(productLinks).toContain('href: "/blog/"');
   });
 });
