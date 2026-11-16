@@ -8,6 +8,7 @@ import { DocumentResultCard } from "@/components/documents/DocumentResultCard";
 import { inferKindFromRequest } from "@/lib/documents/intent";
 import { looksLikeDocumentContent } from "@/lib/documents/model";
 import { MessageMediaBlock } from "@/components/chat/MessageMediaBlock";
+import { ChatUploadedImagePreview } from "@/components/chat/ChatUploadedImagePreview";
 import { MessageMarkdown } from "@/components/chat/MessageMarkdown";
 import { SmartAnswer } from "@/components/chat/SmartAnswer";
 import { ProductRedirectCards } from "@/components/chat/ProductRedirectCards";
@@ -203,9 +204,17 @@ export const MessageBubble = memo(function MessageBubble({
                 ) : null}
               </>
             ))}
-          {parsed.images.map((url) => (
-            <MessageMediaBlock key={url} url={url} kind="image" />
-          ))}
+          {isUser && parsed.images.length > 0 ? (
+            <div className="mt-2 grid max-w-[21rem] grid-cols-2 gap-2" aria-label="Uploaded image previews">
+              {parsed.images.map((url, index) => (
+                <ChatUploadedImagePreview key={index} src={url} index={index} />
+              ))}
+            </div>
+          ) : (
+            parsed.images.map((url) => (
+              <MessageMediaBlock key={url} url={url} kind="image" />
+            ))
+          )}
           {parsed.videos.map((url) => (
             <MessageMediaBlock key={url} url={url} kind="video" />
           ))}
