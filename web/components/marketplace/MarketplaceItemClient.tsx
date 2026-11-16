@@ -11,7 +11,7 @@ import {
   buildShareDestination,
   copyTextToClipboard,
 } from "@/lib/marketplace/promotionalCaption";
-import { marketplaceItemUrl } from "@/lib/seo/publicPaths";
+import { marketplaceItemUrl, marketplacePhysicalItemUrl, marketplacePhysicalItemPath } from "@/lib/seo/publicPaths";
 import { formatTimestampDateTime } from "@/lib/datetime";
 import { getSessionToken } from "@/lib/auth";
 import { redirectToPaystack } from "@/lib/payments/paystackService";
@@ -96,7 +96,7 @@ function MarketplaceItemInner({ initialListingId }: { initialListingId?: string 
   async function handlePhysicalInquiry() {
     const token = getSessionToken();
     if (!token) {
-      router.push(`/chat/login?next=${encodeURIComponent(`/marketplace/item/${listingId}/`)}`);
+      router.push(`/chat/login?next=${encodeURIComponent(marketplacePhysicalItemPath(listingId!))}`);
       return;
     }
     if (!isPhysical) return;
@@ -120,7 +120,7 @@ function MarketplaceItemInner({ initialListingId }: { initialListingId?: string 
   async function handleBuy() {
     const token = getSessionToken();
     if (!token) {
-      router.push(`/chat/login?next=${encodeURIComponent(`/marketplace/item/${listingId}/`)}`);
+      router.push(`/chat/login?next=${encodeURIComponent(marketplacePhysicalItemPath(listingId!))}`);
       return;
     }
     setBuying(true);
@@ -137,7 +137,7 @@ function MarketplaceItemInner({ initialListingId }: { initialListingId?: string 
   async function handleReport() {
     const token = getSessionToken();
     if (!token) {
-      router.push(`/chat/login?next=${encodeURIComponent(`/marketplace/item/${listingId}/`)}`);
+      router.push(`/chat/login?next=${encodeURIComponent(marketplacePhysicalItemPath(listingId!))}`);
       return;
     }
     setReporting(true);
@@ -330,7 +330,7 @@ function MarketplaceItemInner({ initialListingId }: { initialListingId?: string 
               size="sm"
               variant="secondary"
               onClick={() => {
-                const url = marketplaceItemUrl(listingId!);
+                const url = isPhysical ? marketplacePhysicalItemUrl(listingId!) : marketplaceItemUrl(listingId!);
                 const caption = buildPromotionalCaption({
                   listingId: listingId!,
                   title: listing.title,
@@ -358,7 +358,7 @@ function MarketplaceItemInner({ initialListingId }: { initialListingId?: string 
               size="sm"
               variant="ghost"
               onClick={() => {
-                const url = marketplaceItemUrl(listingId!);
+                const url = isPhysical ? marketplacePhysicalItemUrl(listingId!) : marketplaceItemUrl(listingId!);
                 const text = buildPromotionalCaption({
                   listingId: listingId!,
                   title: listing.title,
