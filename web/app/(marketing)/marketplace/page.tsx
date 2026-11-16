@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 import { publicMetadata } from "@/lib/seo/publicMetadata";
 
 const MARKETPLACE_META_DESCRIPTION =
-  "Browse digital products on the Giga3 AI Marketplace — ebooks, templates, and educational resources from verified creators. Pay with Paystack in GHS.";
+  "Discover ebooks, templates, clothes, shoes and other goods on Giga3 AI Marketplace. Buy digital downloads with Paystack in GHS; enquire about physical goods.";
 
 export const metadata = publicMetadata({
   path: "/marketplace",
@@ -43,14 +43,14 @@ export default function MarketplacePage() {
         expandLabel="Learn more"
         collapseLabel="Show less"
         title="Discover. Buy. Sell."
-        description="Explore ebooks, study notes, templates, and digital resources from Giga3 creators. Buy securely in Ghana cedis or sell your own digital products."
-        detail="Verified sellers and admin-reviewed uploads help reduce fraud. Browse by category, compare prices in Ghana Cedis, and keep purchases in your account history. Files unlock only after Paystack payment is verified."
+        description="Browse ebooks, learning materials, clothes, shoes and other products. Buy approved digital downloads with Paystack, or enquire about physical items directly inside Giga3 AI."
+        detail="Digital purchases use Paystack, with downloads unlocked after verified payment. Physical goods are enquiry-only for now: no checkout, shipping or delivery guarantees are offered. Never send payment outside the app."
         showProductNav={false}
       />
       <MarketplaceBrowseClient />
       <PublicProductPageShell
         {...MARKETPLACE_PAGE_SHELL}
-        title="Digital Products for Learning, Business, and Creativity"
+        title="Digital Products, Clothing, Shoes and More"
         titleAs="h2"
         compact
       />

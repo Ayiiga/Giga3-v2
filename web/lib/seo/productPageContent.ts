@@ -165,25 +165,25 @@ export const ENTERPRISE_PAGE_SHELL: PublicProductPageShellProps = {
 };
 
 export const MARKETPLACE_PAGE_SHELL: PublicProductPageShellProps = {
-  title: "Digital Products for Learning, Business, and Creativity",
+  title: "Digital Products, Clothing, Shoes and More",
   description:
-    "Discover eligible ebooks, educational materials, templates, and business resources from Giga3 creators. Buy in Ghana cedis with Paystack, or list your own digital products after account review.",
-  audience: "learners, creators, and buyers in Ghana and beyond",
+    "Discover ebooks, lesson notes, templates, clothes, shoes and other goods from Giga3 sellers. Approved digital files can be purchased through Paystack in GHS; physical goods are enquiry-only.",
+  audience: "learners, local sellers, creators, and buyers in Ghana and beyond",
   whatItDoes:
-    "Search the catalogue, open a listing, pay with Paystack, then download from My purchases once payment is verified. Sellers list products through Start Selling — uploads are moderated before they appear publicly.",
+    "Browse products and view their details. Buy eligible digital files using Paystack and retrieve downloads from My purchases after verified payment. For clothes, shoes and other physical items, send an in-app enquiry to the seller; checkout, delivery and refunds for physical goods are not enabled.",
   whoFor: [
-    "Students buying study guides and templates",
-    "Creators selling digital products alongside GigaSocial",
-    "Teams sourcing vetted educational resources",
+    "Students buying digital study guides and templates",
+    "Creators offering ebooks and other approved digital materials",
+    "Sellers showcasing clothing, footwear and household goods for enquiries",
   ],
   capabilities: [
-    "How to purchase: browse → checkout with Paystack → download from My purchases",
-    "How to sell: open Start Selling, submit product details, wait for moderation",
-    "Payment security: Paystack only; files unlock after verified payment",
-    "Verified creator badges when a seller has completed verification",
+    "Digital purchases: browse → Paystack checkout → verified download in My purchases",
+    "Physical items: browse → inspect photos, condition and availability → send an in-app enquiry",
+    "Physical goods cannot be paid for through the digital-download checkout",
+    "Seller verification and listing reports help protect users; never pay outside the app",
   ],
   giga3Connection:
-    "Marketplace complements GigaLearn and Creator Studio — sell what you create on Giga3. Purchases do not replace chat subscription credits; each product lists its own GHS price. Terms: /legal/terms and /legal/refunds.",
+    "Marketplace complements GigaLearn and GigaSocial. Each listed product shows its own GHS price; browsing and physical-item enquiries are not AI credit purchases. Current physical listings do not include shipping, escrow, delivery or online payment. Terms: /legal/terms and /legal/refunds.",
   primaryHref: "/marketplace/#marketplace-catalogue",
   primaryLabel: "Browse products",
   secondaryHref: "/marketplace/sell",
