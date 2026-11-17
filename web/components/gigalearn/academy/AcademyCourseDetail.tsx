@@ -25,7 +25,7 @@ import { siteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
-import { CheckCircle2, Lock, PlayCircle } from "lucide-react";
+import { CheckCircle2, ChevronDown, Lock, PlayCircle } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
@@ -148,6 +148,14 @@ function AcademyCourseDetailInner() {
     }
   }
 
+  const resumeAnchor = resume ? `lesson-${resume.moduleId}-${resume.lessonId}` : null;
+
+  function revealResumeLesson() {
+    if (!resumeAnchor) return;
+    const module = document.getElementById(resumeAnchor)?.closest("details");
+    if (module) module.open = true;
+  }
+
   let lessonIndex = 0;
 
   return (
@@ -165,7 +173,7 @@ function AcademyCourseDetailInner() {
           </span>
           {course.certificateEligible ? (
             <span className="academy-visual-chip rounded-full px-2.5 py-0.5 text-[11px]">
-              Certificate eligibility configured (issuance in a later phase)
+              Certificate available after meeting course requirements
             </span>
           ) : null}
           {enrolment ? (
@@ -270,22 +278,15 @@ function AcademyCourseDetailInner() {
                   <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden />
                   Enrolled
                 </span>
-                {resume ? (
-                  <Button
-                    type="button"
+                {resumeAnchor ? (
+                  <a
+                    href={`#${resumeAnchor}`}
+                    onClick={revealResumeLesson}
                     className="academy-visual-cta academy-visual-cta--success min-h-11 w-full sm:w-auto"
-                    disabled={busy}
-                    onClick={() =>
-                      void onResumeCheckpoint(
-                        resume.moduleId,
-                        resume.lessonId,
-                        Math.max(0, pathwayCounts.total - 1)
-                      )
-                    }
                   >
-                    <PlayCircle className="mr-2 h-4 w-4 shrink-0" aria-hidden />
-                    Resume learning
-                  </Button>
+                    <PlayCircle className="h-4 w-4 shrink-0" aria-hidden />
+                    {enrolment?.lastLessonId ? "Resume learning" : "Start learning"}
+                  </a>
                 ) : null}
               </>
             )}
@@ -342,25 +343,15 @@ function AcademyCourseDetailInner() {
             role="status"
           >
             <p className="min-w-0 break-words text-sm font-medium">{info}</p>
-            {info === ALREADY_ENROLLED_MESSAGE ? (
-              <Button
-                type="button"
+            {info === ALREADY_ENROLLED_MESSAGE && resumeAnchor ? (
+              <a
+                href={`#${resumeAnchor}`}
+                onClick={revealResumeLesson}
                 className="academy-visual-cta academy-visual-cta--success min-h-11 w-full shrink-0 sm:w-auto"
-                disabled={busy || !resume}
-                onClick={() => {
-                  if (!resume) return;
-                  void onResumeCheckpoint(
-                    resume.moduleId,
-                    resume.lessonId,
-                    Math.max(0, pathwayCounts.total - 1)
-                  );
-                  const el = document.getElementById("pathway-heading");
-                  el?.scrollIntoView({ behavior: "smooth", block: "start" });
-                }}
               >
-                <PlayCircle className="mr-2 h-4 w-4 shrink-0" aria-hidden />
+                <PlayCircle className="h-4 w-4 shrink-0" aria-hidden />
                 Continue course
-              </Button>
+              </a>
             ) : null}
           </div>
         ) : null}
@@ -371,11 +362,10 @@ function AcademyCourseDetailInner() {
         aria-labelledby="pathway-heading"
       >
         <h2 id="pathway-heading" className="text-lg font-semibold">
-          Learning pathway
+          Course syllabus
         </h2>
         <p className="academy-visual-muted text-sm">
-          {pathwayCounts.required} required · {pathwayCounts.total} activities. Resources open
-          existing GigaLearn hubs/tools.
+          {course.modules.length} {course.modules.length === 1 ? "module" : "modules"} · {pathwayCounts.total} activities · {pathwayCounts.required} required
         </p>
         {!isEnrolled ? (
           <p className="academy-visual-muted inline-flex items-center gap-2 text-sm">
@@ -385,11 +375,20 @@ function AcademyCourseDetailInner() {
         ) : null}
 
         <ol className="min-w-0 space-y-3">
-          {course.modules.map((mod) => (
-            <li key={mod.id} className="academy-visual-tile min-w-0 rounded-2xl p-4">
-              <h3 className="font-semibold">{mod.title}</h3>
-              <p className="academy-visual-muted mt-1 text-sm">{mod.summary}</p>
-              <ul className="mt-3 min-w-0 space-y-2">
+          {course.modules.map((mod, moduleIndex) => (
+            <li key={mod.id} className="academy-visual-tile min-w-0 rounded-2xl">
+              <details className="group p-4" open={resume?.moduleId === mod.id || (!resume && moduleIndex === 0)}>
+                <summary className="flex min-h-11 cursor-pointer list-none items-start gap-3 [&::-webkit-details-marker]:hidden">
+                  <span className="min-w-0 flex-1">
+                    <span className="academy-visual-muted block text-xs">
+                      Module {moduleIndex + 1} · {mod.lessons.length} {mod.lessons.length === 1 ? "activity" : "activities"}
+                    </span>
+                    <span className="block font-semibold">{mod.title}</span>
+                    <span className="academy-visual-muted mt-1 block text-sm">{mod.summary}</span>
+                  </span>
+                  <ChevronDown className="mt-1 h-5 w-5 shrink-0 group-open:rotate-180" aria-hidden />
+                </summary>
+                <ul className="mt-3 min-w-0 space-y-2">
                 {mod.lessons.map((lesson) => {
                   const idx = lessonIndex;
                   lessonIndex += 1;
@@ -399,7 +398,8 @@ function AcademyCourseDetailInner() {
                   return (
                     <li
                       key={lesson.id}
-                      className="flex min-w-0 flex-col gap-2 rounded-xl border border-[var(--av-border)] bg-white px-3 py-3 sm:flex-row sm:items-center sm:justify-between"
+                      id={`lesson-${mod.id}-${lesson.id}`}
+                      className="flex min-w-0 scroll-mt-24 flex-col gap-2 rounded-xl border border-[var(--av-border)] bg-white px-3 py-3 sm:flex-row sm:items-center sm:justify-between"
                     >
                       <div className="min-w-0 flex-1 overflow-hidden">
                         <p className="break-words text-sm font-medium">
@@ -445,7 +445,8 @@ function AcademyCourseDetailInner() {
                     </li>
                   );
                 })}
-              </ul>
+                </ul>
+              </details>
             </li>
           ))}
         </ol>

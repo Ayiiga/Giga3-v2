@@ -8,7 +8,7 @@ import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNot
 import { ProductSignInPrompt } from "@/components/seo/ProductSignInPrompt";
 import { getSessionToken } from "@/lib/auth";
 import { hasPersistedAuth } from "@/lib/auth/sessionRestore";
-import { getBuiltinAcademyCourse } from "@/lib/gigalearn/academy/courseCatalog";
+import { APPROVED_TECHNOLOGY_COURSE_SLUGS, getBuiltinAcademyCourse } from "@/lib/gigalearn/academy/courseCatalog";
 import {
   ACADEMY_TRANSFORM_TAGLINE,
   LEARNING_STUDIOS,
@@ -27,11 +27,14 @@ import { useMutation, useQuery } from "convex/react";
 import { useEffect } from "react";
 import {
   ArrowRight,
+  Bot,
+  Cpu,
+  Globe2,
+  Smartphone,
   Award,
   Baby,
   BookOpen,
   ClipboardCheck,
-  GraduationCap,
   MessageCircle,
   School,
   Sparkles,
@@ -502,6 +505,48 @@ function LearningStudiosDirectory() {
   );
 }
 
+const TECH_PATHWAY_ICONS = {
+  "ai-machine-learning": Bot,
+  "robotics-intelligent-systems": Cpu,
+  "mobile-app-development": Smartphone,
+  "website-pwa-development": Globe2,
+};
+
+function TechnologyPathways() {
+  return (
+    <section id="technology-pathways" aria-labelledby="technology-pathways-heading" className="scroll-mt-24 space-y-4">
+      <h2 id="technology-pathways-heading" className="text-xl font-bold text-[#1E1B4B]">Technology courses</h2>
+      <ul className="grid gap-3 sm:grid-cols-2">
+        {APPROVED_TECHNOLOGY_COURSE_SLUGS.map((slug) => {
+          const course = getBuiltinAcademyCourse(slug);
+          if (!course || course.status !== "published") return null;
+          const Icon = TECH_PATHWAY_ICONS[slug];
+          return (
+            <li key={slug} className="min-w-0">
+              <Link
+                href={`/gigalearn/academy/course/?slug=${encodeURIComponent(slug)}`}
+                className="group flex h-full flex-col rounded-2xl border border-violet-200 bg-white p-4 text-[#1E1B4B] hover:border-violet-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600"
+              >
+                <span className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-violet-100 text-violet-800">
+                  <Icon className="h-5 w-5" aria-hidden />
+                </span>
+                <h3 className="text-base font-bold leading-snug">{course.title}</h3>
+                <p className="mt-1 flex-1 text-sm leading-relaxed text-slate-600">{course.description}</p>
+                <p className="mt-3 text-xs font-medium text-slate-600">
+                  <span className="capitalize">{course.difficulty}</span> · {course.modules.length} {course.modules.length === 1 ? "module" : "modules"}
+                </p>
+                <span className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-violet-800">
+                  View course <ArrowRight className="h-4 w-4" aria-hidden />
+                </span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
 export function AcademyHome() {
   const sessionToken = getSessionToken();
   const recordEvent = useMutation(api.gigaLearnEngagement.recordLearnerEvent);
@@ -524,33 +569,33 @@ export function AcademyHome() {
         className={cn(ACADEMY_SURFACE_CLASS.hero, "relative overflow-hidden p-5 sm:p-8")}
       >
         <div className="relative max-w-2xl space-y-3">
-          <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-white">
-            <GraduationCap className="h-4 w-4" aria-hidden />
-            Welcome
-          </p>
           <h2
             id="academy-hero-heading"
             className="text-2xl font-bold tracking-tight text-white sm:text-3xl"
           >
-            Hello, learner — practise, build, and learn by doing
+            Build practical technology skills
           </h2>
           <p className="academy-visual-muted text-sm sm:text-base">
-            {ACADEMY_TRANSFORM_TAGLINE} Explore Learning Studios, open the Practice Centre, and keep
-            your existing Academy pathways — without inventing progress or fake tools.
+            Explore four technology courses, follow their modules, and use assessments to check your progress.
           </p>
           <div className="flex flex-col gap-2 pt-1 sm:flex-row sm:flex-wrap">
             <Link
-              href="#practice-centre"
+              href="#technology-pathways"
               className="academy-visual-cta academy-visual-cta--solid"
             >
-              Go to Practice Centre
+              Explore technology courses
             </Link>
-            <Link href="#existing-academy" className="academy-visual-cta academy-visual-cta--ghost">
-              Browse courses
+            <Link href="/gigalearn/academy/my/" className="academy-visual-cta academy-visual-cta--ghost">
+              My courses
+            </Link>
+            <Link href="#practice-centre" className="academy-visual-cta academy-visual-cta--ghost">
+              Practice Centre
             </Link>
           </div>
         </div>
       </section>
+
+      <TechnologyPathways />
 
       <SchoolPathways />
 
@@ -581,7 +626,7 @@ export function AcademyHome() {
               Existing Academy
             </h2>
             <p className="academy-visual-muted mt-1 text-sm">
-              Full course catalogue and pathways that reuse GigaLearn tools — preserved as-is.
+              Browse school, teacher development, and technology courses.
             </p>
           </div>
           <Link

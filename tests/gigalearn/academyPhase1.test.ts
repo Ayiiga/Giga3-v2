@@ -134,7 +134,9 @@ describe("GigaLearn Academy Phase 1", () => {
       "utf8"
     );
     expect(detail).toContain("Enrol in course");
-    expect(detail).toContain("Learning pathway");
+    expect(detail).toContain("Course syllabus");
+    expect(detail).toContain("onClick={revealResumeLesson}");
+    expect(detail).not.toContain("Math.max(0, pathwayCounts.total - 1)");
     expect(detail).toContain("friendlyAcademyEnrolError");
     expect(detail).toContain("alreadyEnrolled");
     // Enrolment goes through Convex mutation, not localStorage as source of truth.

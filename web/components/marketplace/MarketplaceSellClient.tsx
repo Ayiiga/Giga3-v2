@@ -1,5 +1,6 @@
 "use client";
 
+import { MarketplaceSellerTools } from "@/components/marketplace/MarketplaceSellerTools";
 import { ProductPromotionPanel } from "@/components/marketplace/ProductPromotionPanel";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
 import { Button, ButtonLink } from "@/components/ui/Button";
@@ -12,7 +13,7 @@ import {
 } from "@/lib/marketplace/catalog";
 import { analyticsRangePreset } from "@/lib/marketplace/salesAnalytics";
 import { getSessionToken } from "@/lib/auth";
-import { formatCurrentDateTime, formatTimestampDateTime } from "@/lib/datetime";
+import { formatTimestampDateTime } from "@/lib/datetime";
 import {
   captureCoordinates,
   formatCoordinates,
@@ -23,6 +24,12 @@ import type { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
+
+const BUYER_QUICK_REPLIES = [
+  { label: "Available", text: "Thanks for asking! This item is available. What would you like to know about it?" },
+  { label: "Out of stock", text: "Thanks for your interest. This item is currently out of stock." },
+  { label: "Delivery", text: "Which town or city should I use to check delivery options?" },
+];
 
 function RevenueStatsSkeleton() {
   return (
@@ -446,14 +453,13 @@ function MarketplaceSellInner() {
         <div className="overflow-hidden rounded-3xl border border-emerald-900/10 bg-[#042f2e] px-6 py-7 text-emerald-50 sm:px-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="max-w-xl">
-              <p className="text-sm font-medium text-emerald-200">Creator studio</p>
+              <p className="text-sm font-medium text-emerald-200">Marketplace</p>
               <h1 className="mt-2 font-serif text-3xl tracking-tight text-white sm:text-4xl">
-                Sell digital and physical products
+                Business tools
               </h1>
               <p className="mt-2 text-sm text-emerald-100/90">
-                List ebooks and digital guides with verified Paystack downloads, or post clothes, shoes and other goods for in-app enquiries. Physical payments are not available yet.
+                Manage your shop, publish products, and reply to buyers.
               </p>
-              <p className="mt-2 text-xs text-emerald-200/70">{formatCurrentDateTime()}</p>
             </div>
             <ButtonLink
               href="/marketplace"
@@ -465,6 +471,8 @@ function MarketplaceSellInner() {
           </div>
         </div>
 
+        <MarketplaceSellerTools unanswered={physicalInquiries?.filter((inquiry) => !inquiry.response).length} />
+
         {message && (
           <p className="rounded-xl bg-emerald-500/10 px-4 py-3 text-sm text-emerald-800">{message}</p>
         )}
@@ -472,6 +480,7 @@ function MarketplaceSellInner() {
           <p className="rounded-xl bg-red-500/10 px-4 py-3 text-sm text-red-700">{error}</p>
         )}
 
+        <div id="seller-sales" className="scroll-mt-24">
         {analytics?.summary ? (
           <section className="space-y-3" aria-labelledby="sales-analytics-heading">
             <div className="flex flex-wrap items-end justify-between gap-3">
@@ -614,9 +623,10 @@ function MarketplaceSellInner() {
         ) : sessionToken ? (
           <RevenueStatsSkeleton />
         ) : null}
+        </div>
 
-        <section className="rounded-2xl border bg-card p-6">
-          <h2 className="text-lg font-semibold">Creator profile</h2>
+        <section id="seller-profile" className="scroll-mt-24 rounded-2xl border bg-card p-6">
+          <h2 className="text-lg font-semibold">Store profile</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <input
               value={displayName}
@@ -648,7 +658,7 @@ function MarketplaceSellInner() {
           </div>
         </section>
 
-        <section className="rounded-2xl border bg-card p-4 sm:p-6">
+        <section id="seller-verification" className="scroll-mt-24 rounded-2xl border bg-card p-4 sm:p-6">
           <h2 className="text-lg font-semibold">Identity verification</h2>
           <p className="mt-2 text-sm text-muted">
             Selling requires your Ghana national ID, an ID photo, and GPS within Ghana. Location is
@@ -753,11 +763,11 @@ function MarketplaceSellInner() {
           )}
         </section>
 
-        <section className="rounded-2xl border bg-card p-6">
+        <section id="seller-new-product" className="scroll-mt-24 rounded-2xl border bg-card p-6">
           <h2 className="font-serif text-xl font-semibold">New product</h2>
           <p className="mt-2 text-sm text-muted">
             List a downloadable digital product, or show clothing, shoes and other physical goods
-            to interested buyers. Physical items use in-app enquiries only — no payment or shipping yet.
+            to interested buyers. Buyers can enquire about pickup or delivery in the app. Paystack checkout is available for digital products.
           </p>
           {verificationStatus === "none" || verificationStatus === "rejected" ? (
             <p className="mt-2 text-sm text-amber-700">
@@ -1011,12 +1021,13 @@ function MarketplaceSellInner() {
           </div>
         </section>
 
-        {physicalInquiries && physicalInquiries.length > 0 ? (
-          <section className="rounded-2xl border border-violet-200 bg-card p-4 sm:p-5" aria-label="Physical item enquiries">
+        <section id="seller-inbox" className="scroll-mt-24 rounded-2xl border border-border bg-card p-4 sm:p-5" aria-label="Physical item enquiries">
             <h2 className="text-lg font-semibold">Buyer enquiries</h2>
             <p className="mt-1 text-xs text-muted">These are enquiries, not paid orders. Do not request payments or private addresses through messages.</p>
+            {physicalInquiries?.length === 0 ? <p className="mt-3 text-sm text-muted">No buyer enquiries yet.</p> : null}
+            {physicalInquiries === undefined && sessionToken ? <p className="mt-3 text-sm text-muted">Loading enquiries…</p> : null}
             <div className="mt-3 space-y-3">
-              {physicalInquiries.map((inquiry) => (
+              {physicalInquiries?.map((inquiry) => (
                 <article key={inquiry._id} className="rounded-xl border border-border p-3">
                   <p className="text-sm font-semibold">{inquiry.listingTitle}</p>
                   <p className="mt-1 whitespace-pre-wrap text-sm text-muted">{inquiry.message}</p>
@@ -1025,6 +1036,23 @@ function MarketplaceSellInner() {
                     {inquiry.destinationCity ? ` · City: ${inquiry.destinationCity}` : ""}
                   </p>
                   {inquiry.response ? <p className="mt-2 whitespace-pre-wrap text-sm text-violet-800 dark:text-violet-200">Your reply: {inquiry.response}</p> : null}
+                  <div className="mt-3 flex flex-wrap gap-2" aria-label="Quick replies" role="group">
+                    {BUYER_QUICK_REPLIES.map(({ label, text }) => (
+                      <Button
+                        key={label}
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        disabled={(inquiryReplies[inquiry._id]?.trim().length ?? 0) + text.length + 1 > 800}
+                        onClick={() => setInquiryReplies((drafts) => ({
+                          ...drafts,
+                          [inquiry._id]: [drafts[inquiry._id]?.trim(), text].filter(Boolean).join("\n"),
+                        }))}
+                      >
+                        {label}
+                      </Button>
+                    ))}
+                  </div>
                   <textarea
                     aria-label={`Reply to enquiry for ${inquiry.listingTitle}`}
                     rows={2}
@@ -1065,14 +1093,16 @@ function MarketplaceSellInner() {
                 </article>
               ))}
             </div>
-          </section>
-        ) : null}
+        </section>
 
-        {listings && listings.length > 0 && (
-          <section>
-            <h2 className="mb-4 text-lg font-semibold">Your listings</h2>
+        <section id="seller-catalogue" className="scroll-mt-24">
+            <h2 className="mb-4 text-lg font-semibold">Your catalogue</h2>
+            {listings?.length === 0 ? (
+              <p className="text-sm text-muted">No products yet. <a className="font-semibold underline" href="#seller-new-product">Add your first product</a>.</p>
+            ) : null}
+            {listings === undefined && sessionToken ? <p className="text-sm text-muted">Loading products…</p> : null}
             <div className="space-y-4">
-              {listings.map((listing: NonNullable<typeof listings>[number]) => (
+              {listings?.map((listing: NonNullable<typeof listings>[number]) => (
                 <article key={listing._id} className="rounded-2xl border bg-card p-5">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
@@ -1280,8 +1310,7 @@ function MarketplaceSellInner() {
                 </article>
               ))}
             </div>
-          </section>
-        )}
+        </section>
       </div>
     </Container>
   );
