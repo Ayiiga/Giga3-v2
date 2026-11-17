@@ -103,7 +103,8 @@ describe("ProductSeoHeader compact Learn more", () => {
     expect(page).toMatch(/ProductSeoHeader[\s\S]*compact/);
     expect(page).toContain("MARKETPLACE_PAGE_SHELL");
     expect(page).toContain("Digital Products, Clothing, Shoes and More");
-    expect(page).toContain("Physical goods are enquiry-only for now");
+    expect(page).toContain("seller-provided shipping quotes");
+    expect(page).toContain("does not yet process physical-item checkout");
     expect(page).toMatch(/publicMetadata\(/);
     expect(page).toContain("JsonLd");
   });
