@@ -22,7 +22,7 @@ describe("Marketplace public copy — safe digital/physical separation", () => {
     const path = resolve(__dirname, "../../web/app/(marketing)/marketplace/page.tsx");
     const source = readFileSync(path, "utf8");
     expect(source).toContain("seller-provided shipping quotes");
-    expect(source).toContain("Physical goods");
+    expect(source).toContain("For physical goods, buyers can request seller-provided shipping quotes");
     expect(source).not.toContain("Buy securely in Ghana cedis or sell your own digital products");
   });
 });
