@@ -44,7 +44,7 @@ export default function MarketplacePage() {
         collapseLabel="Show less"
         title="Discover. Buy. Sell."
         description="Browse ebooks, learning materials, clothes, shoes and other products. Buy approved digital downloads with Paystack, or enquire about physical items directly inside Giga3 AI."
-        detail="Digital purchases use Paystack, with downloads unlocked after verified payment. Physical goods are enquiry-only for now: no checkout, shipping or delivery guarantees are offered. Never send payment outside the app."
+        detail="Digital downloads use Paystack. For physical goods, buyers can request seller-provided shipping quotes or arrange collection through an in-app enquiry. Giga3 AI does not yet process physical-item checkout, book couriers or guarantee delivery; never pay outside the app."
         showProductNav={false}
       />
       <MarketplaceBrowseClient />
