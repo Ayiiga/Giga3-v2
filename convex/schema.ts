@@ -1197,6 +1197,7 @@ export default defineSchema({
 
   socialPosts: defineTable({
     authorId: v.string(),
+    publishRequestId: v.optional(v.string()),
     /** Optional face for multi-account creators (must belong to authorId). */
     profileId: v.optional(v.id("socialProfiles")),
     body: v.string(),
@@ -1242,6 +1243,7 @@ export default defineSchema({
   })
     .index("by_created", ["createdAt"])
     .index("by_author_created", ["authorId", "createdAt"])
+    .index("by_author_publish_request", ["authorId", "publishRequestId"])
     .index("by_community_created", ["communitySlug", "createdAt"])
     .index("by_copyright_status_created", ["copyrightScreeningStatus", "createdAt"]),
 

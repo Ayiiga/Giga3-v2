@@ -1394,6 +1394,7 @@ export const setMainSocialAccount = mutation({
 export const createPost = mutation({
   args: {
     sessionToken: v.string(),
+    publishRequestId: v.optional(v.string()),
     body: v.string(),
     postType: socialPostTypeValidator,
     mediaUrl: v.optional(v.string()),
@@ -1413,6 +1414,17 @@ export const createPost = mutation({
   handler: async (ctx, args) => {
     const userId = await requireSession(args.sessionToken, ctx);
     await assertChildSafetyFeature(ctx, userId, "social_ugc");
+    if (args.publishRequestId !== undefined) {
+      const requestId = args.publishRequestId;
+      if (!/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/.test(requestId)) {
+        throw new Error("Invalid publish request.");
+      }
+      const existing = await ctx.db.query("socialPosts")
+        .withIndex("by_author_publish_request", (q) =>
+          q.eq("authorId", userId).eq("publishRequestId", requestId)
+        ).unique();
+      if (existing) return { postId: existing._id, duplicate: true as const };
+    }
     await consumeSocialWriteRateLimit(ctx, userId, "create_post");
     const body = sanitizeSocialText(args.body, socialBodyMaxLength(args.postType));
     const hashtags = extractHashtags(body);
@@ -1512,12 +1524,13 @@ export const createPost = mutation({
       if (post.body !== body) return false;
       return (post.mediaMetaJson ?? undefined) === mediaMetaJson;
     });
-    if (duplicatePost) {
+    if (duplicatePost && !args.publishRequestId) {
       return { postId: duplicatePost._id, duplicate: true as const };
     }
 
     const postId = await ctx.db.insert("socialPosts", {
       authorId: userId,
+      publishRequestId: args.publishRequestId,
       profileId: profile._id,
       body,
       mediaUrl: mediaUrls[0],

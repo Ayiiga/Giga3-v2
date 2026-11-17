@@ -4,13 +4,10 @@ import { describe, expect, it } from "vitest";
 
 const read = (path: string) => readFileSync(resolve(__dirname, "../../", path), "utf8");
 
-describe("GigaSocial direct video upload cancellation", () => {
-  it("stops retries on abort and handles already-aborted XHR requests", () => {
+describe("GigaSocial video upload cancellation", () => {
+  it("handles already-aborted XHR requests and removes its abort listener", () => {
     const media = read("web/lib/gigasocial/mediaUpload.ts");
-    const retries = media.slice(media.indexOf("async function withUploadRetry<T>("), media.indexOf("async function uploadWithProgress("));
     const xhr = media.slice(media.indexOf("const xhr = new XMLHttpRequest()"), media.indexOf("async function tryDirectSupabaseUpload("));
-    expect(retries).toContain("throwIfUploadAborted(signal)");
-    expect(retries).toContain("waitForUploadRetry(baseDelayMs * attempt, signal)");
     expect(media).toContain("signal?.addEventListener(\"abort\", onSignalAbort, { once: true })");
     expect(xhr).toContain('if (signal?.aborted)');
     expect(xhr).toContain('reject(new DOMException("Upload cancelled.", "AbortError"))');

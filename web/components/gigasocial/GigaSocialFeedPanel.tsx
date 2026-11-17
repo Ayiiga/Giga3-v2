@@ -732,11 +732,13 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   const handleCreate = useCallback(
     async (args: {
       body: string;
+      publishRequestId?: string;
       postType: SocialPostTypeId;
       mediaItems?: SocialPostMediaItemInput[];
       communitySlug?: string;
       visibility?: "public" | "followers";
       profileId?: string;
+      templatePolicy?: "off" | "fans" | "public" | "owner";
     }) => {
       if (!sessionToken) throw new Error("Sign in to post.");
       if (!effectiveOnline && features.enableSocialOutbox) {
@@ -756,6 +758,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
       }
       await createPost({
         sessionToken,
+        ...(args.publishRequestId ? { publishRequestId: args.publishRequestId } : {}),
         body: args.body,
         postType: args.postType,
         mediaItems: args.mediaItems,

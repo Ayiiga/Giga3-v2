@@ -188,98 +188,38 @@ export async function generateVideoThumbnail(file: File): Promise<string | undef
   }
 }
 
-function dataUrlToBlob(dataUrl: string): Blob | null {
-  const match = dataUrl.match(/^data:(image\/[a-z0-9+.-]+);base64,(.+)$/i);
-  if (!match) return null;
-  try {
-    const binary = atob(match[2].replace(/\s/g, ""));
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i += 1) {
-      bytes[i] = binary.charCodeAt(i);
-    }
-    return new Blob([bytes], { type: match[1].toLowerCase() });
-  } catch {
-    return null;
-  }
-}
-
-async function uploadVideoThumbnail(
-  deps: SocialMediaUploadDeps,
-  dataUrl: string,
-  sourceFileName: string
-): Promise<string | undefined> {
-  const blob = dataUrlToBlob(dataUrl);
-  if (!blob) return undefined;
-
-  const baseName = sourceFileName.replace(/\.[^.]+$/, "") || "video";
-  const file = new File([blob], `${baseName}-thumb.jpg`, { type: "image/jpeg" });
-
-  const client = isSupabaseConfigured() ? requireSupabaseClient() : null;
-  const supabaseUid = client ? await getSupabaseUserId(client) : null;
-
-  if (client && supabaseUid) {
-    const objectPath = buildUserStoragePath(supabaseUid, file.name);
-    const bucket = SOCIAL_IMAGE_BUCKETS[0];
-    const directUrl = await tryDirectSupabaseUpload({
-      bucket,
-      objectPath,
-      body: file,
-      contentType: "image/jpeg",
-    });
-    if (directUrl) return directUrl;
-  }
-
-  const uploaded = await uploadViaPrepared(deps, {
-    file,
-    kind: "image",
-  });
-  return uploaded.url;
-}
-
 function throwIfUploadAborted(signal?: AbortSignal): void {
   if (signal?.aborted) throw new DOMException("Upload cancelled.", "AbortError");
 }
 
-function waitForUploadRetry(delayMs: number, signal?: AbortSignal): Promise<void> {
-  throwIfUploadAborted(signal);
+const UPLOAD_IDLE_TIMEOUT_MS = 60_000;
+
+export async function waitForSocialRequest<T>(
+  request: Promise<T>,
+  timeoutMs: number,
+  timeoutMessage: string,
+  signal?: AbortSignal
+): Promise<T> {
   return new Promise((resolve, reject) => {
-    const cleanup = () => signal?.removeEventListener("abort", onAbort);
-    const onAbort = () => {
-      clearTimeout(timer);
+    const abort = () => {
       cleanup();
       reject(new DOMException("Upload cancelled.", "AbortError"));
     };
     const timer = setTimeout(() => {
       cleanup();
-      resolve();
-    }, delayMs);
-    signal?.addEventListener("abort", onAbort, { once: true });
-    if (signal?.aborted) onAbort();
+      reject(new Error(timeoutMessage));
+    }, timeoutMs);
+    const cleanup = () => {
+      clearTimeout(timer);
+      signal?.removeEventListener("abort", abort);
+    };
+    request.then(
+      (value) => { cleanup(); resolve(value); },
+      (error: unknown) => { cleanup(); reject(error); }
+    );
+    signal?.addEventListener("abort", abort, { once: true });
+    if (signal?.aborted) abort();
   });
-}
-
-async function withUploadRetry<T>(
-  fn: () => Promise<T>,
-  maxAttempts = 3,
-  baseDelayMs = 600,
-  signal?: AbortSignal
-): Promise<T> {
-  let lastError: unknown;
-  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-    throwIfUploadAborted(signal);
-    try {
-      return await fn();
-    } catch (err) {
-      throwIfUploadAborted(signal);
-      lastError = err;
-      if (attempt < maxAttempts) {
-        await waitForUploadRetry(baseDelayMs * attempt, signal);
-      }
-    }
-  }
-  throw lastError instanceof Error
-    ? lastError
-    : new Error("Upload failed. Check your connection and try again.");
 }
 
 async function uploadWithProgress(
@@ -291,28 +231,6 @@ async function uploadWithProgress(
   headers?: Record<string, string>,
   method: "POST" | "PUT" = "POST"
 ): Promise<Response> {
-  if (!onProgress) {
-    return withUploadRetry(() =>
-      fetch(uploadUrl, {
-        method,
-        headers: {
-          "Content-Type": contentType,
-          ...(headers ?? {}),
-        },
-        body,
-        signal,
-      }).then((response) => {
-        if (!response.ok) {
-          throw new Error(`Upload failed (${response.status}). Please retry.`);
-        }
-        return response;
-      }),
-      3,
-      600,
-      signal
-    );
-  }
-
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open(method, uploadUrl);
@@ -320,20 +238,33 @@ async function uploadWithProgress(
     for (const [key, value] of Object.entries(headers ?? {})) {
       xhr.setRequestHeader(key, value);
     }
+    let idleTimer: ReturnType<typeof setTimeout>;
+    const onSignalAbort = () => xhr.abort();
+    const cleanup = () => {
+      clearTimeout(idleTimer);
+      signal?.removeEventListener("abort", onSignalAbort);
+    };
+    const refreshIdleTimer = () => {
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        cleanup();
+        reject(new Error("Upload stalled. Check your connection and try again."));
+        xhr.abort();
+      }, UPLOAD_IDLE_TIMEOUT_MS);
+    };
     xhr.upload.onprogress = (event) => {
-      if (!event.lengthComputable) return;
-      onProgress({
+      refreshIdleTimer();
+      if (!event.lengthComputable || !event.total) return;
+      onProgress?.({
         loaded: event.loaded,
         total: event.total,
         percent: Math.round((event.loaded / event.total) * 100),
       });
     };
-    const onSignalAbort = () => xhr.abort();
-    const cleanup = () => signal?.removeEventListener("abort", onSignalAbort);
     xhr.onload = () => {
       cleanup();
       resolve(
-        new Response(xhr.responseText, {
+        new Response(xhr.responseText || null, {
           status: xhr.status,
           statusText: xhr.statusText,
         })
@@ -357,6 +288,7 @@ async function uploadWithProgress(
       return;
     }
     try {
+      refreshIdleTimer();
       xhr.send(body as XMLHttpRequestBodyInit);
     } catch (error) {
       cleanup();
@@ -420,13 +352,14 @@ async function uploadViaPrepared(
       : args.kind === "video"
         ? resolveVideoContentType(args.file) ?? "video/mp4"
         : resolveImageContentType(args.file) ?? "application/octet-stream";
-  const prepared = await deps.prepareUpload({
+  throwIfUploadAborted(args.signal);
+  const prepared = await waitForSocialRequest(deps.prepareUpload({
     sessionToken: deps.sessionToken,
     fileName: args.file.name,
     contentType,
     sizeBytes: args.file.size,
     kind: args.kind,
-  });
+  }), 30_000, "Could not prepare the upload. Please try again.", args.signal);
 
   if (prepared.provider === "supabase") {
     const res = await uploadWithProgress(
@@ -436,7 +369,6 @@ async function uploadViaPrepared(
       args.onProgress,
       args.signal,
       {
-        Authorization: `Bearer ${prepared.uploadToken}`,
         "x-upsert": "false",
       },
       "PUT"
@@ -466,10 +398,10 @@ async function uploadViaPrepared(
     throw new Error("Upload failed. Please try again.");
   }
   const { storageId } = (await res.json()) as { storageId: Id<"_storage"> };
-  const { url } = await deps.resolveStorageUrl({
+  const { url } = await waitForSocialRequest(deps.resolveStorageUrl({
     sessionToken: deps.sessionToken,
     storageId,
-  });
+  }), 30_000, "Could not confirm the uploaded file. Please try again.", args.signal);
   return {
     url,
     type: args.kind,
@@ -576,64 +508,13 @@ export async function uploadSocialVideo(
     throw new Error("Could not verify video duration. Try another file.");
   }
 
-  const client = isSupabaseConfigured() ? requireSupabaseClient() : null;
-  const supabaseUid = client ? await getSupabaseUserId(client) : null;
-
-  // Start the main video upload immediately; generate/upload thumbnail in parallel.
-  const thumbnailPromise = (async (): Promise<string | undefined> => {
-    const thumbnailDataUrl = await generateVideoThumbnail(file);
-    if (!thumbnailDataUrl) return undefined;
-    try {
-      return (
-        (await uploadVideoThumbnail(deps, thumbnailDataUrl, file.name)) ?? thumbnailDataUrl
-      );
-    } catch {
-      return thumbnailDataUrl;
-    }
-  })();
-
-  let videoResult: SocialPostMediaItemInput | null = null;
-
-  const videoContentType = resolveVideoContentType(file) ?? "video/mp4";
-
-  if (client && supabaseUid) {
-    const objectPath = buildUserStoragePath(supabaseUid, file.name);
-    const bucket = SOCIAL_VIDEO_BUCKETS[0];
-    const directUrl = await tryDirectSupabaseUpload({
-      bucket,
-      objectPath,
-      body: file,
-      contentType: videoContentType,
-      signal: options?.signal,
-    });
-    if (directUrl) {
-      options?.onProgress?.({ loaded: 1, total: 1, percent: 100 });
-      videoResult = {
-        url: directUrl,
-        type: "video",
-        durationSec,
-        storagePath: objectPath,
-        storageBucket: bucket,
-      };
-    }
-  }
-
-  if (options?.signal?.aborted) throw new DOMException("Upload cancelled.", "AbortError");
-  if (!videoResult) {
-    videoResult = await uploadViaPrepared(deps, {
-      file,
-      kind: "video",
-      durationSec,
-      onProgress: options?.onProgress,
-      signal: options?.signal,
-    });
-  }
-
-  const thumbnailUrl = await thumbnailPromise;
-  return {
-    ...videoResult,
-    thumbnailUrl: thumbnailUrl ?? videoResult.thumbnailUrl,
-  };
+  return uploadViaPrepared(deps, {
+    file,
+    kind: "video",
+    durationSec,
+    onProgress: options?.onProgress,
+    signal: options?.signal,
+  });
 }
 
 export async function uploadSocialAudio(
@@ -763,7 +644,6 @@ export async function uploadSocialAvatar(
       options?.onProgress,
       options?.signal,
       {
-        Authorization: `Bearer ${prepared.uploadToken}`,
         "x-upsert": "true",
       },
       "PUT"

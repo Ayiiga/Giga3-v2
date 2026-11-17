@@ -24,14 +24,13 @@ describe("GigaSocial multi-account", () => {
 });
 
 describe("GigaSocial faster uploads", () => {
-  it("uploads images in parallel and overlaps video thumbnails", () => {
+  it("uploads images in parallel", () => {
     const src = readFileSync(
       resolve(__dirname, "../../web/lib/gigasocial/mediaUpload.ts"),
       "utf8"
     );
     expect(src).toContain("concurrency");
     expect(src).toContain("fastCompress");
-    expect(src).toContain("thumbnailPromise");
     expect(src).toContain("Promise.all");
   });
 });

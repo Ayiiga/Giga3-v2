@@ -695,6 +695,7 @@ interface PendingMediaPreviewProps {
   onRemoveVideo: () => void;
   onRemoveAudio?: () => void;
   compact?: boolean;
+  locked?: boolean;
 }
 
 export const GigaSocialPendingMediaPreview = memo(function GigaSocialPendingMediaPreview({
@@ -706,12 +707,13 @@ export const GigaSocialPendingMediaPreview = memo(function GigaSocialPendingMedi
   onRemoveVideo,
   onRemoveAudio,
   compact = false,
+  locked = false,
 }: PendingMediaPreviewProps) {
   const imageFilterStyle = { filter: getCameraFilterCss(imageFilterId) };
   const [videoPreviewOpen, setVideoPreviewOpen] = useState(false);
   useEffect(() => {
     setVideoPreviewOpen(false);
-  }, [video?.previewUrl]);
+  }, [video?.previewUrl, locked]);
   if (!images.length && !video && !audio) return null;
 
   const imageMax = compact ? "aspect-square max-h-28" : "aspect-[4/5] max-h-44";
@@ -723,6 +725,7 @@ export const GigaSocialPendingMediaPreview = memo(function GigaSocialPendingMedi
         <div className="relative overflow-hidden rounded-xl border border-border bg-black">
           <button
             type="button"
+            disabled={locked}
             onClick={() => setVideoPreviewOpen(true)}
             className="relative flex min-h-32 w-full items-center justify-center bg-black text-white"
             aria-label={`Play preview of ${video.name}`}
@@ -752,6 +755,7 @@ export const GigaSocialPendingMediaPreview = memo(function GigaSocialPendingMedi
           </div>
           <button
             type="button"
+            disabled={locked}
             onClick={onRemoveVideo}
             className="absolute right-2 top-2 rounded-full bg-black/70 px-2 py-1 text-xs text-white"
             aria-label="Remove video"
@@ -771,6 +775,7 @@ export const GigaSocialPendingMediaPreview = memo(function GigaSocialPendingMedi
           {onRemoveAudio ? (
             <button
               type="button"
+              disabled={locked}
               onClick={onRemoveAudio}
               className="shrink-0 rounded-full bg-black/60 px-2 py-1 text-xs text-white"
               aria-label="Remove music"
@@ -794,6 +799,7 @@ export const GigaSocialPendingMediaPreview = memo(function GigaSocialPendingMedi
               />
               <button
                 type="button"
+                disabled={locked}
                 onClick={() => onRemoveImage(image.id)}
                 className="absolute right-2 top-2 rounded-full bg-black/60 px-2 py-1 text-xs text-white"
                 aria-label={`Remove ${image.name}`}
@@ -805,7 +811,7 @@ export const GigaSocialPendingMediaPreview = memo(function GigaSocialPendingMedi
         </div>
       ) : null}
     </div>
-    {video && videoPreviewOpen && typeof document !== "undefined"
+    {video && videoPreviewOpen && !locked && typeof document !== "undefined"
       ? createPortal(
           <div
             className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-3"
