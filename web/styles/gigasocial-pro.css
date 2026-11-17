@@ -497,7 +497,8 @@
 /* Android WebView: paused feed videos can retain hardware video surfaces above a fixed composer. */
 body.gigasocial-composer-video-isolation .gigasocial-feed-media video,
 body.gigasocial-composer-video-isolation .gigasocial-post-card video {
-  visibility: hidden !important;
+  /* display:none releases the native decoder surface on affected Android WebViews. */
+  display: none !important;
 }
 
 
