@@ -84,7 +84,7 @@ import type { GigaTemplatePolicy } from "@/lib/gigasocial/templateMeta";
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { api } from "convex/_generated/api";
 import { useAction, useMutation } from "convex/react";
-import { Camera, Loader2, Send, Video, X } from "lucide-react";
+import { Camera, FileFolder, Loader2, Send, Video, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useGigaSocialFeatures } from "@/lib/gigasocial/featureFlags";
@@ -1622,6 +1622,30 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
                 return;
               }
               void addVideoFile(selected[0]);
+            }}
+          />
+        </label>
+        <label
+          className="relative inline-flex min-h-10 cursor-pointer items-center gap-1.5 overflow-hidden rounded-xl border border-border bg-white px-3 py-2 text-sm font-medium text-foreground hover:bg-accent/5 focus-within:ring-2 focus-within:ring-accent"
+          aria-label="Browse videos saved on this phone using Android Files"
+          title="Use Android Files if Google Photos gets stuck preparing a video"
+        >
+          <FileFolder className="h-4 w-4" aria-hidden />
+          Browse phone files
+          <input
+            type="file"
+            accept="*/*"
+            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+            disabled={disabled || busy}
+            onChange={(event) => {
+              const selected = readInputFilesAndReset(event.currentTarget);
+              const file = selected[0];
+              if (!file) return;
+              if (!isLikelySocialVideoFile(file) || !resolveVideoContentType(file)) {
+                setError("Please select a video file (MP4, MOV, or WebM) from your phone.");
+                return;
+              }
+              void addVideoFile(file);
             }}
           />
         </label>
