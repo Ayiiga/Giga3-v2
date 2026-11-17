@@ -399,3 +399,7 @@ This means production Convex never received the latest functions (deploy CI is f
 5. Re-run the workflow on `main`
 
 After a green deploy, refresh https://www.giga3ai.com/chat — `users:getUser` and `platformActions:sendMessage` will be available.
+
+## Deployment trigger — 2026-11-17
+
+This documentation-only change requests the existing `Deploy to Cloudflare Pages` workflow on `main` for merged GigaSocial Android video-stability PR #766 (`74d52e5`). No application code is changed. Confirm the Cloudflare workflow and production website before declaring deployment successful.
