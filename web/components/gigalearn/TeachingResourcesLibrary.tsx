@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "convex/_generated/api";
 import { scienceDiagramFor } from "@/lib/gigalearn/scienceDiagrams";
@@ -23,45 +23,16 @@ type Resource = {
   activity: string; access: "free" | "subscriber"; previewText?: string | null;
   videoUrl?: string | null; imageUrl?: string | null;
 };
-type CommonsImage = { thumb: string; original: string; page: string; license: string; artist: string };
-
-function useCommonsImage(title: string, category: string, enabled: boolean) {
-  const [image, setImage] = useState<CommonsImage | null>(null);
-  useEffect(() => {
-    if (!enabled || !title) return;
-    let active = true;
-    const query = (title + " " + category).replace(/[<>]/g, " ").slice(0, 140);
-    const endpoint = "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrlimit=1&gsrsearch=" +
-      encodeURIComponent("filetype:bitmap " + query) +
-      "&prop=imageinfo&iiprop=url%7Cextmetadata&iiurlwidth=900&format=json&origin=*";
-    fetch(endpoint).then(r => { if (!r.ok) throw new Error("Commons image lookup failed"); return r.json(); })
-      .then(data => {
-        const page = Object.values(data?.query?.pages ?? {})[0] as any;
-        const info = page?.imageinfo?.[0];
-        if (!active || !info?.thumburl || !info?.descriptionurl) return;
-        const meta = info.extmetadata ?? {};
-        const clean = (value: any) => String(value?.value ?? "").replace(/<[^>]*>/g, "").trim();
-        setImage({
-          thumb: info.thumburl, original: info.url ?? info.thumburl, page: info.descriptionurl,
-          license: clean(meta.LicenseShortName) || "See source page for licence",
-          artist: clean(meta.Artist) || clean(meta.Credit) || "See source page",
-        });
-      }).catch(() => { if (active) setImage(null); });
-    return () => { active = false; };
-  }, [title, category, enabled]);
-  return image;
-}
-
-function ResourceVisual({ slug, title, category, imageUrl, large = false }: {
-  slug: string; title: string; category: string; imageUrl?: string | null; large?: boolean;
+function ResourceVisual({ slug, title, imageUrl, large = false }: {
+  slug: string; title: string; imageUrl?: string | null; large?: boolean;
 }) {
   const [zoomed, setZoomed] = useState(false);
+  const [failedImages, setFailedImages] = useState<string[]>([]);
   const diagram = scienceDiagramFor(slug);
-  const requiresCuratedImage = ["Laboratory Equipment", "Laboratory Set-ups", "Laboratory Safety", "Laboratory Symbols", "Human Biology"].includes(category);
-  const commons = useCommonsImage(title, category, !diagram && !imageUrl && !requiresCuratedImage);
-  const resolvedImage = diagram?.src || imageUrl || commons?.thumb;
+  const resolvedImage = [imageUrl, diagram?.src].find(src => src && !failedImages.includes(src));
+
   const visual = resolvedImage
-    ? <img src={resolvedImage} alt={diagram?.alt ?? ("Learning aid: " + title)} className="block h-full w-full bg-white object-contain" loading="lazy" />
+    ? <img src={resolvedImage} alt={diagram && resolvedImage === diagram.src ? diagram.alt : "Learning aid: " + title} onError={() => { setZoomed(false); setFailedImages(previous => [...previous, resolvedImage]); }} className="block h-full w-full bg-white object-contain" loading="lazy" />
     : <div className="flex h-full min-h-48 flex-col items-center justify-center gap-3 rounded-2xl bg-violet-50 p-5 text-center" role="status">
         <span className="text-sm font-semibold text-violet-950">Illustration not yet available</span>
         <span className="text-xs leading-5 text-violet-800">The correct diagram for {title} has not been verified. Read the material while the illustration is being prepared.</span>
@@ -70,16 +41,12 @@ function ResourceVisual({ slug, title, category, imageUrl, large = false }: {
     <>
       <div className={"mx-auto w-full " + (large ? "max-w-[420px]" : "max-w-[260px]")}>
         {resolvedImage ? (
-          <button type="button" onClick={() => setZoomed(true)} aria-label={"Zoom illustration for " + title} className="block w-full overflow-hidden rounded-2xl border border-violet-200 bg-white shadow-sm focus:outline-none focus:ring-4 focus:ring-violet-300">
+          <button type="button" data-print-illustration onClick={() => setZoomed(true)} aria-label={"Zoom illustration for " + title} className="block w-full overflow-hidden rounded-2xl border border-violet-200 bg-white shadow-sm focus:outline-none focus:ring-4 focus:ring-violet-300">
             <div className="aspect-[9/16] w-full">{visual}</div>
           </button>
         ) : <div className="rounded-2xl border border-violet-200">{visual}</div>}
         {resolvedImage ? <button type="button" onClick={() => setZoomed(true)} className="mt-2 w-full rounded-lg border border-violet-300 bg-white px-3 py-2 text-sm font-semibold text-violet-900">Zoom illustration</button> : null}
       </div>
-      {commons && !diagram && !imageUrl && !requiresCuratedImage && <div className="mx-auto mt-1 max-w-[420px] text-[10px] leading-4 text-slate-600">
-        Photo: {commons.artist} · {commons.license} · <a href={commons.page} target="_blank" rel="noreferrer" className="font-semibold text-violet-800 underline">Source & licence</a>
-        {" · "}<a href={commons.original} target="_blank" rel="noreferrer" download className="font-semibold text-violet-800 underline">Download original</a>
-      </div>}
       {zoomed && resolvedImage && <div role="dialog" aria-modal="true" aria-label={"Zoomed learning diagram: " + title} className="fixed inset-0 z-[100] flex items-center justify-center overflow-auto bg-slate-950/95 p-3" onClick={() => setZoomed(false)}>
         <button type="button" onClick={() => setZoomed(false)} className="fixed right-4 top-4 z-[101] rounded-full bg-white px-4 py-2 text-sm font-bold text-slate-950 shadow-lg">Close ✕</button>
         <div className="my-12 w-full max-w-[520px]" onClick={e => e.stopPropagation()} style={{touchAction:"pinch-zoom pan-y"}}>
@@ -104,7 +71,6 @@ export function TeachingResourcesLibrary() {
   const [level, setLevel] = useState("all");
   const [className, setClassName] = useState("all");
   const [category, setCategory] = useState("all");
-  const [activeCollection, setActiveCollection] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
@@ -115,6 +81,16 @@ export function TeachingResourcesLibrary() {
   const [adminSummary, setAdminSummary] = useState("");
   const [adminImage, setAdminImage] = useState<File | null>(null);
   const [adminImagePreview, setAdminImagePreview] = useState("");
+  const detailHeading = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    if (!adminImage) {
+      setAdminImagePreview("");
+      return;
+    }
+    const url = URL.createObjectURL(adminImage);
+    setAdminImagePreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [adminImage]);
   const [adminMessage, setAdminMessage] = useState("");
   const [uploadResourceId, setUploadResourceId] = useState("");
   useEffect(() => {
@@ -142,6 +118,10 @@ export function TeachingResourcesLibrary() {
   }) as Resource[] | undefined;
   const detail = useQuery(api.teachingResources.getPublicDetail,
     selected && sessionReady ? { slug: selected, sessionToken: sessionToken ?? undefined } : "skip") as Detail | null | undefined;
+  const detailResolved = selected !== null && sessionReady && detail !== undefined;
+  useEffect(() => {
+    if (detailResolved) detailHeading.current?.focus();
+  }, [selected, detailResolved]);
   const issueDownload = useMutation(api.teachingResources.issueDownloadToken);
 
   const suggestions = useMemo(() => {
@@ -182,9 +162,9 @@ export function TeachingResourcesLibrary() {
       <section aria-label="Quick science collections" className="rounded-2xl border border-violet-200 bg-violet-50 p-3">
         <h2 className="text-sm font-extrabold text-violet-950">Quick access · Science collections</h2>
         <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
-          <button type="button" aria-pressed={activeCollection === "Laboratory Equipment"} onClick={()=>{setActiveCollection("Laboratory Equipment");setSearch("");setLevel("all");setClassName("all");setCategory("Laboratory Equipment");setSubject("all");setSelected(null);setNotice("");window.setTimeout(()=>document.getElementById("resource-results")?.scrollIntoView({behavior:"smooth",block:"start"}),80);}} className={"rounded-xl px-3 py-3 text-left text-sm font-bold shadow-sm ring-2 ring-offset-1 " + (activeCollection === "Laboratory Equipment" ? "bg-violet-100 text-violet-950 ring-violet-500" : "bg-white text-violet-900 ring-transparent")}>🧪 Laboratory equipment <span className="block text-xs font-normal text-slate-600">JHS & SHS apparatus · Open collection</span></button>
-          <button type="button" aria-pressed={activeCollection === "Laboratory Set-ups"} onClick={()=>{setActiveCollection("Laboratory Set-ups");setSearch("");setLevel("all");setClassName("all");setCategory("Laboratory Set-ups");setSubject("all");setSelected(null);setNotice("");window.setTimeout(()=>document.getElementById("resource-results")?.scrollIntoView({behavior:"smooth",block:"start"}),80);}} className={"rounded-xl px-3 py-3 text-left text-sm font-bold shadow-sm ring-2 ring-offset-1 " + (activeCollection === "Laboratory Set-ups" ? "bg-violet-100 text-violet-950 ring-violet-500" : "bg-white text-violet-900 ring-transparent")}>⚗️ JHS laboratory set-ups <span className="block text-xs font-normal text-slate-600">Practical arrangements · Open collection</span></button>
-          <button type="button" aria-pressed={activeCollection === "Human Biology"} onClick={()=>{setActiveCollection("Human Biology");setSearch("");setLevel("all");setClassName("all");setCategory("Human Biology");setSubject("all");setSelected(null);setNotice("");window.setTimeout(()=>document.getElementById("resource-results")?.scrollIntoView({behavior:"smooth",block:"start"}),80);}} className={"rounded-xl px-3 py-3 text-left text-sm font-bold shadow-sm ring-2 ring-offset-1 " + (activeCollection === "Human Biology" ? "bg-violet-100 text-violet-950 ring-violet-500" : "bg-white text-violet-900 ring-transparent")}>🫀 9 human body systems <span className="block text-xs font-normal text-slate-600">Organs, labels and functions · Open collection</span></button>
+          <button type="button" aria-pressed={category === "Laboratory Equipment"} onClick={()=>{setSearch("");setLevel("all");setClassName("all");setCategory("Laboratory Equipment");setSubject("all");setSelected(null);setNotice("");window.setTimeout(()=>document.getElementById("resource-results")?.scrollIntoView({behavior:"smooth",block:"start"}),80);}} className={"rounded-xl px-3 py-3 text-left text-sm font-bold shadow-sm ring-2 ring-offset-1 " + (category === "Laboratory Equipment" ? "bg-violet-100 text-violet-950 ring-violet-500" : "bg-white text-violet-900 ring-transparent")}>🧪 Laboratory equipment <span className="block text-xs font-normal text-slate-600">JHS & SHS apparatus · Open collection</span></button>
+          <button type="button" aria-pressed={category === "Laboratory Set-ups"} onClick={()=>{setSearch("");setLevel("all");setClassName("all");setCategory("Laboratory Set-ups");setSubject("all");setSelected(null);setNotice("");window.setTimeout(()=>document.getElementById("resource-results")?.scrollIntoView({behavior:"smooth",block:"start"}),80);}} className={"rounded-xl px-3 py-3 text-left text-sm font-bold shadow-sm ring-2 ring-offset-1 " + (category === "Laboratory Set-ups" ? "bg-violet-100 text-violet-950 ring-violet-500" : "bg-white text-violet-900 ring-transparent")}>⚗️ JHS laboratory set-ups <span className="block text-xs font-normal text-slate-600">Practical arrangements · Open collection</span></button>
+          <button type="button" aria-pressed={category === "Human Biology"} onClick={()=>{setSearch("");setLevel("all");setClassName("all");setCategory("Human Biology");setSubject("all");setSelected(null);setNotice("");window.setTimeout(()=>document.getElementById("resource-results")?.scrollIntoView({behavior:"smooth",block:"start"}),80);}} className={"rounded-xl px-3 py-3 text-left text-sm font-bold shadow-sm ring-2 ring-offset-1 " + (category === "Human Biology" ? "bg-violet-100 text-violet-950 ring-violet-500" : "bg-white text-violet-900 ring-transparent")}>🫀 9 human body systems <span className="block text-xs font-normal text-slate-600">Organs, labels and functions · Open collection</span></button>
         </div>
       </section>
 
@@ -192,7 +172,7 @@ export function TeachingResourcesLibrary() {
         <h2 className="font-extrabold text-amber-950">Administrator · Add a resource</h2>
         <button type="button" disabled={busy || !sessionToken} onClick={async () => {setBusy(true);try {const result=await seedStarter({sessionToken:sessionToken!});setAdminMessage(result.message);}catch(e){setAdminMessage(e instanceof Error?e.message:"Could not load starter resources.");}finally{setBusy(false);}}} className="mt-3 rounded-lg border border-amber-700 px-3 py-2 text-xs font-bold text-amber-950">Load four starter equipment guides</button>
         <button type="button" disabled={busy || !sessionToken} onClick={async () => {setBusy(true);try {const result=await seedScienceAids({sessionToken:sessionToken!});setAdminMessage(result.message);}catch(e){setAdminMessage(e instanceof Error?e.message:"Could not load science learning aids.");}finally{setBusy(false);}}} className="mt-3 w-full rounded-xl bg-violet-800 px-4 py-3 text-sm font-extrabold text-white disabled:opacity-50">Publish / update complete Science Aids Library</button>
-        <p className="mt-2 text-xs leading-5 text-amber-950">This single action publishes individual searchable resources for laboratory equipment, JHS practical set-ups and all nine human body systems. Existing resources are kept; only missing records are added. Resources are free to view.</p>
+        <p className="mt-2 text-xs leading-5 text-amber-950">This single action publishes individual searchable resources for laboratory equipment, JHS practical set-ups and all nine human body systems. Existing catalogue entries are refreshed and attached files are retained. Resources are free to view.</p>
 
         <div className="mt-3 rounded-xl border border-violet-200 bg-violet-50 p-3">
           <p className="text-sm font-bold text-violet-950">Easy image upload — choose the resource, then choose its photo</p>
@@ -252,7 +232,7 @@ export function TeachingResourcesLibrary() {
             const { storageId } = await response.json();
             await attachFile({ sessionToken, resourceId, fileKind: "image", storageId });
             setAdminMessage("Resource saved and image attached. It is now in the review queue.");
-            setAdminTitle(""); setAdminSummary(""); setAdminImage(null); setAdminImagePreview("");
+            setAdminTitle(""); setAdminSummary(""); setAdminImage(null);
             const picker = document.getElementById("learning-resource-image") as HTMLInputElement | null;
             if (picker) picker.value = "";
           } catch (error) { setAdminMessage(error instanceof Error ? error.message : "Could not save the resource."); }
@@ -265,7 +245,7 @@ export function TeachingResourcesLibrary() {
             One learning-aid image (JPG, PNG or WebP)
             <input id="learning-resource-image" required type="file" accept="image/jpeg,image/png,image/webp" className="mt-2 block w-full text-sm" onChange={e => {
               const file = e.target.files?.[0] ?? null;
-              setAdminImage(file); setAdminImagePreview(file ? URL.createObjectURL(file) : "");
+              setAdminImage(file);
             }} />
           </label>
           {adminImagePreview && <div className="rounded-xl border border-violet-200 bg-white p-2"><img src={adminImagePreview} alt="Selected learning aid preview" className="mx-auto max-h-64 w-auto rounded-lg object-contain" /><p className="mt-1 text-center text-xs text-slate-600">{adminImage?.name}</p></div>}
@@ -290,10 +270,13 @@ export function TeachingResourcesLibrary() {
         <label className="text-xs font-semibold text-slate-700">Category<select value={category} onChange={e => setCategory(e.target.value)} className="mt-1 min-h-11 w-full rounded-xl border border-slate-200 bg-white px-2 text-sm"><option value="all">All categories</option>{CATEGORIES.map(c => <option key={c}>{c}</option>)}</select></label>
       </section>
 
-      {selected && <section className="rounded-3xl border border-violet-200 bg-white p-4 shadow-sm print-resource" aria-live="polite">
-        {!sessionReady || detail === undefined ? <p className="text-sm text-slate-500">Checking your subscription and loading resource details…</p> : !detail ? <p className="text-sm text-slate-500">This resource is no longer available. Refresh the library and try again.</p> : <>
-          <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-wide text-violet-700">{detail.subject} · {detail.classes.join(", ")}</p><h2 className="mt-1 text-xl font-black text-slate-950">{detail.title}</h2><p className="mt-1 text-sm text-slate-600">{detail.summary}</p></div><button onClick={() => setSelected(null)} className="rounded-full border px-3 py-2 text-sm">Close</button></div>
-          <div className="mt-4"><ResourceVisual slug={detail.slug} title={detail.title} category={detail.category} imageUrl={detail.imageUrl} large /></div>
+      {selected && <section className="rounded-3xl border border-violet-200 bg-white p-4 shadow-sm" data-print-resource aria-live="polite">
+        {!sessionReady || detail === undefined ? <p className="text-sm text-slate-500">Checking your subscription and loading resource details…</p> : !detail ? <div className="flex items-center justify-between gap-3">
+          <h2 ref={detailHeading} tabIndex={-1} className="text-sm text-slate-500">This resource is no longer available.</h2>
+          <button onClick={() => setSelected(null)} className="rounded-full border px-3 py-2 text-sm">Close</button>
+        </div> : <>
+          <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-wide text-violet-700">{detail.subject} · {detail.classes.join(", ")}</p><h2 ref={detailHeading} tabIndex={-1} className="mt-1 scroll-mt-24 text-xl font-black text-slate-950">{detail.title}</h2><p className="mt-1 text-sm text-slate-600">{detail.summary}</p></div><button onClick={() => setSelected(null)} className="rounded-full border px-3 py-2 text-sm">Close</button></div>
+          <div className="mt-4"><ResourceVisual key={detail.slug} slug={detail.slug} title={detail.title} imageUrl={detail.imageUrl} large /></div>
           <p className="mt-4 text-sm leading-6 text-slate-700">{detail.description}</p>
           {!detail.fullAccess && <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">You are viewing a free preview. Sign in with an active Giga3 AI subscription to unlock the complete practical instructions, teacher notes and student exercises.</div>}
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -310,8 +293,8 @@ export function TeachingResourcesLibrary() {
           <div className="mt-5 flex flex-wrap gap-2">
             {detail.hasGuide && <button disabled={busy} onClick={() => download("guide")} className="inline-flex items-center gap-2 rounded-xl bg-violet-700 px-4 py-3 text-sm font-bold text-white"><Download className="h-4 w-4" /> Download PDF guide</button>}
             {detail.hasWorksheet && <button disabled={busy} onClick={() => download("worksheet")} className="inline-flex items-center gap-2 rounded-xl border border-violet-300 px-4 py-3 text-sm font-bold text-violet-800">Download worksheet</button>}
-            {detail.hasImage && <button onClick={() => download("image")} className="rounded-xl border px-3 py-3 text-sm">Material photo</button>}
-            {detail.hasDiagram && <button onClick={() => download("diagram")} className="rounded-xl border px-3 py-3 text-sm">Labelled diagram</button>}
+            {detail.hasImage && <button disabled={busy} onClick={() => download("image")} className="rounded-xl border px-3 py-3 text-sm">Material photo</button>}
+            {detail.hasDiagram && <button disabled={busy} onClick={() => download("diagram")} className="rounded-xl border px-3 py-3 text-sm">Labelled diagram</button>}
             <button onClick={printResource} className="inline-flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-bold"><Printer className="h-4 w-4" /> Print resource</button>
           </div>
           {<p className="mt-3 flex items-center gap-2 text-xs text-amber-800"><ShieldCheck className="h-4 w-4" /> Viewing is free for everyone. Active Giga3 AI subscribers can download and print these materials.</p>}
@@ -320,12 +303,21 @@ export function TeachingResourcesLibrary() {
       </section>}
 
       <section>
-        <div className="mb-3 flex items-center justify-between gap-3"><h2 className="text-lg font-black text-slate-950">Explore learning resources</h2><span className="text-xs text-slate-500">{resources?.length ?? 0} resources</span></div>
+        <div className="mb-3 flex items-center justify-between gap-3"><h2 className="text-lg font-black text-slate-950">Explore learning resources</h2><span className="text-xs text-slate-500">{resources ? `${resources.length} resources` : ""}</span></div>
         {resources === undefined ? <p className="rounded-2xl bg-slate-50 p-5 text-sm text-slate-500">Loading resource library…</p> :
-          resources.length === 0 ? <div className="rounded-2xl border border-dashed p-7 text-center"><BookOpen className="mx-auto h-8 w-8 text-violet-500" /><h3 className="mt-2 font-bold">No matching resources yet</h3><p className="mt-1 text-sm text-slate-500">This collection has no published resources yet. Please contact the administrator to publish the science learning aids.</p></div> :
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{resources.map(r => <article key={r._id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><div className="flex items-center justify-between gap-2"><span className="rounded-full bg-violet-50 px-2.5 py-1 text-[10px] font-bold text-violet-800">{r.subject}</span><span className="text-xs font-bold text-emerald-700">Free viewing</span></div><div className="mt-3"><ResourceVisual slug={r.slug} title={r.title} category={r.category} imageUrl={r.imageUrl} /></div><h3 className="mt-3 font-extrabold text-slate-950">{r.title}</h3><p className="mt-1 text-sm leading-5 text-slate-600">{r.summary}</p><p className="mt-3 text-xs text-slate-500">{r.classes.join(" · ")} · {r.category}</p><button onClick={() => {setSelected(r.slug);setNotice("");}} className="mt-4 min-h-11 w-full rounded-xl bg-violet-700 px-4 py-2 text-sm font-bold text-white">Open full material & illustration</button></article>)}</div>}
+          resources.length === 0 ? <div className="rounded-2xl border border-dashed p-7 text-center"><BookOpen className="mx-auto h-8 w-8 text-violet-500" /><h3 className="mt-2 font-bold">No matching resources yet</h3><p className="mt-1 text-sm text-slate-500">Try another search or clear a filter.</p></div> :
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{resources.map(r => <article key={r._id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><div className="flex items-center justify-between gap-2"><span className="rounded-full bg-violet-50 px-2.5 py-1 text-[10px] font-bold text-violet-800">{r.subject}</span><span className="text-xs font-bold text-emerald-700">Free viewing</span></div><div className="mt-3"><ResourceVisual slug={r.slug} title={r.title} imageUrl={r.imageUrl} /></div><h3 className="mt-3 font-extrabold text-slate-950">{r.title}</h3><p className="mt-1 text-sm leading-5 text-slate-600">{r.summary}</p><p className="mt-3 text-xs text-slate-500">{r.classes.join(" · ")} · {r.category}</p><button onClick={() => {setSelected(r.slug);setNotice("");}} className="mt-4 min-h-11 w-full rounded-xl bg-violet-700 px-4 py-2 text-sm font-bold text-white">Open full material & illustration</button></article>)}</div>}
       </section>
-      <style jsx global>{`@media print { body * { visibility: hidden !important; } .print-resource, .print-resource * { visibility: visible !important; } .print-resource { position: absolute; inset: 0; width: 100%; border: 0 !important; box-shadow: none !important; } .print-resource button, .print-resource a { display: none !important; } }`}</style>
+      <style jsx global>{`@media print {
+        body * { visibility: hidden !important; }
+        ${detail?.isSubscriber ? `
+          [data-print-resource], [data-print-resource] * { visibility: visible !important; }
+          [data-print-resource] { position: absolute; inset: 0; width: 100%; border: 0 !important; box-shadow: none !important; }
+          [data-print-resource] button { border: 0 !important; box-shadow: none !important; }
+          [data-print-resource] button:not([data-print-illustration]), [data-print-resource] a { display: none !important; }
+          [data-print-resource] [role="dialog"] { display: none !important; }
+        ` : ""}
+      }`}</style>
     </main>
   );
 }

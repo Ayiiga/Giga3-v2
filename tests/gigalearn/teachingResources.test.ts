@@ -63,14 +63,12 @@ describe("GigaLearn teaching materials library", () => {
     expect(backend).toContain("existing resources refreshed/published");
     expect(ui).toContain("function ResourceVisual");
     expect(ui).toContain("scienceDiagramFor(slug)");
-    expect(ui).toContain("diagram?.src || imageUrl || commons?.thumb");
-    expect(ui).toContain("!diagram && !imageUrl && !requiresCuratedImage");
+    expect(ui).toContain("[imageUrl, diagram?.src].find");
+    expect(ui).toContain("onError=");
     expect(ui).toContain("aspect-[9/16]");
     expect(ui).toContain("Pinch with two fingers to zoom");
-    expect(ui).toContain("https://commons.wikimedia.org/w/api.php");
-    expect(ui).toContain("Source & licence");
-    expect(ui).toContain("Download original");
-    expect(ui).toContain("useCommonsImage");
+    expect(ui).not.toContain("commons.wikimedia.org");
+    expect(ui).toContain("data-print-illustration");
     expect(ui).toContain("Open full material & illustration");
     expect(ui).toContain("api.teachingResources.getPublicDetail");
     expect(ui).toContain("api.teachingResources.issueDownloadToken");
