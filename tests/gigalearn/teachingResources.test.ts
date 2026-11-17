@@ -48,8 +48,8 @@ describe("GigaLearn teaching materials library", () => {
     expect(ui).toContain("Quick access · Science collections");
     expect(ui).toContain("JHS laboratory set-ups");
     expect(ui).toContain("9 human body systems");
-    expect(ui).toContain("Easy image upload — choose the resource, then choose its photo");
-    expect(ui).toContain("Choose resource for image upload");
+    expect(ui).toContain("Attach a file to a resource");
+    expect(ui).toContain("Choose resource for attachment");
     expect(ui).toContain("normalise(r.title) === fileKey");
     expect(ui).toContain("Publish / update complete Science Aids Library");
     const backend = read("convex/teachingResources.ts");
@@ -69,6 +69,8 @@ describe("GigaLearn teaching materials library", () => {
     expect(ui).toContain("Pinch with two fingers to zoom");
     expect(ui).not.toContain("commons.wikimedia.org");
     expect(ui).toContain("data-print-illustration");
+    expect(ui).toContain("fileKind: attachmentKind");
+    expect(ui).toContain("Worksheet (PDF)");
     expect(ui).toContain("Open full material & illustration");
     expect(ui).toContain("api.teachingResources.getPublicDetail");
     expect(ui).toContain("api.teachingResources.issueDownloadToken");

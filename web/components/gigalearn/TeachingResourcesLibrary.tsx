@@ -3,6 +3,7 @@
 import { useMemo, useState, useEffect, useRef } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "convex/_generated/api";
+import type { Id } from "convex/_generated/dataModel";
 import { scienceDiagramFor } from "@/lib/gigalearn/scienceDiagrams";
 import { getSessionToken } from "@/lib/auth";
 import { getConvexSiteUrl, getConvexUrl } from "@/lib/convex/env";
@@ -65,6 +66,14 @@ type Detail = Resource & {
   hasImage: boolean; imageUrl?: string | null; hasDiagram: boolean; hasGuide: boolean; hasWorksheet: boolean; fullAccess: boolean; isSubscriber: boolean;
 };
 
+const RESOURCE_ATTACHMENTS = {
+  image: { label: "Learning-aid image", accept: "image/jpeg,image/png,image/webp" },
+  guide: { label: "Practical guide (PDF)", accept: "application/pdf" },
+  worksheet: { label: "Worksheet (PDF)", accept: "application/pdf" },
+  diagram: { label: "Downloadable diagram", accept: "image/jpeg,image/png" },
+} as const;
+type AttachmentKind = keyof typeof RESOURCE_ATTACHMENTS;
+
 export function TeachingResourcesLibrary() {
   const [search, setSearch] = useState("");
   const [subject, setSubject] = useState("all");
@@ -93,6 +102,7 @@ export function TeachingResourcesLibrary() {
   }, [adminImage]);
   const [adminMessage, setAdminMessage] = useState("");
   const [uploadResourceId, setUploadResourceId] = useState("");
+  const [attachmentKind, setAttachmentKind] = useState<AttachmentKind>("image");
   useEffect(() => {
     // Resolve the persisted browser session before showing subscriber detail.
     setSessionToken(getSessionToken());
@@ -129,7 +139,7 @@ export function TeachingResourcesLibrary() {
     return [];
   }, [search]);
 
-  async function download(kind: "guide" | "worksheet" | "image" | "diagram") {
+  async function download(kind: AttachmentKind) {
     const token = sessionToken;
     if (!token || !detail) { setNotice("Sign in with an active Giga3 AI subscription to download this resource."); return; }
     if (!detail.isSubscriber) { setNotice("Downloads are reserved for active Giga3 AI subscribers. You can continue viewing this resource for free."); return; }
@@ -175,14 +185,40 @@ export function TeachingResourcesLibrary() {
         <p className="mt-2 text-xs leading-5 text-amber-950">This single action publishes individual searchable resources for laboratory equipment, JHS practical set-ups and all nine human body systems. Existing catalogue entries are refreshed and attached files are retained. Resources are free to view.</p>
 
         <div className="mt-3 rounded-xl border border-violet-200 bg-violet-50 p-3">
-          <p className="text-sm font-bold text-violet-950">Easy image upload — choose the resource, then choose its photo</p>
-          <p className="mt-1 text-xs text-violet-900">No filename matching needed. Select a resource from the list and attach one JPG, PNG or WebP image.</p>
-          <select aria-label="Choose resource for image upload" value={uploadResourceId} onChange={e=>setUploadResourceId(e.target.value)} className="mt-2 min-h-11 w-full rounded-lg border border-violet-200 bg-white px-3 text-sm text-slate-900">
+          <p className="text-sm font-bold text-violet-950">Attach a file to a resource</p>
+          <select aria-label="Choose resource for attachment" value={uploadResourceId} disabled={busy} onChange={e => setUploadResourceId(e.target.value)} className="mt-2 min-h-11 w-full rounded-lg border border-violet-200 bg-white px-3 text-sm text-slate-900">
             <option value="">Choose a learning resource…</option>
-            {(listAdmin ?? []).map((r:any)=><option key={r._id} value={r._id}>{r.title} · {r.status}</option>)}
+            {(listAdmin ?? []).map((r: { _id: string; title: string; status: string }) => <option key={r._id} value={r._id}>{r.title} · {r.status}</option>)}
           </select>
-          <label className="mt-2 block rounded-lg border border-violet-300 bg-white p-3 text-sm font-semibold text-violet-900">Choose image for selected resource
-            <input type="file" accept="image/jpeg,image/png,image/webp" className="mt-2 block w-full text-xs" disabled={!uploadResourceId || busy} onChange={async e=>{const file=e.target.files?.[0];if(!file||!sessionToken||!uploadResourceId)return;setBusy(true);try{const uploadUrl=await createUploadUrl({sessionToken});const response=await fetch(uploadUrl,{method:"POST",headers:{"Content-Type":file.type},body:file});if(!response.ok)throw new Error("Image upload failed.");const {storageId}=await response.json();await attachFile({sessionToken,resourceId:uploadResourceId as any,fileKind:"image",storageId});setAdminMessage("Image attached successfully.");}catch(err){setAdminMessage(err instanceof Error?err.message:"Image upload failed.");}finally{setBusy(false);e.target.value="";}}}/>
+          <select aria-label="Attachment type" value={attachmentKind} disabled={busy} onChange={e => setAttachmentKind(e.target.value as AttachmentKind)} className="mt-2 min-h-11 w-full rounded-lg border border-violet-200 bg-white px-3 text-sm text-slate-900">
+            {Object.entries(RESOURCE_ATTACHMENTS).map(([kind, attachment]) => <option key={kind} value={kind}>{attachment.label}</option>)}
+          </select>
+          <label className="mt-2 block rounded-lg border border-violet-300 bg-white p-3 text-sm font-semibold text-violet-900">Choose {RESOURCE_ATTACHMENTS[attachmentKind].label.toLowerCase()}
+            <input type="file" accept={RESOURCE_ATTACHMENTS[attachmentKind].accept} className="mt-2 block w-full text-xs" disabled={!uploadResourceId || busy} onChange={async e => {
+              const input = e.currentTarget;
+              const file = input.files?.[0];
+              if (!file || !sessionToken || !uploadResourceId) return;
+              setAdminMessage("");
+              if (!RESOURCE_ATTACHMENTS[attachmentKind].accept.split(",").includes(file.type)) {
+                setAdminMessage("Choose a file that matches the attachment type.");
+                input.value = "";
+                return;
+              }
+              setBusy(true);
+              try {
+                const uploadUrl = await createUploadUrl({ sessionToken });
+                const response = await fetch(uploadUrl, { method: "POST", headers: { "Content-Type": file.type }, body: file });
+                if (!response.ok) throw new Error("File upload failed.");
+                const { storageId } = await response.json();
+                await attachFile({ sessionToken, resourceId: uploadResourceId as Id<"teachingResources">, fileKind: attachmentKind, storageId });
+                setAdminMessage(RESOURCE_ATTACHMENTS[attachmentKind].label + " attached successfully.");
+              } catch (error) {
+                setAdminMessage(error instanceof Error ? error.message : "File attachment failed.");
+              } finally {
+                input.value = "";
+                setBusy(false);
+              }
+            }} />
           </label>
         </div>
         <details className="mt-3 rounded-xl border border-violet-200 bg-white p-3">
