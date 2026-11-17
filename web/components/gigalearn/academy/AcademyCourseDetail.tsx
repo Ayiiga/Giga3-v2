@@ -152,8 +152,8 @@ function AcademyCourseDetailInner() {
 
   function revealResumeLesson() {
     if (!resumeAnchor) return;
-    const module = document.getElementById(resumeAnchor)?.closest("details");
-    if (module) module.open = true;
+    const moduleDetails = document.getElementById(resumeAnchor)?.closest("details");
+    if (moduleDetails) moduleDetails.open = true;
   }
 
   let lessonIndex = 0;
