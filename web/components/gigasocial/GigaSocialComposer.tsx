@@ -1518,7 +1518,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         </div>
       ) : null}
 
-      {busy ? (
+      {uploadPercent !== null && busy ? (
         <div className="h-[44px] shrink-0 space-y-1.5 overflow-hidden [overflow-anchor:none]">
           <div className="h-1.5 overflow-hidden rounded-full bg-muted/20">
             <div
