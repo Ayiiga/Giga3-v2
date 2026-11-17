@@ -133,7 +133,7 @@ export const PRODUCT_CATALOG: readonly ProductEntry[] = [
     name: "Marketplace",
     tagline: "Digital downloads & physical listings",
     description:
-      "Pay with Paystack for approved digital downloads, or enquire about clothes, shoes and other physical goods. Physical checkout and delivery are not available yet.",
+      "Pay with Paystack for approved digital downloads, or enquire about physical goods and request seller shipping quotes. Physical checkout and courier bookings are not available yet.",
     group: "share",
   },
   {
