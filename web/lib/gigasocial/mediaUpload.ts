@@ -558,10 +558,14 @@ export async function uploadSocialVideo(
   options?: {
     onProgress?: (progress: SocialUploadProgress) => void;
     signal?: AbortSignal;
+    /** Already verified when the user selected this video in the composer. */
+    durationSec?: number;
   }
 ): Promise<SocialPostMediaItemInput> {
   validateVideoFile(file);
-  const durationSec = await getVideoDuration(file, { signal: options?.signal });
+  const durationSec = isUsableVideoDuration(options?.durationSec ?? NaN)
+    ? options!.durationSec!
+    : await getVideoDuration(file, { signal: options?.signal });
   if (options?.signal?.aborted) throw new DOMException("Upload cancelled.", "AbortError");
   if (durationSec > SOCIAL_MAX_VIDEO_DURATION_SEC) {
     throw new Error(
