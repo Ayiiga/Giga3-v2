@@ -168,6 +168,8 @@ function TechHubInner() {
   >({});
   /** Client praise once per questionId (server scoring remains finalize-once). */
   const rewardedQuestionIdsRef = useRef<Set<string>>(new Set());
+  // Synchronous guard: a rapid second tap must not race a pending answer save.
+  const savingAnswerRef = useRef(false);
   const immediateFeedback = techModeShowsImmediateFeedback(mode);
   const [endsAt, setEndsAt] = useState<number | null>(null);
   const [serverSkew, setServerSkew] = useState(0);
@@ -337,20 +339,25 @@ function TechHubInner() {
   const current = localQuestions[index];
 
   async function onSubmitAnswer(selectedIndex: number) {
-    if (!sessionToken || !sessionId || !current) return;
+    if (!sessionToken || !sessionId || !current || savingAnswerRef.current) return;
     // Immediate-feedback modes: one reveal + one praise pulse per question.
     if (immediateFeedback && feedbackByQuestion[current.questionId] != null) return;
+    savingAnswerRef.current = true;
+    const questionId = current.questionId;
+    const previousAnswer = answers[questionId];
+    // Highlight exactly the tapped display-order option without waiting for the network.
+    setAnswers((prev) => ({ ...prev, [questionId]: selectedIndex }));
     setBusy(true);
     setError(null);
     try {
       const res = await saveAnswer({
         sessionToken,
         sessionId,
-        questionId: current.questionId,
+        questionId,
         selectedIndex,
       });
       const savedIndex = (res.feedback as LearnFeedback | null)?.selectedIndex ?? selectedIndex;
-      setAnswers((prev) => ({ ...prev, [current.questionId]: savedIndex }));
+      setAnswers((prev) => ({ ...prev, [questionId]: savedIndex }));
       if (res.autoSubmitted) {
         setResults({
           score: res.autoSubmitted.score ?? 0,
@@ -391,8 +398,16 @@ function TechHubInner() {
         }
       }
     } catch (e) {
+      // Never leave an unsaved optimistic choice looking like a recorded answer.
+      setAnswers((prev) => {
+        const next = { ...prev };
+        if (previousAnswer === undefined) delete next[questionId];
+        else next[questionId] = previousAnswer;
+        return next;
+      });
       setError(e instanceof Error ? e.message : "Could not save answer.");
     } finally {
+      savingAnswerRef.current = false;
       setBusy(false);
     }
   }
