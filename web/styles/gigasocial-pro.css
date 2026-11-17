@@ -494,6 +494,13 @@
   touch-action: none;
 }
 
+/* Android WebView: paused feed videos can retain hardware video surfaces above a fixed composer. */
+body.gigasocial-composer-video-isolation .gigasocial-feed-media video,
+body.gigasocial-composer-video-isolation .gigasocial-post-card video {
+  visibility: hidden !important;
+}
+
+
 .gigasocial-composer-sheet {
   contain: none;
   -webkit-overflow-scrolling: touch;

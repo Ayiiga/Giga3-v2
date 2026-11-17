@@ -38,8 +38,12 @@ export const GigaSocialComposerSheet = memo(function GigaSocialComposerSheet({
       if (!video.closest(".gigasocial-composer-sheet")) video.pause();
     });
     const prevOverflow = document.body.style.overflow;
+    // Avoid Android WebView native video surfaces painting over the composer.
+    // The selected video uses a thumbnail until the learner opens its preview.
+    document.body.classList.add("gigasocial-composer-video-isolation");
     document.body.style.overflow = "hidden";
     return () => {
+      document.body.classList.remove("gigasocial-composer-video-isolation");
       document.body.style.overflow = prevOverflow;
     };
   }, [open]);
