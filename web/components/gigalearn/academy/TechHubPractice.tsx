@@ -451,6 +451,8 @@ function TechHubInner() {
   }
 
   function goToQuestion(nextIndex: number) {
+    // Keep the question stable until its answer has been persisted.
+    if (savingAnswerRef.current || busy) return;
     setIndex(nextIndex);
     setReward(null);
   }
@@ -807,11 +809,8 @@ function TechHubInner() {
                           if (immediateFeedback) {
                             if (!revealed) void onSubmitAnswer(optIndex);
                           } else {
-                            if (selected === optIndex) return;
-                            setAnswers((prev) => ({
-                              ...prev,
-                              [current.questionId]: optIndex,
-                            }));
+                            if (selected === optIndex || savingAnswerRef.current) return;
+                            // The shared handler owns optimistic selection and rollback.
                             void onSubmitAnswer(optIndex);
                           }
                         }}
@@ -939,7 +938,7 @@ function TechHubInner() {
             <button
               type="button"
               className="exam-session-btn-secondary"
-              disabled={index === 0}
+              disabled={index === 0 || busy}
               onClick={() => goToQuestion(Math.max(0, index - 1))}
             >
               ← Previous
@@ -948,7 +947,7 @@ function TechHubInner() {
               <button
                 type="button"
                 className="exam-session-btn-primary"
-                disabled={immediateFeedback && !revealed}
+                disabled={busy || (immediateFeedback && !revealed)}
                 onClick={() =>
                   goToQuestion(Math.min(localQuestions.length - 1, index + 1))
                 }
