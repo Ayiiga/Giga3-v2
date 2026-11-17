@@ -98,7 +98,7 @@ function MarketplaceBrowseInner() {
               </ButtonLink>
               <ButtonLink href="/marketplace/sell" size="sm">
                 <ShoppingBag className="mr-1.5 h-4 w-4" aria-hidden />
-                Sell
+                Business tools
               </ButtonLink>
             </div>
           </div>
