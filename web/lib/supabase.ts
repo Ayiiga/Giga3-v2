@@ -196,11 +196,12 @@ export function createSupabaseRestClient(options?: {
       bucket: SupabaseStorageBucket,
       objectPath: string,
       body: BodyInit,
-      options?: { contentType?: string; upsert?: boolean }
+      options?: { contentType?: string; upsert?: boolean; signal?: AbortSignal }
     ): Promise<unknown> {
       const cleanPath = objectPath.replace(/^\/+/, "");
       return request<unknown>(`/storage/v1/object/${bucket}/${cleanPath}`, {
         method: "POST",
+        signal: options?.signal,
         headers: {
           ...(options?.contentType ? { "Content-Type": options.contentType } : {}),
           ...(options?.upsert ? { "x-upsert": "true" } : {}),
