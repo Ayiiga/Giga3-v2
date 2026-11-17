@@ -170,7 +170,7 @@ export const MARKETPLACE_PAGE_SHELL: PublicProductPageShellProps = {
     "Discover ebooks, lesson notes, templates, clothes, shoes and other goods from Giga3 sellers. Approved digital files can be purchased through Paystack in GHS; physical goods are enquiry-only.",
   audience: "learners, local sellers, creators, and buyers in Ghana and beyond",
   whatItDoes:
-    "Browse products and view their details. Buy eligible digital files using Paystack and retrieve downloads from My purchases after verified payment. For clothes, shoes and other physical items, send an in-app enquiry to the seller; checkout, delivery and refunds for physical goods are not enabled.",
+    "Browse products and view their details. Buy eligible digital files using Paystack and retrieve downloads from My purchases after verified payment. For physical goods, see seller delivery and return terms, choose pickup or an available delivery method, and request a shipping quote inside the app. Paid physical checkout, courier booking and financial refunds for physical orders are not enabled.",
   whoFor: [
     "Students buying digital study guides and templates",
     "Creators offering ebooks and other approved digital materials",
@@ -178,12 +178,12 @@ export const MARKETPLACE_PAGE_SHELL: PublicProductPageShellProps = {
   ],
   capabilities: [
     "Digital purchases: browse → Paystack checkout → verified download in My purchases",
-    "Physical items: browse → inspect photos, condition and availability → send an in-app enquiry",
-    "Physical goods cannot be paid for through the digital-download checkout",
+    "Physical items: browse → inspect photos and seller shipping options → request a quote or collection enquiry",
+    "Physical goods cannot be paid for through the digital-download checkout; eligible paid digital purchases have a refund-review request process",
     "Seller verification and listing reports help protect users; never pay outside the app",
   ],
   giga3Connection:
-    "Marketplace complements GigaLearn and GigaSocial. Each listed product shows its own GHS price; browsing and physical-item enquiries are not AI credit purchases. Current physical listings do not include shipping, escrow, delivery or online payment. Terms: /legal/terms and /legal/refunds.",
+    "Marketplace complements GigaLearn and GigaSocial. Each listing shows its GHS price; browsing and physical-item enquiries are not AI credit purchases. Sellers can provide delivery options, fee quotes and voluntary return terms, but Giga3 AI does not yet book shipments, process physical orders or refund physical payments. Eligible paid digital purchases can request refund review; approval or return of money is not automatic. Terms: /legal/terms and /legal/refunds.",
   primaryHref: "/marketplace/#marketplace-catalogue",
   primaryLabel: "Browse products",
   secondaryHref: "/marketplace/sell",
