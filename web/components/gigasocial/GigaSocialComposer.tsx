@@ -1095,6 +1095,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       let publishPostType = postType;
       if (pendingVideo) {
         const uploaded = await uploadSocialVideo(uploadDeps, pendingVideo.file, {
+          durationSec: pendingVideo.durationSec,
           signal: controller.signal,
           onProgress: (progress) => updateUploadPercent(progress.percent),
         });
