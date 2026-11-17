@@ -79,6 +79,18 @@ describe("GigaSocial video upload recovery", () => {
     expect(request.abort).toHaveBeenCalledOnce();
   });
 
+  it("does not prepare an upload when the composer has already cancelled", async () => {
+    const controller = new AbortController();
+    controller.abort();
+    const prepareUpload = vi.fn(deps.prepareUpload);
+    await expect(uploadSocialVideo(
+      { ...deps, prepareUpload },
+      new File(["video"], "video.mp4", { type: "video/mp4" }),
+      { durationSec: 75, signal: controller.signal }
+    )).rejects.toMatchObject({ name: "AbortError" });
+    expect(prepareUpload).not.toHaveBeenCalled();
+  });
+
   it("bounds an unacknowledged publish request", async () => {
     vi.useFakeTimers();
     const result = waitForSocialRequest(new Promise<void>(() => {}), 45_000, "Publish timed out");

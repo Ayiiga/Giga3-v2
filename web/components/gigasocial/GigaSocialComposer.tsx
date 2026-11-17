@@ -1570,15 +1570,13 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       ) : null}
 
       {uploadPercent !== null && busy ? (
-        <div className="min-h-[44px] shrink-0 space-y-1.5 [overflow-anchor:none]">
-          {!publishing ? (
-            <progress
-              className="block h-1.5 w-full accent-[var(--accent)]"
-              value={uploadPercent}
-              max={100}
-              aria-label="Upload progress"
-            />
-          ) : null}
+        <div className="h-[44px] shrink-0 space-y-1.5 overflow-hidden [overflow-anchor:none]">
+          <progress
+            className={`block h-1.5 w-full accent-[var(--accent)] ${publishing ? "invisible" : ""}`}
+            value={uploadPercent}
+            max={100}
+            aria-label="Upload progress"
+          />
           <div className="flex min-h-8 items-center justify-between gap-2 text-xs text-muted">
             <span className="tabular-nums" role="status">
               {publishing ? "Publishing…" : uploadPercent ? `Uploading… ${uploadPercent}%` : "Starting upload…"}
