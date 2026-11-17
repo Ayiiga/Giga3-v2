@@ -32,10 +32,12 @@ export async function uploadSupabaseStorageObject(args: {
   body: BodyInit;
   contentType?: string;
   upsert?: boolean;
+  signal?: AbortSignal;
 }): Promise<string | null> {
   await requireSupabaseClient().storageUpload(args.bucket, args.objectPath, args.body, {
     contentType: args.contentType,
     upsert: args.upsert,
+    signal: args.signal,
   });
   return args.bucket === "uploads"
     ? null

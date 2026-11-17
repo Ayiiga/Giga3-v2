@@ -236,19 +236,44 @@ async function uploadVideoThumbnail(
   return uploaded.url;
 }
 
+function throwIfUploadAborted(signal?: AbortSignal): void {
+  if (signal?.aborted) throw new DOMException("Upload cancelled.", "AbortError");
+}
+
+function waitForUploadRetry(delayMs: number, signal?: AbortSignal): Promise<void> {
+  throwIfUploadAborted(signal);
+  return new Promise((resolve, reject) => {
+    const cleanup = () => signal?.removeEventListener("abort", onAbort);
+    const onAbort = () => {
+      clearTimeout(timer);
+      cleanup();
+      reject(new DOMException("Upload cancelled.", "AbortError"));
+    };
+    const timer = setTimeout(() => {
+      cleanup();
+      resolve();
+    }, delayMs);
+    signal?.addEventListener("abort", onAbort, { once: true });
+    if (signal?.aborted) onAbort();
+  });
+}
+
 async function withUploadRetry<T>(
   fn: () => Promise<T>,
   maxAttempts = 3,
-  baseDelayMs = 600
+  baseDelayMs = 600,
+  signal?: AbortSignal
 ): Promise<T> {
   let lastError: unknown;
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    throwIfUploadAborted(signal);
     try {
       return await fn();
     } catch (err) {
+      throwIfUploadAborted(signal);
       lastError = err;
       if (attempt < maxAttempts) {
-        await new Promise((resolve) => setTimeout(resolve, baseDelayMs * attempt));
+        await waitForUploadRetry(baseDelayMs * attempt, signal);
       }
     }
   }
@@ -281,7 +306,10 @@ async function uploadWithProgress(
           throw new Error(`Upload failed (${response.status}). Please retry.`);
         }
         return response;
-      })
+      }),
+      3,
+      600,
+      signal
     );
   }
 
@@ -300,7 +328,10 @@ async function uploadWithProgress(
         percent: Math.round((event.loaded / event.total) * 100),
       });
     };
+    const onSignalAbort = () => xhr.abort();
+    const cleanup = () => signal?.removeEventListener("abort", onSignalAbort);
     xhr.onload = () => {
+      cleanup();
       resolve(
         new Response(xhr.responseText, {
           status: xhr.status,
@@ -308,16 +339,29 @@ async function uploadWithProgress(
         })
       );
     };
-    xhr.onerror = () => reject(new Error("Upload failed. Check your connection and try again."));
-    xhr.onabort = () => reject(new Error("Upload cancelled."));
-    if (signal) {
-      if (signal.aborted) {
-        xhr.abort();
-        return;
-      }
-      signal.addEventListener("abort", () => xhr.abort(), { once: true });
+    xhr.onerror = () => {
+      cleanup();
+      reject(new Error("Upload failed. Check your connection and try again."));
+    };
+    xhr.onabort = () => {
+      cleanup();
+      reject(new DOMException("Upload cancelled.", "AbortError"));
+    };
+    if (signal?.aborted) {
+      reject(new DOMException("Upload cancelled.", "AbortError"));
+      return;
     }
-    xhr.send(body as XMLHttpRequestBodyInit);
+    signal?.addEventListener("abort", onSignalAbort, { once: true });
+    if (signal?.aborted) {
+      xhr.abort();
+      return;
+    }
+    try {
+      xhr.send(body as XMLHttpRequestBodyInit);
+    } catch (error) {
+      cleanup();
+      reject(error);
+    }
   });
 }
 
@@ -329,7 +373,9 @@ async function tryDirectSupabaseUpload(args: {
   objectPath: string;
   body: BodyInit;
   contentType: string;
+  signal?: AbortSignal;
 }): Promise<string | null> {
+  if (args.signal?.aborted) throw new DOMException("Upload cancelled.", "AbortError");
   if (!isSupabaseConfigured() || !getSupabaseAccessToken()) return null;
   try {
     return await uploadSupabaseStorageObject({
@@ -337,8 +383,10 @@ async function tryDirectSupabaseUpload(args: {
       objectPath: args.objectPath,
       body: args.body,
       contentType: args.contentType,
+      signal: args.signal,
     });
-  } catch {
+  } catch (error) {
+    if (args.signal?.aborted) throw error;
     return null;
   }
 }
@@ -514,6 +562,7 @@ export async function uploadSocialVideo(
 ): Promise<SocialPostMediaItemInput> {
   validateVideoFile(file);
   const durationSec = await getVideoDuration(file, { signal: options?.signal });
+  if (options?.signal?.aborted) throw new DOMException("Upload cancelled.", "AbortError");
   if (durationSec > SOCIAL_MAX_VIDEO_DURATION_SEC) {
     throw new Error(
       `Videos must be ${SOCIAL_MAX_VIDEO_DURATION_SEC} seconds or shorter. This video is ${Math.ceil(durationSec)} seconds.`
@@ -551,6 +600,7 @@ export async function uploadSocialVideo(
       objectPath,
       body: file,
       contentType: videoContentType,
+      signal: options?.signal,
     });
     if (directUrl) {
       options?.onProgress?.({ loaded: 1, total: 1, percent: 100 });
@@ -564,6 +614,7 @@ export async function uploadSocialVideo(
     }
   }
 
+  if (options?.signal?.aborted) throw new DOMException("Upload cancelled.", "AbortError");
   if (!videoResult) {
     videoResult = await uploadViaPrepared(deps, {
       file,
