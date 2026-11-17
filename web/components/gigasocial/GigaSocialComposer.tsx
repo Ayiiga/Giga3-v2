@@ -212,10 +212,13 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   const [soundLibraryOpen, setSoundLibraryOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [uploadPercent, setUploadPercent] = useState<number | null>(null);
-  // Ignore repeated progress events so Android does not rerender the entire composer for each byte chunk.
+  // Limit Android composer repaints during upload; always preserve 0% and 100%.
   const updateUploadPercent = (value: number) => {
     const next = Math.max(0, Math.min(100, Math.round(value)));
-    setUploadPercent((previous) => previous === next ? previous : next);
+    setUploadPercent((previous) => {
+      if (previous === next || (next !== 100 && previous !== null && next > previous && next - previous < 5)) return previous;
+      return next;
+    });
   };
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -1515,16 +1518,16 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         </div>
       ) : null}
 
-      {uploadPercent !== null && busy ? (
-        <div className="min-h-[44px] space-y-1.5 [overflow-anchor:none]">
+      {busy ? (
+        <div className="h-[44px] shrink-0 space-y-1.5 overflow-hidden [overflow-anchor:none]">
           <div className="h-1.5 overflow-hidden rounded-full bg-muted/20">
             <div
               className="h-full rounded-full bg-accent"
-              style={{ width: `${uploadPercent}%` }}
+              style={{ width: `${uploadPercent ?? 0}%` }}
             />
           </div>
           <div className="flex items-center justify-between gap-2 text-xs text-muted">
-            <span className="whitespace-nowrap tabular-nums" role="status">Uploading… {uploadPercent}%</span>
+            <span className="whitespace-nowrap tabular-nums" role="status">Uploading… {uploadPercent ?? 0}%</span>
             <button
               type="button"
               onClick={handleCancelUpload}
