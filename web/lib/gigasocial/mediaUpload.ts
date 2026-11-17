@@ -329,7 +329,9 @@ async function tryDirectSupabaseUpload(args: {
   objectPath: string;
   body: BodyInit;
   contentType: string;
+  signal?: AbortSignal;
 }): Promise<string | null> {
+  if (args.signal?.aborted) throw new DOMException("Upload cancelled.", "AbortError");
   if (!isSupabaseConfigured() || !getSupabaseAccessToken()) return null;
   try {
     return await uploadSupabaseStorageObject({
@@ -337,8 +339,10 @@ async function tryDirectSupabaseUpload(args: {
       objectPath: args.objectPath,
       body: args.body,
       contentType: args.contentType,
+      signal: args.signal,
     });
-  } catch {
+  } catch (error) {
+    if (args.signal?.aborted) throw error;
     return null;
   }
 }
@@ -514,6 +518,7 @@ export async function uploadSocialVideo(
 ): Promise<SocialPostMediaItemInput> {
   validateVideoFile(file);
   const durationSec = await getVideoDuration(file, { signal: options?.signal });
+  if (options?.signal?.aborted) throw new DOMException("Upload cancelled.", "AbortError");
   if (durationSec > SOCIAL_MAX_VIDEO_DURATION_SEC) {
     throw new Error(
       `Videos must be ${SOCIAL_MAX_VIDEO_DURATION_SEC} seconds or shorter. This video is ${Math.ceil(durationSec)} seconds.`
@@ -551,6 +556,7 @@ export async function uploadSocialVideo(
       objectPath,
       body: file,
       contentType: videoContentType,
+      signal: options?.signal,
     });
     if (directUrl) {
       options?.onProgress?.({ loaded: 1, total: 1, percent: 100 });
@@ -564,6 +570,7 @@ export async function uploadSocialVideo(
     }
   }
 
+  if (options?.signal?.aborted) throw new DOMException("Upload cancelled.", "AbortError");
   if (!videoResult) {
     videoResult = await uploadViaPrepared(deps, {
       file,
