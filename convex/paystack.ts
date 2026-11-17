@@ -83,12 +83,11 @@ function parsePaystackCurrency(paystackResponse: string): string | null {
 
 /**
  * The charged amount/currency must match the record we created at initialize.
- * Missing fields are tolerated (older payloads); any present mismatch is fatal.
  */
 function validatePaymentAmount(record: { amountGhs: number }, paystackResponse: string) {
   const currency = parsePaystackCurrency(paystackResponse);
-  if (currency && currency !== "GHS") {
-    throw new Error(`Payment currency mismatch: expected GHS, got ${currency}`);
+  if (currency !== "GHS") {
+    throw new Error(`Payment currency mismatch: expected GHS, got ${currency ?? "no currency"}`);
   }
   const pesewas = parsePaystackAmountPesewas(paystackResponse);
   if (pesewas === null) {
@@ -1040,34 +1039,35 @@ export const processWebhookPayload = internalMutation({
 });
 
 async function verifyPaystackSignature(
-  payload: string,
+  payload: ArrayBuffer,
   signature: string,
   secret: string
 ): Promise<boolean> {
+  if (!/^[a-f0-9]{128}$/.test(signature)) return false;
   const encoder = new TextEncoder();
   const key = await crypto.subtle.importKey(
     "raw",
     encoder.encode(secret),
     { name: "HMAC", hash: "SHA-512" },
     false,
-    ["sign"]
+    ["verify"]
   );
-  const mac = await crypto.subtle.sign("HMAC", key, encoder.encode(payload));
-  const hex = Array.from(new Uint8Array(mac))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-  return hex === signature;
+  const signatureBytes = new Uint8Array(64);
+  for (let i = 0; i < signatureBytes.length; i += 1) {
+    signatureBytes[i] = Number.parseInt(signature.slice(i * 2, i * 2 + 2), 16);
+  }
+  return crypto.subtle.verify("HMAC", key, signatureBytes, payload);
 }
 
 export const paystackWebhook = httpAction(async (ctx, request) => {
   const signature = request.headers.get("x-paystack-signature") ?? "";
-  const payload = await request.text();
+  const rawPayload = await request.arrayBuffer();
 
   try {
     const secret = process.env.PAYSTACK_SECRET_KEY;
     if (!secret) throw new Error("PAYSTACK_SECRET_KEY is not configured");
 
-    const valid = await verifyPaystackSignature(payload, signature, secret);
+    const valid = await verifyPaystackSignature(rawPayload, signature, secret);
     if (!valid) {
       return new Response(JSON.stringify({ ok: false, error: "Invalid signature" }), {
         status: 401,
@@ -1076,7 +1076,7 @@ export const paystackWebhook = httpAction(async (ctx, request) => {
     }
 
     const result = await ctx.runMutation(internal.paystack.processWebhookPayload, {
-      payload,
+      payload: new TextDecoder().decode(rawPayload),
     });
     return new Response(JSON.stringify({ ok: true, ...result }), {
       status: 200,

@@ -79,7 +79,7 @@ function cleanSegment(value: string): string {
 
 function buildSocialObjectPath(userId: string, fileName: string): string {
   const date = new Date().toISOString().slice(0, 10);
-  return `${cleanSegment(userId)}/${date}/${Date.now()}-${cleanSegment(fileName)}`;
+  return `${cleanSegment(userId)}/${date}/${crypto.randomUUID()}-${cleanSegment(fileName)}`;
 }
 
 const AUDIO_MIME = new Set([
@@ -254,14 +254,19 @@ export const prepareMediaUpload = action({
             token?: string;
             path?: string;
           };
-          if (signed.url && signed.token) {
+          const uploadUrl = new URL(`${baseUrl}/storage/v1/object/upload/sign/${bucket}/${objectPath}`);
+          const token = signed.token ?? (signed.url
+            ? new URL(signed.url, baseUrl).searchParams.get("token")
+            : null);
+          if (token) {
+            uploadUrl.searchParams.set("token", token);
             const publicUrl = `${baseUrl}/storage/v1/object/public/${bucket}/${objectPath}`;
             return {
               provider: "supabase" as const,
               bucket,
               objectPath,
-              uploadUrl: signed.url,
-              uploadToken: signed.token,
+              uploadUrl: uploadUrl.toString(),
+              uploadToken: token,
               publicUrl,
               contentType: normalizedContentType,
             };
@@ -332,14 +337,19 @@ export const prepareAvatarUpload = action({
             url?: string;
             token?: string;
           };
-          if (signed.url && signed.token) {
+          const uploadUrl = new URL(`${baseUrl}/storage/v1/object/upload/sign/${bucket}/${objectPath}`);
+          const token = signed.token ?? (signed.url
+            ? new URL(signed.url, baseUrl).searchParams.get("token")
+            : null);
+          if (token) {
+            uploadUrl.searchParams.set("token", token);
             const publicUrl = `${baseUrl}/storage/v1/object/public/${bucket}/${objectPath}`;
             return {
               provider: "supabase" as const,
               bucket,
               objectPath,
-              uploadUrl: signed.url,
-              uploadToken: signed.token,
+              uploadUrl: uploadUrl.toString(),
+              uploadToken: token,
               publicUrl,
               contentType: normalizedContentType,
             };

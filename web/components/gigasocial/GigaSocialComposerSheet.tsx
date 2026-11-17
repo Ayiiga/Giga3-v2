@@ -20,6 +20,7 @@ export const GigaSocialComposerSheet = memo(function GigaSocialComposerSheet({
 }: GigaSocialComposerSheetProps) {
   const [mounted, setMounted] = useState(false);
   const [fullscreenFlow, setFullscreenFlow] = useState(false);
+  const [publishing, setPublishing] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -28,6 +29,7 @@ export const GigaSocialComposerSheet = memo(function GigaSocialComposerSheet({
   useEffect(() => {
     if (!open) {
       setFullscreenFlow(false);
+      setPublishing(false);
     }
   }, [open]);
 
@@ -51,11 +53,11 @@ export const GigaSocialComposerSheet = memo(function GigaSocialComposerSheet({
   useEffect(() => {
     if (!open) return;
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape" && !fullscreenFlow) onClose();
+      if (event.key === "Escape" && !fullscreenFlow && !publishing) onClose();
     }
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, [fullscreenFlow, onClose, open]);
+  }, [fullscreenFlow, onClose, open, publishing]);
 
   if (!mounted || !open) return null;
 
@@ -65,7 +67,7 @@ export const GigaSocialComposerSheet = memo(function GigaSocialComposerSheet({
         <div
           className="gigasocial-composer-overlay fixed inset-0 z-[60] bg-black/45"
           aria-hidden
-          onClick={onClose}
+          onClick={publishing ? undefined : onClose}
         />
       ) : null}
       <div
@@ -85,6 +87,7 @@ export const GigaSocialComposerSheet = memo(function GigaSocialComposerSheet({
             <button
               type="button"
               onClick={onClose}
+              disabled={publishing}
               className="rounded-lg p-2 text-muted hover:bg-muted/50"
               aria-label="Close composer"
             >
@@ -101,6 +104,7 @@ export const GigaSocialComposerSheet = memo(function GigaSocialComposerSheet({
             {...composerProps}
             compact
             onFullscreenFlowChange={setFullscreenFlow}
+            onPublishingChange={setPublishing}
             onPosted={() => {
               onPosted?.();
               onClose();

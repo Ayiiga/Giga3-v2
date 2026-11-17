@@ -44,6 +44,7 @@ import {
   isSocialVideoOverSizeLimit,
   uploadSocialImages,
   uploadSocialVideo,
+  waitForSocialRequest,
   type SocialMediaUploadDeps,
 } from "@/lib/gigasocial/mediaUpload";
 import type { GigaCreateActionId } from "@/components/gigasocial/create/gigaCreateMenu";
@@ -150,8 +151,10 @@ interface GigaSocialComposerProps {
   compact?: boolean;
   onPosted?: () => void;
   onFullscreenFlowChange?: (active: boolean) => void;
+  onPublishingChange?: (publishing: boolean) => void;
   onSubmit: (args: {
     body: string;
+    publishRequestId?: string;
     postType: SocialPostTypeId;
     mediaItems?: SocialPostMediaItemInput[];
     communitySlug?: string;
@@ -185,6 +188,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   onActiveProfileChange,
   onPosted,
   onFullscreenFlowChange,
+  onPublishingChange,
   onSubmit,
 }: GigaSocialComposerProps) {
   const features = useGigaSocialFeatures();
@@ -211,6 +215,10 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   );
   const [soundLibraryOpen, setSoundLibraryOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  useEffect(() => {
+    onPublishingChange?.(publishing);
+  }, [onPublishingChange, publishing]);
   const [uploadPercent, setUploadPercent] = useState<number | null>(null);
   // Limit Android composer repaints during upload; always preserve 0% and 100%.
   const updateUploadPercent = (value: number) => {
@@ -248,6 +256,13 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
     durationSec?: number;
   } | null>(null);
   const uploadAbortRef = useRef<AbortController | null>(null);
+  const pendingPublishRef = useRef<{
+    signature: string;
+    video: typeof pendingVideo;
+    images: typeof pendingImages;
+    audio: typeof pendingAudio;
+    post: Parameters<GigaSocialComposerProps["onSubmit"]>[0];
+  } | null>(null);
   const videoProbeAbortRef = useRef<AbortController | null>(null);
   const videoProbeGenerationRef = useRef(0);
   const [mediaProbeBusy, setMediaProbeBusy] = useState(false);
@@ -264,6 +279,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
+      uploadAbortRef.current?.abort();
       for (const url of enhancementPreviewUrlsRef.current) URL.revokeObjectURL(url);
       enhancementPreviewUrlsRef.current.clear();
     };
@@ -1042,7 +1058,8 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         if (soundAttribution && !finalBody.includes(soundAttribution)) {
           finalBody = `${finalBody}\n🎵 ${soundAttribution}`.trim();
         }
-        await onSubmit({
+        setPublishing(true);
+        await waitForSocialRequest(onSubmit({
           body: finalBody,
           postType: "video",
           mediaItems: [uploaded],
@@ -1050,7 +1067,8 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           visibility,
           profileId,
           ...(features.enableUseAsTemplate ? { templatePolicy } : {}),
-        });
+        }), 45_000, "Could not confirm the episode. Check your profile before posting it again.", controller.signal);
+        setPublishing(false);
         if (controller.signal.aborted) return;
       }
       setBody("");
@@ -1066,6 +1084,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
     } finally {
       uploadAbortRef.current = null;
       setBusy(false);
+      setPublishing(false);
       setUploadPercent(null);
     }
   }
@@ -1091,55 +1110,6 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
     uploadAbortRef.current = controller;
 
     try {
-      let mediaItems: SocialPostMediaItemInput[] | undefined;
-      let publishPostType = postType;
-      if (pendingVideo) {
-        const uploaded = await uploadSocialVideo(uploadDeps, pendingVideo.file, {
-          durationSec: pendingVideo.durationSec,
-          signal: controller.signal,
-          onProgress: (progress) => updateUploadPercent(progress.percent),
-        });
-        mediaItems = [uploaded];
-        publishPostType = "video";
-      } else if (pendingImages.length && pendingAudio) {
-        setSuccess("Mixing photo + music into a video…");
-        const composed = await composePhotoMusicVideo(
-          pendingImages.map((image) => image.file),
-          pendingAudio.file,
-          {
-            maxDurationSec: SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC,
-            filterCss: getCameraFilterCss(
-              previewFilterId === "none" ? undefined : previewFilterId
-            ),
-            signal: controller.signal,
-            onProgress: (percent) => updateUploadPercent(Math.round(percent * 70)),
-          }
-        );
-        const uploaded = await uploadSocialVideo(uploadDeps, composed.file, {
-          signal: controller.signal,
-          onProgress: (progress) =>
-            updateUploadPercent(70 + Math.round(progress.percent * 0.3)),
-        });
-        mediaItems = [
-          {
-            ...uploaded,
-            // Marker for music feed filters; camera look is already baked into frames.
-            filterId: "photo-music",
-          },
-        ];
-        publishPostType = "video";
-      } else if (pendingImages.length) {
-        const imageFiles = pendingImages.map((image) => image.file);
-        const uploadedImages = await uploadSocialImages(uploadDeps, imageFiles, {
-          filterId: previewFilterId === "none" ? undefined : previewFilterId,
-          signal: controller.signal,
-          fastCompress: true,
-          onProgress: (_index, progress) => updateUploadPercent(progress.percent),
-        });
-        mediaItems = [...uploadedImages];
-      }
-
-      if (controller.signal.aborted) return;
       let finalBody = body.trim();
       if (locationTag.trim()) {
         finalBody = `${finalBody}\n📍 ${locationTag.trim()}`.trim();
@@ -1161,15 +1131,93 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         finalBody = `${finalBody}\n🎵 ${soundAttribution}`.trim();
       }
 
-      await onSubmit({
+      const draft = {
         body: finalBody,
-        postType: publishPostType,
-        mediaItems,
+        postType,
         communitySlug,
         visibility,
         profileId,
         ...(features.enableUseAsTemplate ? { templatePolicy } : {}),
-      });
+      };
+      const signature = JSON.stringify({ ...draft, previewFilterId });
+      let attempt = pendingPublishRef.current;
+      if (
+        !attempt || attempt.signature !== signature || attempt.video !== pendingVideo ||
+        attempt.images !== pendingImages || attempt.audio !== pendingAudio
+      ) {
+        let mediaItems: SocialPostMediaItemInput[] | undefined;
+        let publishPostType = postType;
+        if (pendingVideo) {
+          const uploaded = await uploadSocialVideo(uploadDeps, pendingVideo.file, {
+            durationSec: pendingVideo.durationSec,
+            signal: controller.signal,
+            onProgress: (progress) => updateUploadPercent(progress.percent),
+          });
+          mediaItems = [uploaded];
+          publishPostType = "video";
+        } else if (pendingImages.length && pendingAudio) {
+          setSuccess("Mixing photo + music into a video…");
+          const composed = await composePhotoMusicVideo(
+            pendingImages.map((image) => image.file),
+            pendingAudio.file,
+            {
+              maxDurationSec: SOCIAL_PHOTO_MUSIC_MAX_DURATION_SEC,
+              filterCss: getCameraFilterCss(
+                previewFilterId === "none" ? undefined : previewFilterId
+              ),
+              signal: controller.signal,
+              onProgress: (percent) => updateUploadPercent(Math.round(percent * 70)),
+            }
+          );
+          const uploaded = await uploadSocialVideo(uploadDeps, composed.file, {
+            signal: controller.signal,
+            onProgress: (progress) =>
+              updateUploadPercent(70 + Math.round(progress.percent * 0.3)),
+          });
+          mediaItems = [
+            {
+              ...uploaded,
+              // Marker for music feed filters; camera look is already baked into frames.
+              filterId: "photo-music",
+            },
+          ];
+          publishPostType = "video";
+        } else if (pendingImages.length) {
+          const imageFiles = pendingImages.map((image) => image.file);
+          const uploadedImages = await uploadSocialImages(uploadDeps, imageFiles, {
+            filterId: previewFilterId === "none" ? undefined : previewFilterId,
+            signal: controller.signal,
+            fastCompress: true,
+            onProgress: (_index, progress) => updateUploadPercent(progress.percent),
+          });
+          mediaItems = [...uploadedImages];
+        }
+
+        if (controller.signal.aborted) return;
+        attempt = {
+          signature,
+          video: pendingVideo,
+          images: pendingImages,
+          audio: pendingAudio,
+          post: {
+            ...draft,
+            postType: publishPostType,
+            mediaItems,
+            ...(mediaItems?.length ? { publishRequestId: crypto.randomUUID() } : {}),
+          },
+        };
+        pendingPublishRef.current = attempt;
+      }
+
+      setPublishing(true);
+      await waitForSocialRequest(
+        onSubmit(attempt.post),
+        45_000,
+        "Could not confirm the post. Tap Post again to check and retry.",
+        controller.signal
+      );
+      pendingPublishRef.current = null;
+      if (controller.signal.aborted) return;
 
       setBody("");
       clearPendingMedia();
@@ -1197,6 +1245,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
     } finally {
       uploadAbortRef.current = null;
       setBusy(false);
+      setPublishing(false);
       setUploadPercent(null);
     }
   }
@@ -1445,6 +1494,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         audio={pendingAudio ?? undefined}
         imageFilterId={previewFilterId}
         compact={compact}
+        locked={uploadPercent !== null && busy}
         onRemoveImage={(id) => {
           // Keep the selected photo set stable while soundtrack preparation is
           // running; otherwise the completed audio could be orphaned from its photos.
@@ -1520,28 +1570,29 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
       ) : null}
 
       {uploadPercent !== null && busy ? (
-        <div className="h-[44px] shrink-0 space-y-1.5 overflow-hidden [overflow-anchor:none]">
-          <div className="h-1.5 overflow-hidden rounded-full bg-muted/20">
-            <div
-              className="h-full rounded-full bg-accent"
-              style={{ width: `${uploadPercent ?? 0}%` }}
+        <div className="min-h-[44px] shrink-0 space-y-1.5 [overflow-anchor:none]">
+          {!publishing ? (
+            <progress
+              className="block h-1.5 w-full accent-[var(--accent)]"
+              value={uploadPercent}
+              max={100}
+              aria-label="Upload progress"
             />
-          </div>
-          <div className="flex items-center justify-between gap-2 text-xs text-muted">
-            <span className="whitespace-nowrap tabular-nums" role="status">Uploading… {uploadPercent ?? 0}%</span>
-            <button
-              type="button"
-              onClick={handleCancelUpload}
-              className="inline-flex items-center gap-1 text-red-700"
-            >
-              <X className="h-3.5 w-3.5" aria-hidden />
-              Cancel
-            </button>
+          ) : null}
+          <div className="flex min-h-8 items-center justify-between gap-2 text-xs text-muted">
+            <span className="tabular-nums" role="status">
+              {publishing ? "Publishing…" : uploadPercent ? `Uploading… ${uploadPercent}%` : "Starting upload…"}
+            </span>
+            {!publishing ? (
+              <button type="button" onClick={handleCancelUpload} className="text-red-700">
+                Cancel upload
+              </button>
+            ) : null}
           </div>
         </div>
       ) : null}
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="gigasocial-composer-actions flex flex-wrap items-center gap-2">
         <input
           ref={unifiedMediaInputRef}
           type="file"
@@ -1706,7 +1757,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           onClick={() => void handleSubmit()}
           className="ml-auto min-h-10"
         >
-          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+          <Send className="h-4 w-4" aria-hidden />
           Post
         </Button>
       </div>

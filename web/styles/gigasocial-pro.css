@@ -508,6 +508,12 @@ body.gigasocial-composer-video-isolation .gigasocial-post-card video {
   padding-bottom: max(env(safe-area-inset-bottom), 0px);
 }
 
+@media (max-width: 767px) {
+  .gigasocial-composer-sheet .gigasocial-composer-actions button {
+    transition: none;
+  }
+}
+
 .gigasocial-live-stable,
 .gigasocial-live-stable * {
   animation: none !important;
