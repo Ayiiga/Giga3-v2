@@ -1,4 +1,3 @@
-import { isDesignedImageRequest } from "./providerRouter";
 "use node";
 
 import { internalAction } from "./_generated/server";
@@ -40,6 +39,7 @@ import {
   buildPromptCacheKey,
   enhanceImageGenerationPrompt,
   imageAssetOrientation,
+  isDesignedImageRequest,
   shouldUseResponseCache,
   type RequestKind,
 } from "./providerRouter";
