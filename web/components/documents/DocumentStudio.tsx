@@ -2,6 +2,7 @@
 
 import { DocumentToolbar } from "@/components/documents/DocumentToolbar";
 import { Button } from "@/components/ui/Button";
+import { CV_ACCENTS, CV_LAYOUTS, cvAppearance, type CvAccent, type CvLayout } from "@/lib/documents/cvLayouts";
 import { saveDocumentDraft } from "@/lib/documents/drafts";
 import { downloadDocumentExport, shareDocumentFile } from "@/lib/documents/download";
 import {
@@ -31,13 +32,14 @@ import Underline from "@tiptap/extension-underline";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { FileDown, Loader2, Maximize2, Save, Share2 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
 
 export type DocumentStudioProps = {
   document: GigaDocument;
   onChange?: (doc: GigaDocument) => void;
   onRegenerate?: () => void;
   compact?: boolean;
+  initialPreview?: boolean;
   className?: string;
 };
 
@@ -46,9 +48,11 @@ export function DocumentStudio({
   onChange,
   onRegenerate,
   compact = true,
+  initialPreview = false,
   className,
 }: DocumentStudioProps) {
   const [doc, setDoc] = useState(initial);
+  const [previewOnly, setPreviewOnly] = useState(initialPreview);
   const [busy, setBusy] = useState<"pdf" | "docx" | "pptx" | "share" | "save" | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -81,7 +85,8 @@ export function DocumentStudio({
       TableCell,
       Placeholder.configure({ placeholder: "Edit your document…" }),
     ],
-    content: markdownToEditorHtml(initial.markdown),
+    content: initial.content.content?.length ? initial.content : markdownToEditorHtml(initial.markdown),
+    editable: !initialPreview,
     editorProps: {
       attributes: {
         class:
@@ -115,13 +120,21 @@ export function DocumentStudio({
 
   useEffect(() => {
     setDoc(initial);
-    if (editor && initial.markdown !== tipTapJsonToMarkdown(editor.getJSON() as DocJson)) {
-      editor.commands.setContent(markdownToEditorHtml(initial.markdown), false);
+    if (editor) {
+      editor.commands.setContent(
+        initial.content.content?.length ? initial.content : markdownToEditorHtml(initial.markdown),
+        false
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- sync when document id changes
   }, [initial.id]);
 
-  const preview = previewPageCss(doc.paper, compact ? 360 : 720);
+  useEffect(() => {
+    editor?.setEditable(!previewOnly);
+  }, [editor, previewOnly]);
+
+  const appearance = cvAppearance(doc);
+  const preview = previewPageCss(doc.paper, compact && !fullscreen ? 360 : 720);
 
   const pdfUnicode = useMemo(
     () => analyzePdfUnicodeCoverage(doc.markdown),
@@ -415,18 +428,52 @@ export function DocumentStudio({
         </div>
       ) : null}
 
-      <DocumentToolbar editor={editor} />
+      {appearance ? (
+        <div className="flex flex-wrap items-end gap-3 rounded-xl border border-violet-200 bg-violet-50/40 p-3">
+          <label className="min-w-0 text-xs font-semibold text-foreground">
+            CV layout
+            <select className="mt-1 block min-h-11 w-full rounded-lg border border-border bg-white px-2 text-slate-900"
+              value={appearance.layout} onChange={(e) => emit({ ...doc, cvLayout: e.target.value as CvLayout, updatedAt: Date.now() })}>
+              {Object.entries(CV_LAYOUTS).map(([id, layout]) => <option key={id} value={id}>{layout.name}</option>)}
+            </select>
+          </label>
+          <div className="min-w-0" aria-label="CV accent colour" role="group">
+            <p className="text-xs font-semibold text-foreground">Accent colour</p>
+            <div className="mt-1 flex flex-wrap gap-1.5">
+              {(Object.entries(CV_ACCENTS) as [CvAccent, string][]).map(([accent, color]) => (
+                <button key={accent} type="button" aria-label={accent} aria-pressed={accent === appearance.accent}
+                  title={accent} className="flex h-11 w-11 items-center justify-center rounded-lg border border-transparent aria-pressed:border-violet-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-700"
+                  onClick={() => emit({ ...doc, cvAccent: accent, updatedAt: Date.now() })}>
+                  <span aria-hidden className="h-6 w-6 rounded-full" style={{ backgroundColor: color }} />
+                </button>
+              ))}
+            </div>
+          </div>
+          <Button type="button" size="sm" variant="secondary" onClick={() => setPreviewOnly(!previewOnly)}>
+            {previewOnly ? "Edit CV" : "Preview CV"}
+          </Button>
+        </div>
+      ) : null}
+
+      {!previewOnly ? <DocumentToolbar editor={editor} /> : null}
 
       <div className="overflow-x-auto pb-1">
         <div
-          className="mx-auto rounded-sm border border-[#d4d4d8] bg-white shadow-md"
+          className={cn("mx-auto flow-root rounded-sm border border-[#d4d4d8] bg-white shadow-md", appearance && "cv-paper")}
+          data-cv-treatment={appearance?.treatment}
           style={{
             width: "100%",
             maxWidth: preview.widthPx,
             aspectRatio: preview.aspectRatio,
             padding: "12px 14px",
-          }}
+            "--cv-accent": appearance?.color,
+          } as CSSProperties}
         >
+          {appearance && doc.profilePhotoDataUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={doc.profilePhotoDataUrl} alt="Passport-style CV portrait" width={62} height={79}
+              className="float-right ml-3 mb-2 h-auto max-w-[23%] rounded-sm object-cover" />
+          ) : null}
           <EditorContent editor={editor} />
         </div>
       </div>

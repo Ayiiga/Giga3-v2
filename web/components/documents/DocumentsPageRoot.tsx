@@ -1,5 +1,6 @@
 "use client";
 
+import { CvTemplateGallery } from "@/components/documents/CvTemplateGallery";
 import { DocumentStudio } from "@/components/documents/DocumentStudio";
 import { Button } from "@/components/ui/Button";
 import { listDocumentDrafts, saveDocumentDraft } from "@/lib/documents/drafts";
@@ -11,6 +12,7 @@ const AUTOSAVE_DELAY_MS = 650;
 
 export function DocumentsPageRoot() {
   const [doc, setDoc] = useState<GigaDocument | null>(null);
+  const [viewDraft, setViewDraft] = useState(false);
   const [drafts, setDrafts] = useState<GigaDocument[]>([]);
   const [saveError, setSaveError] = useState<string | null>(null);
   const pendingDraft = useRef<GigaDocument | null>(null);
@@ -49,18 +51,21 @@ export function DocumentsPageRoot() {
     };
   }, [persistPending]);
 
-  const openDocument = (next: GigaDocument, needsSave: boolean) => {
+  const openDocument = (next: GigaDocument, needsSave: boolean, preview = false) => {
+    const latest = pendingDraft.current?.id === next.id ? pendingDraft.current : next;
     persistPending();
     if (needsSave) {
       try {
-        saveDocumentDraft(next);
+        saveDocumentDraft(latest);
         setSaveError(null);
       } catch {
         setSaveError("This device could not save the draft. Export a Word or PDF copy before leaving.");
       }
     }
-    setDoc(next);
+    setViewDraft(preview);
+    setDoc(latest);
     setDrafts(listDocumentDrafts());
+    requestAnimationFrame(() => document.getElementById("active-document")?.scrollIntoView({ block: "start" }));
   };
 
   const onDocumentChange = (next: GigaDocument) => {
@@ -86,8 +91,16 @@ export function DocumentsPageRoot() {
         </p>
       ) : null}
 
+      <CvTemplateGallery onChoose={(cvLayout) => {
+        openDocument({
+          ...createDocumentFromTemplate("cv"),
+          cvLayout,
+          cvAccent: cvLayout === "signature" ? "Navy" : "Slate",
+        }, true);
+      }} />
+
       <section className="space-y-2">
-        <h3 className="text-sm font-semibold text-foreground">Templates</h3>
+        <h3 className="text-sm font-semibold text-foreground">Document templates</h3>
         <div className="gigalearn-grade-scroll flex gap-2 overflow-x-auto pb-1">
           {DOCUMENT_STUDIO_TEMPLATES.map((t) => (
             <button
@@ -107,16 +120,22 @@ export function DocumentsPageRoot() {
         <section className="space-y-2">
           <h3 className="text-sm font-semibold text-foreground">Saved drafts</h3>
           <ul className="grid gap-2 sm:grid-cols-2">
-            {drafts.slice(0, 6).map((d) => (
-              <li key={d.id}>
-                <button
-                  type="button"
-                  onClick={() => openDocument(d, false)}
-                  className="flex min-h-11 w-full items-center justify-between rounded-xl border border-border bg-white px-3 py-2 text-left text-sm"
-                >
-                  <span className="truncate font-medium">{d.title}</span>
-                  <span className="text-[11px] text-muted">{d.paper.size}</span>
-                </button>
+            {drafts.map((d) => (
+              <li key={d.id} className="rounded-xl border border-border bg-white px-3 py-2">
+                <div className="flex min-w-0 items-center gap-2">
+                  {d.templateKind === "cv" && d.profilePhotoDataUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={d.profilePhotoDataUrl} alt="" width={32} height={40} className="h-10 w-8 rounded object-cover" />
+                  ) : null}
+                  <span className="min-w-0 flex-1 break-words text-sm font-medium">{d.title}</span>
+                  <span className="text-xs text-muted">{d.paper.size}</span>
+                </div>
+                <div className="mt-1 flex gap-2">
+                  <Button type="button" size="sm" variant="secondary" onClick={() => openDocument(d, false)}>Edit</Button>
+                  {d.templateKind === "cv" ? (
+                    <Button type="button" size="sm" variant="secondary" onClick={() => openDocument(d, false, true)}>View CV</Button>
+                  ) : null}
+                </div>
               </li>
             ))}
           </ul>
@@ -124,7 +143,9 @@ export function DocumentsPageRoot() {
       ) : null}
 
       {doc ? (
-        <DocumentStudio document={doc} onChange={onDocumentChange} />
+        <div id="active-document" className="scroll-mt-24">
+          <DocumentStudio key={`${doc.id}-${viewDraft}`} document={doc} onChange={onDocumentChange} initialPreview={viewDraft} />
+        </div>
       ) : (
         <div className="rounded-2xl border border-dashed border-border px-4 py-8 text-center">
           <p className="text-sm text-muted">Choose a template or open a draft to start editing.</p>

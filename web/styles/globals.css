@@ -2860,3 +2860,41 @@ html.giga-lite-extreme .chat-composer-surface {
 .chat-keyboard-shell.chat-scheduled-background .chat-message-scroll-region {
   background: transparent !important;
 }
+
+.cv-paper h1,
+.cv-paper h2,
+.cv-paper h3 {
+  display: flow-root;
+  color: var(--cv-accent);
+}
+
+.cv-paper[data-cv-treatment="band"] h2 {
+  background-color: #edf1f5;
+  padding: 0.15em 0.3em;
+}
+
+.cv-paper[data-cv-treatment="rule"] h2 {
+  border-bottom: 1px solid var(--cv-accent);
+}
+
+.cv-paper[data-cv-treatment="signature"] h1 {
+  background-color: var(--cv-accent);
+  color: white;
+  padding: 0.22em 0.35em;
+}
+
+.cv-paper-sample {
+  font-size: clamp(6px, 1.5vw, 10px);
+  line-height: 1.35;
+}
+
+.cv-paper-sample h1 {
+  font-size: 1.45em;
+  font-weight: 750;
+}
+
+.cv-paper-sample h2 {
+  margin-top: 0.75em;
+  font-size: 1.05em;
+  font-weight: 700;
+}
