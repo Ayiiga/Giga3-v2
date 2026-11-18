@@ -16,3 +16,7 @@ The worker scope is this project folder. It caches only the listed starter files
 This starter does not implement accounts, synchronisation or offline databases.
 Bump the cache name when you change the precached files. Keep the prefix unique.
 Never deploy secret keys or private learner information in client-side files.
+
+Before publishing your own finished website, replace this practice demo metadata:
+add your own page title and description, remove the noindex robots instruction
+when ready for search discovery, and set the canonical URL to your own hosted page.

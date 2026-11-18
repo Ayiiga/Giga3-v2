@@ -126,6 +126,8 @@ describe('practical Academy learning journeys', ()=>{
     expect(status()).toContain('Output off');
   });
   it('provides actual HTML, manifest, worker and correctly sized icons for the starter download', ()=>{
+    expect(read('projects/study-hub/index.html')).toContain('name="robots" content="noindex,follow"');
+    expect(read('projects/soil-alert.html')).toContain('name="robots" content="noindex,follow"');
     const manifest=JSON.parse(read('projects/study-hub/manifest.webmanifest'));
     for(const icon of manifest.icons) {
       const bytes=readFileSync(resolve(root,'projects/study-hub',icon.src));
