@@ -131,9 +131,9 @@ export function DocumentsPageRoot() {
                   <span className="text-xs text-muted">{d.paper.size}</span>
                 </div>
                 <div className="mt-1 flex gap-2">
-                  <Button type="button" size="sm" variant="secondary" onClick={() => openDocument(d, false)}>Edit</Button>
+                  <Button type="button" size="sm" variant="secondary" aria-label={`Edit ${d.title}`} onClick={() => openDocument(d, false)}>Edit</Button>
                   {d.templateKind === "cv" ? (
-                    <Button type="button" size="sm" variant="secondary" onClick={() => openDocument(d, false, true)}>View CV</Button>
+                    <Button type="button" size="sm" variant="secondary" aria-label={`View CV ${d.title}`} onClick={() => openDocument(d, false, true)}>View CV</Button>
                   ) : null}
                 </div>
               </li>
