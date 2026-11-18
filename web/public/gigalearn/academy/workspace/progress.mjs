@@ -9,6 +9,9 @@ export function readProgress(course, state = {}) {
   const current = state.revision === revision;
   return {
     revision,
+    recipient: typeof state.recipient === 'string' ? state.recipient.trim().slice(0, 100) : '',
+    serial: readSerial(state.serial),
+    introductorySerial: readSerial(state.introductorySerial),
     done: Array.isArray(state.done)
       ? [...new Set(state.done.filter(i => Number.isInteger(i) && i >= 0 && i < course.lessons.length))]
       : [],
@@ -19,6 +22,23 @@ export function readProgress(course, state = {}) {
   };
 }
 
+export function lessonUnlocked(state, index) {
+  return state.done.includes(index) || Array.from({ length: index }, (_, i) => i)
+    .every(i => state.done.includes(i));
+}
+
+export function lessonsComplete(course, state) {
+  return course.lessons.every((_, i) => state.done.includes(i));
+}
+
 export function eligibleForCertificate(course, state) {
-  return state.done.length === course.lessons.length && state.best >= passingScore(course);
+  return lessonsComplete(course, state) && state.best >= passingScore(course);
+}
+
+const readSerial = value => typeof value === 'string' && /^GLA-[A-Z]+-[A-F0-9]{24}$/.test(value) ? value : '';
+
+export function createCertificateSerial(courseId, random = globalThis.crypto) {
+  const bytes = random.getRandomValues(new Uint8Array(12));
+  return 'GLA-' + courseId.toUpperCase() + '-' +
+    Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('').toUpperCase();
 }

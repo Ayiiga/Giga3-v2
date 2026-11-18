@@ -112,3 +112,13 @@ body>*{display:none!important}
 body:not(.print-authorized-material):after{content:"Open a learning material and use its subscriber Print button."}
 body.print-authorized-material #print-material{display:block!important;white-space:pre-wrap;overflow-wrap:anywhere;font:14pt/1.65 system-ui,sans-serif;color:#000}
 }
+
+.lesson-list summary[aria-disabled="true"]{color:var(--muted);cursor:default}
+.lesson-list [data-marker]{float:right;margin-left:8px;font-size:.85em}
+.worked-example{margin:16px 0;padding:16px;border-left:4px solid #7951b8;background:#f8f4ff;border-radius:8px}
+.worked-example p:last-child{margin-bottom:0}
+#certificate-name{display:grid;gap:12px}
+#certificate-name input{width:100%;padding:12px;border:1px solid #bca8d9;border-radius:8px;font:inherit}
+.cert-paper .cert-recipient{font-size:clamp(1.4rem,5vw,2rem);overflow-wrap:anywhere;color:#432473}
+.cert-signature{margin:24px auto 4px;padding:0 8px 4px;border-bottom:1px solid #9b7bd1;width:fit-content;font-family:Georgia,serif;font-size:1.25rem;font-style:italic}
+.cert-serial{font-family:monospace;overflow-wrap:anywhere}

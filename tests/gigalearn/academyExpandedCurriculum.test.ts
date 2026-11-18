@@ -32,3 +32,24 @@ describe("expanded Academy curriculum", () => {
     expect(eligibleForCertificate(course, { ...migrated, done, best: 8 })).toBe(true);
   });
 });
+
+it("unlocks lessons in sequence while keeping previously completed lessons reviewable", async () => {
+  const { lessonUnlocked, lessonsComplete } = await import("../../web/public/gigalearn/academy/workspace/progress.mjs");
+  const course = courses[1];
+  const state = readProgress(course, { done: [0, 3] });
+  expect([0, 1, 2, 3, 4].map((index) => lessonUnlocked(state, index))).toEqual([true, true, false, true, false]);
+  expect(lessonsComplete(course, state)).toBe(false);
+  state.done.push(1, 2);
+  expect(lessonUnlocked(state, 4)).toBe(true);
+});
+
+it("validates and preserves named certificate records across reloads", async () => {
+  const { createCertificateSerial } = await import("../../web/public/gigalearn/academy/workspace/progress.mjs");
+  const serial = createCertificateSerial("ai");
+  expect(serial).toMatch(/^GLA-AI-[A-F0-9]{24}$/);
+  expect(createCertificateSerial("ai")).not.toBe(serial);
+  const course = courses[1];
+  const certificate = readProgress(course, { revision: 2, recipient: "  Ama Asare  ", serial });
+  expect(certificate).toMatchObject({ recipient: "Ama Asare", serial });
+  expect(readProgress(course, certificate)).toEqual(certificate);
+});
