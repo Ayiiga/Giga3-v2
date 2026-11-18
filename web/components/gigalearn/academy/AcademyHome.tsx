@@ -8,7 +8,7 @@ import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNot
 import { ProductSignInPrompt } from "@/components/seo/ProductSignInPrompt";
 import { getSessionToken } from "@/lib/auth";
 import { hasPersistedAuth } from "@/lib/auth/sessionRestore";
-import { APPROVED_TECHNOLOGY_COURSE_SLUGS, getBuiltinAcademyCourse } from "@/lib/gigalearn/academy/courseCatalog";
+import { APPROVED_TECHNOLOGY_COURSE_SLUGS, getBuiltinAcademyCourse, isAcademyEnrolment } from "@/lib/gigalearn/academy/courseCatalog";
 import {
   ACADEMY_TRANSFORM_TAGLINE,
   LEARNING_STUDIOS,
@@ -44,10 +44,11 @@ import Link from "next/link";
 
 function PersonalLearningSummary() {
   const sessionToken = getSessionToken();
-  const enrolments = useQuery(
+  const allEnrolments = useQuery(
     api.gigaLearnAcademy.listMyEnrolments,
     sessionToken ? { sessionToken } : "skip"
   );
+  const enrolments = allEnrolments?.filter(isAcademyEnrolment);
   const attempts = useQuery(
     api.gigaLearnAcademyAssessments.listMyAssessmentHistory,
     sessionToken ? { sessionToken } : "skip"

@@ -1,5 +1,8 @@
 "use client";
 
+import { getAcademyProjectTrack } from "@/lib/gigalearn/academy/projectTracks";
+import type { AcademyCourse } from "@/lib/gigalearn/academy/types";
+
 import { AcademyChrome } from "@/components/gigalearn/academy/AcademyChrome";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
@@ -45,7 +48,7 @@ function AcademyCourseDetailInner() {
     () => (slug ? getBuiltinAcademyCourse(slug) ?? null : null),
     [slug]
   );
-  const course = remoteCourse === undefined ? builtinCourse : remoteCourse;
+  const course: AcademyCourse | null = remoteCourse === undefined ? builtinCourse : remoteCourse;
   const enrolment = useQuery(
     api.gigaLearnAcademy.getMyEnrolment,
     sessionToken && slug ? { sessionToken, courseSlug: slug } : "skip"
@@ -91,6 +94,7 @@ function AcademyCourseDetailInner() {
     );
   }
 
+  const projectTrack = getAcademyProjectTrack(slug);
   const isEnrolled = enrolment?.status === "active" || enrolment?.status === "completed";
 
   async function onEnrol() {
@@ -171,7 +175,7 @@ function AcademyCourseDetailInner() {
           <span className="academy-visual-chip rounded-full px-2.5 py-0.5 text-[11px] font-semibold">
             {accessBadge(course.access, course.creditCost)}
           </span>
-          {course.certificateEligible ? (
+          {course.certificateEligible && !projectTrack ? (
             <span className="academy-visual-chip rounded-full px-2.5 py-0.5 text-[11px]">
               Certificate available after meeting course requirements
             </span>
@@ -183,41 +187,54 @@ function AcademyCourseDetailInner() {
           ) : null}
         </div>
 
-        <p className="academy-visual-muted text-sm leading-relaxed">{course.description}</p>
+        {!projectTrack ? <p className="academy-visual-muted text-sm leading-relaxed">{course.description}</p> : null}
+
+        {projectTrack ? (
+          <div className="academy-visual-tile min-w-0 space-y-3 rounded-xl p-4">
+            <h2 className="text-base font-semibold">Practical lessons and final project</h2>
+            <p className="academy-visual-muted text-sm">{projectTrack.outcome}</p>
+            <p className="academy-visual-muted text-sm">{projectTrack.evidence}</p>
+            <p className="academy-visual-muted text-xs">The lesson workspace saves completion on this browser. Keep your final project and test evidence to demonstrate what you can do.</p>
+            <ButtonLink
+              href={projectTrack.href}
+              className="academy-visual-cta academy-visual-cta--success min-h-11"
+            >
+              Open step-by-step lessons
+            </ButtonLink>
+          </div>
+        ) : null}
 
         {(() => {
           const tech = getTechCourseMeta(slug);
-          if (!tech) return null;
+          if (!tech || tech.awaitingMaterials) return null;
           return (
             <div
               className="academy-visual-tile min-w-0 space-y-2 rounded-xl p-3"
               data-testid="tech-hub-course-cta"
             >
-              <h2 className="text-sm font-semibold">Technology Learning Hub</h2>
+              <h2 className="text-sm font-semibold">Optional question practice</h2>
               <p className="academy-visual-muted text-sm">
-                {tech.awaitingMaterials
-                  ? "Course pathway is ready. Interactive question practice unlocks after the source PDF is imported and validated."
-                  : `${tech.approvedQuestionCount} approved practice questions across ${tech.topics.length} topics (unique items after near-duplicate removal).`}
+                {tech.approvedQuestionCount} practice questions across {tech.topics.length} topics.
               </p>
               <ButtonLink
                 href={techPracticeHref(slug, { mode: "learn" })}
                 className="academy-visual-cta min-h-11"
               >
-                {tech.awaitingMaterials ? "Open hub (awaiting bank)" : "Start interactive practice"}
+                Start interactive practice
               </ButtonLink>
             </div>
           );
         })()}
 
         <div className="grid min-w-0 gap-4 sm:grid-cols-2">
-          <div className="academy-visual-tile min-w-0 rounded-xl p-3">
+          {!projectTrack ? <div className="academy-visual-tile min-w-0 rounded-xl p-3">
             <h2 className="text-sm font-semibold">Learning objectives</h2>
             <ul className="academy-visual-muted mt-2 list-disc space-y-1 pl-5 text-sm">
               {course.learningObjectives.map((o) => (
                 <li key={o}>{o}</li>
               ))}
             </ul>
-          </div>
+          </div> : null}
           <div className="academy-visual-tile min-w-0 rounded-xl p-3">
             <h2 className="text-sm font-semibold">Prerequisites</h2>
             <ul className="academy-visual-muted mt-2 list-disc space-y-1 pl-5 text-sm">
@@ -228,7 +245,7 @@ function AcademyCourseDetailInner() {
           </div>
         </div>
 
-        <div className="grid min-w-0 gap-3 text-sm sm:grid-cols-2">
+        {!projectTrack ? <div className="grid min-w-0 gap-3 text-sm sm:grid-cols-2">
           <p className="academy-visual-muted">
             <span className="font-semibold text-[var(--av-fg)]">Curriculum preview: </span>
             {course.curriculumPreview}
@@ -248,7 +265,7 @@ function AcademyCourseDetailInner() {
               {course.instructorBio ? ` — ${course.instructorBio}` : ""}
             </p>
           ) : null}
-        </div>
+        </div> : null}
 
         {!sessionToken && !hasPersistedAuth() ? (
           <ProductSignInPrompt
@@ -304,7 +321,7 @@ function AcademyCourseDetailInner() {
                 Assessments
               </ButtonLink>
             ) : null}
-            {isEnrolled && course.certificateEligible ? (
+            {isEnrolled && course.certificateEligible && !projectTrack ? (
               <ButtonLink
                 href={`/gigalearn/academy/certificates/?course=${encodeURIComponent(slug)}`}
                 className={cn(
@@ -362,7 +379,7 @@ function AcademyCourseDetailInner() {
         aria-labelledby="pathway-heading"
       >
         <h2 id="pathway-heading" className="text-lg font-semibold">
-          Course syllabus
+          {projectTrack ? "Academy checkpoints" : "Course syllabus"}
         </h2>
         <p className="academy-visual-muted text-sm">
           {course.modules.length} {course.modules.length === 1 ? "module" : "modules"} · {pathwayCounts.total} activities · {pathwayCounts.required} required
@@ -392,7 +409,9 @@ function AcademyCourseDetailInner() {
                 {mod.lessons.map((lesson) => {
                   const idx = lessonIndex;
                   lessonIndex += 1;
-                  const href = lesson.resource
+                  const href = projectTrack && slug === "mobile-app-development"
+                    ? projectTrack.href
+                    : lesson.resource
                     ? hrefForAcademyResource(lesson.resource)
                     : siteConfig.links.gigalearn;
                   return (
