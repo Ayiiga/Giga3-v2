@@ -908,7 +908,13 @@ export const APPROVED_TECHNOLOGY_COURSE_SLUGS = [
 const APPROVED_TECHNOLOGY_COURSE_SET = new Set<string>(APPROVED_TECHNOLOGY_COURSE_SLUGS);
 
 export function isPublicAcademyCourse(course: Pick<AcademyCourseListItem, "slug" | "category">): boolean {
-  return course.category !== "Technology" || APPROVED_TECHNOLOGY_COURSE_SET.has(course.slug);
+  return !course.slug.startsWith("exam-") && course.category !== "Exam prep" &&
+    (course.category !== "Technology" || APPROVED_TECHNOLOGY_COURSE_SET.has(course.slug));
+}
+
+export function isAcademyEnrolment({ courseSlug }: { courseSlug: string }): boolean {
+  const course = getBuiltinAcademyCourse(courseSlug);
+  return !courseSlug.startsWith("exam-") && (!course || isPublicAcademyCourse(course));
 }
 
 export function listBuiltinAcademyCourses(): AcademyCourse[] {

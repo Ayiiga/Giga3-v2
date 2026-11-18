@@ -6,7 +6,8 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { BECE_SUBJECTS_AVAILABLE } from "../../web/lib/gigalearn/examPractice/centreConfig";
 import { LEARNING_STUDIOS } from "../../web/lib/gigalearn/academy/learningStudios";
-import { listBuiltinAcademyCourses } from "../../web/lib/gigalearn/academy/courseCatalog";
+import { APPROVED_TECHNOLOGY_COURSE_SLUGS, getBuiltinAcademyCourse, isAcademyEnrolment, listBuiltinAcademyCourses } from "../../web/lib/gigalearn/academy/courseCatalog";
+import { getAcademyProjectTrack } from "../../web/lib/gigalearn/academy/projectTracks";
 
 const ROOT = resolve(__dirname, "../..");
 
@@ -72,5 +73,30 @@ describe("Academy + Exam Practice integration", () => {
     );
     expect(examUi).not.toContain("submitAssessmentAttempt");
     expect(examUi).toContain("listProgress");
+  });
+});
+
+describe("Academy course boundaries and projects", () => {
+  it("excludes exam banks from catalogue and Academy enrolments while retaining bank lookup", () => {
+    expect(listBuiltinAcademyCourses().some((course) => course.category === "Exam prep")).toBe(false);
+    for (const courseSlug of ["exam-ad-i", "exam-ad-ii", "exam-wassce-english", "bece-maths-foundations"]) {
+      expect(getBuiltinAcademyCourse(courseSlug)).toBeDefined();
+      expect(isAcademyEnrolment({ courseSlug })).toBe(false);
+    }
+    expect(isAcademyEnrolment({ courseSlug: "ai-machine-learning" })).toBe(true);
+    expect(listBuiltinAcademyCourses().some((course) => course.slug === "teacher-lesson-studio-basics")).toBe(true);
+  });
+
+  it("links each of the four technology courses to its practical curriculum", async () => {
+    const { default: workspace } = await import("../../web/public/gigalearn/academy/workspace/courses.mjs");
+    const ids = APPROVED_TECHNOLOGY_COURSE_SLUGS.map((slug) => {
+      const track = getAcademyProjectTrack(slug);
+      expect(track?.href).toContain(`?view=course/${track?.id}`);
+      const course = workspace.find((entry) => entry.id === track?.id);
+      expect(course?.lessons.length).toBeGreaterThanOrEqual(10);
+      expect(course?.lessons.at(-1)?.[3]).toMatch(/^Submit/);
+      return track?.id;
+    });
+    expect(new Set(ids)).toEqual(new Set(["ai", "web", "mobile", "robotics"]));
   });
 });

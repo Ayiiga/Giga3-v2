@@ -1,5 +1,7 @@
 "use client";
 
+import { getAcademyProjectTrack } from "@/lib/gigalearn/academy/projectTracks";
+
 import { AcademyChrome } from "@/components/gigalearn/academy/AcademyChrome";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
@@ -91,6 +93,7 @@ function AcademyCourseDetailInner() {
     );
   }
 
+  const projectTrack = getAcademyProjectTrack(slug);
   const isEnrolled = enrolment?.status === "active" || enrolment?.status === "completed";
 
   async function onEnrol() {
@@ -185,25 +188,37 @@ function AcademyCourseDetailInner() {
 
         <p className="academy-visual-muted text-sm leading-relaxed">{course.description}</p>
 
+        {projectTrack ? (
+          <div className="academy-visual-tile min-w-0 space-y-3 rounded-xl p-4">
+            <h2 className="text-base font-semibold">Practical lessons and final project</h2>
+            <p className="academy-visual-muted text-sm">{projectTrack.outcome}</p>
+            <p className="academy-visual-muted text-sm">{projectTrack.evidence}</p>
+            <ButtonLink
+              href={projectTrack.href}
+              className="academy-visual-cta academy-visual-cta--success min-h-11"
+            >
+              Open step-by-step lessons
+            </ButtonLink>
+          </div>
+        ) : null}
+
         {(() => {
           const tech = getTechCourseMeta(slug);
-          if (!tech) return null;
+          if (!tech || tech.awaitingMaterials) return null;
           return (
             <div
               className="academy-visual-tile min-w-0 space-y-2 rounded-xl p-3"
               data-testid="tech-hub-course-cta"
             >
-              <h2 className="text-sm font-semibold">Technology Learning Hub</h2>
+              <h2 className="text-sm font-semibold">Optional question practice</h2>
               <p className="academy-visual-muted text-sm">
-                {tech.awaitingMaterials
-                  ? "Course pathway is ready. Interactive question practice unlocks after the source PDF is imported and validated."
-                  : `${tech.approvedQuestionCount} approved practice questions across ${tech.topics.length} topics (unique items after near-duplicate removal).`}
+                {tech.approvedQuestionCount} practice questions across {tech.topics.length} topics.
               </p>
               <ButtonLink
                 href={techPracticeHref(slug, { mode: "learn" })}
                 className="academy-visual-cta min-h-11"
               >
-                {tech.awaitingMaterials ? "Open hub (awaiting bank)" : "Start interactive practice"}
+                Start interactive practice
               </ButtonLink>
             </div>
           );
@@ -362,7 +377,7 @@ function AcademyCourseDetailInner() {
         aria-labelledby="pathway-heading"
       >
         <h2 id="pathway-heading" className="text-lg font-semibold">
-          Course syllabus
+          {projectTrack ? "Academy checkpoints" : "Course syllabus"}
         </h2>
         <p className="academy-visual-muted text-sm">
           {course.modules.length} {course.modules.length === 1 ? "module" : "modules"} · {pathwayCounts.total} activities · {pathwayCounts.required} required

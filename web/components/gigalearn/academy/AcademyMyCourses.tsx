@@ -7,7 +7,7 @@ import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNot
 import { ProductSignInPrompt } from "@/components/seo/ProductSignInPrompt";
 import { getSessionToken } from "@/lib/auth";
 import { hasPersistedAuth } from "@/lib/auth/sessionRestore";
-import { getBuiltinAcademyCourse } from "@/lib/gigalearn/academy/courseCatalog";
+import { getBuiltinAcademyCourse, isAcademyEnrolment } from "@/lib/gigalearn/academy/courseCatalog";
 import { ACADEMY_SURFACE_CLASS } from "@/lib/gigalearn/academy/visualTheme";
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
@@ -16,10 +16,12 @@ import Link from "next/link";
 
 export function AcademyMyCourses() {
   const sessionToken = getSessionToken();
-  const enrolments = useQuery(
+  const allEnrolments = useQuery(
     api.gigaLearnAcademy.listMyEnrolments,
     sessionToken ? { sessionToken } : "skip"
   );
+
+  const enrolments = allEnrolments?.filter(isAcademyEnrolment);
 
   if (!sessionToken && !hasPersistedAuth()) {
     return (

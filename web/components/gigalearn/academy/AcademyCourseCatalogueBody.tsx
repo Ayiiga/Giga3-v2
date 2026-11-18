@@ -3,10 +3,11 @@
 import {
   filterAcademyCourses,
   getBuiltinAcademyCourse,
+  isPublicAcademyCourse,
   listBuiltinAcademyCourses,
   toAcademyListItem,
 } from "@/lib/gigalearn/academy/courseCatalog";
-import { getTechCourseMeta } from "@/lib/gigalearn/academy/techBanks/techBankMeta";
+import { getAcademyProjectTrack } from "@/lib/gigalearn/academy/projectTracks";
 import type { AcademyCourseListItem } from "@/lib/gigalearn/academy/types";
 import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
@@ -51,11 +52,11 @@ export function AcademyCourseCatalogueBody() {
   // Academy is a professional-skills catalogue; general school subjects belong in Learn/Practice.
   const academySubjects = [
     "Teaching", "Artificial Intelligence", "Web & PWA",
-    "Mobile Development", "Robotics", "Digital Technologies",
+    "Mobile Development", "Robotics",
   ] as const;
   const allowed = new Set<string>(academySubjects);
   const courses = (remoteCourses ?? builtinCourses).filter((course) =>
-    allowed.has(course.subject) &&
+    isPublicAcademyCourse(course) && allowed.has(course.subject) &&
     (subject === "all" || course.subject === subject) &&
     (difficulty === "all" || course.difficulty === difficulty) &&
     (!query.trim() || `${course.title} ${course.description} ${course.subject}`.toLowerCase().includes(query.trim().toLowerCase()))
@@ -130,7 +131,7 @@ export function AcademyCourseCatalogueBody() {
         <ul className="grid gap-3 sm:grid-cols-2">
           {courses.map((course: AcademyCourseListItem) => {
             const full = getBuiltinAcademyCourse(course.slug);
-            const tech = getTechCourseMeta(course.slug);
+            const projectTrack = getAcademyProjectTrack(course.slug);
             return (
             <li key={course.slug}>
               <Link
@@ -149,11 +150,7 @@ export function AcademyCourseCatalogueBody() {
                       Certificate-eligible
                     </span>
                   ) : null}
-                  {tech?.awaitingMaterials ? (
-                    <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[11px] font-medium text-amber-900">
-                      Awaiting bank
-                    </span>
-                  ) : null}
+
                 </div>
                 <h3 className="mt-3 text-base font-semibold text-foreground">{course.title}</h3>
                 <p className="mt-1 line-clamp-3 flex-1 text-sm text-muted">{course.description}</p>
@@ -171,14 +168,13 @@ export function AcademyCourseCatalogueBody() {
                   </span>
                   <span className="inline-flex items-center gap-1">
                     <Clock3 className="h-3.5 w-3.5" aria-hidden />
-                    {formatDuration(course.durationMinutes)} · {course.moduleCount} modules
-                    {tech
-                      ? ` · ${tech.approvedQuestionCount} questions`
-                      : ` · ${course.lessonCount} lessons`}
+                    {projectTrack
+                      ? "Practical lessons · Final project"
+                      : `${formatDuration(course.durationMinutes)} · ${course.lessonCount} lessons`}
                   </span>
                 </div>
                 <span className="mt-3 text-sm font-semibold text-accent">
-                  {tech ? "Start learning →" : "View course →"}
+                  {projectTrack ? "Start learning →" : "View course →"}
                 </span>
               </Link>
             </li>
