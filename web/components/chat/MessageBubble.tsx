@@ -18,7 +18,7 @@ import { formatMessageTime } from "@/lib/chat/groupMessagesByDate";
 import { parseAnswerBlocks } from "@/lib/chat/parseAnswerBlocks";
 import { parseSmartAnswer } from "@/lib/chat/parseSmartAnswer";
 import { extractProductRedirectsFromText } from "@/lib/chat/productRedirects";
-import { parseMessageMedia } from "@/lib/chat/parseMessageMedia";
+import { parseMessageMedia, splitUnrenderedPoster } from "@/lib/chat/parseMessageMedia";
 import {
   parseLiveWebMetadata,
 } from "@/lib/chat/liveWebTypes";
@@ -80,12 +80,13 @@ export const MessageBubble = memo(function MessageBubble({
   useRenderDiagnostic("MessageBubble");
 
   const isUser = role === "user";
-  const parsed = useMemo(() => parseMessageMedia(content), [content]);
+  const posterCopy = useMemo(() => isUser ? null : splitUnrenderedPoster(content), [content, isUser]);
+  const parsed = useMemo(() => parseMessageMedia(posterCopy ?? content), [content, posterCopy]);
   const safeContent =
     parsed.text.length > 0
       ? parsed.text
       : parsed.images.length === 0 && parsed.videos.length === 0
-        ? "(Empty message)"
+        ? posterCopy === null ? "(Empty message)" : ""
         : "";
 
   const revealed = useStreamingReveal(
@@ -237,7 +238,7 @@ export const MessageBubble = memo(function MessageBubble({
     <MessageBubbleActions
       messageId={id}
       role={role}
-      content={content}
+      content={posterCopy ?? content}
       disabled={pending || (!isUser && streaming)}
       onEdit={isUser && id && onEdit ? () => setEditing(true) : undefined}
       onRegenerate={
@@ -260,7 +261,12 @@ export const MessageBubble = memo(function MessageBubble({
               pending && "opacity-80"
             )}
           >
-            {body}
+              {body}
+            {posterCopy !== null ? (
+              <p className="mt-2 text-sm text-muted" role="status">
+                The poster image did not render. The text above can still be used as poster copy.
+              </p>
+            ) : null}
           </div>
           {bubbleActions}
         </div>
@@ -288,6 +294,13 @@ export const MessageBubble = memo(function MessageBubble({
             className="chat-assistant-body chat-message-bubble-inner chat-message-bubble-assistant-inner--app px-0 py-0.5 text-foreground sm:py-1"
           >
             {body}
+            {posterCopy !== null && !streaming ? (
+              <p className="mt-2 text-sm text-muted" role="status">
+                {posterCopy
+                  ? "The poster image did not render. The text above is available as poster copy."
+                  : "The poster image did not render."}
+              </p>
+            ) : null}
           </div>
           {bubbleActions}
           {/*
@@ -299,6 +312,7 @@ export const MessageBubble = memo(function MessageBubble({
           !editing &&
           !smartAnswer &&
           !answerBlocks?.isStructured &&
+          posterCopy === null &&
           looksLikeDocumentContent(content) ? (
             <DocumentResultCard
               content={content}
