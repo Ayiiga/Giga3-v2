@@ -35,10 +35,26 @@ export function eligibleForCertificate(course, state) {
   return lessonsComplete(course, state) && state.best >= passingScore(course);
 }
 
-const readSerial = value => typeof value === 'string' && /^GLA-[A-Z]+-[A-F0-9]{24}$/.test(value) ? value : '';
+const alphabet = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+
+function encodeSerial(value) {
+  let encoded = '';
+  for (let index = 0; index < 12; index++) {
+    encoded = alphabet[Number(value & 31n)] + encoded;
+    value >>= 5n;
+  }
+  return encoded;
+}
+
+function readSerial(value) {
+  if (typeof value !== 'string') return '';
+  if (/^GLA-[A-Z]+-[0-9A-HJKMNP-TV-Z]{12}$/.test(value)) return value;
+  const legacy = /^(GLA-[A-Z]+-)([A-F0-9]{15})[A-F0-9]{9}$/.exec(value);
+  return legacy ? legacy[1] + encodeSerial(BigInt('0x' + legacy[2])) : '';
+}
 
 export function createCertificateSerial(courseId, random = globalThis.crypto) {
-  const bytes = random.getRandomValues(new Uint8Array(12));
-  return 'GLA-' + courseId.toUpperCase() + '-' +
-    Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('').toUpperCase();
+  const bytes = random.getRandomValues(new Uint8Array(8));
+  const entropy = bytes.reduce((value, byte) => (value << 8n) | BigInt(byte), 0n);
+  return 'GLA-' + courseId.toUpperCase() + '-' + encodeSerial(entropy);
 }
