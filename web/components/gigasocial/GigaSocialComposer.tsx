@@ -1203,7 +1203,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
             ...draft,
             postType: publishPostType,
             mediaItems,
-            ...(mediaItems?.length ? { publishRequestId: crypto.randomUUID() } : {}),
+            publishRequestId: crypto.randomUUID(),
           },
         };
         pendingPublishRef.current = attempt;
