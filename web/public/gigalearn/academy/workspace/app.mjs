@@ -1,9 +1,10 @@
+import { createCertificateImage } from './certificate-image.mjs?v=112';
 import courses from './courses.mjs';
 import aiExamples from './ai-examples.mjs';
 import { createCertificateSerial, eligibleForCertificate, lessonUnlocked, lessonsComplete, passingScore, readProgress } from './progress.mjs';
 // Older cached workspace documents may still point to the unversioned stylesheet.
 const legacyStylesheet = document.querySelector('link[rel="stylesheet"][href="style.css"]');
-if (legacyStylesheet) legacyStylesheet.href = 'style.css?v=111';
+if (legacyStylesheet) legacyStylesheet.href = 'style.css?v=112';
 
 const main = document.querySelector('main');
 const dialog = document.querySelector('#detail');
@@ -300,24 +301,25 @@ function openCertificate(course, introductory) {
         state.recipient.trim().toLowerCase() === 'ayiiga benard issaka') {
       dialog.innerHTML = chrome +
         '<h2 id="dialog-title" class="certificate-image-title">Artificial Intelligence certificate</h2>'+
+        '<a class="btn primary certificate-download" href="ai-certificate-original.png" download="GigaLearn-AI-Certificate.png">Download certificate (PNG)</a>'+
         '<img class="certificate-original" src="ai-certificate-original.png" width="1536" height="1024" '+
-        'alt="Certificate of completion in Artificial Intelligence awarded to Ayiiga Benard Issaka, issued 18 November 2026">'+
-        '<a class="btn" href="ai-certificate-original.png" download="GigaLearn-AI-Certificate.png">Download certificate</a>';
+        'alt="Certificate of completion in Artificial Intelligence awarded to Ayiiga Benard Issaka, issued 18 November 2026">';
       return;
     }
 
+    const imageUrl = createCertificateImage({
+      recipient: state.recipient,
+      course: course.name,
+      date,
+      serial: state[serialField],
+      completion: introductory ? 'Introductory course completed' : course.lessons.length + ' lessons completed and assessment passed',
+    });
     dialog.innerHTML = chrome +
-      '<article class="cert-paper"><div class="cert-frame">'+
-      '<p class="cert-academy">GigaLearn Academy</p><h2 id="dialog-title">Certificate of <span>Completion</span></h2>'+
-      '<p class="cert-kicker">This certifies that</p><h3 class="cert-recipient">'+esc(state.recipient)+'</h3>'+
-      '<p class="cert-kicker">has successfully completed</p><h3 class="cert-course">'+esc(course.name)+'</h3>'+
-      '<p class="cert-completion">'+(introductory ? 'Introductory course' : course.lessons.length+' lessons completed and assessment passed')+'</p>'+
-      '<p class="cert-date">Issued '+esc(date)+'</p>'+
-      '<div class="cert-details"><div class="cert-serial"><span>Certificate serial</span><strong>'+esc(state[serialField])+'</strong></div>'+
-      '<div class="cert-seal" aria-hidden="true">'+icon('book')+'</div>'+
-      '<div class="cert-issuer"><p class="cert-signature" aria-label="Typed signature">A B Issaka</p><strong>Ayiiga Benard Issaka</strong><p>Founder, Giga3 AI</p></div></div>'+
-      '<div class="cert-brand"><img src="/images/logo.svg" alt="" width="24" height="24"><strong>Giga3 AI</strong></div>'+
-      '</div></article><p class="notice">This browser stores your certificate and serial.</p>';
+      '<h2 id="dialog-title" class="certificate-image-title">'+esc(course.name)+' certificate</h2>'+
+      '<a class="btn primary certificate-download" href="'+imageUrl+'" download="GigaLearn-'+course.id+'-Certificate.png">Download certificate (PNG)</a>'+
+      '<img class="certificate-original" src="'+imageUrl+'" width="1536" height="1024" '+
+      'alt="'+esc(course.name+' certificate awarded to '+state.recipient+', issued '+date+', serial '+state[serialField])+'">';
+
   }
   if (state.recipient && state[serialField]) {
     showCertificate();

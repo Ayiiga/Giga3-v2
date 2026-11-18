@@ -201,3 +201,5 @@ body.print-authorized-material #print-material{display:block!important;white-spa
 
 .certificate-original{display:block;width:100%;height:auto;aspect-ratio:3/2;object-fit:contain;margin:0 0 14px}
 .certificate-image-title{font-size:1rem}
+
+.certificate-download{position:sticky;top:0;z-index:2;display:flex;width:100%;margin:0 0 12px;min-height:48px}
