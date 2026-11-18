@@ -1,0 +1,190 @@
+const question = (text, options, answer, explanation) => [text, options, answer, explanation];
+
+export const practicalCourses = {
+  web: {
+    name: 'Web & PWA Development',
+    summary: 'Build, test and publish a responsive study website, then add installation metadata and a tested offline experience.',
+    project: 'Submit your hosted Study Hub URL, source files, screenshots, and online, offline, keyboard and mobile test results.',
+    sources: [
+      ['MDN web development', 'https://developer.mozilla.org/en-US/docs/Learn_web_development'],
+      ['MDN installable PWAs', 'https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Making_PWAs_installable'],
+    ],
+    lessons: [
+      {
+        title: 'Introduction to Web Development and PWAs', duration: '75–90 minutes',
+        objectives: ['Explain how a browser obtains a website.', 'Identify the roles of HTML, CSS and JavaScript.', 'Build and test your first interactive page.', 'Describe what a PWA upgrade adds.'],
+        sections: [
+          ['Welcome, future web developer', 'When you open Giga3 AI, your browser loads files, displays the interface and responds to your actions. In this course, you will build a small Study Hub of your own. Start with a page that works, understand each change and test it before adding another feature. You can practise with a computer and browser, or an appropriate browser-based editor on a phone.'],
+          ['What web development involves', 'Web development includes planning, building, testing and maintaining websites and interactive web applications. A school site can publish announcements. A web application can let learners answer questions and save progress. First identify the person who will use your project and the task they need to complete.'],
+          ['How your browser receives a page', 'A domain is a readable address. Network services including DNS help find the destination. Your browser requests resources from a server or delivery network, which returns files such as HTML, stylesheets, scripts and images. The browser interprets them and displays the page. Some later actions happen locally; others request more information over the network. A browser is the client in this exchange.'],
+          ['HTML, CSS and JavaScript', 'HTML gives meaning and structure to headings, paragraphs, links, images and controls. CSS controls colour, spacing, typography and layout. JavaScript responds to actions and changes the page. In the starter project, find the heading in the HTML, the violet button rule in CSS and the click listener in JavaScript. Change one of each and explain the result.'],
+          ['Websites, web apps, PWAs and native apps', 'A website delivers web content. A web application supports interactive tasks. A Progressive Web App enhances a web application with capabilities such as installation and offline behaviour on supported devices. A native app targets an operating system through its development tools. Installation and device integration vary by browser and platform, so test the devices you intend to support.'],
+          ['What makes a useful PWA', 'Use a responsive layout, secure production hosting and a web app manifest describing the app. A service worker can intercept requests and provide selected offline resources. A service worker is useful for offline behaviour, while browser installation criteria vary. Saving account data and synchronising progress require additional storage and conflict-handling work.'],
+          ['Prepare your tools', 'Use a code editor such as Visual Studio Code, a browser with developer tools and a folder for your project. Git tracks source changes, and GitHub can host the repository. GitHub Pages and Cloudflare Pages can publish suitable static sites. Keep secrets out of browser code and repositories. Use AI for explanations and small reviewed changes.'],
+          ['Build My Study Hub', 'Download the starter ZIP below and extract it. Open index.html for the first page exercise. Select Start Learning and check that the message changes without reloading. Replace the title, change one colour and rewrite the message. Save each change and refresh. The preview lets you try the original example before editing your copy.'],
+          ['Check quality early', 'At a narrow screen width, confirm that content stays within the page and the button is easy to tap. Navigate with Tab and activate the button with the keyboard. Check the console for errors. Ask a peer to use the page without coaching. Fix one problem and record the result.'],
+          ['Upgrade and test separately', 'The ZIP includes a manifest, service worker and both PNG icons. For PWA testing, serve the folder over HTTPS or localhost. Opening a file directly is useful for the first HTML exercise, but service workers need a supported secure context. Load online, confirm the worker controls the page, then disconnect and reload. Test installation separately on a supported browser.'],
+          ['Use an AI coding assistant with a clear brief', 'Try: “Help me build a responsive school revision page in HTML, CSS and JavaScript. Use violet, white and gold, labelled controls and a working button. Explain each change and give an Android test checklist.” For a broken button, supply the relevant code and the observed error, then ask for the smallest correction. Test the proposed fix before keeping it.'],
+          ['Keep evidence of your first build', 'Save the original files, your personalised version, a screenshot and a short test log. Explain which part provides structure, appearance and behaviour. Identify what you have tested and what remains to be implemented. Use the lesson check to decide which concept needs another example.'],
+        ],
+        steps: ['Extract the starter ZIP into its own folder.', 'Edit and save index.html, then open it and test the button.', 'Make three personal changes and check keyboard and narrow-screen use.'],
+        activity: 'Build a working Study Hub page for Mpoko Charles in Binduri. Keep the source and a screenshot of your changed button message.',
+        evidence: 'A personalised index.html and a short test log.',
+        checks: [
+          question('Which technology defines the meaning and structure of a page?', ['CSS', 'HTML', 'JavaScript', 'DNS'], 1, 'HTML describes headings, paragraphs, controls and other page content.'),
+          question('Your button changes colour correctly, but its message never changes. Which part should you inspect first?', ['The domain registration', 'Only the font file', 'The click listener and the identifiers it uses', 'The manifest name'], 2, 'A JavaScript listener needs the correct button and message elements. Check the console too.'),
+          question('Which change is primarily a CSS task?', ['Sending an email', 'Resolving a domain', 'Saving a database record', 'Adjusting a layout for a narrow phone screen'], 3, 'CSS layout rules adapt the appearance to available space.'),
+          question('Which description best fits a web app manifest?', ['A configuration describing the app name, icons and display preferences', 'A replacement for all JavaScript', 'A list of every user password', 'The school examination answer key'], 0, 'The manifest supplies application metadata used by supporting browsers.'),
+          question('Why did service worker registration fail when opening index.html directly from storage?', ['The page has a heading', 'The supported environment needs HTTPS or localhost rather than a file URL', 'The project has CSS', 'The button is too large'], 1, 'Use an appropriate secure development or deployment context for service worker tests.'),
+          question('What is a useful offline test?', ['Look at the source filename', 'Check only the icon colour', 'Load online, confirm worker control, disconnect and reload the deployed page', 'Close developer tools without checking the result'], 2, 'The online visit must establish the worker and cached resources before an offline reload.'),
+          question('Which AI coding prompt gives you a useful way to review the result?', ['Make something impressive', 'Build everything now', 'Make it modern', 'Describe the audience, required features, tools, constraints and test cases'], 3, 'A concrete brief gives you criteria against which to test the code.'),
+          question('What can you conclude after the initial Start Learning button works?', ['Your first interactive page works for that test; PWA installation and offline use need separate checks', 'All browser security issues are solved', 'The site is approved for every app store', 'Account synchronisation is complete'], 0, 'A passing button test establishes one behaviour. Other features need their own evidence.'),
+        ],
+      },
+      {
+        title: 'HTML Fundamentals', duration: '60 minutes',
+        objectives: ['Structure a meaningful document.', 'Build navigation, lists, images and a labelled form.'],
+        sections: [
+          ['Give every element a purpose', 'Begin with the document language, page title and viewport setting. Use header, nav, main and footer landmarks. Use headings in a logical order so someone can understand the page outline. A link changes location, while a button performs an action. Use those native elements for their intended tasks.'],
+          ['Build a subject page', 'Create a list of English, Mathematics and Science revision topics. Give each link a descriptive label. Add an image only when it supports the content, and provide appropriate alternative text. If you add a learner name field, associate its visible label with the input using matching for and id values.'],
+          ['Review with a keyboard', 'Navigate without using a mouse. Confirm that links and buttons can receive focus and that a user can understand the form label. Fix the structure before spending time on decoration. Ask AI to explain one unfamiliar element, then point to its role in your own page.'],
+        ],
+        steps: ['Add page landmarks and a logical heading outline.', 'Create subject links and a labelled name input.', 'Test navigation with Tab and Enter.'],
+        activity: 'Build a subject page for a school in Walewale.',
+        evidence: 'HTML source and notes from a keyboard test.',
+        checks: [
+          question('Which element should take a learner to a different subject page?', ['A div with no role', 'A native link with an href', 'A paragraph', 'An unlabelled image'], 1, 'A native link exposes navigation behaviour to browsers and assistive technology.'),
+          question('Why connect a visible label to its input?', ['To supply a password', 'To choose a hosting account', 'To identify what the field asks for', 'To install a service worker'], 2, 'The association makes the field understandable and easier to use.'),
+        ],
+      },
+      {
+        title: 'CSS and Responsive Design', duration: '60–75 minutes',
+        objectives: ['Use a flexible mobile layout.', 'Choose readable colour and type combinations.'],
+        sections: [
+          ['Start with the narrow layout', 'Set box-sizing to border-box and keep content within a flexible maximum width. Start with one column and add columns only when the content has enough room. Set images to a maximum width of 100 percent of their container. Fixed large widths commonly cause horizontal scrolling on phones.'],
+          ['Use a small visual system', 'Choose a readable base font, a consistent spacing scale and a few meaningful colours. Use violet for primary actions, white for reading surfaces and gold as an accent. Keep text contrast strong. A colour change should not be the only indication of an error or completion state.'],
+          ['Measure the result', 'Test at 320 pixels, a wider phone width and desktop width. Try larger text and long subject titles. Check that controls stay usable and that content does not overlap. Record which rule fixed a specific layout problem.'],
+        ],
+        steps: ['Replace fixed widths with flexible rules.', 'Add a wider-screen grid using a media query.', 'Check long labels, large text and keyboard focus.'],
+        activity: 'Create three subject cards that remain readable on a small phone.',
+        evidence: 'CSS source and screenshots at two widths.',
+        checks: [
+          question('Which rule helps an image fit its container?', ['width: 1600px', 'position: fixed', 'max-width: 100%', 'overflow: visible'], 2, 'A relative maximum width lets the image shrink with its container.'),
+          question('How should a completed task be indicated?', ['By a subtle colour change alone', 'Only by removing its label', 'By a sound that cannot be disabled', 'By text or an icon with a label as well as suitable colour'], 3, 'The meaning should remain available to people who cannot distinguish the colours.'),
+        ],
+      },
+      {
+        title: 'JavaScript Fundamentals', duration: '75 minutes',
+        objectives: ['Use variables, functions and conditions.', 'Connect a control to an event handler.'],
+        sections: [
+          ['Work with small pieces of data', 'Store a learner name in a variable and a list of subjects in an array. Use a function for a named task such as updating a message. A condition lets the app respond differently when a name is empty. Read your code aloud and explain which value changes after each action.'],
+          ['Follow an event', 'Find a button with getElementById and attach a click listener. Place the script after the elements it uses, or use a deferred script. Set textContent when inserting plain text. Match identifiers exactly, including letter case.'],
+          ['Debug one failure', 'Open the console and reproduce a broken button. Read the first relevant error, check that the element exists and correct one cause. Reload and repeat the same test. When asking AI for help, supply the relevant code, the error and the expected behaviour.'],
+        ],
+        steps: ['Add a name variable and a small function.', 'Call the function from a click listener.', 'Handle an empty name and retest.'],
+        activity: 'Make a welcome message that responds to a typed learner name.',
+        evidence: 'Code and results for blank and valid input.',
+        checks: [
+          question('A listener cannot find startBtn. What should you compare first?', ['The hosting price', 'The exact element id and when the script runs', 'The image resolution', 'The manifest background'], 1, 'The script must find the intended element at the time it runs.'),
+          question('Which API is suitable for inserting a learner’s plain text message?', ['eval', 'document.write with the raw input', 'textContent', 'A secret API key'], 2, 'textContent treats the supplied value as text.'),
+        ],
+      },
+      {
+        title: 'Interactive Web Applications', duration: '75 minutes',
+        objectives: ['Validate input and show useful states.', 'Load data and handle request failures.'],
+        sections: [
+          ['Design the states before coding', 'A subject list needs loading, ready, empty and error states. A form should explain what to correct and keep valid entries while the learner fixes a mistake. Prevent a repeated save action while an earlier save is pending.'],
+          ['Fetch and check a response', 'Fetch a local subjects.json file. Check response.ok before using its data, because an HTTP error can still return a response. Show a retry action when a request fails. Distinguish an empty result from a request that never finished.'],
+          ['Keep interactions understandable', 'Update the part of the page that changed and provide readable feedback. Test blank input, a missing file, no matching subjects and repeated taps. Save your observations as test cases another learner can repeat.'],
+        ],
+        steps: ['Add search and input validation.', 'Load a small JSON file and check response.ok.', 'Test loading, empty, failure and retry states.'],
+        activity: 'Build searchable revision topics with an actionable empty state.',
+        evidence: 'Source files and four state tests.',
+        checks: [
+          question('A fetch returns HTTP 404. What should the app do?', ['Render the error page as a subject list', 'Ignore the response status', 'Keep a spinner forever', 'Show a useful error and allow retry'], 3, 'Check the status and give the learner a way to recover.'),
+          question('What should happen after a form reports a blank title?', ['Preserve other valid entries and identify the missing title', 'Clear every field', 'Publish the blank record', 'Remove all labels'], 0, 'Specific feedback lets the user correct the problem efficiently.'),
+        ],
+      },
+      {
+        title: 'Development Tools and GitHub', duration: '60 minutes',
+        objectives: ['Record understandable source changes.', 'Use the console and network panel to investigate a defect.'],
+        sections: [
+          ['Keep a recoverable history', 'Create a repository for your project, add the files and make a commit describing one completed change. Use a branch for an experiment. Review the diff before committing so unrelated changes and secrets stay out of the repository.'],
+          ['Investigate using evidence', 'Use the console for JavaScript errors and the network panel for missing files or slow requests. Record what you expected, what happened and how to reproduce it. Use that evidence in an AI debugging prompt or an issue report.'],
+          ['Practise recovery', 'Change one button label and commit it. Make a second change, inspect the diff and restore the earlier version of that file. Confirm the app still works. A source history is useful only if you can recover and test a known version.'],
+        ],
+        steps: ['Create a repository and a clear first commit.', 'Investigate a missing asset with developer tools.', 'Restore a small change and verify the result.'],
+        activity: 'Publish your Study Hub source in a repository with a short setup note.',
+        evidence: 'Repository link or exported history and a reproducible bug report.',
+        checks: [
+          question('Which change belongs in a public repository?', ['A production secret key', 'A real pupil’s private record', 'Reviewed source code with sensitive files excluded', 'An account recovery code'], 2, 'Review the diff and exclude secrets and private data before publishing.'),
+          question('What makes a useful bug report?', ['Only “it is broken”', 'A prediction of who caused it', 'A list of unrelated features', 'Reproduction steps, expected behaviour and observed evidence'], 3, 'Another developer needs enough information to reproduce the defect.'),
+        ],
+      },
+      {
+        title: 'Progressive Web App Fundamentals', duration: '75 minutes',
+        objectives: ['Connect a manifest and real icons.', 'Register a scoped service worker in a supported environment.'],
+        sections: [
+          ['Describe your app', 'Create a manifest with a name, short name, start URL, scope, display preference and actual PNG icon files. Link it in the HTML head. A reference to an absent icon is a broken resource. Keep the manifest, icon URLs and hosted path consistent.'],
+          ['Understand the worker lifecycle', 'A service worker installs, activates and controls pages within its scope. Registration needs a supported secure context such as HTTPS or localhost. The first visit may install the worker before it controls the current page. Check developer tools and reload when appropriate.'],
+          ['Separate installation from offline use', 'A browser may offer installation according to its own criteria. Test the menu or installation interface on a supported device, then test offline behaviour independently. Record the browser and device because support differs.'],
+        ],
+        steps: ['Inspect the manifest and icons from the starter project.', 'Serve the folder through HTTPS or localhost.', 'Confirm registration, scope and page control.'],
+        activity: 'Install your Study Hub on a supporting browser and record the result.',
+        evidence: 'Manifest, working icon files and installation notes.',
+        checks: [
+          question('The manifest refers to icon-192.png, but the file does not exist. What should you do?', ['Ignore it because the JSON parses', 'Supply the actual PNG at the referenced path', 'Rename the page title only', 'Store a password in the icon field'], 1, 'The browser must be able to retrieve the real icon resource.'),
+          question('What does a service worker’s scope determine?', ['The learner’s examination score', 'The hosting subscription', 'Which pages its registration may control', 'The colour of all browser windows'], 2, 'Scope bounds the pages associated with the registration.'),
+        ],
+      },
+      {
+        title: 'Building an Offline-Ready PWA', duration: '90 minutes',
+        objectives: ['Cache a deliberate set of public resources.', 'Test an update without deleting unrelated browser data.'],
+        sections: [
+          ['Choose what can work offline', 'The starter caches its own HTML, manifest and icons after an online visit. It uses the network when possible and returns a matching cached resource if the request fails. It does not provide offline accounts, arbitrary pages or synchronised databases. Add those behaviours only when you can test them.'],
+          ['Version your cache carefully', 'Use a cache prefix unique to this project. On activation, delete only older caches with that prefix. Preserve caches belonging to other applications on the same origin. Do not cache private API responses indiscriminately.'],
+          ['Run an update experiment', 'Load version 1 online, disconnect and reload. Return online, change a visible message and increment your cache version. Observe when the new worker activates and which version appears after reload. Document the update process a learner should expect.'],
+        ],
+        steps: ['Confirm the worker controls the page.', 'Test an offline reload and reconnect.', 'Change the cache version and verify the updated page.'],
+        activity: 'Produce an online/offline/update test table for the Study Hub.',
+        evidence: 'Worker source and pass/fail evidence for three conditions.',
+        checks: [
+          question('Which caches should the project’s activate handler delete?', ['All caches on the origin', 'Every browser’s stored passwords', 'Any cache created today', 'Only older caches with this project’s own prefix'], 3, 'Cache cleanup should respect other applications on the same origin.'),
+          question('What does the supplied starter demonstrate offline?', ['A deliberately cached public page and its listed assets', 'Every website on the internet', 'Automatic account synchronisation', 'An offline payment service'], 0, 'The example has a bounded public cache and an offline page fallback.'),
+        ],
+      },
+      {
+        title: 'Deployment, Security and Accessibility', duration: '75 minutes',
+        objectives: ['Publish and test the actual HTTPS site.', 'Check access, performance and sensitive-data handling.'],
+        sections: [
+          ['Publish a known version', 'Deploy the static project to suitable hosting and open its real URL. Verify nested paths, manifest URLs and icons from that host. A working local preview does not establish that a hosted path or network rule works.'],
+          ['Review privacy and access', 'Keep credentials on a server when a feature requires them. Use visible labels and focus indicators. Check the page with a keyboard and larger text. Compress oversized assets and compare loading under similar network conditions.'],
+          ['Prepare a release record', 'Record the source revision, URL, browser, device, date and test results. Include a narrow-screen check, button test, keyboard test, offline reload and return online. Fix an observed failure and repeat the affected test.'],
+        ],
+        steps: ['Deploy the source to HTTPS hosting.', 'Check paths, keyboard use and resource sizes.', 'Record a reproducible release checklist.'],
+        activity: 'Publish the Study Hub and ask a peer to run the checklist.',
+        evidence: 'Hosted URL and device-specific test report.',
+        checks: [
+          question('Where should a secret provider API key be stored?', ['In public JavaScript', 'In a screenshot on the homepage', 'In an appropriate server-side secret store', 'Inside the manifest name'], 2, 'A secret shipped to a browser can be inspected by its users.'),
+          question('Which result supports a release claim?', ['Only an editor screenshot', 'An assumption that hosting is identical to local preview', 'The absence of user complaints', 'A tested deployed URL with recorded browser and device results'], 3, 'Verify the release through the path and environment users will actually use.'),
+        ],
+      },
+      {
+        title: 'Final Project — Publish Your Study Hub PWA', duration: '90–120 minutes',
+        objectives: ['Deliver an independently personalised website and PWA.', 'Explain and demonstrate the implementation.'],
+        sections: [
+          ['Plan a focused deliverable', 'Choose a school, club or community audience. Define three tasks the site should support. Include structured content, responsive styling, useful JavaScript interaction and a deliberate offline experience. Write your acceptance criteria before coding.'],
+          ['Show the work', 'Provide the hosted HTTPS URL, source files, manifest, real icons and service worker. Demonstrate a first online load, a supported installation attempt, a later offline reload and recovery online. Record browser differences honestly.'],
+          ['Review and improve', 'Ask someone to complete a task without coaching. Collect one difficulty, fix it and repeat the test. Assess functionality, responsiveness/accessibility, PWA behaviour, code understanding and test evidence from 0 to 2 each. Submit your evidence and reflection below before the final quiz.'],
+        ],
+        steps: ['Personalise and publish the complete project.', 'Run the acceptance checklist with a peer.', 'Submit the source, release evidence and reflection.'],
+        activity: 'Deliver a Study Hub for learners in Binduri, Walewale, Nalerigu or Agona.',
+        evidence: 'Final project portfolio and self-assessment.',
+        checks: [
+          question('Which portfolio demonstrates the completed PWA most clearly?', ['A title and a quiz score', 'Source files, hosted URL and reproducible online/offline/device tests', 'Only a promise to deploy later', 'A screenshot of another site'], 1, 'The source and test evidence show what you built and what has been verified.'),
+          question('A peer cannot navigate your form by keyboard. What should you do?', ['Ignore the feedback', 'Hide the form', 'Fix focus and labelling, then repeat the test', 'Call the issue a browser feature'], 2, 'Use the reported difficulty to make and verify a concrete improvement.'),
+        ],
+      },
+    ],
+  },
+};

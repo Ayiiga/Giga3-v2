@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Soil Alert Simulator — GigaLearn Academy</title>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:20px;background:#f7f2ff;color:#281447;font:17px/1.6 system-ui,sans-serif}main{max-width:640px;margin:auto;background:white;padding:24px;border:2px solid #d4af37;border-radius:16px}h1{font-size:1.6rem;color:#6d28d9}label{display:block;margin-top:20px}input[type=range]{width:100%}button{margin-top:20px;background:#6d28d9;color:white;padding:12px 18px;border:0;border-radius:8px;font:inherit;cursor:pointer}button:focus-visible,input:focus-visible{outline:3px solid #946700;outline-offset:3px}output{display:block;padding:16px;border:2px solid #6d28d9;border-radius:8px;margin-top:20px;font-weight:bold}
+</style>
+</head>
+<body><main>
+<h1>Soil Alert Simulator</h1>
+<p>This uses a fictional calibrated moisture scale: 0 means dry and 100 means wet. Real sensors require their own calibration. No physical device is connected.</p>
+<p>The alert turns on below 30, turns off above 40, and keeps its previous state between those thresholds. Missing input produces a fault with the simulated output off.</p>
+<label for="moisture">Simulated moisture: <span id="reading">50</span> / 100</label>
+<input id="moisture" type="range" min="0" max="100" value="50">
+<label><input id="fault" type="checkbox"> Simulate a missing sensor reading</label>
+<button id="reset" type="button">Reset to wet state</button>
+<output id="status" aria-live="polite">Ready: alert off</output>
+<h2>Your experiment</h2><ol><li>Try 29, 30, 35, 40 and 41. Record the previous state before each change.</li><li>Move from 29 to 35, then from 41 to 35. Explain the different results at 35.</li><li>Simulate a missing reading and explain the fault response.</li><li>Read the source, change both thresholds and repeat your boundary tests.</li></ol>
+</main><script>
+const moisture = document.getElementById('moisture');
+const fault = document.getElementById('fault');
+const status = document.getElementById('status');
+let alertOn = false;
+function update() {
+  const reading = Number(moisture.value);
+  document.getElementById('reading').textContent = String(reading);
+  if (fault.checked || !Number.isFinite(reading) || reading < 0 || reading > 100) {
+    alertOn = false;
+    status.textContent = 'Fault: sensor input unavailable or invalid. Output off.';
+    return;
+  }
+  if (reading < 30) alertOn = true;
+  else if (reading > 40) alertOn = false;
+  status.textContent = alertOn ? 'Dry alert ON — check whether watering is needed.' : 'Alert OFF — continue observing.';
+}
+moisture.addEventListener('input', update);
+fault.addEventListener('change', update);
+document.getElementById('reset').addEventListener('click', () => {
+  alertOn = false; moisture.value = '50'; fault.checked = false; update();
+});
+update();
+</script></body></html>
