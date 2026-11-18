@@ -11,6 +11,20 @@ export interface ParsedMessageMedia {
   videos: string[];
 }
 
+/**
+ * Model-authored poster JSON containing inline image bytes is not a rendered
+ * poster. Match the opening fields so this also handles a reply cut off mid-image.
+ */
+export function splitUnrenderedPoster(text: string): string | null {
+  const poster = /^(?:[ \t]*```(?:json|giga-visual|visual)?[ \t]*\r?\n)?[ \t]*\{\s*"(?:type|kind)"\s*:\s*"poster"\s*,/gim;
+  for (const match of text.matchAll(poster)) {
+    if (/"(?:url|src)"\s*:\s*"data:image\/[a-z0-9.+-]+;base64,/i.test(text.slice(match.index))) {
+      return text.slice(0, match.index).trim();
+    }
+  }
+  return null;
+}
+
 function uniqueUrls(urls: string[]): string[] {
   return [...new Set(urls.map((u) => u.replace(/[.,;:!?)]+$/, "")))];
 }

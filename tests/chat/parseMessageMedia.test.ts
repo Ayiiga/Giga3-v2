@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseMessageMedia } from "../../web/lib/chat/parseMessageMedia";
+import { parseMessageMedia, splitUnrenderedPoster } from "../../web/lib/chat/parseMessageMedia";
 
 describe("parseMessageMedia", () => {
   it("renders Convex storage URLs (no file extension) as images", () => {
@@ -22,5 +22,28 @@ describe("parseMessageMedia", () => {
     expect(parsed.images).toEqual([]);
     expect(parsed.videos).toEqual([]);
     expect(parsed.text).toBe("The capital of France is Paris.");
+  });
+});
+
+describe("unrendered poster responses", () => {
+  it("isolates truncated poster JSON and leaves the written copy available", () => {
+    const copy = "## Missing person\n\nPlease contact the family.";
+    const content = copy + '\n\n{\n  "type": "poster", "title": "Missing Person", "image": { "url": "data:image/jpeg;base64,/9j/4AAQ';
+    expect(splitUnrenderedPoster(content)).toBe(copy);
+  });
+
+  it("handles a JSON fence and a response with no poster copy", () => {
+    const content = '```json\n{"kind":"poster","image":{"src":"data:image/png;base64,AAAA"}}\n```';
+    expect(splitUnrenderedPoster(content)).toBe("");
+  });
+
+  it("leaves ordinary document text, visual specs and rendered image messages alone", () => {
+    for (const content of [
+      "Here is your generated image:\n\ndata:image/png;base64,AAAA",
+      'Here is a catalogue.\n{"type":"poster","title":"Layout","sections":[]}',
+      '\n{"type":"report","image":{"url":"data:image/jpeg;base64,AAAA"}}',
+    ]) {
+      expect(splitUnrenderedPoster(content)).toBeNull();
+    }
   });
 });
