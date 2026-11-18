@@ -55,7 +55,7 @@ export function AcademyCourseCatalogueBody() {
     "Mobile Development", "Robotics",
   ] as const;
   const allowed = new Set<string>(academySubjects);
-  const courses = (remoteCourses ?? builtinCourses).filter((course) =>
+  const courses = (remoteCourses ?? builtinCourses).filter((course: AcademyCourseListItem) =>
     isPublicAcademyCourse(course) && allowed.has(course.subject) &&
     (subject === "all" || course.subject === subject) &&
     (difficulty === "all" || course.difficulty === difficulty) &&
@@ -145,7 +145,7 @@ export function AcademyCourseCatalogueBody() {
                   <span className="rounded-full border border-border px-2.5 py-0.5 text-[11px] font-medium capitalize text-muted">
                     {course.difficulty}
                   </span>
-                  {course.certificateEligible ? (
+                  {course.certificateEligible && !projectTrack ? (
                     <span className="rounded-full border border-border px-2.5 py-0.5 text-[11px] text-muted">
                       Certificate-eligible
                     </span>
@@ -153,8 +153,8 @@ export function AcademyCourseCatalogueBody() {
 
                 </div>
                 <h3 className="mt-3 text-base font-semibold text-foreground">{course.title}</h3>
-                <p className="mt-1 line-clamp-3 flex-1 text-sm text-muted">{course.description}</p>
-                {full?.learningObjectives?.length ? (
+                <p className="mt-1 line-clamp-3 flex-1 text-sm text-muted">{projectTrack?.outcome ?? course.description}</p>
+                {!projectTrack && full?.learningObjectives?.length ? (
                   <ul className="mt-2 line-clamp-2 list-inside list-disc text-xs text-muted">
                     {full.learningObjectives.slice(0, 2).map((o) => (
                       <li key={o}>{o}</li>

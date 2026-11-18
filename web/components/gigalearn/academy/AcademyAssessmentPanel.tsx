@@ -1,5 +1,7 @@
 "use client";
 
+import type { AcademyEnrolmentSummary } from "@/lib/gigalearn/academy/types";
+
 import { isAcademyEnrolment } from "@/lib/gigalearn/academy/courseCatalog";
 
 import { AcademyChrome } from "@/components/gigalearn/academy/AcademyChrome";
@@ -99,7 +101,7 @@ function AssessmentInner() {
 
   if (!courseSlug) {
     const active =
-      enrolments?.filter((e) => e.status === "active" && isAcademyEnrolment(e)) ?? null;
+      enrolments?.filter((e: AcademyEnrolmentSummary) => e.status === "active" && isAcademyEnrolment(e)) ?? null;
     return (
       <AcademyChrome active="practice" title="Academy assessments">
         <p className="text-sm text-muted">

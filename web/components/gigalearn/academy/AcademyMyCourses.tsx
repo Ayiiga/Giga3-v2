@@ -1,5 +1,7 @@
 "use client";
 
+import type { AcademyEnrolmentSummary } from "@/lib/gigalearn/academy/types";
+
 import { AcademyChrome } from "@/components/gigalearn/academy/AcademyChrome";
 import { LearningProgressRing } from "@/components/gigalearn/ui/LearningProgressRing";
 import { ButtonLink } from "@/components/ui/Button";
@@ -52,7 +54,7 @@ export function AcademyMyCourses() {
         </div>
       ) : (
         <ul className="space-y-3">
-          {enrolments.map((row) => {
+          {enrolments.map((row: AcademyEnrolmentSummary) => {
             const title =
               getBuiltinAcademyCourse(row.courseSlug)?.title ?? row.courseSlug;
             const percent =
