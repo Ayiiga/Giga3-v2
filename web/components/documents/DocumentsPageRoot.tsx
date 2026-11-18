@@ -13,6 +13,8 @@ const AUTOSAVE_DELAY_MS = 650;
 export function DocumentsPageRoot() {
   const [doc, setDoc] = useState<GigaDocument | null>(null);
   const [viewDraft, setViewDraft] = useState(false);
+  const [openVersion, setOpenVersion] = useState(0);
+  const [editProfile, setEditProfile] = useState(false);
   const [drafts, setDrafts] = useState<GigaDocument[]>([]);
   const [saveError, setSaveError] = useState<string | null>(null);
   const pendingDraft = useRef<GigaDocument | null>(null);
@@ -62,7 +64,9 @@ export function DocumentsPageRoot() {
         setSaveError("This device could not save the draft. Export a Word or PDF copy before leaving.");
       }
     }
+    setOpenVersion((version) => version + 1);
     setViewDraft(preview);
+    setEditProfile(!needsSave && !preview && next.templateKind === "cv");
     setDoc(latest);
     setDrafts(listDocumentDrafts());
     requestAnimationFrame(() => document.getElementById("active-document")?.scrollIntoView({ block: "start" }));
@@ -144,7 +148,7 @@ export function DocumentsPageRoot() {
 
       {doc ? (
         <div id="active-document" className="scroll-mt-24">
-          <DocumentStudio key={`${doc.id}-${viewDraft}`} document={doc} onChange={onDocumentChange} initialPreview={viewDraft} />
+          <DocumentStudio key={openVersion} document={doc} onChange={onDocumentChange} initialPreview={viewDraft} initialProfile={editProfile} />
         </div>
       ) : (
         <div className="rounded-2xl border border-dashed border-border px-4 py-8 text-center">
