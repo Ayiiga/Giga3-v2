@@ -280,7 +280,7 @@ export function DocumentStudio({
   );
 
   function saveProfileSections(content: CvNode[]) {
-    const structured = { type: "doc", content } satisfies JSONContent;
+    const structured = { type: "doc" as const, content } satisfies JSONContent;
     editor?.commands.setContent(structured, false);
     emit({
       ...liveDocument.current,
