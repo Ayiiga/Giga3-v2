@@ -1,5 +1,6 @@
 import courses from './courses.mjs';
-import { eligibleForCertificate, passingScore, readProgress } from './progress.mjs';
+import aiExamples from './ai-examples.mjs';
+import { createCertificateSerial, eligibleForCertificate, lessonUnlocked, lessonsComplete, passingScore, readProgress } from './progress.mjs';
 const main = document.querySelector('main');
 const dialog = document.querySelector('#detail');
 const paths = {
@@ -186,12 +187,14 @@ function coursePage(course) {
   const pass = passingScore(course);
   main.innerHTML = '<a class="back" href="#courses">'+icon('back')+' All courses</a>'+head(course.field,course.name,course.summary)+
     '<section class="panel"><div class="row"><strong>Course progress</strong><span id="lesson-count"></span></div><progress aria-label="Lessons complete" max="'+course.lessons.length+'"></progress><p id="course-status" class="notice" aria-live="polite"></p></section>'+
-    '<h2 class="section-title">Step-by-step lessons</h2><p class="section-subtitle">Try each activity before marking its lesson complete.</p>'+
-    '<div class="lesson-list">'+course.lessons.map(([title,intro,steps,activity,related],i)=>'<details class="panel"><summary>'+String(i+1).padStart(2,'0')+' · '+title+' <span data-marker="'+i+'"></span></summary>'+
+    '<h2 class="section-title">Step-by-step lessons</h2><p class="section-subtitle">Complete each practical activity in order to unlock the next lesson.</p>'+
+    '<div class="lesson-list">'+course.lessons.map(([title,intro,steps,activity,related],i)=>'<details class="panel" data-step="'+i+'"><summary>'+String(i+1).padStart(2,'0')+' · '+title+' <span data-marker="'+i+'"></span></summary>'+
     '<div class="lesson-content"><p>'+intro+'</p>'+list(steps)+'<div class="activity"><strong>Practical activity</strong>'+activity+'</div><p><strong>Related area</strong> · '+related+'</p>'+
+    (course.id === 'ai' ? '<div class="worked-example"><h3>'+esc(aiExamples[i][0])+'</h3><p>'+esc(aiExamples[i][1])+'</p><p><strong>What to produce</strong> '+esc(aiExamples[i][2])+'</p></div>' : '')+
     '<button class="btn" type="button" data-lesson="'+i+'"></button></div></details>').join('')+'</div>'+
     '<section class="panel"><h2>Course assessment</h2><p>Answer all '+course.quiz.length+' questions. Score at least '+pass+' out of '+course.quiz.length+' and complete every lesson to unlock a browser-local certificate.</p>'+
-    '<form id="quiz">'+course.quiz.map(([question,options],i)=>'<fieldset><legend>'+(i+1)+'. '+esc(question)+'</legend>'+
+    '<p id="quiz-lock" class="notice" role="status">Complete all lessons to unlock the assessment.</p>'+
+    '<form id="quiz" hidden>'+course.quiz.map(([question,options],i)=>'<fieldset><legend>'+(i+1)+'. '+esc(question)+'</legend>'+
     options.map((answer,j)=>'<label class="option"><input required type="radio" name="q'+i+'" value="'+j+'">'+esc(answer)+'</label>').join('')+
     '<p class="feedback" id="feedback-'+i+'" hidden></p></fieldset>').join('')+
     '<button type="submit" class="btn primary">Check answers</button><p class="notice" id="quiz-result" role="status"></p></form></section>'+
@@ -200,11 +203,20 @@ function coursePage(course) {
     main.querySelector('#lesson-count').textContent = state.done.length+' of '+course.lessons.length+' lessons complete';
     main.querySelector('progress').value = state.done.length;
     main.querySelectorAll('[data-lesson]').forEach(el=>{
-      const complete = state.done.includes(Number(el.dataset.lesson));
-      el.disabled = complete;
+      const index = Number(el.dataset.lesson);
+      const complete = state.done.includes(index);
+      const unlocked = lessonUnlocked(state,index);
+      const details = el.closest('details');
+      if (!unlocked) details.open = false;
+      details.querySelector('.lesson-content').hidden = !unlocked;
+      details.querySelector('summary').setAttribute('aria-disabled', String(!unlocked));
+      el.disabled = complete || !unlocked;
       el.textContent = complete ? 'Lesson complete' : 'Mark lesson complete';
-      main.querySelector('[data-marker="'+el.dataset.lesson+'"]').textContent = complete ? '✓' : '';
+      main.querySelector('[data-marker="'+el.dataset.lesson+'"]').textContent = complete ? '✓' : unlocked ? '' : 'Locked';
     });
+    const ready = lessonsComplete(course,state);
+    main.querySelector('#quiz').hidden = !ready;
+    main.querySelector('#quiz-lock').hidden = ready;
     const status = main.querySelector('#course-status');
     status.textContent = 'Best assessment score '+state.best+' / '+course.quiz.length+'. ';
     if (state.introductoryBest) status.append('Original assessment score '+state.introductoryBest+' / 4. ');
@@ -216,14 +228,21 @@ function coursePage(course) {
       status.append(link);
     }
   }
+  main.querySelectorAll('[data-step] summary').forEach(summary=>{
+    summary.addEventListener('click', event=>{
+      if (!lessonUnlocked(state, Number(summary.parentElement.dataset.step))) event.preventDefault();
+    });
+  });
   main.querySelectorAll('[data-lesson]').forEach(el=>el.addEventListener('click',()=>{
     const index = Number(el.dataset.lesson);
-    if (!state.done.includes(index)) state.done.push(index);
+    if (!lessonUnlocked(state,index) || state.done.includes(index)) return;
+    state.done.push(index);
     save(course,state);
     update();
   }));
   main.querySelector('#quiz').addEventListener('submit',event=>{
     event.preventDefault();
+    if (!lessonsComplete(course,state)) return;
     const form = new FormData(event.currentTarget);
     if (course.quiz.some((_,i)=>!form.has('q'+i))) return;
     let score = 0;
@@ -261,8 +280,41 @@ function openCertificate(course, introductory) {
   const earned = introductory ? state.introductoryEarned : state.earned;
   if (!earned || (!introductory && !eligibleForCertificate(course,state))) return;
   const date = new Intl.DateTimeFormat('en-GH',{dateStyle:'long',timeZone:'Africa/Accra'}).format(new Date(earned));
-  dialog.innerHTML = '<div class="dialog-top">'+badge('award')+'<button class="btn" type="button" aria-label="Close certificate" data-close>'+icon('close')+'</button></div>'+
-    '<div class="cert-paper"><p class="eyebrow">GIGALEARN ACADEMY</p><h2 id="dialog-title">Certificate of completion</h2><h3>'+course.name+'</h3><p>'+ (introductory?'Original three-lesson course completed.':course.lessons.length+' lessons completed and assessment passed.') +'</p><p>Earned '+esc(date)+'</p></div><p class="notice">Learning record generated in this browser.</p>';
+  const serialField = introductory ? 'introductorySerial' : 'serial';
+  const chrome = '<div class="dialog-top">'+badge('award')+'<button class="btn" type="button" aria-label="Close certificate" data-close>'+icon('close')+'</button></div>';
+  function showCertificate() {
+    dialog.innerHTML = chrome +
+      '<article class="cert-paper"><p class="eyebrow">GIGALEARN ACADEMY</p><h2 id="dialog-title">Certificate of Completion</h2>'+
+      '<p>Presented to</p><h3 class="cert-recipient">'+esc(state.recipient)+'</h3><p>For completing</p><h3>'+esc(course.name)+'</h3>'+
+      '<p>'+(introductory ? 'Introductory course' : course.lessons.length+' lessons · Assessment passed')+'</p>'+
+      '<p>Issued '+esc(date)+'</p><p class="cert-signature">Ayiiga Benard Issaka</p><p>Founder, Giga3 AI · Typed signature</p>'+
+      '<p class="cert-serial">Serial '+esc(state[serialField])+'</p></article>'+
+      '<p class="notice">Completion record issued in this browser. Its serial is stored on this device.</p>';
+  }
+  if (state.recipient && state[serialField]) {
+    showCertificate();
+  } else {
+    dialog.innerHTML = chrome+'<h2 id="dialog-title">Personalise your certificate</h2>'+
+      '<form id="certificate-name"><label for="recipient">Full name as it should appear on the certificate</label>'+
+      '<input id="recipient" name="recipient" autocomplete="name" maxlength="100" required value="'+esc(state.recipient)+'">'+
+      '<button class="btn primary" type="submit">Create certificate</button></form>';
+    dialog.querySelector('#certificate-name').addEventListener('submit',event=>{
+      event.preventDefault();
+      const input = dialog.querySelector('#recipient');
+      const name = input.value.trim();
+      if (!name) {
+        input.setCustomValidity('Enter your name.');
+        input.reportValidity();
+        return;
+      }
+      state.recipient = name;
+      state[serialField] ||= createCertificateSerial(course.id);
+      save(course,state);
+      showCertificate();
+      dialog.querySelector('[data-close]').focus();
+    });
+    dialog.querySelector('#recipient').addEventListener('input',event=>event.target.setCustomValidity(''));
+  }
   dialog.setAttribute('aria-labelledby','dialog-title');
   dialog.showModal();
 }
