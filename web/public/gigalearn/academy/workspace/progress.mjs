@@ -9,6 +9,7 @@ export function readProgress(course, state = {}) {
   const current = state.revision === revision;
   return {
     revision,
+    introCheckScore: validScore(state.introCheckScore, 8),
     recipient: typeof state.recipient === 'string' ? state.recipient.trim().slice(0, 100) : '',
     serial: readSerial(state.serial),
     introductorySerial: readSerial(state.introductorySerial),

@@ -203,3 +203,15 @@ body.print-authorized-material #print-material{display:block!important;white-spa
 .certificate-image-title{font-size:1rem}
 
 .certificate-download{position:sticky;top:0;z-index:2;display:flex;width:100%;margin:0 0 12px;min-height:48px}
+
+.lesson-reading{background:#fff;border:1px solid var(--line)}
+.lesson-reading p{line-height:1.8;max-width:75ch}
+.lesson-tools{background:#f5f1ff}
+.lesson-tools article{background:white;padding:16px;margin-top:12px;border:1px solid #dfd1f4;border-radius:10px}
+.lesson-tools h4{margin:0 0 8px}
+.lesson-tools blockquote{margin:12px 0;padding:12px;border-left:3px solid #c39529;background:#fffaeb;overflow-wrap:anywhere}
+.prompt-lab{background:#edf5ff;border:1px solid #bbd2f3}
+.prompt-lab label{display:block;font-weight:650;margin-top:12px}
+.prompt-lab textarea{display:block;width:100%;margin:6px 0 12px;padding:12px;border:1px solid #a5b9d2;border-radius:8px;font:inherit;resize:vertical;background:white;color:var(--ink)}
+.prompt-lab button{margin:8px 0}
+.lesson-check{border:1px solid #e2c986;background:#fffaf0}

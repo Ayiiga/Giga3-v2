@@ -1,10 +1,11 @@
+import aiGuides, { aiTools, promptParts } from './ai-lesson-guides.mjs?v=113';
 import { createCertificateImage } from './certificate-image.mjs?v=112';
-import courses from './courses.mjs';
-import aiExamples from './ai-examples.mjs';
-import { createCertificateSerial, eligibleForCertificate, lessonUnlocked, lessonsComplete, passingScore, readProgress } from './progress.mjs';
+import courses from './courses.mjs?v=113';
+import aiExamples from './ai-examples.mjs?v=113';
+import { createCertificateSerial, eligibleForCertificate, lessonUnlocked, lessonsComplete, passingScore, readProgress } from './progress.mjs?v=113';
 // Older cached workspace documents may still point to the unversioned stylesheet.
 const legacyStylesheet = document.querySelector('link[rel="stylesheet"][href="style.css"]');
-if (legacyStylesheet) legacyStylesheet.href = 'style.css?v=112';
+if (legacyStylesheet) legacyStylesheet.href = 'style.css?v=113';
 
 const main = document.querySelector('main');
 const dialog = document.querySelector('#detail');
@@ -187,6 +188,26 @@ function openMaterial(course) {
   });
   verifyMaterialAccess(panel,course);
 }
+function aiGuideMarkup(index) {
+  const guide = aiGuides[index];
+  const objectives = '<section class="lesson-intro"><h3>Learning objectives</h3><p>'+esc(guide.duration)+'</p>'+list(guide.objectives)+'</section>';
+  const explanation = guide.sections.map(([heading,body])=>'<section class="lesson-reading"><h3>'+esc(heading)+'</h3><p>'+esc(body)+'</p></section>').join('');
+  if (index !== 0) return objectives + explanation;
+  const tools = '<section class="lesson-tools"><h3>Choose and try an AI tool</h3>'+aiTools.map(tool=>
+    '<article><h4>'+esc(tool.name)+'</h4><p>'+esc(tool.use)+'</p><blockquote>'+esc(tool.example)+'</blockquote><a class="back" href="'+esc(tool.href)+'" target="_blank" rel="noopener noreferrer">Open '+esc(tool.name)+'</a></article>').join('')+'</section>';
+  const lab = '<section class="prompt-lab"><h3>Build and improve your prompt</h3><p>Use the CLEAR checklist to write a prompt you can test. These fields prepare your instructions. Copy the result into an approved AI assistant.</p>'+
+    promptParts.map(([label,example],i)=>'<label for="prompt-part-'+i+'">'+esc(label)+'<textarea id="prompt-part-'+i+'" data-prompt-part="'+i+'" rows="2" placeholder="'+esc(example)+'"></textarea></label>').join('')+
+    '<p id="prompt-lab-count" role="status">0 of 5 prompt parts filled</p><label for="prompt-preview">Your combined prompt<textarea id="prompt-preview" rows="7" readonly></textarea></label>'+
+    '<button class="btn" type="button" id="copy-prompt">Copy prompt</button><p id="prompt-copy-status" role="status"></p>'+
+    '<p>After testing, check accuracy, learner level, task coverage, format and feedback. Score each from 0 to 2. Revise your weakest instruction and test again.</p></section>';
+  const check = '<section class="lesson-check"><h3>Lesson 1 knowledge check</h3><p>Answer all eight questions. Each choice reveals feedback. Score at least 6 out of 8 to complete this lesson.</p>'+
+    guide.checks.map(([question,options],i)=>'<fieldset><legend>'+esc(question)+'</legend>'+options.map((answer,j)=>
+      '<label class="option"><input type="radio" name="intro-check-'+i+'" value="'+j+'" data-intro-check="'+i+'">'+esc(answer)+'</label>').join('')+
+      '<p class="feedback" id="intro-feedback-'+i+'" hidden></p></fieldset>').join('')+
+    '<p id="intro-check-score" role="status"></p></section>';
+  return objectives + explanation + tools + lab + check;
+}
+
 function coursePage(course) {
   const state = record(course);
   const pass = passingScore(course);
@@ -197,7 +218,7 @@ function coursePage(course) {
       const example = course.id === 'ai' ? aiExamples[i] : null;
       return '<details class="panel lesson '+course.color+'" data-step="'+i+'"><summary><span class="lesson-number">'+String(i+1).padStart(2,'0')+'</span>'+
         '<span class="lesson-title">'+esc(title)+'</span><span class="lesson-state" data-marker="'+i+'"></span></summary>'+
-        '<div class="lesson-content"><section class="lesson-intro"><h3>What you’ll learn</h3><p>'+esc(intro)+'</p></section>'+
+        '<div class="lesson-content">'+(course.id === 'ai' ? aiGuideMarkup(i) : '')+'<section class="lesson-intro"><h3>What you’ll learn</h3><p>'+esc(intro)+'</p></section>'+
         '<section class="lesson-steps"><h3>Follow the steps</h3>'+list(steps)+'</section>'+
         (example ? '<section class="worked-example"><p class="lesson-label">Worked example</p><h3>'+esc(example[0])+'</h3><p>'+esc(example[1])+'</p></section>' : '')+
         '<section class="activity"><h3>Try it yourself</h3><p>'+esc(activity)+'</p>'+
@@ -222,7 +243,9 @@ function coursePage(course) {
       if (!unlocked) details.open = false;
       details.querySelector('.lesson-content').hidden = !unlocked;
       details.querySelector('summary').setAttribute('aria-disabled', String(!unlocked));
-      el.disabled = complete || !unlocked;
+      const needsIntroCheck = course.id === 'ai' && index === 0 && (state.introCheckScore || 0) < 6;
+      el.disabled = complete || !unlocked || needsIntroCheck;
+      if (needsIntroCheck && !complete) el.title = 'Answer the lesson check and score at least 6 out of 8.';
       el.textContent = complete ? 'Lesson complete' : 'Mark lesson complete';
       main.querySelector('[data-marker="'+el.dataset.lesson+'"]').textContent = complete ? 'Completed' : unlocked ? 'Ready' : 'Locked';
     });
@@ -240,6 +263,35 @@ function coursePage(course) {
       status.append(link);
     }
   }
+  if (course.id === 'ai') {
+    const parts = Array.from(main.querySelectorAll('[data-prompt-part]'));
+    const preview = main.querySelector('#prompt-preview');
+    for (const input of parts) input.addEventListener('input',()=>{
+      preview.value = parts.map((part,i)=>part.value.trim() ? promptParts[i][0]+': '+part.value.trim() : '').filter(Boolean).join('\n');
+      main.querySelector('#prompt-lab-count').textContent = parts.filter(part=>part.value.trim()).length+' of 5 prompt parts filled';
+    });
+    main.querySelector('#copy-prompt').addEventListener('click',async()=>{
+      const status = main.querySelector('#prompt-copy-status');
+      if (!preview.value.trim()) { status.textContent = 'Fill in your prompt parts first.'; return; }
+      try { await navigator.clipboard.writeText(preview.value); status.textContent = 'Prompt copied. Test it in your chosen assistant.'; }
+      catch { preview.focus(); preview.select(); status.textContent = 'Select and copy the prompt from the box.'; }
+    });
+    for (const input of main.querySelectorAll('[data-intro-check]')) input.addEventListener('change',()=>{
+      const index = Number(input.dataset.introCheck);
+      const question = aiGuides[0].checks[index];
+      const feedback = main.querySelector('#intro-feedback-'+index);
+      feedback.textContent = (Number(input.value) === question[2] ? 'Correct. ' : 'Review this answer. ')+question[3];
+      feedback.hidden = false;
+      const selected = Array.from(main.querySelectorAll('[data-intro-check]:checked'));
+      const score = selected.filter(answer=>Number(answer.value)===aiGuides[0].checks[Number(answer.dataset.introCheck)][2]).length;
+      main.querySelector('#intro-check-score').textContent = score+' / 8 correct · '+selected.length+' of 8 answered';
+      if (selected.length === 8) {
+        state.introCheckScore = Math.max(state.introCheckScore || 0,score);
+        save(course,state);
+        update();
+      }
+    });
+  }
   main.querySelectorAll('[data-step] summary').forEach(summary=>{
     summary.addEventListener('click', event=>{
       if (!lessonUnlocked(state, Number(summary.parentElement.dataset.step))) event.preventDefault();
@@ -248,6 +300,7 @@ function coursePage(course) {
   main.querySelectorAll('[data-lesson]').forEach(el=>el.addEventListener('click',()=>{
     const index = Number(el.dataset.lesson);
     if (!lessonUnlocked(state,index) || state.done.includes(index)) return;
+    if (course.id === 'ai' && index === 0 && (state.introCheckScore || 0) < 6) return;
     state.done.push(index);
     save(course,state);
     update();

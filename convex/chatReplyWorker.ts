@@ -1,3 +1,4 @@
+import { isDesignedImageRequest } from "./providerRouter";
 "use node";
 
 import { internalAction } from "./_generated/server";
@@ -250,7 +251,8 @@ async function runHybridAiEngine(
       content: typeof m.content === "string" ? m.content : "",
     })),
   });
-  const sourceImageUrl = isImageEditOrTransformQuery(args.query, Boolean(candidateImageUrl))
+  const sourceImageUrl = (isImageEditOrTransformQuery(args.query, Boolean(candidateImageUrl)) ||
+    isDesignedImageRequest(args.query))
     ? candidateImageUrl
     : undefined;
   const hasEditableImageSource = Boolean(sourceImageUrl);
