@@ -275,3 +275,16 @@ describe("shouldStartFailoverAttempt", () => {
     ).toBe(true);
   });
 });
+
+describe("rendered designs with uploaded photos", () => {
+  it("renders the reported missing person request instead of analysing the attachment", () => {
+    const query = "Missing person: Antwi Christian. Last seen in 2020 at Bedomase Agona. Give a bright and clear poster but don't change the face.";
+    expect(classifyRequestKind(query, "general", { hasImageAttachment: true })).toBe("image_generation");
+    expect(classifyRequestKind("Please give me a bright and clear image banner", "general", true)).toBe("image_generation");
+  });
+  it("keeps photo analysis and requests for poster wording in text chat", () => {
+    for (const query of ["Describe this photograph", "Write text for a missing person poster", "Explain how to design a poster"]) {
+      expect(classifyRequestKind(query, "general", true)).toBe("text_chat");
+    }
+  });
+});
