@@ -46,6 +46,7 @@ describe("GigaLearn teaching materials library", () => {
     const ui = read("web/components/gigalearn/TeachingResourcesLibrary.tsx");
     expect(ui).toContain("api.teachingResources.listPublished");
     expect(ui).toContain("Quick access · Science collections");
+    expect(ui).toContain('id="resource-results"');
     expect(ui).toContain("JHS laboratory set-ups");
     expect(ui).toContain("9 human body systems");
     expect(ui).toContain("Attach a file to a resource");
