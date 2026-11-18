@@ -11,6 +11,11 @@ test.describe("Document Studio — Android mobile browser workflow", () => {
     test.skip(test.info().project.name !== "mobile-chrome", "Run on the Pixel mobile Chrome project");
 
     await page.goto("/documents/", { waitUntil: "domcontentloaded" });
+    for (const town of ["Binduri", "Walewale", "Nalerigu", "Agona"]) {
+      await expect(page.getByText(new RegExp(`· ${town}$`))).toBeVisible();
+    }
+    await expect(page.getByText("Mpoko Charles", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText("Godwin Atia", { exact: true }).first()).toBeVisible();
     await page.getByRole("button", { name: "Modern", exact: true }).click();
     await expect(page.getByRole("button", { name: /Executive Shaded/ })).toHaveCount(0);
     await page.getByRole("button", { name: /Signature Bold name header/ }).click();
@@ -18,6 +23,7 @@ test.describe("Document Studio — Android mobile browser workflow", () => {
     const editor = page.locator(".document-studio .ProseMirror");
     const title = page.getByLabel("Document title");
     await expect(editor).toBeVisible();
+    await expect(editor.locator("h1")).toHaveText("Full Name");
     await title.fill("Android Document QA CV");
     await editor.click();
     await editor.press("ControlOrMeta+End");

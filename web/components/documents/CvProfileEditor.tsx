@@ -171,8 +171,8 @@ export function CvProfileEditor({ nodes, onSave, onPreview, onAdvanced, photo }:
           ) : null}
           {example ? (
             <div className="space-y-2 rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-800">
-              {active === "education" ? <><p>List your qualification, institution and year. Include a grade if it helps your application.</p><p className="font-semibold">Example</p><p>Diploma in Basic Education<br />Example College of Education<br />2020–2023</p></>
-                : <p>Add your name and the contact details you want employers to use. The photograph and additional personal details are optional.</p>}
+              {active === "education" ? <><p>List your qualification, institution and year. Include a grade if it helps your application.</p><p className="font-semibold">Example</p><p>Diploma in Basic Education<br />Example College of Education, Nalerigu<br />2020–2023</p></>
+                : <p>Add your name and the contact details you want employers to use. The photograph and additional personal details are optional. For example, use “Mpoko Charles” for the name and “Binduri” for the location.</p>}
             </div>
           ) : active === "personal" ? (
             <>
