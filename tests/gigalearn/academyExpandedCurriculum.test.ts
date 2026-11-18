@@ -46,10 +46,25 @@ it("unlocks lessons in sequence while keeping previously completed lessons revie
 it("validates and preserves named certificate records across reloads", async () => {
   const { createCertificateSerial } = await import("../../web/public/gigalearn/academy/workspace/progress.mjs");
   const serial = createCertificateSerial("ai");
-  expect(serial).toMatch(/^GLA-AI-[A-F0-9]{24}$/);
+  expect(serial).toMatch(/^GLA-AI-[0-9A-HJKMNP-TV-Z]{12}$/);
   expect(createCertificateSerial("ai")).not.toBe(serial);
   const course = courses[1];
   const certificate = readProgress(course, { revision: 2, recipient: "  Ama Asare  ", serial });
   expect(certificate).toMatchObject({ recipient: "Ama Asare", serial });
   expect(readProgress(course, certificate)).toEqual(certificate);
+});
+
+it("shortens legacy serials deterministically and preserves completion", () => {
+  const course = courses[1];
+  const earned = "2026-11-18T14:00:00.000Z";
+  const original = {
+    revision: 2, recipient: "Ama Asare", serial: "GLA-AI-5FBBD0E132CD69B2620923A8",
+    best: 10, earned, done: course.lessons.map((_, i) => i),
+  };
+  const updated = readProgress(course, original);
+  expect(updated.serial).toMatch(/^GLA-AI-[0-9A-HJKMNP-TV-Z]{12}$/);
+  expect(readProgress(course, original).serial).toBe(updated.serial);
+  expect(readProgress(course, updated)).toEqual(updated);
+  expect(updated).toMatchObject({ earned, recipient: original.recipient, done: original.done });
+  expect(eligibleForCertificate(course, updated)).toBe(true);
 });

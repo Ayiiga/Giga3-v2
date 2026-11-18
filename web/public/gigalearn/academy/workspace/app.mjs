@@ -188,10 +188,17 @@ function coursePage(course) {
   main.innerHTML = '<a class="back" href="#courses">'+icon('back')+' All courses</a>'+head(course.field,course.name,course.summary)+
     '<section class="panel"><div class="row"><strong>Course progress</strong><span id="lesson-count"></span></div><progress aria-label="Lessons complete" max="'+course.lessons.length+'"></progress><p id="course-status" class="notice" aria-live="polite"></p></section>'+
     '<h2 class="section-title">Step-by-step lessons</h2><p class="section-subtitle">Complete each practical activity in order to unlock the next lesson.</p>'+
-    '<div class="lesson-list">'+course.lessons.map(([title,intro,steps,activity,related],i)=>'<details class="panel" data-step="'+i+'"><summary>'+String(i+1).padStart(2,'0')+' · '+title+' <span data-marker="'+i+'"></span></summary>'+
-    '<div class="lesson-content"><p>'+intro+'</p>'+list(steps)+'<div class="activity"><strong>Practical activity</strong>'+activity+'</div><p><strong>Related area</strong> · '+related+'</p>'+
-    (course.id === 'ai' ? '<div class="worked-example"><h3>'+esc(aiExamples[i][0])+'</h3><p>'+esc(aiExamples[i][1])+'</p><p><strong>What to produce</strong> '+esc(aiExamples[i][2])+'</p></div>' : '')+
-    '<button class="btn" type="button" data-lesson="'+i+'"></button></div></details>').join('')+'</div>'+
+    '<div class="lesson-list">'+course.lessons.map(([title,intro,steps,activity,related],i)=> {
+      const example = course.id === 'ai' ? aiExamples[i] : null;
+      return '<details class="panel lesson '+course.color+'" data-step="'+i+'"><summary><span class="lesson-number">'+String(i+1).padStart(2,'0')+'</span>'+
+        '<span class="lesson-title">'+esc(title)+'</span><span class="lesson-state" data-marker="'+i+'"></span></summary>'+
+        '<div class="lesson-content"><section class="lesson-intro"><h3>What you’ll learn</h3><p>'+esc(intro)+'</p></section>'+
+        '<section class="lesson-steps"><h3>Follow the steps</h3>'+list(steps)+'</section>'+
+        (example ? '<section class="worked-example"><p class="lesson-label">Worked example</p><h3>'+esc(example[0])+'</h3><p>'+esc(example[1])+'</p></section>' : '')+
+        '<section class="activity"><h3>Try it yourself</h3><p>'+esc(activity)+'</p>'+
+        (example ? '<p><strong>What to produce</strong> '+esc(example[2])+'</p>' : '')+'</section>'+
+        '<div class="row lesson-footer"><p>'+esc(related)+'</p><button class="btn primary" type="button" data-lesson="'+i+'"></button></div></div></details>';
+    }).join('')+'</div>'+
     '<section class="panel"><h2>Course assessment</h2><p>Answer all '+course.quiz.length+' questions. Score at least '+pass+' out of '+course.quiz.length+' and complete every lesson to unlock a browser-local certificate.</p>'+
     '<p id="quiz-lock" class="notice" role="status">Complete all lessons to unlock the assessment.</p>'+
     '<form id="quiz" hidden>'+course.quiz.map(([question,options],i)=>'<fieldset><legend>'+(i+1)+'. '+esc(question)+'</legend>'+
@@ -212,7 +219,7 @@ function coursePage(course) {
       details.querySelector('summary').setAttribute('aria-disabled', String(!unlocked));
       el.disabled = complete || !unlocked;
       el.textContent = complete ? 'Lesson complete' : 'Mark lesson complete';
-      main.querySelector('[data-marker="'+el.dataset.lesson+'"]').textContent = complete ? '✓' : unlocked ? '' : 'Locked';
+      main.querySelector('[data-marker="'+el.dataset.lesson+'"]').textContent = complete ? 'Completed' : unlocked ? 'Ready' : 'Locked';
     });
     const ready = lessonsComplete(course,state);
     main.querySelector('#quiz').hidden = !ready;
@@ -280,16 +287,23 @@ function openCertificate(course, introductory) {
   const earned = introductory ? state.introductoryEarned : state.earned;
   if (!earned || (!introductory && !eligibleForCertificate(course,state))) return;
   const date = new Intl.DateTimeFormat('en-GH',{dateStyle:'long',timeZone:'Africa/Accra'}).format(new Date(earned));
+  dialog.classList.remove('certificate-dialog');
   const serialField = introductory ? 'introductorySerial' : 'serial';
   const chrome = '<div class="dialog-top">'+badge('award')+'<button class="btn" type="button" aria-label="Close certificate" data-close>'+icon('close')+'</button></div>';
   function showCertificate() {
+    dialog.classList.add('certificate-dialog');
     dialog.innerHTML = chrome +
-      '<article class="cert-paper"><p class="eyebrow">GIGALEARN ACADEMY</p><h2 id="dialog-title">Certificate of Completion</h2>'+
-      '<p>Presented to</p><h3 class="cert-recipient">'+esc(state.recipient)+'</h3><p>For completing</p><h3>'+esc(course.name)+'</h3>'+
-      '<p>'+(introductory ? 'Introductory course' : course.lessons.length+' lessons · Assessment passed')+'</p>'+
-      '<p>Issued '+esc(date)+'</p><p class="cert-signature">Ayiiga Benard Issaka</p><p>Founder, Giga3 AI · Typed signature</p>'+
-      '<p class="cert-serial">Serial '+esc(state[serialField])+'</p></article>'+
-      '<p class="notice">Completion record issued in this browser. Its serial is stored on this device.</p>';
+      '<article class="cert-paper"><div class="cert-frame">'+
+      '<p class="cert-academy">GigaLearn Academy</p><h2 id="dialog-title">Certificate of <span>Completion</span></h2>'+
+      '<p class="cert-kicker">This certifies that</p><h3 class="cert-recipient">'+esc(state.recipient)+'</h3>'+
+      '<p class="cert-kicker">has successfully completed</p><h3 class="cert-course">'+esc(course.name)+'</h3>'+
+      '<p class="cert-completion">'+(introductory ? 'Introductory course' : course.lessons.length+' lessons completed and assessment passed')+'</p>'+
+      '<p class="cert-date">Issued '+esc(date)+'</p>'+
+      '<div class="cert-details"><div class="cert-serial"><span>Certificate serial</span><strong>'+esc(state[serialField])+'</strong></div>'+
+      '<div class="cert-seal" aria-hidden="true">'+icon('book')+'</div>'+
+      '<div class="cert-issuer"><p class="cert-signature" aria-label="Typed signature">A B Issaka</p><strong>Ayiiga Benard Issaka</strong><p>Founder, Giga3 AI</p></div></div>'+
+      '<div class="cert-brand"><img src="/images/logo.svg" alt="" width="24" height="24"><strong>Giga3 AI</strong></div>'+
+      '</div></article><p class="notice">This browser stores your certificate and serial.</p>';
   }
   if (state.recipient && state[serialField]) {
     showCertificate();
@@ -318,6 +332,7 @@ function openCertificate(course, introductory) {
   dialog.setAttribute('aria-labelledby','dialog-title');
   dialog.showModal();
 }
+dialog.addEventListener('close',()=>dialog.classList.remove('certificate-dialog'));
 function render() {
   if (dialog.open) dialog.close();
   const [route,id] = (location.hash.slice(1) || new URLSearchParams(location.search).get('view') || '').split('/');
