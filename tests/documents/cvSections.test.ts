@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CV_SECTION_FIELDS, cvNodeText, cvSectionHeading, cvSections, cvTextNode, moveCvItem, readCvEntries, replaceCvSection, writeCvEntries } from "../../web/lib/documents/cvSections";
+import { CV_SECTION_FIELDS, cvNodeText, cvSectionHeading, cvSections, cvTextNode, moveCvItem, readCvEntries, replaceCvSection, retainUnmappedContact, writeCvEntries } from "../../web/lib/documents/cvSections";
 
 describe("CV profile editing", () => {
   it("keeps formatted legacy content intact when adding or moving education entries", () => {
@@ -14,6 +14,13 @@ describe("CV profile editing", () => {
     const serialized = writeCvEntries(moved, fields);
     expect(serialized.slice(-2)).toEqual(legacy);
     expect(readCvEntries(serialized, fields)[0].values).toEqual(added.values);
+  });
+
+  it("replaces editable labelled contacts while retaining old unlabeled details", () => {
+    const unmapped = { type: "listItem", content: [cvTextNode("paragraph", "LinkedIn profile link")] };
+    const mapped = { type: "listItem", content: [cvTextNode("paragraph", "Email: old@example.com")] };
+    const nodes = [{ type: "bulletList", content: [unmapped, mapped] }];
+    expect(retainUnmappedContact(nodes)).toEqual([{ type: "bulletList", content: [unmapped] }]);
   });
 
   it("keeps a renamed heading bound to its form and preserves other sections", () => {

@@ -34,6 +34,22 @@ export function cvNodeText(node: CvNode): string {
   ) ?? "";
 }
 
+export function retainUnmappedContact(nodes: CvNode[]): CvNode[] {
+  return nodes.flatMap((node) => {
+    if (node.type === "bulletList" || node.type === "orderedList") {
+      const content = retainUnmappedContact(node.content ?? []);
+      return content.length ? [{ ...node, content }] : [];
+    }
+    const text = cvNodeText(node);
+    const singleLineBlock = node.type === "paragraph" || node.type === "listItem" &&
+      node.content?.length === 1 && node.content[0].type === "paragraph";
+    const mapped = singleLineBlock && !text.includes("\n") && CV_SECTION_FIELDS.personal.slice(1).some((field) =>
+      text.startsWith(field + ": ")
+    );
+    return mapped ? [] : [node];
+  });
+}
+
 export function cvNodes(doc: DocJson): CvNode[] {
   return (doc.content ?? []) as CvNode[];
 }

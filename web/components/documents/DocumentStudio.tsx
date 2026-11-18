@@ -21,7 +21,7 @@ import {
 import type { DocJson, DocPaperSize, GigaDocument } from "@/lib/documents/types";
 import { cn } from "@/lib/utils";
 import { FontSize } from "@/lib/documents/fontSize";
-import { Extension } from "@tiptap/core";
+import { Extension, type JSONContent } from "@tiptap/core";
 import Color from "@tiptap/extension-color";
 import FontFamily from "@tiptap/extension-font-family";
 import Placeholder from "@tiptap/extension-placeholder";
@@ -101,7 +101,7 @@ export function DocumentStudio({
       TableCell,
       Placeholder.configure({ placeholder: "Edit your document…" }),
     ],
-    content: initial.content.content?.length ? initial.content : markdownToEditorHtml(initial.markdown),
+    content: initial.content.content?.length ? initial.content as JSONContent : markdownToEditorHtml(initial.markdown),
     editable: !initialPreview,
     editorProps: {
       attributes: {
@@ -129,7 +129,7 @@ export function DocumentStudio({
     setDoc(initial);
     if (editor) {
       editor.commands.setContent(
-        initial.content.content?.length ? initial.content : markdownToEditorHtml(initial.markdown),
+        initial.content.content?.length ? initial.content as JSONContent : markdownToEditorHtml(initial.markdown),
         false
       );
     }
@@ -280,7 +280,7 @@ export function DocumentStudio({
   );
 
   function saveProfileSections(content: CvNode[]) {
-    const structured: DocJson = { type: "doc", content };
+    const structured = { type: "doc", content } satisfies JSONContent;
     editor?.commands.setContent(structured, false);
     emit({
       ...liveDocument.current,

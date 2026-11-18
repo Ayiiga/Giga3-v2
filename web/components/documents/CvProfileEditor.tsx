@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/Button";
 import {
   CV_SECTION_FIELDS, cvNodeText, cvParagraphs, cvSectionHeading, cvSections, cvTextNode,
-  moveCvItem, readCvEntries, replaceCvSection, writeCvEntries,
+  moveCvItem, readCvEntries, replaceCvSection, retainUnmappedContact, writeCvEntries,
   type CvEntry, type CvNode,
 } from "@/lib/documents/cvSections";
 import {
@@ -91,9 +91,7 @@ export function CvProfileEditor({ nodes, onSave, onPreview, onAdvanced, photo }:
     } else if (active === "personal") {
       const name = personal[0]?.trim();
       const oldContact = contact ? nodes.slice(contact.start + 1, contact.end) : [];
-      const other = oldContact.filter((node) => !CV_SECTION_FIELDS.personal.slice(1).some((field) =>
-        node.type === "paragraph" && cvNodeText(node).startsWith(field + ": ")
-      ));
+      const other = retainUnmappedContact(oldContact);
       const details = CV_SECTION_FIELDS.personal.slice(1).flatMap((field, index) => {
         const value = personal[index + 1]?.trim();
         return value ? [cvTextNode("paragraph", `${field}: ${value}`)] : [];
