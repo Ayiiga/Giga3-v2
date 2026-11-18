@@ -89,6 +89,21 @@ test.describe("Document Studio — Android mobile browser workflow", () => {
       "Verified additional classroom experience."
     );
     await expect(page.getByAltText("CV portrait preview")).toBeVisible();
+
+    await page.getByRole("button", { name: "Edit Android Document QA CV", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "CV Profile" })).toBeVisible();
+    await page.getByRole("button", { name: "Education", exact: true }).click();
+    await page.getByRole("button", { name: "Example", exact: true }).click();
+    await expect(page.getByText("Example College of Education")).toBeVisible();
+    await page.getByRole("button", { name: "Education", exact: true }).click();
+    await page.getByRole("button", { name: "Add entry", exact: true }).click();
+    await page.getByLabel("Course / Degree").last().fill("Diploma in Education");
+    await page.getByLabel("School / University").last().fill("Example College");
+    await page.getByRole("button", { name: "Move Education 2 up" }).click();
+    await page.getByRole("button", { name: "Save section", exact: true }).click();
+    await page.getByRole("button", { name: "View CV", exact: true }).click();
+    await expect(page.locator(".document-studio .ProseMirror")).toContainText("Diploma in Education");
+    await expect(page.locator(".document-studio .ProseMirror")).toContainText("Verified additional classroom experience.");
   });
 
   test("narrow Android viewport keeps controls reachable with keyboard-sized screen", async ({ page }) => {
