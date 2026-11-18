@@ -1,3 +1,4 @@
+import { signatureImageBytes } from "@/lib/documents/signature";
 import { cvAppearance, cvHeadingStyle } from "@/lib/documents/cvLayouts";
 import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from "pdf-lib";
 import type { DocJson, GigaDocument } from "@/lib/documents/types";
@@ -396,6 +397,14 @@ export async function exportDocumentPdf(doc: GigaDocument): Promise<Uint8Array> 
       continue;
     }
     drawLines(wrapRuns(block.runs, availableWidth(), bodySize, fonts), block.align, 6);
+  }
+
+  if (doc.signatureDataUrl) {
+    const signature = await pdf.embedPng(signatureImageBytes(doc.signatureDataUrl));
+    const width = Math.min(mmToPt(52), contentWidth);
+    const height = width * signature.height / signature.width;
+    ensureSpace(height + 6);
+    page.drawImage(signature, { x: margin.left, y: y - height - 6, width, height });
   }
 
   // Footer on last page

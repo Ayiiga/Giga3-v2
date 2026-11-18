@@ -1,3 +1,4 @@
+import { signatureImageBytes } from "@/lib/documents/signature";
 import { cvAppearance, cvHeadingStyle, type CvAppearance } from "@/lib/documents/cvLayouts";
 import {
   AlignmentType,
@@ -252,6 +253,18 @@ export async function exportDocumentDocx(doc: GigaDocument): Promise<Uint8Array>
       })],
       alignment: AlignmentType.RIGHT,
       spacing: { after: 80 },
+    }));
+  }
+
+  if (doc.signatureDataUrl) {
+    children.push(new Paragraph({
+      children: [new ImageRun({
+        type: "png",
+        data: signatureImageBytes(doc.signatureDataUrl),
+        transformation: { width: 196, height: 74 },
+        altText: { title: "Handwritten signature", description: "Document signature", name: "Signature" },
+      })],
+      spacing: { before: 120 },
     }));
   }
 

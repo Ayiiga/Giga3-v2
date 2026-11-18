@@ -11,6 +11,11 @@ test.describe("Document Studio — Android mobile browser workflow", () => {
     test.skip(test.info().project.name !== "mobile-chrome", "Run on the Pixel mobile Chrome project");
 
     await page.goto("/documents/", { waitUntil: "domcontentloaded" });
+    for (const town of ["Binduri", "Walewale", "Nalerigu", "Agona"]) {
+      await expect(page.getByText(new RegExp(`· ${town}$`))).toBeVisible();
+    }
+    await expect(page.getByText("Mpoko Charles", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText("Godwin Atia", { exact: true }).first()).toBeVisible();
     await page.getByRole("button", { name: "Modern", exact: true }).click();
     await expect(page.getByRole("button", { name: /Executive Shaded/ })).toHaveCount(0);
     await page.getByRole("button", { name: /Signature Bold name header/ }).click();
@@ -18,6 +23,7 @@ test.describe("Document Studio — Android mobile browser workflow", () => {
     const editor = page.locator(".document-studio .ProseMirror");
     const title = page.getByLabel("Document title");
     await expect(editor).toBeVisible();
+    await expect(editor.locator("h1")).toHaveText("Full Name");
     await title.fill("Android Document QA CV");
     await editor.click();
     await editor.press("ControlOrMeta+End");
@@ -47,6 +53,16 @@ test.describe("Document Studio — Android mobile browser workflow", () => {
     await expect(editor).toHaveAttribute("contenteditable", "false");
     await expect(editor.locator("h1")).toHaveCSS("background-color", "rgb(0, 103, 95)");
     await expect(page.getByAltText("Passport-style CV portrait")).toBeVisible();
+    await page.getByRole("button", { name: "Sign document", exact: true }).click();
+    const pad = page.getByLabel("Handwritten signature pad");
+    await pad.scrollIntoViewIfNeeded();
+    const bounds = (await pad.boundingBox())!;
+    await page.mouse.move(bounds.x + 18, bounds.y + 24);
+    await page.mouse.down();
+    await page.mouse.move(bounds.x + 72, bounds.y + 42, { steps: 4 });
+    await page.mouse.up();
+    await page.getByRole("button", { name: "Apply signature", exact: true }).click();
+    await expect(page.getByAltText("Your handwritten signature")).toBeVisible();
     await page.getByRole("button", { name: "Save draft" }).click();
     await expect(page.getByText("Draft saved on this device.")).toBeVisible();
 
@@ -70,6 +86,7 @@ test.describe("Document Studio — Android mobile browser workflow", () => {
     const wordXml = await word.file("word/document.xml")!.async("string");
     expect(wordXml).toContain("Verified additional classroom experience.");
     expect(wordXml).toContain('w:fill="00675F"');
+    expect(wordXml).toContain("Handwritten signature");
     expect(Object.keys(word.files).some((p) => p.startsWith("word/media/"))).toBe(true);
 
     const slidesEvent = page.waitForEvent("download");
@@ -90,6 +107,7 @@ test.describe("Document Studio — Android mobile browser workflow", () => {
     );
     await expect(page.getByAltText("CV portrait preview")).toBeVisible();
 
+    await expect(page.getByAltText("Your handwritten signature")).toBeVisible();
     await page.getByRole("button", { name: "Edit Android Document QA CV", exact: true }).click();
     await expect(page.getByRole("heading", { name: "CV Profile" })).toBeVisible();
     await page.getByRole("button", { name: "Education", exact: true }).click();
