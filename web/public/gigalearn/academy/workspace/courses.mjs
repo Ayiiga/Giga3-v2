@@ -1,4 +1,8 @@
-export default [
+import { courseAssessments } from './course-assessments.mjs?v=114';
+import { practicalCourses } from './practical-courses.mjs?v=114';
+import { professionalCourses } from './professional-course-guides.mjs?v=114';
+
+const courses = [
   {
     id:'teaching', name:'Teaching', field:'CLASSROOM PRACTICE', icon:'book', color:'purple',
     summary:'Plan clear lessons, check understanding, and support every learner in a basic-school classroom.',
@@ -174,3 +178,19 @@ export default [
     material:['Digital workspace starter worksheet','Worksheet',['Create Drafts, Final and Reference folders and add versioned filenames.','Build a three-row budget with calculated amounts and a total.','List who needs view or edit access to each example file.']]
   }
 ];
+
+const guides = { ...practicalCourses, ...professionalCourses };
+for (const course of courses) {
+  const guide = guides[course.id];
+  if (!guide) continue;
+  course.name = guide.name;
+  course.summary = guide.summary;
+  course.guides = guide.lessons;
+  course.project = guide.project;
+  course.quiz = courseAssessments[course.id];
+  course.sources = guide.sources;
+  course.lessons = guide.lessons.map(lesson => [
+    lesson.title, lesson.objectives.join(' '), lesson.steps, lesson.title.startsWith('Final Project') ? 'Submit your project: '+lesson.activity : lesson.activity, lesson.evidence,
+  ]);
+}
+export default courses;

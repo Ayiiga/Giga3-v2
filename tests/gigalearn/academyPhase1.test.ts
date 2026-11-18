@@ -26,8 +26,8 @@ describe("GigaLearn Academy Phase 1", () => {
     expect(maths).toEqual([]);
     const early = filterAcademyCourses(items, { category: "Early years" });
     expect(early.some((c) => c.slug === "kg2-ghana-discover")).toBe(true);
-    const credits = filterAcademyCourses(items, { query: "teacher" });
-    expect(credits.some((c) => c.access === "credits")).toBe(true);
+    const teachers = filterAcademyCourses(items, { query: "teacher" });
+    expect(teachers.some((c) => c.slug === "teacher-lesson-studio-basics" && c.access === "free")).toBe(true);
   });
 
   it("course details expose modules, objectives, and access labels", () => {

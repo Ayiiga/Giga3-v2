@@ -1,4 +1,14 @@
 const PROJECT_TRACKS = {
+  "teacher-lesson-studio-basics": {
+    id: "teaching",
+    outcome: "Plan and demonstrate an inclusive lesson with measurable objectives, guided practice, formative assessment and useful feedback.",
+    evidence: "Submit the lesson package, a rehearsal or authorised classroom demonstration, anonymised evidence and a reflection.",
+  },
+  "other-digital-technologies": {
+    id: "digital",
+    outcome: "Organise files, create useful documents and spreadsheets, restore a backup and make safer sharing and account decisions.",
+    evidence: "Submit a fictional-data workspace portfolio, restore-test log, sharing plan and phishing-response exercise.",
+  },
   "ai-machine-learning": {
     id: "ai",
     outcome: "Choose AI tools for real tasks, write clear prompts with constraints and examples, refine weak answers, and verify claims before using them.",

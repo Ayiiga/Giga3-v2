@@ -29,7 +29,12 @@ describe("expanded Academy curriculum", () => {
     const done = course.lessons.map((_, i) => i);
     expect(eligibleForCertificate(course, { ...migrated, done, best: 7 })).toBe(false);
     expect(eligibleForCertificate(course, { ...migrated, done: done.slice(1), best: 8 })).toBe(false);
-    expect(eligibleForCertificate(course, { ...migrated, done, best: 8 })).toBe(true);
+    expect(eligibleForCertificate(course, { ...migrated, done, best: 8 })).toBe(false);
+    expect(eligibleForCertificate(course, { ...migrated, done, best: 8, project: {
+      evidence: "I created and rehearsed a complete lesson plan, recorded an independent assessment and documented specific feedback for three anonymous example responses.",
+      reflection: "I revised the guided practice because the original examples did not prepare learners for the independent task.",
+      scores: [2, 2, 1, 1, 1], submitted: earned,
+    } })).toBe(true);
   });
 });
 

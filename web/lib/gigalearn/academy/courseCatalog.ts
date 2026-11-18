@@ -11,6 +11,7 @@ export const ACADEMY_CATEGORIES = [
   "Teacher practice",
   "Study skills",
   "Technology",
+  "Digital skills",
 ] as const;
 
 export const ACADEMY_SUBJECTS = [
@@ -266,24 +267,23 @@ const BUILTIN_COURSES: AcademyCourse[] = [
   },
   {
     slug: "teacher-lesson-studio-basics",
-    title: "Teacher Studio: Lesson & Quiz Basics",
+    title: "Modern Teaching and Digital Pedagogy",
     description:
-      "For educators — pathway through Teacher Studio generators (lessons, quizzes, worksheets) using existing credit-backed tools.",
+      "Ten practical lessons covering measurable objectives, modelling, inclusive participation, formative assessment, digital tools and responsible AI use.",
     subject: "Teaching",
     category: "Teacher practice",
     difficulty: "beginner",
-    durationMinutes: 90,
+    durationMinutes: 600,
     learningObjectives: [
       "Generate a lesson outline with curriculum context",
       "Create a short quiz for classroom use",
-      "Save and reuse outputs responsibly with credits",
+      "Review AI-generated resources and apply formative feedback responsibly",
     ],
-    prerequisites: ["Teacher or educator role", "Credits available for generation tools"],
+    prerequisites: ["Teachers, student teachers or aspiring educators"],
     curriculumPreview: "Works with any Ghana CCP/SHS subject selected in Studio context.",
     assessmentDescription: "Authoring checkpoints only — no student grading changes.",
     instructorName: "GigaLearn Faculty",
-    access: "credits",
-    creditCost: 2,
+    access: "free",
     certificateEligible: true,
     completionRequirements:
       "Complete required Teacher Studio lessons, pass the reflection assessment, and receive instructor approval before a certificate is issued.",
@@ -833,13 +833,13 @@ const BUILTIN_COURSES: AcademyCourse[] = [
   ),
   {
     slug: "other-digital-technologies",
-    title: "Other Digital Technologies",
+    title: "Digital Technology and Cyber Safety",
     description:
-      "Cybersecurity, cloud, IoT, networking, APIs, data, payments, and digital project practice from the Other Digital Technologies bank.",
+      "Ten practical lessons on digital devices, files, backups, documents, spreadsheets, research, sharing permissions, phishing and responsible AI use.",
     subject: "Digital Technologies",
-    category: "Technology",
+    category: "Digital skills",
     difficulty: "beginner",
-    durationMinutes: 540,
+    durationMinutes: 600,
     learningObjectives: [
       "Recognise phishing and basic security hygiene",
       "Reason about cloud, networking, and API integration trade-offs",
@@ -897,7 +897,7 @@ const BUILTIN_COURSES: AcademyCourse[] = [
   ...WASSCE_PRACTICE_COURSES,
 ];
 
-/** Only the four approved Technology pathways appear in public Academy discovery. */
+/** Four developer Technology pathways; digital literacy is a separate Digital skills course. */
 export const APPROVED_TECHNOLOGY_COURSE_SLUGS = [
   "ai-machine-learning",
   "robotics-intelligent-systems",

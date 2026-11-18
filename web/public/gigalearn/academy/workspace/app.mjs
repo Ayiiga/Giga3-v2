@@ -1,11 +1,11 @@
-import aiGuides, { aiTools, promptParts } from './ai-lesson-guides.mjs?v=113';
+import aiGuides, { aiTools, promptParts } from './ai-lesson-guides.mjs?v=114';
 import { createCertificateImage } from './certificate-image.mjs?v=112';
-import courses from './courses.mjs?v=113';
-import aiExamples from './ai-examples.mjs?v=113';
-import { createCertificateSerial, eligibleForCertificate, lessonUnlocked, lessonsComplete, passingScore, readProgress } from './progress.mjs?v=113';
+import courses from './courses.mjs?v=114';
+import aiExamples from './ai-examples.mjs?v=114';
+import { createCertificateSerial, eligibleForCertificate, lessonUnlocked, lessonsComplete, passingScore, readProgress, projectComplete, projectCriteria, lessonCheckPassed } from './progress.mjs?v=114';
 // Older cached workspace documents may still point to the unversioned stylesheet.
 const legacyStylesheet = document.querySelector('link[rel="stylesheet"][href="style.css"]');
-if (legacyStylesheet) legacyStylesheet.href = 'style.css?v=113';
+if (legacyStylesheet) legacyStylesheet.href = 'style.css?v=114';
 
 const main = document.querySelector('main');
 const dialog = document.querySelector('#detail');
@@ -208,6 +208,45 @@ function aiGuideMarkup(index) {
   return objectives + explanation + tools + lab + check;
 }
 
+function practicalGuideMarkup(course, index, state) {
+  const guide = course.guides?.[index];
+  if (!guide) return '';
+  const checks = guide.checks || [];
+  const pass = Math.ceil(checks.length * 0.75);
+  const resources = index === 0 ? '<section class="lesson-reading"><h3>Course reference library</h3><ul>' + course.sources.map(([name, url]) =>
+    '<li><a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">'+esc(name)+'</a></li>').join('')+'</ul></section>' : '';
+  let starter = '';
+  if (course.id === 'web' && index === 0) starter = '<section class="project-starter"><h3>Build My Study Hub</h3><p>Download all starter files, make your own changes and run the tests described above. Try the button in the preview below; open the project separately for PWA testing.</p>'+
+    '<a class="btn primary" href="projects/study-hub.zip" download>Download Study Hub starter (ZIP)</a> '+
+    '<a class="btn" href="projects/study-hub/index.html" target="_blank" rel="noopener">Open working example</a>'+
+    '<div class="study-hub-preview" aria-label="Interactive My Study Hub example"><h3>Welcome to My Study Hub!</h3><p>Learn, practise and grow your skills.</p><button class="btn primary" type="button" id="study-hub-preview-start">Start Learning</button><p id="study-hub-preview-message" aria-live="polite"></p></div>'+
+    ['index.html','manifest.webmanifest','sw.js','README.txt'].map(file=>'<details class="source-example"><summary>Read '+esc(file)+'</summary><pre><code data-source="projects/study-hub/'+file+'">Loading source…</code></pre></details>').join('')+'</section>';
+  if (course.id === 'robotics' && index === 0) starter = '<section class="project-starter"><h3>Try a soil-alert simulation</h3><p>Use the slider and missing-input control, then record normal, boundary and fault behaviour. The scale is fictional; real hardware needs calibration.</p><a class="btn" href="projects/soil-alert.html" target="_blank" rel="noopener">Open simulator</a> <a class="btn primary" href="projects/soil-alert.html" download>Download simulator source</a><div class="soil-preview"><p>This example uses a fictional 0–100 moisture scale. Alert on below 30, off above 40, retain previous state between thresholds.</p><label for="soil-moisture">Simulated moisture: <span id="soil-reading">50</span> / 100</label><input id="soil-moisture" type="range" min="0" max="100" value="50"><label><input id="soil-fault" type="checkbox"> Simulate missing input</label><p id="soil-status" role="status">Alert OFF — continue observing.</p></div></section>';
+  if (course.id === 'mobile' && index === 1) starter = '<section class="project-starter"><h3>Compose revision-app starter</h3><p>Create and run an Android Studio Empty Activity project first. Add this file to your generated source package, retain your package declaration, then call RevisionApp() inside MaterialTheme in the activity’s setContent block. It is a starter composable, not an installable APK.</p><a class="btn primary" href="projects/RevisionApp.kt" download>Download RevisionApp.kt</a><details class="source-example"><summary>Read the Kotlin source</summary><pre><code data-source="projects/RevisionApp.kt">Loading source…</code></pre></details></section>';
+  return '<section class="lesson-intro"><h3>Learning objectives</h3><p>'+esc(guide.duration)+'</p>'+list(guide.objectives)+'</section>'+
+    guide.sections.map(([title, body])=>'<section class="lesson-reading"><h3>'+esc(title)+'</h3><p>'+esc(body)+'</p></section>').join('')+starter+resources+
+    '<section class="lesson-check" data-check-group="'+index+'"><h3>Lesson '+(index+1)+' knowledge check</h3><p>Answer every question. Score at least '+pass+' out of '+checks.length+' before completing this lesson. You can review the explanation and try again.</p>'+
+    checks.map(([question, options], i)=>'<fieldset><legend>'+esc(question)+'</legend>'+options.map((answer,j)=>'<label class="option"><input type="radio" name="lesson-'+index+'-check-'+i+'" value="'+j+'" data-lesson-check="'+index+'" data-question="'+i+'">'+esc(answer)+'</label>').join('')+
+    '<p class="feedback" id="lesson-feedback-'+index+'-'+i+'" hidden></p></fieldset>').join('')+
+    '<p data-check-status="'+index+'" role="status">'+(state.lessonCheckScores[index] ? 'Saved best: '+state.lessonCheckScores[index]+' / '+checks.length : '')+'</p></section>';
+}
+function projectMarkup(course, state) {
+  if (!course.project) return '';
+  const project = state.project || {};
+  const criteria = course.id === 'teaching'
+    ? ['Clear objectives', 'Appropriate teaching activities', 'Learner participation', 'Assessment and feedback', 'Differentiation and clarity']
+    : projectCriteria;
+  return '<section class="panel final-project"><h2>Final practical project</h2><p>'+esc(course.project)+'</p>'+
+    '<p>This is a browser-local, self-assessed portfolio submission. It is not an instructor review or independent verification of your work. Do not enter passwords, private learner records or confidential links.</p>'+
+    '<p id="project-lock" class="notice" role="status">Complete all lessons to submit your project.</p>'+
+    '<form id="project-form" hidden><label for="project-evidence">Evidence: describe what you built, include a shareable project/source URL where applicable, and record your test results (at least 80 characters).</label>'+
+    '<textarea id="project-evidence" name="evidence" required minlength="80" maxlength="6000" rows="6">'+esc(project.evidence || '')+'</textarea>'+
+    '<fieldset><legend>Self-assessment rubric — 0: missing, 1: partial, 2: demonstrated. Minimum 7 / 10.</legend>'+
+    criteria.map((criterion, i)=>'<label for="project-score-'+i+'">'+esc(criterion)+'<select id="project-score-'+i+'" name="score'+i+'" required><option value="">Choose a score</option>'+[0,1,2].map(score=>'<option value="'+score+'"'+(project.scores?.[i]===score?' selected':'')+'>'+score+'</option>').join('')+'</select></label>').join('')+'</fieldset>'+
+    '<label for="project-reflection">Reflection: explain a difficulty, a correction and your next improvement (at least 40 characters).</label><textarea id="project-reflection" name="reflection" required minlength="40" maxlength="3000" rows="4">'+esc(project.reflection || '')+'</textarea>'+
+    '<button class="btn primary" type="submit">Save project submission</button><p id="project-status" class="notice" role="status">'+(projectComplete(course,state)?'Project requirement satisfied. '+(state.projectGrandfathered?'Your existing earned certificate is preserved.':'Self-assessment saved in this browser.'):'Complete the evidence and rubric to unlock the final assessment.')+'</p></form></section>';
+}
+
 function coursePage(course) {
   const state = record(course);
   const pass = passingScore(course);
@@ -218,15 +257,15 @@ function coursePage(course) {
       const example = course.id === 'ai' ? aiExamples[i] : null;
       return '<details class="panel lesson '+course.color+'" data-step="'+i+'"><summary><span class="lesson-number">'+String(i+1).padStart(2,'0')+'</span>'+
         '<span class="lesson-title">'+esc(title)+'</span><span class="lesson-state" data-marker="'+i+'"></span></summary>'+
-        '<div class="lesson-content">'+(course.id === 'ai' ? aiGuideMarkup(i) : '')+'<section class="lesson-intro"><h3>What you’ll learn</h3><p>'+esc(intro)+'</p></section>'+
+        '<div class="lesson-content">'+(course.id === 'ai' ? aiGuideMarkup(i) : practicalGuideMarkup(course,i,state))+'<section class="lesson-intro"><h3>What you’ll learn</h3><p>'+esc(intro)+'</p></section>'+
         '<section class="lesson-steps"><h3>Follow the steps</h3>'+list(steps)+'</section>'+
         (example ? '<section class="worked-example"><p class="lesson-label">Worked example</p><h3>'+esc(example[0])+'</h3><p>'+esc(example[1])+'</p></section>' : '')+
         '<section class="activity"><h3>Try it yourself</h3><p>'+esc(activity)+'</p>'+
         (example ? '<p><strong>What to produce</strong> '+esc(example[2])+'</p>' : '')+'</section>'+
         '<div class="row lesson-footer"><p>'+esc(related)+'</p><button class="btn primary" type="button" data-lesson="'+i+'"></button></div></div></details>';
     }).join('')+'</div>'+
-    '<section class="panel"><h2>Course assessment</h2><p>Answer all '+course.quiz.length+' questions. Score at least '+pass+' out of '+course.quiz.length+' and complete every lesson to unlock a browser-local certificate.</p>'+
-    '<p id="quiz-lock" class="notice" role="status">Complete all lessons to unlock the assessment.</p>'+
+    projectMarkup(course,state)+'<section class="panel"><h2>Course assessment</h2><p>Answer all '+course.quiz.length+' questions. Score at least '+pass+' out of '+course.quiz.length+' and complete every lesson'+(course.project?' and submit your practical project':'')+' to unlock a browser-local certificate.</p>'+
+    '<p id="quiz-lock" class="notice" role="status">Complete all lessons'+(course.project?' and submit your practical project':'')+' to unlock the assessment.</p>'+
     '<form id="quiz" hidden>'+course.quiz.map(([question,options],i)=>'<fieldset><legend>'+(i+1)+'. '+esc(question)+'</legend>'+
     options.map((answer,j)=>'<label class="option"><input required type="radio" name="q'+i+'" value="'+j+'">'+esc(answer)+'</label>').join('')+
     '<p class="feedback" id="feedback-'+i+'" hidden></p></fieldset>').join('')+
@@ -243,13 +282,16 @@ function coursePage(course) {
       if (!unlocked) details.open = false;
       details.querySelector('.lesson-content').hidden = !unlocked;
       details.querySelector('summary').setAttribute('aria-disabled', String(!unlocked));
-      const needsIntroCheck = course.id === 'ai' && index === 0 && (state.introCheckScore || 0) < 6;
+      const needsIntroCheck = !lessonCheckPassed(course,state,index);
       el.disabled = complete || !unlocked || needsIntroCheck;
-      if (needsIntroCheck && !complete) el.title = 'Answer the lesson check and score at least 6 out of 8.';
+      el.title = needsIntroCheck && !complete ? 'Pass the lesson knowledge check before marking this lesson complete.' : '';
       el.textContent = complete ? 'Lesson complete' : 'Mark lesson complete';
       main.querySelector('[data-marker="'+el.dataset.lesson+'"]').textContent = complete ? 'Completed' : unlocked ? 'Ready' : 'Locked';
     });
-    const ready = lessonsComplete(course,state);
+    const lessonsReady = lessonsComplete(course,state);
+    const projectForm = main.querySelector('#project-form');
+    if (projectForm) { projectForm.hidden = !lessonsReady; main.querySelector('#project-lock').hidden = lessonsReady; }
+    const ready = lessonsReady && projectComplete(course,state);
     main.querySelector('#quiz').hidden = !ready;
     main.querySelector('#quiz-lock').hidden = ready;
     const status = main.querySelector('#course-status');
@@ -292,6 +334,77 @@ function coursePage(course) {
       }
     });
   }
+  main.querySelector('#study-hub-preview-start')?.addEventListener('click',()=>{
+    main.querySelector('#study-hub-preview-message').textContent='Brilliant! Your web development journey has begun.';
+  });
+  const moisture=main.querySelector('#soil-moisture');
+  if (moisture) {
+    let alertOn=false;
+    const updateSoil=()=>{
+      const reading=Number(moisture.value);
+      main.querySelector('#soil-reading').textContent=String(reading);
+      const status=main.querySelector('#soil-status');
+      if (main.querySelector('#soil-fault').checked || !Number.isFinite(reading) || reading<0 || reading>100) {
+        alertOn=false;
+        status.textContent='Fault: sensor input unavailable or invalid. Output off.';
+        return;
+      }
+      if (reading<30) alertOn=true;
+      else if (reading>40) alertOn=false;
+      status.textContent=alertOn ? 'Dry alert ON — check whether watering is needed.' : 'Alert OFF — continue observing.';
+    };
+    moisture.addEventListener('input',updateSoil);
+    main.querySelector('#soil-fault').addEventListener('change',updateSoil);
+  }
+  for (const source of main.querySelectorAll('[data-source]')) {
+    // Paths are created from the fixed starter-file list above, never user input.
+    fetch(source.dataset.source).then(response=>{
+      if (!response.ok) throw new Error('Source unavailable');
+      return response.text();
+    }).then(text=>{ if (source.isConnected) source.textContent=text; })
+      .catch(()=>{ if (source.isConnected) source.textContent='Source could not load. Download the starter file or retry the page.'; });
+  }
+  for (const input of main.querySelectorAll('[data-lesson-check]')) input.addEventListener('change',()=>{
+    const index = Number(input.dataset.lessonCheck);
+    if (!lessonUnlocked(state,index)) return;
+    const questions = course.guides[index].checks;
+    const questionIndex = Number(input.dataset.question);
+    const question = questions[questionIndex];
+    const feedback = main.querySelector('#lesson-feedback-'+index+'-'+questionIndex);
+    feedback.textContent = (Number(input.value) === question[2] ? 'Correct. ' : 'Incorrect. ')+question[3];
+    feedback.hidden = false;
+    const selected = Array.from(main.querySelectorAll('[data-lesson-check="'+index+'"]:checked'));
+    const score = selected.filter(answer=>Number(answer.value) === questions[Number(answer.dataset.question)][2]).length;
+    main.querySelector('[data-check-status="'+index+'"]').textContent = score+' / '+questions.length+' correct · '+selected.length+' of '+questions.length+' answered';
+    if (selected.length === questions.length) {
+      state.lessonCheckScores[index] = Math.max(state.lessonCheckScores[index] || 0,score);
+      save(course,state);
+      update();
+    }
+  });
+  main.querySelector('#project-form')?.addEventListener('submit',event=>{
+    event.preventDefault();
+    if (!lessonsComplete(course,state)) return;
+    const form = new FormData(event.currentTarget);
+    const scores = projectCriteria.map((_,i)=>form.has('score'+i) && /^[012]$/.test(String(form.get('score'+i))) ? Number(form.get('score'+i)) : -1);
+    const project = { evidence:String(form.get('evidence') || '').trim(), reflection:String(form.get('reflection') || '').trim(), scores, submitted:new Date().toISOString() };
+    const status = main.querySelector('#project-status');
+    if (project.evidence.length < 80 || project.reflection.length < 40 || scores.some(score=>score<0) || scores.reduce((a,b)=>a+b,0)<7) {
+      status.textContent='Provide the evidence and reflection, score all five areas, and reach at least 7 / 10. Improve your work before raising its score.';
+      return;
+    }
+    state.project = project;
+    save(course,state);
+    status.textContent='Project submitted: '+scores.reduce((a,b)=>a+b,0)+' / 10 self-assessed. '+(storageAvailable?'Saved in this browser.':'Storage is unavailable; keep your own copy.');
+    update();
+  });
+  for (const input of main.querySelectorAll('#quiz input[type="radio"]')) input.addEventListener('change',()=>{
+    const index = Number(input.name.slice(1));
+    const question = course.quiz[index];
+    const feedback = main.querySelector('#feedback-'+index);
+    feedback.textContent = (Number(input.value) === question[2] ? 'Correct. ' : 'Incorrect. ')+question[3];
+    feedback.hidden = false;
+  });
   main.querySelectorAll('[data-step] summary').forEach(summary=>{
     summary.addEventListener('click', event=>{
       if (!lessonUnlocked(state, Number(summary.parentElement.dataset.step))) event.preventDefault();
@@ -300,14 +413,14 @@ function coursePage(course) {
   main.querySelectorAll('[data-lesson]').forEach(el=>el.addEventListener('click',()=>{
     const index = Number(el.dataset.lesson);
     if (!lessonUnlocked(state,index) || state.done.includes(index)) return;
-    if (course.id === 'ai' && index === 0 && (state.introCheckScore || 0) < 6) return;
+    if (!lessonCheckPassed(course,state,index)) return;
     state.done.push(index);
     save(course,state);
     update();
   }));
   main.querySelector('#quiz').addEventListener('submit',event=>{
     event.preventDefault();
-    if (!lessonsComplete(course,state)) return;
+    if (!lessonsComplete(course,state) || !projectComplete(course,state)) return;
     const form = new FormData(event.currentTarget);
     if (course.quiz.some((_,i)=>!form.has('q'+i))) return;
     let score = 0;
@@ -326,7 +439,7 @@ function coursePage(course) {
   update();
 }
 function overview(certificates) {
-  main.innerHTML = (certificates ? head('LEARNING RECORD','Certificates','Earn a certificate by completing every lesson and passing the assessment for a track. Certificates reflect progress recorded in this browser.') :
+  main.innerHTML = (certificates ? head('LEARNING RECORD','Certificates','Earn a certificate by completing every lesson, submitting the required practical project and passing the assessment for a track. Certificates reflect progress recorded in this browser.') :
     head('YOUR WORKSPACE','Your progress','Pick up a track where you left off. Your progress is stored in this browser.'))+
     '<section class="grid">'+courses.map(course=>{
       const state = record(course);

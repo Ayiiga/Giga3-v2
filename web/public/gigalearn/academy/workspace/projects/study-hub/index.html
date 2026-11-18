@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#6d28d9">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <title>My Study Hub</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial, sans-serif; background: #f5f0ff; color: #281447; }
+    main { max-width: 600px; margin: 60px auto; padding: 30px; text-align: center; background: white; border: 2px solid #d4af37; border-radius: 18px; }
+    h1 { color: #6d28d9; overflow-wrap: anywhere; }
+    button { background: #6d28d9; color: white; border: 2px solid #d4af37; border-radius: 10px; padding: 14px 24px; font-size: 16px; cursor: pointer; }
+    button:focus-visible { outline: 3px solid #946700; outline-offset: 3px; }
+    @media (max-width: 650px) { main { margin: 20px 12px; padding: 24px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Welcome to My Study Hub!</h1>
+    <p>Learn, practise and grow your skills.</p>
+    <button id="startBtn" type="button">Start Learning</button>
+    <p id="message" aria-live="polite"></p>
+  </main>
+  <script>
+    const button = document.getElementById('startBtn');
+    const message = document.getElementById('message');
+    button.addEventListener('click', () => {
+      message.textContent = 'Brilliant! Your web development journey has begun.';
+    });
+    // The embedded lesson preview runs the button without installing a worker.
+    // Open this project on HTTPS or localhost for the separate PWA exercise.
+    if (window.top === window && 'serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(error => {
+          console.error('PWA setup failed:', error);
+        });
+      });
+    }
+  </script>
+</body>
+</html>
