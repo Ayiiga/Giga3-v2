@@ -144,3 +144,8 @@ describe("chatReplyWorker logging", () => {
     expect(source).toContain('logChatReply("worker_start"');
   });
 });
+
+it("keeps the chat image worker in the Node runtime for media and network actions", () => {
+  const worker = readFileSync("convex/chatReplyWorker.ts", "utf8");
+  expect(worker.trimStart()).toMatch(/^["']use node["'];/);
+});
