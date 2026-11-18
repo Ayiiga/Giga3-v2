@@ -15,7 +15,6 @@ type FeaturedResource = {
   summary: string;
   subject: string;
   classes: string[];
-  access: "free" | "subscriber";
 };
 
 const WASSCE = [
@@ -37,17 +36,18 @@ export function ExamPracticeHub() {
   const [subject, setSubject] = useState("");
   const [mode, setMode] = useState<Mode>("practice_test");
   const [count, setCount] = useState("50");
-  const [featuredResources, setFeaturedResources] = useState<FeaturedResource[]>();
+  const [featuredResources, setFeaturedResources] = useState<FeaturedResource[] | null>();
 
   useEffect(() => {
     let active = true;
     async function loadFeaturedResources() {
       try {
         const client = getConvexClient();
-        const resources = client ? await client.query(api.teachingResources.listPublished, {}) : [];
+        if (!client) throw new Error("Teaching materials service is unavailable.");
+        const resources = await client.query(api.teachingResources.listPublished, {});
         if (active) setFeaturedResources(resources);
       } catch {
-        if (active) setFeaturedResources([]);
+        if (active) setFeaturedResources(null);
       }
     }
     void loadFeaturedResources();
@@ -166,11 +166,12 @@ export function ExamPracticeHub() {
           <a href="/gigalearn/resources/" data-testid="teaching-resources-entry" className="shrink-0 rounded-full border border-violet-300 px-3 py-2 text-xs font-bold text-violet-900 hover:bg-violet-50">View all →</a>
         </div>
         {featuredResources === undefined ? <p className="py-2 text-xs text-slate-600">Loading learning materials…</p> :
+          featuredResources === null ? <p role="status" className="py-2 text-xs text-slate-600">Could not load featured materials. Open View all to try the library.</p> :
           featuredResources.length === 0 ? <p className="rounded-xl bg-slate-50 p-3 text-xs text-slate-700">New practical guides will appear here as they are published.</p> :
           <div className="grid gap-2 sm:grid-cols-2">
             {featuredResources.slice(0,2).map(resource => <a key={resource._id} href={`/gigalearn/resources/?resource=${encodeURIComponent(resource.slug)}`} className="flex min-w-0 items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 hover:border-violet-300 hover:bg-violet-50">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-violet-100 text-xl" aria-hidden>🔬</span>
-              <span className="min-w-0"><span className="block truncate text-sm font-bold text-slate-950">{resource.title}</span><span className="mt-0.5 block text-xs text-slate-700">{resource.subject} · {resource.classes.join(", ")}</span><span className="mt-1 block text-[11px] font-semibold text-violet-800">{resource.access === "free" ? "Free resource" : "Subscriber resource"}</span></span>
+              <span className="min-w-0"><span className="block truncate text-sm font-bold text-slate-950">{resource.title}</span><span className="mt-0.5 block text-xs text-slate-700">{resource.subject} · {resource.classes.join(", ")}</span><span className="mt-1 block text-[11px] font-semibold text-violet-800">Free to view</span></span>
             </a>)}
           </div>}
       </section>
