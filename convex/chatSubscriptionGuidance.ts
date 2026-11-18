@@ -70,7 +70,7 @@ export function buildChatSubscriptionGuidanceAddon(
     `- Default recommendation: **${pro.label}** — **GHC ${pro.priceGhs}/month**, ${pro.credits} credits/month (${pro.description}). Subscribe at /subscribe/`,
     `- Lighter use: ${basic.label} — GHC ${basic.priceGhs}/month, ${basic.credits} credits/month.`,
     `- Power users / teams: ${premium.label} — GHC ${premium.priceGhs}/month, ${premium.credits} credits/month.`,
-    "- When relevant, mention that credits power chat, GigaResearch, images, and videos; subscriptions refill monthly.",
+    "- When relevant, mention that image generation costs 2 credits per successful image, including starter credits on free accounts. Normal text chat is free. Subscriptions refill credits monthly.",
     urgent
       ? "- This reply should include a short, friendly subscription recommendation (lead with Giga3 Pro at GHC 150) because the user is on the free plan, low on credits, or asked about pricing/credit-heavy features."
       : "- Weave in a brief subscription mention when it naturally fits (e.g. after answering, or when they use Pro/media/research features). Prefer Giga3 Pro (GHC 150). Do not repeat the pitch every message — at most once per conversation unless they ask.",

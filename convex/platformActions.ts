@@ -35,19 +35,18 @@ import {
   buildPromptCacheKey,
   enhanceImageGenerationPrompt,
   imageAssetOrientation,
+  isDesignedImageRequest,
   shouldEnableWebSearch,
   shouldUseResponseCache,
 } from "./providerRouter";
-import { openaiGenerateImage } from "./openaiImageClient";
-import { generateFreeImageForChat } from "./mediaEngine";
+import { generateImageWithFallback } from "./mediaEngine";
+import { isImageDeliveryFollowup, isImageEditOrTransformQuery, resolveChatImagePrompt, resolveChatImageSourceUrl } from "./chatImageSource";
+import { CREDIT_COSTS } from "./creditsConfig";
 import type { ActionCtx } from "./_generated/server";
 import type { FalImageSize } from "./falClient";
 import { persistImageUrlIfNeeded } from "./mediaStorage";
 import { isLiveNewsEnabled } from "./featureFlags";
-import {
-  IMAGE_UPGRADE_MARKDOWN,
-  resolveImageGenerationDecision,
-} from "./premiumImage";
+
 
 function latestUserPrompt(
   history: Array<{ role: string; content: string }>,
@@ -118,17 +117,19 @@ async function runHybridAiEngine(
     routing: ChatRoutingContext;
     hasAttachments: boolean;
     hasImageAttachment?: boolean;
+    sourceImageUrl?: string;
     conversationId: string;
     subscriptionPlan: string;
     subscriptionExpiresAt?: number | null;
   }
-): Promise<ChatEngineResult & { cached: boolean }> {
+): Promise<ChatEngineResult & { cached: boolean; requestKind?: "text_chat" | "image_generation" }> {
   const routePlan = buildChatRoutePlan({
     tier: args.routing.tier,
     mode: args.mode,
     query: args.query,
     hasAttachments: args.hasAttachments,
     hasImageAttachment: args.hasImageAttachment,
+    hasEditableImageSource: Boolean(args.sourceImageUrl),
     chatSystem: args.routing.chatSystem,
   });
 
@@ -139,104 +140,26 @@ async function runHybridAiEngine(
 
   if (routePlan.requestKind === "image_generation") {
     const started = Date.now();
-    const imageDecision = resolveImageGenerationDecision(
-      args.subscriptionPlan,
-      args.subscriptionExpiresAt
-    );
-
-    if (imageDecision.action === "upgrade") {
-      const result: ChatEngineResult & { cached: boolean } = {
-        content: IMAGE_UPGRADE_MARKDOWN,
-        providerId: "policy",
-        usedFallback: false,
-        latencyMs: Date.now() - started,
-        cached: false,
-      };
-      await recordAiUsage(ctx, {
-        email: args.email,
-        mode: args.mode,
-        routing: args.routing,
-        engineResult: result,
-        requestKind: "image_generation",
-        cached: false,
-        conversationId: args.conversationId,
-      });
-      return result;
-    }
-
-    const orientation = imageAssetOrientation(args.query);
-    const imageSize: FalImageSize =
-      orientation === "portrait"
-        ? "portrait_4_3"
-        : orientation === "landscape"
-          ? "landscape_4_3"
-          : "square_hd";
-    const imagePrompt = enhanceImageGenerationPrompt(args.query);
-
-    if (imageDecision.action === "openai") {
-      try {
-        const image = await openaiGenerateImage(imagePrompt, { imageSize });
-        const imageUrl = await persistImageUrlIfNeeded(ctx, image.dataUrl);
-        const content = `Here is your generated image:\n\n${imageUrl}`;
-        const result: ChatEngineResult & { cached: boolean } = {
-          content,
-          providerId: "openai_image",
-          usedFallback: false,
-          latencyMs: Date.now() - started,
-          cached: false,
-        };
-        await recordAiUsage(ctx, {
-          email: args.email,
-          mode: args.mode,
-          routing: args.routing,
-          engineResult: result,
-          requestKind: "image_generation",
-          cached: false,
-          conversationId: args.conversationId,
-        });
-        return result;
-      } catch {
-        const fallback = await generateFreeImageForChat(imagePrompt);
-        const imageUrl = await persistImageUrlIfNeeded(ctx, fallback.imageUrl);
-        const content = `Here is your generated image:\n\n${imageUrl}`;
-        const result: ChatEngineResult & { cached: boolean } = {
-          content,
-          providerId: fallback.provider,
-          usedFallback: true,
-          latencyMs: Date.now() - started,
-          cached: false,
-        };
-        await recordAiUsage(ctx, {
-          email: args.email,
-          mode: args.mode,
-          routing: args.routing,
-          engineResult: result,
-          requestKind: "image_generation",
-          cached: false,
-          conversationId: args.conversationId,
-        });
-        return result;
-      }
-    }
-
-    const image = await generateFreeImageForChat(imagePrompt);
+    const prompt = resolveChatImagePrompt(args.query, args.chatMessages.map(message => ({
+      role: message.role, content: typeof message.content === "string" ? message.content : "",
+    })));
+    const orientation = imageAssetOrientation(prompt);
+    const imageSize: FalImageSize = orientation === "portrait"
+      ? "portrait_4_3" : orientation === "landscape" ? "landscape_4_3" : "square_hd";
+    const image = await generateImageWithFallback({
+      prompt: enhanceImageGenerationPrompt(prompt), sourceImageUrl: args.sourceImageUrl, imageSize,
+    });
     const imageUrl = await persistImageUrlIfNeeded(ctx, image.imageUrl);
-    const content = `Here is your generated image:\n\n${imageUrl}`;
-    const result: ChatEngineResult & { cached: boolean } = {
-      content,
-      providerId: image.provider,
-      usedFallback: false,
-      latencyMs: Date.now() - started,
-      cached: false,
+    const result = {
+      content: `Here is your generated image:\n\n${imageUrl}`,
+      providerId: image.provider === "openai" ? "openai_image" : image.provider,
+      usedFallback: image.provider !== "openai",
+      latencyMs: Date.now() - started, cached: false,
+      requestKind: "image_generation" as const,
     };
     await recordAiUsage(ctx, {
-      email: args.email,
-      mode: args.mode,
-      routing: args.routing,
-      engineResult: result,
-      requestKind: "image_generation",
-      cached: false,
-      conversationId: args.conversationId,
+      email: args.email, mode: args.mode, routing: args.routing, engineResult: result,
+      requestKind: "image_generation", cached: false, conversationId: args.conversationId,
     });
     return result;
   }
@@ -573,20 +496,47 @@ export const regenerateMessage = action({
       });
     }
 
-    await ctx.runMutation(internal.platform.removeMessagesFrom, {
-      conversationId: args.conversationId,
-      userId: email,
-      fromMessageId: args.assistantMessageId,
-    });
-
-    const historyAfter = await ctx.runQuery(api.messages.listByConversation, {
-      conversationId: args.conversationId,
-      sessionToken: args.sessionToken,
-    });
-
     const refreshedUser = await ctx.runQuery(api.users.getUser, {
       sessionToken: args.sessionToken,
     });
+    const regenerationQuery = latestUserPrompt(history.slice(0, targetIdx), "");
+    let sourceImageUrl: string | undefined;
+    if (conv.lastVisionAttachmentsJson && Date.now() - (conv.lastVisionAttachmentsAt ?? 0) <= 45 * 60 * 1000) {
+      try {
+        sourceImageUrl = resolveChatImageSourceUrl({
+          imageAttachments: JSON.parse(conv.lastVisionAttachmentsJson),
+          history: [],
+        });
+      } catch { /* Continue with available conversation images. */ }
+    }
+    sourceImageUrl ??= resolveChatImageSourceUrl({
+      imageAttachments: [], history: history.slice(0, targetIdx),
+    });
+    const usesImageSource = isDesignedImageRequest(regenerationQuery) ||
+      isImageDeliveryFollowup(regenerationQuery) ||
+      isImageEditOrTransformQuery(regenerationQuery, Boolean(sourceImageUrl));
+    if (!usesImageSource) sourceImageUrl = undefined;
+    const regenerationKind = buildChatRoutePlan({
+      tier: "free", mode, query: regenerationQuery,
+      hasEditableImageSource: Boolean(sourceImageUrl),
+    }).requestKind;
+    if (regenerationKind === "image_generation" && (refreshedUser?.credits ?? 0) < CREDIT_COSTS.image) {
+      throw new Error(`Insufficient credits (${CREDIT_COSTS.image} required for an image).`);
+    }
+    const replySince = Date.now();
+
+    const isImageRegeneration = regenerationKind === "image_generation";
+    if (!isImageRegeneration) {
+      await ctx.runMutation(internal.platform.removeMessagesFrom, {
+        conversationId: args.conversationId, userId: email,
+        fromMessageId: args.assistantMessageId,
+      });
+    }
+    const historyAfter = isImageRegeneration
+      ? history.slice(0, targetIdx)
+      : await ctx.runQuery(api.messages.listByConversation, {
+          conversationId: args.conversationId, sessionToken: args.sessionToken,
+        });
 
     const query = latestUserPrompt(historyAfter, "");
     const qualityContext = prepareAnswerQualityContext({
@@ -644,50 +594,34 @@ export const regenerateMessage = action({
       systemPrompt,
       chatMessages,
       routing,
-      hasAttachments: false,
+      hasAttachments: Boolean(sourceImageUrl),
+      sourceImageUrl,
       conversationId: args.conversationId,
       subscriptionPlan: refreshedUser?.subscriptionPlan ?? "free",
       subscriptionExpiresAt: refreshedUser?.subscriptionExpiresAt,
     });
-    const validated = validateAnswerQuality({
-      answer: engineResult.content,
-      context: qualityContext,
+    const imageReply = engineResult.requestKind === "image_generation";
+    const validated = imageReply ? null : validateAnswerQuality({
+      answer: engineResult.content, context: qualityContext,
     });
-    const assistantContent = validated.content;
-    recordQualityObservation(validated.report);
-    await ctx.runMutation(internal.qualityDashboard.recordResponseMetric, {
-      responseMode: validated.report.responseMode,
-      confidenceLabel: validated.report.confidenceLabel,
-      citationCount: validated.report.citationCount,
-      verificationVisible: validated.report.verificationVisible,
-      verificationPassed: !hasHallucinationRisk(validated.report.flags),
-      hasHallucinationRisk: hasHallucinationRisk(validated.report.flags),
-    });
-
-    console.info(
-      "[quality.regenerateMessage]",
-      JSON.stringify({
-        mode,
-        conversationId: args.conversationId,
-        report: validated.report,
-      })
-    );
-    const chargedAi = engineResult.providerId !== "local_fallback";
-
-    // Ordinary text chat is credit-free. Only image generation deducts here.
-    if (chargedAi && engineResult.providerId === "openai_image") {
-      await ctx.runMutation(internal.credits.deductCreditsInternal, {
-        userId: email,
-        action: "image",
-        reference: args.conversationId,
+    const assistantContent = validated?.content ?? engineResult.content;
+    if (validated) {
+      recordQualityObservation(validated.report);
+      await ctx.runMutation(internal.qualityDashboard.recordResponseMetric, {
+        responseMode: validated.report.responseMode,
+        confidenceLabel: validated.report.confidenceLabel,
+        citationCount: validated.report.citationCount,
+        verificationVisible: validated.report.verificationVisible,
+        verificationPassed: !hasHallucinationRisk(validated.report.flags),
+        hasHallucinationRisk: hasHallucinationRisk(validated.report.flags),
       });
     }
-
-    await ctx.runMutation(internal.platform.appendMessage, {
-      conversationId: args.conversationId,
-      userId: email,
-      role: "assistant",
-      content: assistantContent,
+    // Ordinary text chat is credit-free. Image delivery and its debit commit together.
+    await ctx.runMutation(internal.platform.appendAssistantReplyIfMissing, {
+      conversationId: args.conversationId, userId: email, content: assistantContent,
+      since: replySince,
+      imageCreditReference: imageReply ? `regenerate:${args.assistantMessageId}` : undefined,
+      replaceFromMessageId: imageReply ? args.assistantMessageId : undefined,
     });
 
     const updatedUser = await ctx.runQuery(api.users.getUser, {

@@ -13,7 +13,7 @@ import {
 } from "./freeAdvancedPersonaQuota";
 import { getFreeOpenAiSnapshotDb } from "./freeOpenAiQuota";
 import { resolveAiProviderTier, type AiProviderTier } from "./providerRouter";
-import { isSubscriptionActive } from "./creditsConfig";
+import { CREDIT_COSTS, isSubscriptionActive } from "./creditsConfig";
 import type { SubscriptionPlanId } from "./subscriptionPlans";
 import { shouldOfferOpenAiImageGeneration } from "./premiumImage";
 
@@ -77,7 +77,7 @@ export function computeEntitlements(user: UserEntitlementRow): GigaEntitlements 
       user.subscriptionExpiresAt ?? null
     ),
     live_web: true,
-    media_studio: subscriptionActive || isCreatorPlan(plan),
+    media_studio: subscriptionActive || isCreatorPlan(plan) || (user.credits ?? 0) >= CREDIT_COSTS.image,
     video_generation: subscriptionActive || isCreatorPlan(plan),
     gigaedit_export: true,
     creator_studio: subscriptionActive || plan !== "free",

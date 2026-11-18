@@ -527,6 +527,7 @@ function shouldAttachAutoVisuals(
   ) {
     return false;
   }
+  if (/\b(?:cannot|unable to|could not|failed to)\b[\s\S]{0,100}\b(?:generate|render|display|create|image|poster)\b/i.test(answer)) return false;
   if (context.responseMode === "conversational") return false;
   if (hasExistingVisualBlock(answer)) return false;
   if (

@@ -54,3 +54,10 @@ describe("entitlements layer", () => {
     expect(hasFeature(entitlements, "advanced_personas")).toBe(false);
   });
 });
+
+it("lets a free account spend starter credits on images through chat and Media Studio", () => {
+  const entitlements = computeEntitlements({ subscriptionPlan: "free", credits: 25 });
+  expect(hasFeature(entitlements, "openai_image")).toBe(true);
+  expect(hasFeature(entitlements, "media_studio")).toBe(true);
+  expect(hasFeature(entitlements, "video_generation")).toBe(false);
+});

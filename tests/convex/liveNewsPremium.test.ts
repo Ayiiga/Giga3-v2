@@ -36,9 +36,9 @@ describe("premium image gating", () => {
     expect(resolveImageGenerationDecision("pro", future).action).toBe("openai");
   });
 
-  it("uses free pipeline for credit-only users without subscription", () => {
-    expect(shouldOfferOpenAiImageGeneration("free", null)).toBe(false);
-    expect(resolveImageGenerationDecision("free", null).action).toBe("free_pipeline");
+  it("allows OpenAI-first images for free accounts using credits", () => {
+    expect(shouldOfferOpenAiImageGeneration("free", null)).toBe(true);
+    expect(resolveImageGenerationDecision("free", null).action).toBe("openai");
   });
 
   it("includes subscribe link in upgrade markdown", () => {

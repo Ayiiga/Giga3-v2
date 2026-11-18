@@ -288,3 +288,12 @@ describe("rendered designs with uploaded photos", () => {
     }
   });
 });
+
+describe("image delivery follow-ups", () => {
+  it("routes explicit requests for the missing visual back to the generator", () => {
+    for (const query of ["I am waiting for the poster", "Where is my image?", "Show me the actual poster", "I want the actual image instead of text"]) {
+      expect(classifyRequestKind(query, "general")).toBe("image_generation");
+      expect(classifyRequestKind(query, "general", true)).toBe("image_generation");
+    }
+  });
+});

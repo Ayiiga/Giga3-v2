@@ -16,7 +16,7 @@ import {
   shouldEnableCareerOrEducationResearch,
 } from "./researchCapabilities";
 import { detectAnswerFromUserContextIntent } from "./newsEvidence/userContextRouting";
-import { isImageEditOrTransformQuery } from "./chatImageSource";
+import { isImageDeliveryFollowup, isImageEditOrTransformQuery } from "./chatImageSource";
 
 /** User-facing AI access tier — drives default LLM provider. */
 export type AiProviderTier = "free" | "premium";
@@ -206,7 +206,7 @@ export function resolveAiProviderTier(profile: UserRoutingProfile): AiProviderTi
 export function isDesignedImageRequest(query: string): boolean {
   const q = query.trim();
   if (/\b(?:write|draft|suggest|explain|teach|describe)\b[\s\S]{0,45}\b(?:text|copy|caption|prompt|wording|how to)\b/i.test(q)) return false;
-  return /\b(?:make|create|generate|design|produce|give|render|draw)\b(?:\s+[\w'-]+){0,10}\s+\b(?:poster|flyer|banner|infographic|invitation|thumbnail|certificate|logo|book cover)s?\b/i.test(q);
+  return /\b(?:make|create|generate|design|produce|give|render|draw)\b(?:\s+[\w'-]+){0,10}\s+\b(?:poster|flyer|banner|infographic|invitation|thumbnail|certificate|logo|book cover|image|picture|photo|graphic)s?\b/i.test(q);
 }
 
 export function classifyRequestKind(
@@ -230,7 +230,7 @@ export function classifyRequestKind(
   if (hasEditableImageSource && isImageEditOrTransformQuery(compact, true)) {
     return "image_generation";
   }
-  if (isDesignedImageRequest(compact)) return "image_generation";
+  if (isDesignedImageRequest(compact) || isImageDeliveryFollowup(compact)) return "image_generation";
   if (hasImageAttachment) return "text_chat";
 
   if (mode === "social" && IMAGE_ASSET_RE.test(compact)) return "image_generation";

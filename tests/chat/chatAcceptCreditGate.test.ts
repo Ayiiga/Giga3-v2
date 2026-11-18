@@ -35,15 +35,15 @@ describe("normal chat is credit-free", () => {
     expect(src).toContain(
       'chargedAi && engineResult.requestKind === "image_generation"'
     );
-    expect(src).toContain("Ordinary text chat is credit-free");
-    // Only one deductForChatModeInternal call remains (free-pipeline image failover).
-    expect(src.match(/deductForChatModeInternal/g)?.length ?? 0).toBe(1);
+    expect(src).toContain("imageCreditReference");
+    expect(src).not.toContain("deductForChatModeInternal");
   });
 
   it("regenerate path does not deduct for ordinary text replies", () => {
     const src = read("convex/platformActions.ts");
     expect(src).toContain("Ordinary text chat is credit-free");
-    expect(src).toContain('engineResult.providerId === "openai_image"');
+    expect(src).toContain('engineResult.requestKind === "image_generation"');
+    expect(src).toContain("imageCreditReference: imageReply");
     expect(src).not.toContain("deductForChatModeInternal");
   });
 
