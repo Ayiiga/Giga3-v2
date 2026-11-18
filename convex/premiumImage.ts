@@ -1,7 +1,3 @@
-import {
-  isFreeImageGenerationEnabled,
-  openAiImageRequiresSubscription,
-} from "./featureFlags";
 import { isSubscriptionActive } from "./creditsConfig";
 import type { SubscriptionPlanId } from "./subscriptionPlans";
 
@@ -55,31 +51,24 @@ export function hasActivePaidSubscription(
   return isSubscriptionActive(plan as SubscriptionPlanId, subscriptionExpiresAt);
 }
 
+/** Image access uses the existing credit balance, including starter credits. */
 export function shouldOfferOpenAiImageGeneration(
-  plan: string,
-  subscriptionExpiresAt?: number | null
+  _plan: string,
+  _subscriptionExpiresAt?: number | null
 ): boolean {
-  if (!openAiImageRequiresSubscription()) return true;
-  return hasActivePaidSubscription(plan, subscriptionExpiresAt);
+  return true;
 }
 
 export function shouldBlockFreeTierImageGeneration(
-  plan: string,
-  subscriptionExpiresAt?: number | null
+  _plan: string,
+  _subscriptionExpiresAt?: number | null
 ): boolean {
-  if (isFreeImageGenerationEnabled()) return false;
-  return !hasActivePaidSubscription(plan, subscriptionExpiresAt);
+  return false;
 }
 
 export function resolveImageGenerationDecision(
-  plan: string,
-  subscriptionExpiresAt?: number | null
+  _plan: string,
+  _subscriptionExpiresAt?: number | null
 ): ImageGenerationDecision {
-  if (shouldBlockFreeTierImageGeneration(plan, subscriptionExpiresAt)) {
-    return { action: "upgrade" };
-  }
-  if (shouldOfferOpenAiImageGeneration(plan, subscriptionExpiresAt)) {
-    return { action: "openai" };
-  }
-  return { action: "free_pipeline" };
+  return { action: "openai" };
 }

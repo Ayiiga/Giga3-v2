@@ -36,6 +36,7 @@ import type { ActionCtx } from "./_generated/server";
 import type { ChatEngineResult, ChatRoutingContext } from "./chatEngine";
 import {
   buildChatRoutePlan,
+  classifyRequestKind,
   buildPromptCacheKey,
   enhanceImageGenerationPrompt,
   imageAssetOrientation,
@@ -43,19 +44,13 @@ import {
   shouldUseResponseCache,
   type RequestKind,
 } from "./providerRouter";
-import { generateFreeImageForChat } from "./mediaEngine";
-import { openaiEditImage, openaiGenerateImage } from "./openaiImageClient";
+import { generateImageWithFallback } from "./mediaEngine";
 import { persistImageUrlIfNeeded } from "./mediaStorage";
 import type { FalImageSize } from "./falClient";
 import type { NewsEvidenceContext } from "./newsEvidence/types";
 import { buildNewsEvidencePackage } from "./newsEvidence/pipeline";
-import { isFreeImageDailyQuotaEnabled, isLiveNewsEnabled } from "./featureFlags";
-import {
-  IMAGE_UPGRADE_MARKDOWN,
-  imageDailyLimitMarkdown,
-  resolveImageGenerationDecision,
-} from "./premiumImage";
-import { isImageEditOrTransformQuery, resolveChatImageSourceUrl } from "./chatImageSource";
+import { isLiveNewsEnabled } from "./featureFlags";
+import { isImageDeliveryFollowup, isImageEditOrTransformQuery, resolveChatImagePrompt, resolveChatImageSourceUrl } from "./chatImageSource";
 import { isLiveWebEnabled } from "./liveWeb/liveWebConfig";
 import {
   buildLiveWebMetadata,
@@ -252,7 +247,7 @@ async function runHybridAiEngine(
     })),
   });
   const sourceImageUrl = (isImageEditOrTransformQuery(args.query, Boolean(candidateImageUrl)) ||
-    isDesignedImageRequest(args.query))
+    isDesignedImageRequest(args.query) || isImageDeliveryFollowup(args.query))
     ? candidateImageUrl
     : undefined;
   const hasEditableImageSource = Boolean(sourceImageUrl);
@@ -301,219 +296,48 @@ async function runHybridAiEngine(
 
   if (routePlan.requestKind === "image_generation") {
     const started = Date.now();
-    const orientation = imageAssetOrientation(args.query);
-    const imageSize: FalImageSize =
-      orientation === "portrait"
-        ? "portrait_4_3"
-        : orientation === "landscape"
-          ? "landscape_4_3"
-          : "square_hd";
-    const imagePrompt = enhanceImageGenerationPrompt(args.query);
-
-    const imageDecision = resolveImageGenerationDecision(
-      args.subscriptionPlan,
-      args.subscriptionExpiresAt
-    );
-
-    if (imageDecision.action === "upgrade") {
-      const result: ChatEngineResult & {
-        cached: boolean;
-        requestKind: RequestKind;
-        usedFreeImageQuota?: boolean;
-      } = {
-        content: IMAGE_UPGRADE_MARKDOWN,
-        providerId: "policy",
-        usedFallback: false,
+    const prompt = resolveChatImagePrompt(args.query, args.chatMessages.map(message => ({
+      role: message.role,
+      content: typeof message.content === "string" ? message.content : "",
+    })));
+    const orientation = imageAssetOrientation(prompt);
+    const imageSize: FalImageSize = orientation === "portrait"
+      ? "portrait_4_3" : orientation === "landscape" ? "landscape_4_3" : "square_hd";
+    let result: ChatEngineResult & { cached: boolean; requestKind: RequestKind };
+    try {
+      const image = await generateImageWithFallback({
+        prompt: enhanceImageGenerationPrompt(prompt),
+        sourceImageUrl,
+        imageSize,
+      });
+      const imageUrl = await persistImageUrlIfNeeded(ctx, image.imageUrl);
+      result = {
+        content: sourceImageUrl
+          ? `Here is your edited image:\n\n${imageUrl}`
+          : `Here is your generated image:\n\n${imageUrl}`,
+        providerId: image.provider === "openai" ? "openai_image" : image.provider,
+        usedFallback: image.provider !== "openai",
         latencyMs: Date.now() - started,
         cached: false,
         requestKind: "image_generation",
-        usedFreeImageQuota: false,
       };
-      await recordAiUsage(ctx, {
-        email: args.email,
-        mode: args.mode,
-        routing: args.routing,
-        engineResult: result,
-        requestKind: "image_generation",
-        cached: false,
+    } catch (error) {
+      logChatReply("image_generation_failed", {
         conversationId: args.conversationId,
+        error: error instanceof Error ? error.message : String(error),
       });
-      return result;
-    }
-
-    // Free tier only: reserve one Accra-day slot before calling providers; release on failure.
-    // Gated by GIGA3_FREE_IMAGE_DAILY_QUOTA_ENABLED (default off) until staging validates.
-    // Subscribers and credit purchasers keep existing entitlements (image credits / OpenAI).
-    let usedFreeImageQuota = false;
-    if (
-      isFreeImageDailyQuotaEnabled() &&
-      args.routing.tier === "free" &&
-      imageDecision.action === "free_pipeline"
-    ) {
-      const reserved = await ctx.runMutation(internal.freeImageQuota.tryReserveInternal, {
-        userId: args.email,
-      });
-      if (!reserved.ok) {
-        const result: ChatEngineResult & {
-          cached: boolean;
-          requestKind: RequestKind;
-          usedFreeImageQuota?: boolean;
-        } = {
-          content: imageDailyLimitMarkdown({
-            limit: reserved.snapshot.limit,
-            resetsAt: reserved.snapshot.resetsAt,
-            timeZone: reserved.snapshot.timeZone,
-          }),
-          providerId: "policy",
-          usedFallback: false,
-          latencyMs: Date.now() - started,
-          cached: false,
-          requestKind: "image_generation",
-          usedFreeImageQuota: false,
-        };
-        await recordAiUsage(ctx, {
-          email: args.email,
-          mode: args.mode,
-          routing: args.routing,
-          engineResult: result,
-          requestKind: "image_generation",
-          cached: false,
-          conversationId: args.conversationId,
-        });
-        return result;
-      }
-      usedFreeImageQuota = true;
-      logChatReply("free_image_quota_reserved", {
-        conversationId: args.conversationId,
-        userId: args.email,
-        remaining: reserved.snapshot.remaining,
-        dateKey: reserved.snapshot.dateKey,
-      });
-    }
-
-    let rawUrl: string;
-    let providerId: string;
-    let usedFallback = false;
-
-    try {
-      if (imageDecision.action === "openai") {
-        try {
-          if (sourceImageUrl) {
-            const image = await openaiEditImage(imagePrompt, sourceImageUrl, { imageSize });
-            rawUrl = image.dataUrl;
-            providerId = "openai_image";
-          } else {
-            const image = await openaiGenerateImage(imagePrompt, { imageSize });
-            rawUrl = image.dataUrl;
-            providerId = "openai_image";
-          }
-        } catch (err) {
-          // Never fail a premium visual request outright — fall back to the
-          // free multi-provider image pipeline (fal → Replicate → Google).
-          logChatReply("image_openai_failed", {
-            conversationId: args.conversationId,
-            userId: args.email,
-            error: err instanceof Error ? err.message : String(err),
-            edit: Boolean(sourceImageUrl),
-          });
-          const fallback = await generateFreeImageForChat(imagePrompt, {
-            sourceImageUrl,
-            imageSize,
-          });
-          rawUrl = fallback.imageUrl;
-          providerId = fallback.provider;
-          usedFallback = true;
-        }
-      } else {
-        const image = await generateFreeImageForChat(imagePrompt, {
-          sourceImageUrl,
-          imageSize,
-        });
-        rawUrl = image.imageUrl;
-        providerId = image.provider;
-      }
-    } catch (err) {
-      if (usedFreeImageQuota) {
-        await ctx.runMutation(internal.freeImageQuota.releaseInternal, {
-          userId: args.email,
-        });
-        logChatReply("free_image_quota_released", {
-          conversationId: args.conversationId,
-          userId: args.email,
-          error: err instanceof Error ? err.message : String(err),
-        });
-      }
-      const message =
-        err instanceof Error
-          ? err.message
-          : "Image generation failed. Please try again.";
-      const friendly = /mime|too large|unsupported|fetch source|invalid image/i.test(
-        message
-      )
-        ? message
-        : "Image generation failed. Please try again with a clearer prompt or a smaller PNG/JPEG/WebP upload.";
-      const result: ChatEngineResult & {
-        cached: boolean;
-        requestKind: RequestKind;
-        usedFreeImageQuota?: boolean;
-      } = {
-        content: friendly,
+      result = {
+        content: "Image generation could not finish. Please try again. No image credits were charged.",
         providerId: "local_fallback",
         usedFallback: true,
         latencyMs: Date.now() - started,
         cached: false,
         requestKind: "image_generation",
-        usedFreeImageQuota: false,
       };
-      await recordAiUsage(ctx, {
-        email: args.email,
-        mode: args.mode,
-        routing: args.routing,
-        engineResult: result,
-        requestKind: "image_generation",
-        cached: false,
-        conversationId: args.conversationId,
-      });
-      return result;
     }
-
-    // Persist base64 data URLs (gpt-image-1, Gemini) to Convex file storage so
-    // the assistant message stays small — a raw data URL exceeds Convex's value
-    // size limit and would fail the insert, leaving chat stuck on a fallback.
-    let imageUrl: string;
-    try {
-      imageUrl = await persistImageUrlIfNeeded(ctx, rawUrl);
-    } catch (persistErr) {
-      if (usedFreeImageQuota) {
-        await ctx.runMutation(internal.freeImageQuota.releaseInternal, {
-          userId: args.email,
-        });
-      }
-      throw persistErr;
-    }
-    const content = sourceImageUrl
-      ? `Here is your edited image:\n\n${imageUrl}`
-      : `Here is your generated image:\n\n${imageUrl}`;
-    const result: ChatEngineResult & {
-      cached: boolean;
-      requestKind: RequestKind;
-      usedFreeImageQuota?: boolean;
-    } = {
-      content,
-      providerId,
-      usedFallback,
-      latencyMs: Date.now() - started,
-      cached: false,
-      requestKind: "image_generation",
-      usedFreeImageQuota,
-    };
     await recordAiUsage(ctx, {
-      email: args.email,
-      mode: args.mode,
-      routing: args.routing,
-      engineResult: result,
-      requestKind: "image_generation",
-      cached: false,
+      email: args.email, mode: args.mode, routing: args.routing,
+      engineResult: result, requestKind: "image_generation", cached: false,
       conversationId: args.conversationId,
     });
     return result;
@@ -842,6 +666,13 @@ export const processJob = internalAction({
       let newsEvidenceContext: NewsEvidenceContext | null = null;
 
       const hasImageAttachment = attachments.some((a) => a.kind === "image");
+      const imageGenerationRequest = classifyRequestKind(job.content, mode, {
+        hasImageAttachment,
+        hasEditableImageSource: Boolean(resolveChatImageSourceUrl({
+          imageAttachments: attachments.filter(attachment => attachment.kind === "image"),
+          history,
+        })),
+      }) === "image_generation";
       const hasVideoAttachment = attachments.some((a) =>
         isVideoAttachment(a.mimeType, a.name)
       );
@@ -1104,7 +935,7 @@ export const processJob = internalAction({
 
       const started = Date.now();
       const jobBudgetMs = chatJobProcessingBudgetMs({
-        hasImageAttachment: attachments.some((a) => a.kind === "image"),
+        hasImageAttachment: hasImageAttachment || imageGenerationRequest,
       });
       const remainingBudgetMs = Math.max(
         WORKER_TEXT_TIMEOUT_MS,
@@ -1142,7 +973,7 @@ export const processJob = internalAction({
               ),
             }),
             Math.min(
-              attachments.some((a) => a.kind === "image")
+              hasImageAttachment || imageGenerationRequest
                 ? WORKER_IMAGE_TIMEOUT_MS
                 : WORKER_TEXT_TIMEOUT_MS,
               remainingBudgetMs
@@ -1215,6 +1046,7 @@ export const processJob = internalAction({
         qualityReport = null;
       }
 
+      // Ordinary text chat is credit-free. Capture image credits with the reply write.
       const chargedAi = engineResult.providerId !== "local_fallback";
 
       // Persist FIRST — this is the moment the user sees the answer. Duplicate
@@ -1224,6 +1056,8 @@ export const processJob = internalAction({
         userId: email,
         content: assistantContent,
         since: job.createdAt,
+        imageCreditReference: chargedAi && engineResult.requestKind === "image_generation" &&
+          engineResult.providerId !== "policy" ? String(args.jobId) : undefined,
         metadataJson:
           needsLiveWeb && isLiveWebEnabled()
             ? (() => {
@@ -1324,43 +1158,6 @@ export const processJob = internalAction({
         }
       }
 
-      if (chargedAi && engineResult.requestKind === "image_generation") {
-        // Prefer jobId as reference so concurrent retries share one deduct key in logs.
-        // Ordinary text chat is credit-free — never deduct for text_chat.
-        const deductReference = String(args.jobId);
-        try {
-          const usedFreeImageQuota = Boolean(
-            (engineResult as { usedFreeImageQuota?: boolean }).usedFreeImageQuota
-          );
-          // Preserve image billing: OpenAI images → image credits; free_pipeline
-          // failover → chat-mode credits. Accra free-quota successes charge nothing.
-          if (usedFreeImageQuota || engineResult.providerId === "policy") {
-            // no credit deduct
-          } else if (engineResult.providerId === "openai_image") {
-            await ctx.runMutation(internal.credits.deductCreditsInternal, {
-              userId: email,
-              action: "image",
-              reference: deductReference,
-            });
-          } else {
-            await ctx.runMutation(internal.credits.deductForChatModeInternal, {
-              userId: email,
-              mode,
-              reference: deductReference,
-            });
-          }
-        } catch (deductErr) {
-          // Reply already persisted — do not flip the job to failed (would confuse clients
-          // and recovery). Image acceptMessage pre-checks balance; residual races are logged.
-          logChatReply("worker_credit_deduct_failed", {
-            jobId: args.jobId,
-            conversationId: job.conversationId,
-            userId: email,
-            error:
-              deductErr instanceof Error ? deductErr.message : String(deductErr),
-          });
-        }
-      }
 
       await ctx.runMutation(internal.platformStatsRecorder.recordAiRequestInternal, {
         latencyMs,

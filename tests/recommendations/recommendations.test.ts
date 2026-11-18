@@ -3,7 +3,7 @@ import { computeEntitlements } from "../../convex/entitlements";
 import { buildRecommendations } from "../../convex/recommendationsLogic";
 
 describe("recommendations engine", () => {
-  it("marks pro studio recs for free users and includes a free alternative", () => {
+  it("offers image studio to free users with starter credits", () => {
     const entitlements = computeEntitlements({
       subscriptionPlan: "free",
       subscriptionExpiresAt: null,
@@ -17,7 +17,7 @@ describe("recommendations engine", () => {
       recentTopics: [],
     });
     const studio = recs.find((item) => item.title === "Media Studio image");
-    expect(studio?.entitlement).toBe("pro");
+    expect(studio?.entitlement).toBe("free");
     expect(recs.some((item) => item.title === "GigaLearn practice")).toBe(true);
   });
 

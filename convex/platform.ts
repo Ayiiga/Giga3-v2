@@ -1,3 +1,4 @@
+import { chargeChatImageOnce } from "./chatImageCredits";
 import { internalMutation, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
@@ -187,8 +188,25 @@ export const appendAssistantReplyIfMissing = internalMutation({
     content: v.string(),
     since: v.number(),
     metadataJson: v.optional(v.string()),
+    imageCreditReference: v.optional(v.string()),
+    replaceFromMessageId: v.optional(v.id("messages")),
   },
   handler: async (ctx, args) => {
+    if (args.replaceFromMessageId) {
+      const conversation = await ctx.db.get(args.conversationId);
+      if (!userOwnsConversation(conversation, args.userId)) throw new Error("Conversation not found");
+      const target = await ctx.db.get(args.replaceFromMessageId);
+      if (!target) return { written: false as const };
+      if (target.conversationId !== args.conversationId || target.role !== "assistant") {
+        throw new Error("Message not found");
+      }
+      if (args.imageCreditReference) await chargeChatImageOnce(ctx, args.userId, args.imageCreditReference);
+      const rows = await ctx.db.query("messages")
+        .withIndex("by_conversation", q => q.eq("conversationId", args.conversationId)).collect();
+      for (const row of rows.filter(message => message.createdAt >= target.createdAt)) {
+        await ctx.db.delete(row._id);
+      }
+    }
     const latest = await ctx.db
       .query("messages")
       .withIndex("by_conversation", (q) => q.eq("conversationId", args.conversationId))
@@ -202,6 +220,7 @@ export const appendAssistantReplyIfMissing = internalMutation({
         isChatAssistantFailureStub(existing.content) &&
         !isChatAssistantFailureStub(args.content)
       ) {
+        if (args.imageCreditReference && !args.replaceFromMessageId) await chargeChatImageOnce(ctx, args.userId, args.imageCreditReference);
         const now = Date.now();
         await ctx.db.patch(existing._id, {
           content: args.content,
@@ -216,6 +235,7 @@ export const appendAssistantReplyIfMissing = internalMutation({
       }
       return { written: false as const };
     }
+    if (args.imageCreditReference && !args.replaceFromMessageId) await chargeChatImageOnce(ctx, args.userId, args.imageCreditReference);
     const now = Date.now();
     await ctx.db.insert("messages", {
       conversationId: args.conversationId,

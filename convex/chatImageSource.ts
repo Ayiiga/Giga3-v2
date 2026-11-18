@@ -53,3 +53,20 @@ export function resolveChatImageSourceUrl(args: {
   }
   return findPriorAssistantImageUrl(args.history) ?? undefined;
 }
+
+/** Delivery follow-ups ask for the actual asset, rather than advice about it. */
+export function isImageDeliveryFollowup(query: string): boolean {
+  return /\b(?:waiting for|where is|where's|show me|send me|display|give me the actual|want the actual|want an actual|want a real|still need)\b[\s\S]{0,65}\b(?:poster|flyer|banner|image|picture|design)\b/i.test(query) ||
+    /\b(?:poster|flyer|banner|image)\b[\s\S]{0,35}\b(?:not (?:text|code)|instead of (?:text|code))\b/i.test(query);
+}
+
+export function resolveChatImagePrompt(query: string, history: Array<{ role: string; content: string }>): string {
+  if (!isImageDeliveryFollowup(query)) return query;
+  const prior = [...history].reverse().find(turn =>
+    turn.role === "user" && turn.content.trim() !== query.trim() &&
+    !isImageDeliveryFollowup(turn.content) &&
+    /\b(?:poster|flyer|banner|image|picture|logo)\b/i.test(turn.content)
+  );
+  if (!prior) return query;
+  return prior.content.slice(0, 8000) + "\n\nLatest instructions: " + query;
+}
