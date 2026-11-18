@@ -168,6 +168,8 @@ function TechHubInner() {
   >({});
   /** Client praise once per questionId (server scoring remains finalize-once). */
   const rewardedQuestionIdsRef = useRef<Set<string>>(new Set());
+  // Synchronous guard: a rapid second tap must not race a pending answer save.
+  const savingAnswerRef = useRef(false);
   const immediateFeedback = techModeShowsImmediateFeedback(mode);
   const [endsAt, setEndsAt] = useState<number | null>(null);
   const [serverSkew, setServerSkew] = useState(0);
@@ -337,20 +339,25 @@ function TechHubInner() {
   const current = localQuestions[index];
 
   async function onSubmitAnswer(selectedIndex: number) {
-    if (!sessionToken || !sessionId || !current) return;
+    if (!sessionToken || !sessionId || !current || savingAnswerRef.current) return;
     // Immediate-feedback modes: one reveal + one praise pulse per question.
     if (immediateFeedback && feedbackByQuestion[current.questionId] != null) return;
+    savingAnswerRef.current = true;
+    const questionId = current.questionId;
+    const previousAnswer = answers[questionId];
+    // Highlight exactly the tapped display-order option without waiting for the network.
+    setAnswers((prev) => ({ ...prev, [questionId]: selectedIndex }));
     setBusy(true);
     setError(null);
     try {
       const res = await saveAnswer({
         sessionToken,
         sessionId,
-        questionId: current.questionId,
+        questionId,
         selectedIndex,
       });
       const savedIndex = (res.feedback as LearnFeedback | null)?.selectedIndex ?? selectedIndex;
-      setAnswers((prev) => ({ ...prev, [current.questionId]: savedIndex }));
+      setAnswers((prev) => ({ ...prev, [questionId]: savedIndex }));
       if (res.autoSubmitted) {
         setResults({
           score: res.autoSubmitted.score ?? 0,
@@ -391,8 +398,16 @@ function TechHubInner() {
         }
       }
     } catch (e) {
+      // Never leave an unsaved optimistic choice looking like a recorded answer.
+      setAnswers((prev) => {
+        const next = { ...prev };
+        if (previousAnswer === undefined) delete next[questionId];
+        else next[questionId] = previousAnswer;
+        return next;
+      });
       setError(e instanceof Error ? e.message : "Could not save answer.");
     } finally {
+      savingAnswerRef.current = false;
       setBusy(false);
     }
   }
@@ -436,6 +451,8 @@ function TechHubInner() {
   }
 
   function goToQuestion(nextIndex: number) {
+    // Keep the question stable until its answer has been persisted.
+    if (savingAnswerRef.current || busy) return;
     setIndex(nextIndex);
     setReward(null);
   }
@@ -792,11 +809,8 @@ function TechHubInner() {
                           if (immediateFeedback) {
                             if (!revealed) void onSubmitAnswer(optIndex);
                           } else {
-                            if (selected === optIndex) return;
-                            setAnswers((prev) => ({
-                              ...prev,
-                              [current.questionId]: optIndex,
-                            }));
+                            if (selected === optIndex || savingAnswerRef.current) return;
+                            // The shared handler owns optimistic selection and rollback.
                             void onSubmitAnswer(optIndex);
                           }
                         }}
@@ -827,8 +841,10 @@ function TechHubInner() {
                             <span className="exam-session-option-text">{opt}</span>
                           </>
                         )}
-                        {revealed && isSelected ? (
-                          <span className="shrink-0 text-xs font-semibold">Your choice</span>
+                        {isSelected && (revealed || savingAnswerRef.current) ? (
+                          <span className="shrink-0 text-xs font-semibold">
+                            {revealed ? "Your choice" : "Saving…"}
+                          </span>
                         ) : null}
                         {revealed && !isSelected && (isScoredCorrect || isProvisionalKey) ? (
                           <span className="shrink-0 text-xs font-semibold">
@@ -916,7 +932,7 @@ function TechHubInner() {
                   ) : null}
                 </div>
               ) : null}
-              {error ? <p className="mt-3 text-sm text-rose-700">{error}</p> : null}
+              {error ? <p className="mt-3 text-sm text-rose-700" role="alert">{error}</p> : null}
             </article>
           </div>
 
@@ -924,7 +940,7 @@ function TechHubInner() {
             <button
               type="button"
               className="exam-session-btn-secondary"
-              disabled={index === 0}
+              disabled={index === 0 || busy}
               onClick={() => goToQuestion(Math.max(0, index - 1))}
             >
               ← Previous
@@ -933,7 +949,7 @@ function TechHubInner() {
               <button
                 type="button"
                 className="exam-session-btn-primary"
-                disabled={immediateFeedback && !revealed}
+                disabled={busy || (immediateFeedback && !revealed)}
                 onClick={() =>
                   goToQuestion(Math.min(localQuestions.length - 1, index + 1))
                 }
