@@ -1,6 +1,10 @@
 import courses from './courses.mjs';
 import aiExamples from './ai-examples.mjs';
 import { createCertificateSerial, eligibleForCertificate, lessonUnlocked, lessonsComplete, passingScore, readProgress } from './progress.mjs';
+// Older cached workspace documents may still point to the unversioned stylesheet.
+const legacyStylesheet = document.querySelector('link[rel="stylesheet"][href="style.css"]');
+if (legacyStylesheet) legacyStylesheet.href = 'style.css?v=110';
+
 const main = document.querySelector('main');
 const dialog = document.querySelector('#detail');
 const paths = {

@@ -128,3 +128,6 @@
   Content-Type: application/json
   Cache-Control: public, max-age=300
   Access-Control-Allow-Origin: *
+
+/gigalearn/academy/workspace/
+  Cache-Control: public, max-age=0, must-revalidate
