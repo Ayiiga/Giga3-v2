@@ -5,6 +5,7 @@ import { exportDocumentPdf } from "../../web/lib/documents/exportPdf";
 import { exportDocumentDocx } from "../../web/lib/documents/exportDocx";
 import { exportDocumentPptx, slidesFromDocument } from "../../web/lib/documents/exportPptx";
 import { passportPhotoBytes } from "../../web/lib/documents/profilePhoto";
+import { cvAppearance, CV_LAYOUTS, type CvLayout } from "../../web/lib/documents/cvLayouts";
 import { createDocumentFromTemplate } from "../../web/lib/documents/templates";
 import { inferKindFromRequest, isDocumentCreationRequest, isDocumentFollowUpRequest } from "../../web/lib/documents/intent";
 
@@ -109,5 +110,34 @@ describe("Android document quality regressions", () => {
     );
     const pdf = await PDFDocument.load(await exportDocumentPdf(long));
     expect(pdf.getPageCount()).toBeGreaterThan(2);
+  });
+});
+
+describe("CV layout parity", () => {
+  it("defaults old CV drafts to Classic and leaves non-CV documents outside the CV styles", () => {
+    expect(cvAppearance(createDocumentFromTemplate("cv"))?.layout).toBe("classic");
+    expect(cvAppearance(createDocumentFromTemplate("thesis"))).toBeNull();
+  });
+
+  it("exports the selected CV styling and preserves an optional photo and editable text", async () => {
+    for (const cvLayout of Object.keys(CV_LAYOUTS) as CvLayout[]) {
+      const doc = {
+        ...documentFromMarkdown("# Ama Mensah\n\n## Experience\n\nTeacher", { templateKind: "cv" }),
+        cvLayout,
+        cvAccent: "Teal" as const,
+        profilePhotoDataUrl: PHOTO,
+      };
+      const pdf = await PDFDocument.load(await exportDocumentPdf(doc));
+      expect(pdf.getPageCount()).toBe(1);
+      const zip = await JSZip.loadAsync(await exportDocumentDocx(doc));
+      const xml = await zip.file("word/document.xml")!.async("string");
+      expect(xml).toContain("Ama Mensah");
+      expect(xml).toContain("Teacher");
+      expect(xml).toContain('w:color w:val="00675F"');
+      expect(Object.keys(zip.files).some((name) => /^word\/media\/.+\.jpg$/.test(name))).toBe(true);
+      if (cvLayout === "executive") expect(xml).toContain('w:fill="EDF1F5"');
+      if (cvLayout === "editorial") expect(xml).toContain("<w:pBdr>");
+      if (cvLayout === "signature") expect(xml).toContain('w:fill="00675F"');
+    }
   });
 });

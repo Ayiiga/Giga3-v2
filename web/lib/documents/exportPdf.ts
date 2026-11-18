@@ -1,3 +1,4 @@
+import { cvAppearance, cvHeadingStyle } from "@/lib/documents/cvLayouts";
 import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from "pdf-lib";
 import type { DocJson, GigaDocument } from "@/lib/documents/types";
 import { DOC_TEXT_COLORS } from "@/lib/documents/types";
@@ -344,6 +345,7 @@ export async function exportDocumentPdf(doc: GigaDocument): Promise<Uint8Array> 
     y -= gapAfter;
   };
 
+  const appearance = cvAppearance(doc);
   for (const block of blocks) {
     if (block.kind === "hr") {
       ensureSpace(12);
@@ -358,8 +360,29 @@ export async function exportDocumentPdf(doc: GigaDocument): Promise<Uint8Array> 
     }
     if (block.kind === "heading") {
       const size = block.level === 1 ? bodySize + 7 : block.level === 2 ? bodySize + 4 : bodySize + 2;
-      const runs = block.runs.map((r) => ({ ...r, bold: true, fontSize: size }));
-      drawLines(wrapRuns(runs, availableWidth(), size, fonts), block.align, 8);
+      const style = appearance ? cvHeadingStyle(appearance, block.level) : null;
+      const runs = block.runs.map((r) => ({ ...r, color: style?.color ?? r.color, bold: true, fontSize: size }));
+      ensureSpace(size * 1.35 + bodySize * 1.35);
+      const lines = wrapRuns(runs, availableWidth(), size, fonts);
+      for (const line of lines) {
+        ensureSpace(size * 1.35);
+        const width = availableWidth();
+        if (style?.fill) {
+          const { r, g, b } = hexToRgb(style.fill);
+          page.drawRectangle({ x: margin.left, y: y - size * 1.27, width, height: size * 1.35, color: rgb(r, g, b) });
+        }
+        drawLines([line], block.align, 0);
+      }
+      if (style?.rule) {
+        const { r, g, b } = hexToRgb(style.rule);
+        page.drawLine({
+          start: { x: margin.left, y },
+          end: { x: margin.left + availableWidth(), y },
+          thickness: 0.75,
+          color: rgb(r, g, b),
+        });
+      }
+      y -= 8;
       continue;
     }
     if (block.kind === "listItem") {

@@ -19,12 +19,10 @@ export const DOCUMENT_STUDIO_TEMPLATES: Seed[] = [
     paperSize: "A4",
     onePageFit: true,
     pageTarget: 1,
-    markdown: `# Professional CV
+    markdown: `# Full Name
 
-## Contact
-- Full name:
-- Email · Phone · Location
-- LinkedIn / Portfolio:
+Professional title · Email · Phone · City, Country
+LinkedIn or portfolio (optional)
 
 ## Professional summary
 Two to three sentences tailored to the target role.

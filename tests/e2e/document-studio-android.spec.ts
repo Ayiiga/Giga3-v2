@@ -11,7 +11,10 @@ test.describe("Document Studio — Android mobile browser workflow", () => {
     test.skip(test.info().project.name !== "mobile-chrome", "Run on the Pixel mobile Chrome project");
 
     await page.goto("/documents/", { waitUntil: "domcontentloaded" });
-    await page.getByRole("button", { name: /Professional CV \(A4\)/ }).first().click();
+    await page.getByRole("button", { name: "Modern", exact: true }).click();
+    await expect(page.getByRole("button", { name: /Executive Shaded/ })).toHaveCount(0);
+    await page.getByRole("button", { name: /Signature Bold name header/ }).click();
+    await page.getByRole("button", { name: "Teal", exact: true }).click();
     const editor = page.locator(".document-studio .ProseMirror");
     const title = page.getByLabel("Document title");
     await expect(editor).toBeVisible();
@@ -40,6 +43,10 @@ test.describe("Document Studio — Android mobile browser workflow", () => {
       buffer: Buffer.from(photo.split(",")[1], "base64"),
     });
     await expect(page.getByAltText("CV portrait preview")).toBeVisible();
+    await page.getByRole("button", { name: "Preview CV", exact: true }).click();
+    await expect(editor).toHaveAttribute("contenteditable", "false");
+    await expect(editor.locator("h1")).toHaveCSS("background-color", "rgb(0, 103, 95)");
+    await expect(page.getByAltText("Passport-style CV portrait")).toBeVisible();
     await page.getByRole("button", { name: "Save draft" }).click();
     await expect(page.getByText("Draft saved on this device.")).toBeVisible();
 
@@ -62,6 +69,7 @@ test.describe("Document Studio — Android mobile browser workflow", () => {
     expect(word.file("word/document.xml")).not.toBeNull();
     const wordXml = await word.file("word/document.xml")!.async("string");
     expect(wordXml).toContain("Verified additional classroom experience.");
+    expect(wordXml).toContain('w:fill="00675F"');
     expect(Object.keys(word.files).some((p) => p.startsWith("word/media/"))).toBe(true);
 
     const slidesEvent = page.waitForEvent("download");
@@ -74,7 +82,8 @@ test.describe("Document Studio — Android mobile browser workflow", () => {
     expect(slides.file("ppt/slides/slide1.xml")).not.toBeNull();
 
     await page.reload({ waitUntil: "domcontentloaded" });
-    await page.getByRole("button", { name: /Android Document QA CV/ }).first().click();
+    await page.getByRole("button", { name: "View CV Android Document QA CV", exact: true }).click();
+    await expect(page.locator(".document-studio .ProseMirror")).toHaveAttribute("contenteditable", "false");
     await expect(page.getByLabel("Document title")).toHaveValue("Android Document QA CV");
     await expect(page.locator(".document-studio .ProseMirror")).toContainText(
       "Verified additional classroom experience."

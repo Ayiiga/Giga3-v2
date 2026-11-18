@@ -1,3 +1,5 @@
+import type { CvAccent, CvLayout } from "@/lib/documents/cvLayouts";
+
 /** Shared structured document model for Chat, GigaLearn, and Create. */
 
 export type DocPaperSize = "A4" | "A5";
@@ -68,6 +70,8 @@ export type GigaDocument = {
   fitWarning?: string | null;
   /** Optional user-uploaded, locally stored, 4:5 JPEG portrait for CVs. */
   profilePhotoDataUrl?: string;
+  cvLayout?: CvLayout;
+  cvAccent?: CvAccent;
 };
 
 export const DEFAULT_MARGINS_MM: DocMarginsMm = {

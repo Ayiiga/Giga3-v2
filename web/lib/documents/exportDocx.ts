@@ -1,3 +1,4 @@
+import { cvAppearance, cvHeadingStyle, type CvAppearance } from "@/lib/documents/cvLayouts";
 import {
   AlignmentType,
   Document,
@@ -35,7 +36,7 @@ function colorHex(value?: string): string {
   return "18181B";
 }
 
-function runsFromNode(node: unknown): TextRun[] {
+function runsFromNode(node: unknown, heading?: { color: string; size: number }): TextRun[] {
   if (!node || typeof node !== "object") return [];
   const n = node as {
     type?: string;
@@ -49,20 +50,20 @@ function runsFromNode(node: unknown): TextRun[] {
     return [
       new TextRun({
         text: n.text ?? "",
-        bold: marks.some((m) => m.type === "bold"),
+        bold: Boolean(heading) || marks.some((m) => m.type === "bold"),
         italics: marks.some((m) => m.type === "italic"),
         underline: marks.some((m) => m.type === "underline") ? {} : undefined,
-        color: colorHex(marks.find((m) => m.type === "textStyle")?.attrs?.color),
+        color: colorHex(heading?.color ?? marks.find((m) => m.type === "textStyle")?.attrs?.color),
         font: "Calibri",
-        size: 22,
+        size: heading?.size ?? 22,
       }),
     ];
   }
-  if (Array.isArray(n.content)) return n.content.flatMap(runsFromNode);
+  if (Array.isArray(n.content)) return n.content.flatMap((child) => runsFromNode(child, heading));
   return [];
 }
 
-function paragraphsFromJson(doc: DocJson | null | undefined): Paragraph[] {
+function paragraphsFromJson(doc: DocJson | null | undefined, appearance: CvAppearance | null): Paragraph[] {
   const out: Paragraph[] = [];
   if (!doc?.content || !Array.isArray(doc.content)) return out;
 
@@ -75,9 +76,11 @@ function paragraphsFromJson(doc: DocJson | null | undefined): Paragraph[] {
     };
     if (n.type === "heading") {
       const level = n.attrs?.level ?? 1;
+      const styled = wordCvHeading(appearance, level);
       out.push(
         new Paragraph({
-          children: runsFromNode(n),
+          children: runsFromNode(n, styled?.run),
+          ...styled?.paragraph,
           heading:
             level === 1
               ? HeadingLevel.HEADING_1
@@ -146,7 +149,20 @@ function paragraphsFromJson(doc: DocJson | null | undefined): Paragraph[] {
 }
 
 /** Markdown-only imports should not combine separate CV bullets into one line. */
-function paragraphsFromMarkdown(markdown: string): Paragraph[] {
+function wordCvHeading(appearance: CvAppearance | null, level: number) {
+  if (!appearance) return null;
+  const style = cvHeadingStyle(appearance, level);
+  return {
+    run: { color: style.color, size: level === 1 ? 40 : level === 2 ? 27 : 23 },
+    paragraph: {
+      keepNext: true,
+      shading: style.fill ? { fill: colorHex(style.fill) } : undefined,
+      border: style.rule ? { bottom: { style: BorderStyle.SINGLE, size: 6, color: colorHex(style.rule) } } : undefined,
+    },
+  };
+}
+
+function paragraphsFromMarkdown(markdown: string, appearance: CvAppearance | null): Paragraph[] {
   const out: Paragraph[] = [];
   let paragraph: string[] = [];
   const clean = (value: string) => value
@@ -172,8 +188,12 @@ function paragraphsFromMarkdown(markdown: string): Paragraph[] {
     if (heading) {
       flush();
       const level = heading[1].length;
+      const styled = wordCvHeading(appearance, level);
       out.push(new Paragraph({
-        text: clean(heading[2]),
+        ...(styled
+          ? { children: [new TextRun({ text: clean(heading[2]), bold: true, size: styled.run.size, color: colorHex(styled.run.color) })] }
+          : { text: clean(heading[2]) }),
+        ...styled?.paragraph,
         heading: level === 1 ? HeadingLevel.HEADING_1 : level === 2 ? HeadingLevel.HEADING_2 : HeadingLevel.HEADING_3,
         spacing: { after: level === 1 ? 160 : level === 2 ? 140 : 120 },
       }));
@@ -207,11 +227,13 @@ function paragraphsFromMarkdown(markdown: string): Paragraph[] {
 
 /** Build a real OOXML .docx buffer from the structured document. */
 export async function exportDocumentDocx(doc: GigaDocument): Promise<Uint8Array> {
+  const appearance = cvAppearance(doc);
   let children = paragraphsFromJson(
-    doc.content?.content && doc.content.content.length > 0 ? doc.content : null
+    doc.content?.content && doc.content.content.length > 0 ? doc.content : null,
+    appearance
   );
   if (children.length === 0) {
-    children = paragraphsFromMarkdown(doc.markdown || tipTapJsonToMarkdown(doc.content));
+    children = paragraphsFromMarkdown(doc.markdown || tipTapJsonToMarkdown(doc.content), appearance);
   }
   if (children.length === 0) {
     children = [new Paragraph({ text: doc.title })];
