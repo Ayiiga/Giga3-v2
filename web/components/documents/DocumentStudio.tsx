@@ -2,6 +2,7 @@
 
 import { CvProfileEditor } from "@/components/documents/CvProfileEditor";
 import { cvNodes, type CvNode } from "@/lib/documents/cvSections";
+import { DocumentSignature } from "@/components/documents/DocumentSignature";
 import { DocumentToolbar } from "@/components/documents/DocumentToolbar";
 import { Button } from "@/components/ui/Button";
 import { CV_ACCENTS, CV_LAYOUTS, cvAppearance, type CvAccent, type CvLayout } from "@/lib/documents/cvLayouts";
@@ -514,8 +515,15 @@ export function DocumentStudio({
               className="float-right ml-3 mb-2 h-auto max-w-[23%] rounded-sm object-cover" />
           ) : null}
           <EditorContent editor={editor} />
+          {doc.signatureDataUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element -- local signature data
+            <img src={doc.signatureDataUrl} alt="Your handwritten signature" width={196} height={74} className="mt-3 h-auto max-w-full object-contain" />
+          ) : null}
         </div>
       </div>
+
+      <DocumentSignature value={doc.signatureDataUrl} disabled={busy !== null}
+        onChange={(signatureDataUrl) => emit({ ...liveDocument.current, signatureDataUrl, updatedAt: Date.now() })} />
 
       <div
         className={cn(

@@ -85,7 +85,7 @@ export function DocumentsPageRoot() {
         <p className="text-xs font-semibold uppercase tracking-wide text-accent">Shared across Chat · GigaLearn · Create</p>
         <h2 className="text-xl font-bold text-foreground">Document Studio</h2>
         <p className="text-sm text-muted">
-          Rich-text editing, professional one- or two-page CV targets, optional portrait photos, and PDF / Word / PowerPoint exports.
+          Create, edit, sign, and export CVs and letters for free. Use an optional CV photo and download as PDF or Word.
         </p>
       </header>
 

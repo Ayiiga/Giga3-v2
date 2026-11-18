@@ -4,6 +4,7 @@ import { documentFromMarkdown, evaluateOnePageFit } from "../../web/lib/document
 import { exportDocumentPdf } from "../../web/lib/documents/exportPdf";
 import { exportDocumentDocx } from "../../web/lib/documents/exportDocx";
 import { exportDocumentPptx, slidesFromDocument } from "../../web/lib/documents/exportPptx";
+import { signatureImageBytes } from "../../web/lib/documents/signature";
 import { passportPhotoBytes } from "../../web/lib/documents/profilePhoto";
 import { cvAppearance, CV_LAYOUTS, type CvLayout } from "../../web/lib/documents/cvLayouts";
 import { createDocumentFromTemplate } from "../../web/lib/documents/templates";
@@ -139,5 +140,29 @@ describe("CV layout parity", () => {
       if (cvLayout === "editorial") expect(xml).toContain("<w:pBdr>");
       if (cvLayout === "signature") expect(xml).toContain('w:fill="00675F"');
     }
+  });
+});
+
+describe("handwritten signatures", () => {
+  const signature = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jP1sAAAAASUVORK5CYII=";
+
+  it("rejects non-PNG or malformed signatures", () => {
+    expect(() => signatureImageBytes("https://example.com/signature.png")).toThrow();
+    expect(() => signatureImageBytes("data:image/png;base64,AAAA")).toThrow();
+    expect(signatureImageBytes(signature).length).toBeGreaterThan(24);
+  });
+
+  it("includes the signature in PDF and Word letters and keeps the text editable", async () => {
+    const doc = {
+      ...documentFromMarkdown("# Application letter\n\nPlease accept my application.", { templateKind: "application-letter" }),
+      signatureDataUrl: signature,
+    };
+    const pdf = await PDFDocument.load(await exportDocumentPdf(doc));
+    expect(pdf.getPage(0).node.Resources()?.has(require("../../web/node_modules/pdf-lib").PDFName.of("XObject"))).toBe(true);
+    const zip = await JSZip.loadAsync(await exportDocumentDocx(doc));
+    expect(Object.keys(zip.files).some((name) => /^word\/media\/.+\.png$/.test(name))).toBe(true);
+    const xml = await zip.file("word/document.xml")!.async("string");
+    expect(xml).toContain("Please accept my application.");
+    expect(xml).toContain("Handwritten signature");
   });
 });

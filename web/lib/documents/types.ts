@@ -72,6 +72,8 @@ export type GigaDocument = {
   profilePhotoDataUrl?: string;
   cvLayout?: CvLayout;
   cvAccent?: CvAccent;
+  /** Optional handwritten PNG, stored only in the local document draft. */
+  signatureDataUrl?: string;
 };
 
 export const DEFAULT_MARGINS_MM: DocMarginsMm = {
