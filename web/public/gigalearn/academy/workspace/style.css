@@ -198,3 +198,6 @@ body.print-authorized-material #print-material{display:block!important;white-spa
   .cert-serial strong{font-size:.75rem}
 }
 @media(max-width:360px){.lesson summary{gap:7px}.lesson-state{font-size:.66rem}}
+
+.certificate-original{display:block;width:100%;height:auto;aspect-ratio:3/2;object-fit:contain;margin:0 0 14px}
+.certificate-image-title{font-size:1rem}

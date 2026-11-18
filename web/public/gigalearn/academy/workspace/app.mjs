@@ -3,7 +3,7 @@ import aiExamples from './ai-examples.mjs';
 import { createCertificateSerial, eligibleForCertificate, lessonUnlocked, lessonsComplete, passingScore, readProgress } from './progress.mjs';
 // Older cached workspace documents may still point to the unversioned stylesheet.
 const legacyStylesheet = document.querySelector('link[rel="stylesheet"][href="style.css"]');
-if (legacyStylesheet) legacyStylesheet.href = 'style.css?v=110';
+if (legacyStylesheet) legacyStylesheet.href = 'style.css?v=111';
 
 const main = document.querySelector('main');
 const dialog = document.querySelector('#detail');
@@ -296,6 +296,16 @@ function openCertificate(course, introductory) {
   const chrome = '<div class="dialog-top">'+badge('award')+'<button class="btn" type="button" aria-label="Close certificate" data-close>'+icon('close')+'</button></div>';
   function showCertificate() {
     dialog.classList.add('certificate-dialog');
+    if (course.id === 'ai' && !introductory &&
+        state.recipient.trim().toLowerCase() === 'ayiiga benard issaka') {
+      dialog.innerHTML = chrome +
+        '<h2 id="dialog-title" class="certificate-image-title">Artificial Intelligence certificate</h2>'+
+        '<img class="certificate-original" src="ai-certificate-original.png" width="1536" height="1024" '+
+        'alt="Certificate of completion in Artificial Intelligence awarded to Ayiiga Benard Issaka, issued 18 November 2026">'+
+        '<a class="btn" href="ai-certificate-original.png" download="GigaLearn-AI-Certificate.png">Download certificate</a>';
+      return;
+    }
+
     dialog.innerHTML = chrome +
       '<article class="cert-paper"><div class="cert-frame">'+
       '<p class="cert-academy">GigaLearn Academy</p><h2 id="dialog-title">Certificate of <span>Completion</span></h2>'+
