@@ -31,6 +31,23 @@ export function findPriorAssistantImageUrl(
   return null;
 }
 
+export function chatImageReferenceKind(query: string): "uploaded" | "generated" | "latest" | null {
+  if (isImageCommentaryOrInstruction(query)) return null;
+  if (!/\b(?:create|make|design|generate|render|use|using|turn|convert|edit|change|remove|retouch|replace|add|enhance|brighten|darken|crop|resize|rotate|upscale)\b/i.test(query)) return null;
+  if (/\b(?:uploaded|attached|original|source)\s+(?:image|picture|photo|photograph|portrait|design|poster|logo)\b|\b(?:my|our)\s+(?:photo|photograph|picture|portrait)\b|\b(?:image|picture|photo|photograph)\s+(?:(?:that|which)\s+)?(?:I|we)\s+(?:uploaded|attached|provided)\b/i.test(query)) return "uploaded";
+  if (/\b(?:the|this|that|same|previous|last|earlier|above)\s+(?:(?:previous|last|earlier|newly|AI)\s+)?(?:generated|rendered|created)\s+(?:image|picture|photo|design|poster|logo)\b/i.test(query)) return "generated";
+  if (/\b(?:this|that|same|previous|last|earlier|above)\s+(?:image|picture|photo|design|poster|logo)\b/i.test(query)) return "latest";
+  return null;
+}
+
+export function missingChatImageReferenceMessage(query: string, sourceUrl?: string): string | undefined {
+  const reference = chatImageReferenceKind(query);
+  if (sourceUrl || reference === null || reference === "latest") return undefined;
+  return reference === "uploaded"
+    ? "Please attach the original photo again so I can use it in your design. No image credits were charged."
+    : "Please attach the generated image you want to use. No image credits were charged.";
+}
+
 export function isImageEditOrTransformQuery(
   query: string,
   hasEditableImageSource: boolean
@@ -39,9 +56,7 @@ export function isImageEditOrTransformQuery(
   if (!q || isImageCommentaryOrInstruction(q)) return false;
   if (detectImageEditIntent(q)) return true;
   if (hasEditableImageSource && ITERATIVE_IMAGE_EDIT_RE.test(q)) return true;
-  if (hasEditableImageSource &&
-      /\b(?:this|that|same|previous|last|earlier|above)\s+(?:(?:generated|uploaded)\s+)?(?:image|picture|photo|design|poster)\b/i.test(q) &&
-      /\b(?:create|make|design|generate|render|use|using|turn|convert|edit|change|remove|retouch)\b/i.test(q)) return true;
+  if (hasEditableImageSource && chatImageReferenceKind(q)) return true;
   return false;
 }
 
@@ -64,22 +79,15 @@ export function resolveChatImageSourceUrl(args: {
   history: Array<{ role: string; content: string }>;
 }): string | undefined {
   const historicalEdit = isImageEditOrTransformQuery(args.query, true);
-  if (args.imageAttachmentsAreHistorical && historicalEdit) {
-    const assistantImage = findPriorAssistantImageUrl(args.history);
-    if (assistantImage) return assistantImage;
-  }
-  const mayUseUpload = !args.imageAttachmentsAreHistorical || historicalEdit;
-  for (const attachment of mayUseUpload ? args.imageAttachments : []) {
-    const dataUrl = attachment.dataUrl?.trim();
-    if (dataUrl?.startsWith("data:image/") || /^https?:\/\//i.test(dataUrl ?? "")) {
-      return dataUrl;
-    }
-  }
-  // A fresh upload belongs to this request; a historical image requires an
-  // explicit edit/reference. A new creative brief must start a new image.
-  return isImageEditOrTransformQuery(args.query, true)
-    ? findPriorAssistantImageUrl(args.history) ?? undefined
-    : undefined;
+  const reference = chatImageReferenceKind(args.query);
+  const upload = args.imageAttachments.map(attachment => attachment.dataUrl?.trim())
+    .find(url => url?.startsWith("data:image/") || /^https?:\/\//i.test(url ?? ""));
+  const generated = historicalEdit ? findPriorAssistantImageUrl(args.history) ?? undefined : undefined;
+  // An explicit source wins over recency, and cannot fall back to the wrong kind.
+  if (reference === "uploaded") return upload;
+  if (reference === "generated") return generated;
+  if (!args.imageAttachmentsAreHistorical && upload) return upload;
+  return historicalEdit ? generated ?? upload : undefined;
 }
 
 /** Delivery follow-ups ask for the actual asset, rather than advice about it. */

@@ -49,7 +49,7 @@ import type { FalImageSize } from "./falClient";
 import type { NewsEvidenceContext } from "./newsEvidence/types";
 import { buildNewsEvidencePackage } from "./newsEvidence/pipeline";
 import { isLiveNewsEnabled } from "./featureFlags";
-import { isChatImageUploadForMessage, resolveChatImagePrompt, resolveChatImageSourceUrl } from "./chatImageSource";
+import { isChatImageUploadForMessage, missingChatImageReferenceMessage, resolveChatImagePrompt, resolveChatImageSourceUrl } from "./chatImageSource";
 import { isLiveWebEnabled } from "./liveWeb/liveWebConfig";
 import {
   buildLiveWebMetadata,
@@ -293,6 +293,11 @@ async function runHybridAiEngine(
   let freeOpenAiQuotaReserved = false;
 
   if (routePlan.requestKind === "image_generation") {
+    const missingReference = missingChatImageReferenceMessage(args.query, sourceImageUrl);
+    if (missingReference) return {
+      content: missingReference, providerId: "local_fallback", usedFallback: true,
+      latencyMs: 0, cached: false, requestKind: "image_generation",
+    };
     const started = Date.now();
     const prompt = resolveChatImagePrompt(args.query, args.chatMessages.map(message => ({
       role: message.role,

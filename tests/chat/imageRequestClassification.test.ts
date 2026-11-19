@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { classifyRequestKind } from '../../convex/providerRouter';
 import { shouldDeductCreditsForChatRequestKind } from '../../convex/creditsConfig';
-import { isChatImageUploadForMessage, isImageDeliveryFollowup, resolveChatImagePrompt, resolveChatImageSourceUrl } from '../../convex/chatImageSource';
+import { isChatImageUploadForMessage, missingChatImageReferenceMessage, isImageDeliveryFollowup, resolveChatImagePrompt, resolveChatImageSourceUrl } from '../../convex/chatImageSource';
 
 const history = [{ role: 'assistant', content: 'Here is your generated image:\n\nhttps://example.com/old-cat.png' }];
 const commentary = [
@@ -84,6 +84,27 @@ describe('image request classification and source boundaries', () => {
     expect(isChatImageUploadForMessage({storedAt,messageCreatedAt:storedAt,now:storedAt+46*60*1000})).toBe(false);
     expect(isChatImageUploadForMessage({storedAt,messageCreatedAt:storedAt,now:storedAt-1})).toBe(false);
     expect(isChatImageUploadForMessage({messageCreatedAt:storedAt,now})).toBe(false);
+  });
+  it.each(['Create a poster using my photo', 'Create a poster using the uploaded photo', 'Create a poster using the previous uploaded photo'])('uses the requested upload even after an unrelated generated image: %s', query => {
+    const source=resolveChatImageSourceUrl({query,history,imageAttachments:[{dataUrl:'https://example.com/my-portrait.jpg'}],imageAttachmentsAreHistorical:true});
+    expect(source).toBe('https://example.com/my-portrait.jpg');
+    expect(classifyRequestKind(query,'general',{hasEditableImageSource:true})).toBe('image_generation');
+    expect(missingChatImageReferenceMessage(query,source)).toBeUndefined();
+  });
+  it('honours an explicitly generated source instead of a cached uploaded portrait', () => {
+    const query='Create a poster using the previous generated image';
+    expect(resolveChatImageSourceUrl({query,history,imageAttachments:[{dataUrl:'https://example.com/my-portrait.jpg'}],imageAttachmentsAreHistorical:true})).toBe('https://example.com/old-cat.png');
+  });
+  it('asks for a missing explicit source rather than substituting an unrelated image or rendering without it', () => {
+    const query='Create a poster using my photo';
+    const source=resolveChatImageSourceUrl({query,history,imageAttachments:[],imageAttachmentsAreHistorical:true});
+    expect(source).toBeUndefined();
+    expect(missingChatImageReferenceMessage(query,source)).toContain('attach the original photo');
+    const generated='Create a poster using the previous generated image';
+    const missing=resolveChatImageSourceUrl({query:generated,history:[],imageAttachments:[{dataUrl:'https://example.com/my-portrait.jpg'}],imageAttachmentsAreHistorical:true});
+    expect(missing).toBeUndefined();
+    expect(missingChatImageReferenceMessage(generated,missing)).toContain('No image credits were charged');
+    expect(missingChatImageReferenceMessage('Create a new school poster')).toBeUndefined();
   });
   it('does not convert a delivery follow-up into an edit of a previously generated unrelated image', () => {
     expect(resolveChatImageSourceUrl({query:'I am waiting for the poster',history,imageAttachments:[]})).toBeUndefined();

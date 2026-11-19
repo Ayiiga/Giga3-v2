@@ -39,7 +39,7 @@ import {
   shouldUseResponseCache,
 } from "./providerRouter";
 import { generateImageWithFallback } from "./mediaEngine";
-import { isChatImageUploadForMessage, resolveChatImagePrompt, resolveChatImageSourceUrl } from "./chatImageSource";
+import { isChatImageUploadForMessage, missingChatImageReferenceMessage, resolveChatImagePrompt, resolveChatImageSourceUrl } from "./chatImageSource";
 import { CREDIT_COSTS } from "./creditsConfig";
 import type { ActionCtx } from "./_generated/server";
 import type { FalImageSize } from "./falClient";
@@ -138,6 +138,8 @@ async function runHybridAiEngine(
   });
 
   if (routePlan.requestKind === "image_generation") {
+    const missingReference = missingChatImageReferenceMessage(args.query, args.sourceImageUrl);
+    if (missingReference) throw new Error(missingReference);
     const started = Date.now();
     const prompt = resolveChatImagePrompt(args.query, args.chatMessages.map(message => ({
       role: message.role, content: typeof message.content === "string" ? message.content : "",
@@ -638,7 +640,7 @@ export const regenerateMessage = action({
       chatProvider: engineResult.providerId,
       chatProviderLabel: getChatProviderLabel(engineResult.providerId),
       usedFallback: engineResult.usedFallback,
-      quality: validated.report,
+      quality: validated?.report ?? null,
     };
   },
 });
