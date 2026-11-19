@@ -1,3 +1,4 @@
+import { AcademyCourseDirectory } from "@/components/seo/AcademyCourseDirectory";
 import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
 import { ProductSeoHeader } from "@/components/seo/ProductSeoHeader";
 import { JsonLd } from "@/components/seo/JsonLd";
@@ -20,7 +21,7 @@ export const metadata = publicMetadata({
   path: "/gigalearn/academy/courses",
   title: "GigaLearn Academy Course Catalogue | Giga3 AI",
   description:
-    "Browse GigaLearn Academy courses: BECE and WASSCE pathways, early years Discover media, and teacher studio tracks that reuse existing GigaLearn tools.",
+    "Explore practical courses in AI, Web & PWA development, mobile apps, robotics, cyber safety and teaching. View ten-lesson outlines and project activities.",
 });
 
 export default function GigaLearnAcademyCoursesPage() {
@@ -45,9 +46,10 @@ export default function GigaLearnAcademyCoursesPage() {
       <ProductSeoHeader
         compact
         title="Academy course catalogue"
-        description="Structured courses and pathways that build on GigaLearn hubs."
+        description="Explore six practical courses, ten lessons each, with worked examples and projects."
         showProductNav={false}
       />
+      <AcademyCourseDirectory />
       <div className="marketing-stable gigalearn-stable section-padding pt-4 pb-6 sm:pt-6">
         <Suspense fallback={<ClientAppHydrationNotice productName="GigaLearn Academy" />}>
           <AcademyCatalogueRoot />

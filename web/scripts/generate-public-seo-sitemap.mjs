@@ -25,6 +25,8 @@ import {
   sitemapUrlLimit,
 } from "./seo-route-policy.mjs";
 
+import { academyCourses } from "../lib/seo/academyCourses.mjs";
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.resolve(__dirname, "../public");
 const webRoot = path.resolve(__dirname, "..");
@@ -80,6 +82,8 @@ const GIGALEARN_SITEMAP_PATHS = [
   "/gigalearn/",
   "/gigalearn/academy/",
   "/gigalearn/academy/courses/",
+  "/gigalearn/academy/workspace/",
+  ...academyCourses.map(course => course.href),
   "/gigalearn/academy/tech/",
   "/gigalearn/exam/",
   "/gigalearn/exam/practice/",
@@ -351,6 +355,7 @@ function loadBlogCategorySlugsWithPosts() {
     "BECE & WASSCE": "bece-wassce",
     "AI Tools": "ai-tools",
     Creators: "creators",
+    "GigaSocial Awards": "gigasocial-awards",
     Business: "business",
     Technology: "technology",
     "Digital Literacy": "digital-literacy",
