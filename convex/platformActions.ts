@@ -39,7 +39,7 @@ import {
   shouldUseResponseCache,
 } from "./providerRouter";
 import { generateImageWithFallback } from "./mediaEngine";
-import { resolveChatImagePrompt, resolveChatImageSourceUrl } from "./chatImageSource";
+import { isChatImageUploadForMessage, resolveChatImagePrompt, resolveChatImageSourceUrl } from "./chatImageSource";
 import { CREDIT_COSTS } from "./creditsConfig";
 import type { ActionCtx } from "./_generated/server";
 import type { FalImageSize } from "./falClient";
@@ -500,8 +500,10 @@ export const regenerateMessage = action({
     });
     const regenerationQuery = latestUserPrompt(history.slice(0, targetIdx), "");
     const regenerationUser = [...history.slice(0, targetIdx)].reverse().find(message => message.role === "user");
-    const uploadBelongsToTarget = typeof conv.lastVisionAttachmentsAt === "number" &&
-      regenerationUser?.createdAt === conv.lastVisionAttachmentsAt;
+    const uploadBelongsToTarget = isChatImageUploadForMessage({
+      storedAt: conv.lastVisionAttachmentsAt,
+      messageCreatedAt: regenerationUser?.createdAt,
+    });
     let sourceImageUrl: string | undefined;
     if (conv.lastVisionAttachmentsJson && Date.now() - (conv.lastVisionAttachmentsAt ?? 0) <= 45 * 60 * 1000) {
       try {

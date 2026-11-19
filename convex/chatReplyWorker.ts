@@ -49,7 +49,7 @@ import type { FalImageSize } from "./falClient";
 import type { NewsEvidenceContext } from "./newsEvidence/types";
 import { buildNewsEvidencePackage } from "./newsEvidence/pipeline";
 import { isLiveNewsEnabled } from "./featureFlags";
-import { resolveChatImagePrompt, resolveChatImageSourceUrl } from "./chatImageSource";
+import { isChatImageUploadForMessage, resolveChatImagePrompt, resolveChatImageSourceUrl } from "./chatImageSource";
 import { isLiveWebEnabled } from "./liveWeb/liveWebConfig";
 import {
   buildLiveWebMetadata,
@@ -521,7 +521,7 @@ export const processJob = internalAction({
       ? (JSON.parse(job.attachmentsJson) as ChatCompletionAttachment[])
       : [];
 
-    const hasCurrentImageAttachment = attachments.some(attachment => attachment.kind === "image" && Boolean(attachment.dataUrl));
+    let hasCurrentImageAttachment = attachments.some(attachment => attachment.kind === "image" && Boolean(attachment.dataUrl));
 
     const isCancelled = async () => {
       const fresh = await ctx.runQuery(internal.chatReplyJobs.getJob, {
@@ -565,6 +565,15 @@ export const processJob = internalAction({
             );
             if (images.length > 0) {
               attachments = [...attachments, ...images.slice(0, 2)];
+              // Replacement jobs can omit attachmentsJson. Match the original
+              // user turn, not the replacement job's later creation time.
+              const targetUserMessage = [...history].reverse().find(message =>
+                message.role === "user" && message.content === job.content &&
+                message.createdAt <= job.createdAt
+              );
+              hasCurrentImageAttachment = isChatImageUploadForMessage({
+                storedAt, messageCreatedAt: targetUserMessage?.createdAt,
+              });
             }
           } catch {
             /* ignore corrupt JSON */

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { classifyRequestKind } from '../../convex/providerRouter';
 import { shouldDeductCreditsForChatRequestKind } from '../../convex/creditsConfig';
-import { isImageDeliveryFollowup, resolveChatImagePrompt, resolveChatImageSourceUrl } from '../../convex/chatImageSource';
+import { isChatImageUploadForMessage, isImageDeliveryFollowup, resolveChatImagePrompt, resolveChatImageSourceUrl } from '../../convex/chatImageSource';
 
 const history = [{ role: 'assistant', content: 'Here is your generated image:\n\nhttps://example.com/old-cat.png' }];
 const commentary = [
@@ -63,6 +63,18 @@ describe('image request classification and source boundaries', () => {
     expect(resolveChatImageSourceUrl({query:fresh,history,imageAttachments:attachments,imageAttachmentsAreHistorical:false})).toBe(attachments[0].dataUrl);
     expect(resolveChatImageSourceUrl({query:'Make it brighter',history:[],imageAttachments:attachments,imageAttachmentsAreHistorical:true})).toBe(attachments[0].dataUrl);
     expect(resolveChatImageSourceUrl({query:'Make it brighter',history,imageAttachments:attachments,imageAttachmentsAreHistorical:true})).toBe('https://example.com/old-cat.png');
+  });
+  it('preserves the original upload when a replacement job retries the same user turn', () => {
+    const storedAt=100_000;
+    const now=storedAt+5*60*1000;
+    const query='Create a poster for our school open day';
+    const current=isChatImageUploadForMessage({storedAt,messageCreatedAt:storedAt,now});
+    expect(current).toBe(true);
+    expect(resolveChatImageSourceUrl({query,history,imageAttachments:[{dataUrl:'https://example.com/original-upload.jpg'}],imageAttachmentsAreHistorical:!current})).toBe('https://example.com/original-upload.jpg');
+    expect(isChatImageUploadForMessage({storedAt,messageCreatedAt:storedAt+1,now})).toBe(false);
+    expect(isChatImageUploadForMessage({storedAt,messageCreatedAt:storedAt,now:storedAt+46*60*1000})).toBe(false);
+    expect(isChatImageUploadForMessage({storedAt,messageCreatedAt:storedAt,now:storedAt-1})).toBe(false);
+    expect(isChatImageUploadForMessage({messageCreatedAt:storedAt,now})).toBe(false);
   });
   it('does not convert a delivery follow-up into an edit of a previously generated unrelated image', () => {
     expect(resolveChatImageSourceUrl({query:'I am waiting for the poster',history,imageAttachments:[]})).toBeUndefined();

@@ -45,6 +45,18 @@ export function isImageEditOrTransformQuery(
   return false;
 }
 
+/** A retry may rehydrate the upload attached to the same original user turn. */
+export function isChatImageUploadForMessage(args: {
+  storedAt?: number;
+  messageCreatedAt?: number;
+  now?: number;
+}): boolean {
+  const now = args.now ?? Date.now();
+  return typeof args.storedAt === "number" && Number.isFinite(args.storedAt) &&
+    args.messageCreatedAt === args.storedAt && now >= args.storedAt &&
+    now - args.storedAt <= 45 * 60 * 1000;
+}
+
 export function resolveChatImageSourceUrl(args: {
   query: string;
   imageAttachments: Array<{ dataUrl?: string }>;
