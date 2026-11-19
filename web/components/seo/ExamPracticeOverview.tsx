@@ -122,6 +122,30 @@ export function ExamPracticeOverview({ exam }: { exam: keyof typeof CONTENT }) {
         built in Ghana for learners and teachers.
       </p>
       <PracticeExample {...content.sample} />
+      <figure className="rounded-2xl border border-slate-200 p-4">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/images/gigalearn/practice-feedback.jpg"
+          alt="GigaLearn science practice showing a learner's selected answer, correct feedback and an explanation of separating iron filings from sand with a magnet"
+          width={1080}
+          height={2460}
+          loading="lazy"
+          className="mx-auto h-auto w-full max-w-[240px] rounded-xl"
+        />
+        <figcaption className="mt-3 text-sm leading-6 text-slate-600">
+          GigaLearn science practice with a selected answer and explanation.
+          Product screenshot published on{" "}
+          <a
+            href="https://www.saashub.com/giga3-ai"
+            className="text-violet-800 underline"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Giga3 AI’s public directory profile
+          </a>
+          , 13 November 2026.
+        </figcaption>
+      </figure>
       <div className="space-y-3">
         <h2 className="text-lg font-semibold">How to start</h2>
         <ol className="list-decimal space-y-2 pl-5 text-sm leading-6">

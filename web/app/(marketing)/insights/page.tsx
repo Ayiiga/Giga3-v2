@@ -263,7 +263,7 @@ function InsightsInner() {
           citation counts require Search Console and Bing Webmaster Tools data.
         </p>
       </section>
-    
+
       {stats.homepageGrowth ? (
         <section aria-labelledby="homepage-growth" className="space-y-3">
           <h2 id="homepage-growth" className="text-lg font-semibold">Homepage growth</h2>
