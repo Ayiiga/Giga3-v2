@@ -6,6 +6,10 @@ import { isChatImageUploadForMessage, isImageDeliveryFollowup, resolveChatImageP
 const history = [{ role: 'assistant', content: 'Here is your generated image:\n\nhttps://example.com/old-cat.png' }];
 const commentary = [
   'Give me feedback on this poster',
+  'Write an AI prompt to create a poster',
+  'Draft a highly detailed AI prompt for an image of a school',
+  'Create an AI prompt to render a text logo',
+  'Generate flyer copy for a school open day',
   'Give a critique of this logo',
   'Please provide a review of my banner',
   'Can you analyse this image?',
@@ -33,6 +37,11 @@ describe('image request classification and source boundaries', () => {
   });
   it.each([
     'Create a poster for our school open day',
+    'Create a text logo for my bakery',
+    'Create a copy of this image with a blue background',
+    'Create a clean copy of a bright image with a blue background',
+    'Give me a text-based banner for my bakery',
+    'Create a poster titled Write text for a school project',
     'Please give me a bright and clear image banner',
     'Create a poster explaining how to wash your hands',
     'Create a poster to teach how to wash your hands',
