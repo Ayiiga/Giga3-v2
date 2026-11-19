@@ -93,9 +93,8 @@ describe("discovery attribution", () => {
         )
         .map((r) => r.value),
     ).toEqual([1]);
-    await expect(
-      t.query(api.platformStats.getDiscoveryReport, {}),
-    ).rejects.toThrow();
+    expect(await t.query(api.platformStats.getDiscoveryReport, {})).toBeNull();
+    expect(await t.query(api.platformStats.getDiscoveryReport, { adminSessionToken: "expired-admin-token" })).toBeNull();
   });
 
   it("rejects unknown sources and expires browser attribution after thirty days", async () => {

@@ -227,6 +227,8 @@ function InsightsInner() {
         </p>
         {discovery === undefined ? (
           <p className="text-sm text-muted">Loading discovery data…</p>
+        ) : discovery === null ? (
+          <p className="text-sm text-muted">Sign in again as an administrator to view discovery data.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">

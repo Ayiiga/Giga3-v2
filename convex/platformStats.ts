@@ -114,7 +114,11 @@ export const recordDiscoveryPracticeStart = mutation({
 export const getDiscoveryReport = query({
   args: adminCredentialArgs,
   handler: async (ctx, args) => {
-    await ensureAdminAccess(args);
+    try {
+      await ensureAdminAccess(args);
+    } catch {
+      return null;
+    }
     const days = dateKeysBack(14);
     return await Promise.all(DISCOVERY_SOURCES.map(async (source) => {
       const totals = await Promise.all(DISCOVERY_STAGES.map(async (stage) => {
