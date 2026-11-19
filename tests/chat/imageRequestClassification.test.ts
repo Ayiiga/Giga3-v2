@@ -44,6 +44,9 @@ describe('image request classification and source boundaries', () => {
     'Generate an image without captions',
     'Create a poster, not text',
     'Create a poster excluding captions',
+    'Create a poster and add the text Open day',
+    'Generate an image then include captions',
+    'Create a logo for my photo studio',
     'Create a source image for my robotics presentation',
     'Create a copy of this image with a blue background',
     'Create a clean copy of a bright image with a blue background',
@@ -92,7 +95,7 @@ describe('image request classification and source boundaries', () => {
     expect(isChatImageUploadForMessage({storedAt,messageCreatedAt:storedAt,now:storedAt-1})).toBe(false);
     expect(isChatImageUploadForMessage({messageCreatedAt:storedAt,now})).toBe(false);
   });
-  it.each(['Create a poster using my photo', 'Create a poster using the uploaded photo', 'Create a poster using the previous uploaded photo'])('uses the requested upload even after an unrelated generated image: %s', query => {
+  it.each(['Create a poster using my photo', 'Create a poster using the uploaded photo', 'Create a poster using the previous uploaded photo', 'Create a poster based on my photo'])('uses the requested upload even after an unrelated generated image: %s', query => {
     const source=resolveChatImageSourceUrl({query,history,imageAttachments:[{dataUrl:'https://example.com/my-portrait.jpg'}],imageAttachmentsAreHistorical:true});
     expect(source).toBe('https://example.com/my-portrait.jpg');
     expect(classifyRequestKind(query,'general',{hasEditableImageSource:true})).toBe('image_generation');
@@ -118,6 +121,16 @@ describe('image request classification and source boundaries', () => {
       expect(resolveChatImageSourceUrl({query,history,imageAttachments:[{dataUrl:'https://example.com/old-upload.jpg'}],imageAttachmentsAreHistorical:true})).toBeUndefined();
       expect(missingChatImageReferenceMessage(query)).toBeUndefined();
     }
+  });
+  it('uses a newly attached generated image for this-image references while keeping earlier references explicit', () => {
+    const upload='https://example.com/current-generated-image.png';
+    expect(resolveChatImageSourceUrl({query:'Create a poster using this generated image',history,imageAttachments:[{dataUrl:upload}],imageAttachmentsAreHistorical:false})).toBe(upload);
+    expect(resolveChatImageSourceUrl({query:'Create a poster using the previous generated image',history,imageAttachments:[{dataUrl:upload}],imageAttachmentsAreHistorical:false})).toBe('https://example.com/old-cat.png');
+  });
+  it('does not treat a photo-related business name as a request to use a cached portrait', () => {
+    const query='Create a logo for my photo studio';
+    expect(resolveChatImageSourceUrl({query,history,imageAttachments:[{dataUrl:'https://example.com/old-portrait.jpg'}],imageAttachmentsAreHistorical:true})).toBeUndefined();
+    expect(missingChatImageReferenceMessage(query)).toBeUndefined();
   });
   it('does not convert a delivery follow-up into an edit of a previously generated unrelated image', () => {
     expect(resolveChatImageSourceUrl({query:'I am waiting for the poster',history,imageAttachments:[]})).toBeUndefined();
