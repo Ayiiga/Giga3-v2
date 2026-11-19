@@ -3,6 +3,8 @@
  * Mirrors the researchCapabilities pattern: detect intent → system prompt addon.
  */
 
+import { isImageCommentaryOrInstruction } from "./imageRequestIntent";
+
 export const MEDIA_CAPABILITY_IDS = [
   "none",
   "tools_overview",
@@ -75,7 +77,7 @@ export function detectMediaToolsQuestion(query: string): boolean {
 }
 
 export function detectImageEditIntent(query: string): boolean {
-  return IMAGE_EDIT_INTENT_RE.test(query.trim());
+  return !isImageCommentaryOrInstruction(query) && IMAGE_EDIT_INTENT_RE.test(query.trim());
 }
 
 export function detectVideoEditIntent(query: string): boolean {
