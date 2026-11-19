@@ -59,6 +59,21 @@ export const GHANA_LANDING_PAGES = {
         ],
       },
       {
+        heading: "Try a JHS 1 English lesson prompt",
+        paragraphs: [
+          "Copy this prompt into AI Chat and adapt the class size, timing and resources to your school.",
+          "Act as a JHS 1 English teacher in Ghana. Draft a 40-minute lesson on subject–verb agreement for 40 learners. Use chalkboard examples and sentence cards. Include a measurable objective, a starter, guided practice, a paired task and a three-question exit ticket with answers. Use familiar Ghanaian names. Ask me for the exact curriculum indicator instead of inventing one.",
+          "A sample objective is: By the end of the lesson, learners will correctly choose the verb in four out of five present-tense sentences and explain one choice. Model Ama walks to school and The pupils walk to school, then ask learners to explain the change in the verb.",
+        ],
+        bullets: [
+          "Starter, 5 minutes: compare Ama walks and The pupils walk.",
+          "Teacher modelling, 10 minutes: identify the subject before choosing the verb.",
+          "Paired practice, 15 minutes: complete five sentence cards and explain each choice.",
+          "Exit ticket and feedback, 10 minutes: Kojo ___ a book (reads); The girls ___ football (play); My friend ___ early (arrives).",
+          "Check the draft against your NaCCA curriculum indicator and class scheme before teaching.",
+        ],
+      },
+      {
         heading: "GigaLearn for structured study support",
         paragraphs: [
           "GigaLearn connects tutoring personas, practice questions, and progress tracking to the same Giga3 account. It is designed for BECE and WASSCE revision support — not as an official WAEC or GES product.",
@@ -84,6 +99,8 @@ export const GHANA_LANDING_PAGES = {
     breadcrumbLabel: "AI for teachers in Ghana",
     relatedReading: [
       { href: "/gigalearn", label: "GigaLearn — AI tutor" },
+      { href: "/gigalearn/exam/promotion/", label: "Teacher Promotion practice" },
+      { href: "/study-guides/teacher-lesson-plan-objectives-ghana/", label: "Worked lesson objective" },
       { href: "/ai-for-bece-wassce-ghana", label: "AI for BECE & WASSCE preparation" },
       { href: "/ai-for-schools-ghana", label: "AI for schools in Ghana" },
     ],

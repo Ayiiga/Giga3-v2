@@ -171,15 +171,15 @@ export default function PressPage() {
             </section>
 
             <section className="mt-10 space-y-4">
-              <h2 className="text-lg font-semibold text-foreground">Press releases</h2>
-              <p className="text-base leading-relaxed text-muted">
-                Formal press releases will be listed here as they are published. For now, see product
-                updates on the{" "}
-                <Link href="/blog/" className="text-accent underline">
-                  Giga3 AI Blog
-                </Link>
-                .
-              </p>
+              <h2 className="text-lg font-semibold text-foreground">Review GigaLearn</h2>
+              <p className="text-base leading-relaxed text-muted">Journalists, teachers and technology communities can try the public examples, follow the practice journey and share their findings. Include the date, device, subject and steps tested so readers can assess the experience.</p>
+              <ul className="list-disc space-y-2 pl-5 text-sm text-muted">
+                <li><Link href="/gigalearn/exam/bece/" className="text-accent underline">Try the BECE example and subject picker</Link></li>
+                <li><Link href="/gigalearn/exam/wassce/" className="text-accent underline">Explore WASSCE core subject practice</Link></li>
+                <li><Link href="/gigalearn/exam/promotion/" className="text-accent underline">Explore Teacher Promotion rank practice</Link></li>
+                <li><Link href="/ai-for-teachers-ghana/" className="text-accent underline">Download a classroom lesson example</Link></li>
+              </ul>
+              <p className="text-sm text-muted">For a demonstration or questions about a feature, use the media contact above. Current prices and access conditions are on the <Link href="/pricing/" className="text-accent underline">pricing page</Link>.</p>
             </section>
 
             <section className="mt-10 space-y-4">
@@ -202,7 +202,10 @@ export default function PressPage() {
                     {siteConfig.links.github}
                   </a>
                 </li>
+                <li>Company directory profile: <a href={siteConfig.links.crunchbase} className="text-accent underline" target="_blank" rel="noopener noreferrer">Giga3 AI on Crunchbase</a></li>
+                <li>Product directory profile: <a href={siteConfig.links.saashub} className="text-accent underline" target="_blank" rel="noopener noreferrer">Giga3 AI on SaaSHub</a></li>
               </ul>
+              <p className="text-xs text-muted">Directory profiles include submitted product information. For current access conditions and prices, refer to the official product pages.</p>
             </section>
           </article>
         </Container>

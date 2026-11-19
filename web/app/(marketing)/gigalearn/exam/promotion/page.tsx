@@ -1,3 +1,4 @@
+import { ExamPracticeOverview } from "@/components/seo/ExamPracticeOverview";
 import { ClientAppHydrationNotice } from "@/components/seo/ClientAppHydrationNotice";
 import { ProductSeoHeader } from "@/components/seo/ProductSeoHeader";
 import { JsonLd } from "@/components/seo/JsonLd";
@@ -27,14 +28,6 @@ export default function TeacherPromotionRankSelectPage() {
   return (
     <>
       <JsonLd
-        webPage={{
-          path: "/gigalearn/exam/promotion",
-          name: "Teacher Promotion Rank Practice",
-          description:
-            "Five-rank free practice selector for Ghana Teacher Promotion preparation on GigaLearn.",
-        }}
-      />
-      <JsonLd
         breadcrumbs={[
           { name: "Giga3 AI", path: "/" },
           { name: "GigaLearn", path: "/gigalearn" },
@@ -53,6 +46,7 @@ export default function TeacherPromotionRankSelectPage() {
           <PromotionRankSelector />
         </Suspense>
       </div>
+      <ExamPracticeOverview exam="promotion" />
     </>
   );
 }

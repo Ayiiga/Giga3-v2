@@ -27,6 +27,6 @@ export function buildOrganizationSchemaNode() {
     address: { "@type": "PostalAddress", addressCountry: "GH" },
     foundingLocation: { "@type": "Place", name: "Ghana" },
     areaServed: ["GH", "Africa", "Worldwide"],
-    sameAs: [siteConfig.links.github],
+    sameAs: [siteConfig.links.github, siteConfig.links.crunchbase, siteConfig.links.saashub],
   };
 }

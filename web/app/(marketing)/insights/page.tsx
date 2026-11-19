@@ -82,6 +82,8 @@ function InsightsInner() {
     adminCreds ?? "skip"
   );
 
+  const discovery = useQuery(api.platformStats.getDiscoveryReport, adminCreds ?? "skip");
+
   const activityChart = useMemo(() => {
     if (!stats?.dailyTrend?.length) return null;
     return {
@@ -209,6 +211,13 @@ function InsightsInner() {
         <StatCard label="Marketplace revenue today" value={`GHS ${stats.marketplaceRevenueToday ?? 0}`} />
         <StatCard label="Active subscriptions" value={stats.activeSubscriptions ?? 0} />
         <StatCard label="Open feedback" value={stats.openFeedbackCount ?? 0} />
+      </section>
+
+      <section aria-labelledby="discovery-report" className="space-y-3">
+        <h2 id="discovery-report" className="text-lg font-semibold">Search and AI discovery</h2>
+        <p className="text-sm text-muted">Last seven UTC days, including today, compared with the preceding seven. Values show current / previous. Visits and practice starts count browsers once per day. New accounts count once after sign-in within 30 days of the first recorded visit. Referrers and campaign labels are browser-reported; direct includes sources the browser does not disclose.</p>
+        {discovery === undefined ? <p className="text-sm text-muted">Loading discovery data…</p> : <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr><th className="p-3">Source</th><th className="p-3">Browser visits</th><th className="p-3">Practice starts</th><th className="p-3">New accounts</th></tr></thead><tbody>{discovery.map((row) => <tr key={row.source} className="border-t border-border"><th scope="row" className="p-3 font-medium capitalize">{row.source}</th>{row.totals.map((total) => <td key={total.stage} className="p-3 tabular-nums">{total.current} / {total.previous}</td>)}</tr>)}</tbody></table></div>}
+        <p className="text-xs text-muted">Collection begins with this release. Zero counts can reflect missing attribution or blocked analytics. Search impressions, queries and AI citation counts require Search Console and Bing Webmaster Tools data.</p>
       </section>
 
       {stats.homepageGrowth ? (
