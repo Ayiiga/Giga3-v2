@@ -12,9 +12,18 @@ export const metadata = publicMetadata({
   index: true,
 });
 
+const awardsFaq = [
+  { question: "What are the GigaSocial Awards?", answer: "GigaSocial Awards is a creator-recognition programme operated by Giga3 AI, with a focus on original work and creators in Ghana and Africa." },
+  { question: "Are nominations and voting free?", answer: "Nominations and voting are free. Optional promotional packages do not buy votes or guarantee a nomination, shortlist place or prize." },
+  { question: "When can I participate?", answer: "Check the live season panel on this page for published status, participation rules and announcements. The planned December 2026 edition is pending confirmation; do not assume nominations or voting are open." },
+  { question: "Are prizes and winners confirmed?", answer: "Only published season announcements confirm dates, eligibility, sponsor-funded prizes and results. A promotional package is not a promise of an award or a prize." },
+];
+
 export default function GigaSocialAwardsPage() {
   return (
     <>
+      <JsonLd webPage={{ path: "/gigasocial/awards/", name: "GigaSocial Awards", description: "Creator recognition, free nominations and voting, participation guidance and published season announcements from Giga3 AI." }} />
+      <JsonLd faq={awardsFaq} />
       <JsonLd
         breadcrumbs={[
           { name: "Giga3 AI", path: "/" },
@@ -57,6 +66,26 @@ export default function GigaSocialAwardsPage() {
                 Read the Ghana creator earnings and December Awards guide
               </a>
             </p>
+          </section>
+          <section aria-labelledby="awards-guide" className="mb-6 rounded-2xl border border-border bg-white p-5 text-slate-900 sm:p-7">
+            <h2 id="awards-guide" className="text-2xl font-bold">Creator recognition: how to get involved</h2>
+            <p className="mt-3 leading-7">GigaSocial gives creators a place to share original work and build an audience. The Awards programme recognises creative contributions through published seasons, with participation governed by each season’s rules.</p>
+            <ol className="mt-4 list-decimal space-y-3 pl-6 leading-7">
+              <li>Choose original posts that demonstrate your work and confirm that you have permission to share any included media.</li>
+              <li>Read the published season rules, categories and eligibility before applying. Watch the live panel below for announcements.</li>
+              <li>When nominations open, use the official application flow. Voting availability follows the published season status.</li>
+              <li>Follow the official updates for shortlists, results and any confirmed sponsor-funded prizes.</li>
+            </ol>
+            <nav aria-label="Creator resources" className="mt-5 flex flex-wrap gap-4 font-semibold text-violet-800 underline">
+              <a href="/gigasocial/">Explore GigaSocial</a>
+              <a href="/creator-studio/">Prepare your content</a>
+              <a href="/gigalearn/academy/">Learn practical creative and digital skills</a>
+              <a href="/contact/">Contact the Awards team</a>
+            </nav>
+          </section>
+          <section aria-labelledby="awards-faq" className="mb-6 rounded-2xl border border-border p-5 sm:p-7">
+            <h2 id="awards-faq" className="text-2xl font-bold">GigaSocial Awards questions</h2>
+            {awardsFaq.map(item => <div key={item.question} className="mt-5"><h3 className="font-semibold">{item.question}</h3><p className="mt-2 leading-7">{item.answer}</p></div>)}
           </section>
           <AwardsHubClient />
         </Container>

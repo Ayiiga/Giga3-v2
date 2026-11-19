@@ -1,3 +1,4 @@
+import { AcademyCourseDirectory } from "@/components/seo/AcademyCourseDirectory";
 import { ProductSeoHeader } from "@/components/seo/ProductSeoHeader";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { publicMetadata } from "@/lib/seo/publicMetadata";
@@ -21,7 +22,7 @@ export const metadata = publicMetadata({
   path: "/gigalearn/academy",
   title: "GigaLearn Academy — Learn by Doing | Giga3 AI",
   description:
-    "Learn by Doing. Build with AI. Create the Future. Practice Centre, Learning Studios, and existing GigaLearn Academy pathways — not a separate curriculum rebuild.",
+    "Practical AI, Web & PWA, mobile app, robotics, digital skills and teaching courses. Explore ten-lesson outlines and build useful projects with GigaLearn Academy.",
 });
 
 export default function GigaLearnAcademyPage() {
@@ -32,7 +33,7 @@ export default function GigaLearnAcademyPage() {
           path: "/gigalearn/academy",
           name: "GigaLearn Academy",
           description:
-            "Practice-oriented GigaLearn Academy hub with Learning Studios, Practice Centre, and existing course pathways.",
+            "Practical courses in AI, web and PWA development, mobile apps, robotics, digital skills and teaching.",
         }}
       />
       <JsonLd
@@ -45,7 +46,7 @@ export default function GigaLearnAcademyPage() {
       <ProductSeoHeader
         compact
         title="GigaLearn Academy"
-        description="Learn by Doing. Build with AI. Create the Future. Practice, studios, and existing Academy pathways on GigaLearn."
+        description="Learn practical skills in AI, web and PWA development, mobile apps, robotics, digital technology and teaching."
         showProductNav={false}
       />
       <div className="px-3 pt-3 sm:px-6">
@@ -56,6 +57,7 @@ export default function GigaLearnAcademyPage() {
           Open Academy Workspace
         </a>
       </div>
+      <AcademyCourseDirectory />
       <div className="marketing-stable gigalearn-stable px-3 py-3 sm:px-6 sm:py-6">
         <Suspense fallback={loading}>
           <AcademyHomeRoot />
