@@ -1,6 +1,6 @@
 "use client";
 
-import { recordExamPracticeCompletion } from "@/lib/analytics/recordExamPractice";
+import { recordDiscoveryPracticeStart, recordExamPracticeCompletion } from "@/lib/analytics/recordExamPractice";
 import { AcademyChrome } from "@/components/gigalearn/academy/AcademyChrome";
 import { ExamPracticeShareButton } from "@/components/gigalearn/exam/ExamPracticeShareButton";
 import { PremiumPracticeNudge } from "@/components/gigalearn/exam/PremiumPracticeNudge";
@@ -302,6 +302,7 @@ function TechHubInner() {
         timeLimitMinutes: mode === "timed" ? 30 : undefined,
         questionType: questionType || undefined,
       });
+      if (isExamCourse && started.questions.length > 0) recordDiscoveryPracticeStart();
       setSessionId(started.sessionId);
       setLocalQuestions(
         started.questions.map(

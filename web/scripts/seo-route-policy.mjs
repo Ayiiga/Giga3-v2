@@ -58,7 +58,7 @@ export function canonicalLoc(value) {
 export function robotsTxt() {
   // Keep /chat/ private, but allow /chat/login/ so Google can see the page's
   // noindex meta (robots.txt blocks prevent Google from observing noindex).
-  const lines = ["User-agent: *", "Allow: /"];
+  const lines = ["User-agent: OAI-SearchBot", "User-agent: *", "Allow: /"];
   for (const prefix of PRIVATE_PREFIXES) {
     lines.push(`Disallow: ${prefix}`);
     if (prefix === "/chat/") {

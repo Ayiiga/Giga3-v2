@@ -4,7 +4,7 @@ import { ExamPracticeShareButton } from "@/components/gigalearn/exam/ExamPractic
 import { PremiumPracticeNudge } from "@/components/gigalearn/exam/PremiumPracticeNudge";
 import { PremiumUpgradeModal } from "@/components/gigalearn/exam/PremiumUpgradeModal";
 import { Button } from "@/components/ui/Button";
-import { recordExamPracticeCompletion } from "@/lib/analytics/recordExamPractice";
+import { recordDiscoveryPracticeStart, recordExamPracticeCompletion } from "@/lib/analytics/recordExamPractice";
 import { getSessionToken } from "@/lib/auth";
 import { recordLocalExamPracticeResult } from "@/lib/gigalearn/examPractice/localProgress";
 import { isPremiumUpgradeModalSuppressed } from "@/lib/gigalearn/examPractice/premiumUpgradeDismiss";
@@ -91,6 +91,12 @@ export function ExamQuizSession({
     completedEventRef.current = false;
     setUpgradeOpen(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fingerprint captures shuffle identity
+  }, [questionFingerprint]);
+
+  useEffect(() => {
+    if (!initialFinished && questions.length > 0) recordDiscoveryPracticeStart();
+    // The backend deduplicates browsers per day, including restored sessions.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [questionFingerprint]);
 
   const current = questions[index];

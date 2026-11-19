@@ -1,6 +1,7 @@
 "use client";
 
 import { getOrCreateClientId, isStandalonePwa } from "@/lib/analytics/clientId";
+import { browserDiscoverySource } from "@/lib/analytics/discovery";
 import { getSessionToken } from "@/lib/auth";
 import { api } from "convex/_generated/api";
 import { useMutation } from "convex/react";
@@ -25,6 +26,7 @@ export function PlatformAnalytics() {
         clientId,
         isPwa,
         isHomepage: pathname === "/",
+        discoverySource: browserDiscoverySource(),
         sessionToken: getSessionToken() ?? undefined,
         userAgent: typeof navigator !== "undefined" ? navigator.userAgent : undefined,
       }).catch(() => null);

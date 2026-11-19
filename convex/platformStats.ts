@@ -1,3 +1,4 @@
+import { DISCOVERY_SOURCES, DISCOVERY_STAGES, type DiscoverySource, type DiscoveryStage } from "../web/lib/analytics/discovery";
 import { internalMutation, mutation, query, type MutationCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { requireSession } from "./auth";
@@ -72,6 +73,62 @@ async function readCounter(ctx: { db: any }, key: string): Promise<number> {
     .first();
   return row?.value ?? 0;
 }
+
+/** Discovery counters reuse platformCounters and keep browser-reported source labels only. */
+async function recordDiscoveryStage(ctx: MutationCtx, clientId: string, stage: DiscoveryStage, source: DiscoverySource, identity = clientId) {
+  const day = todayKey();
+  const marker = `discovery.once:${stage}:${day}:${identity}`;
+  if (await readCounter(ctx, marker)) return;
+  await incrementCounter(ctx, marker);
+  await incrementCounter(ctx, `discovery.daily:${day}:${source}:${stage}`);
+}
+
+async function discoveryAttribution(ctx: MutationCtx, clientId: string, source?: string) {
+  const key = `discovery.source:${clientId}`;
+  let row = await ctx.db.query("platformCounters").withIndex("by_key", (q) => q.eq("key", key)).first();
+  const now = Date.now();
+  if (row && now - row.updatedAt <= 30 * MS_PER_DAY) {
+    const stored = DISCOVERY_SOURCES[row.value - 1];
+    return stored ? { source: stored, firstVisit: row.updatedAt } : null;
+  }
+  const index = DISCOVERY_SOURCES.indexOf(source as DiscoverySource);
+  if (index < 0) return null;
+  const value = index + 1;
+  if (row) await ctx.db.patch(row._id, { value, updatedAt: now });
+  else await ctx.db.insert("platformCounters", { key, value, updatedAt: now });
+  return { source: DISCOVERY_SOURCES[index], firstVisit: now };
+}
+
+/** Count an opened practice session after questions have loaded successfully. */
+export const recordDiscoveryPracticeStart = mutation({
+  args: { clientId: v.string(), source: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    if (!/^[a-z0-9_-]{8,80}$/i.test(args.clientId)) return;
+    const attribution = await discoveryAttribution(ctx, args.clientId, args.source);
+    if (!attribution) return;
+    await recordDiscoveryStage(ctx, args.clientId, "practice_start", attribution.source);
+  },
+});
+
+/** Admin-only comparison of the last seven UTC days with the preceding seven. */
+export const getDiscoveryReport = query({
+  args: adminCredentialArgs,
+  handler: async (ctx, args) => {
+    try {
+      await ensureAdminAccess(args);
+    } catch {
+      return null;
+    }
+    const days = dateKeysBack(14);
+    return await Promise.all(DISCOVERY_SOURCES.map(async (source) => {
+      const totals = await Promise.all(DISCOVERY_STAGES.map(async (stage) => {
+        const values = await Promise.all(days.map((day) => readCounter(ctx, `discovery.daily:${day}:${source}:${stage}`)));
+        return { stage, current: values.slice(0, 7).reduce((a, b) => a + b, 0), previous: values.slice(7).reduce((a, b) => a + b, 0) };
+      }));
+      return { source, totals };
+    }));
+  },
+});
 
 const GROWTH_WINDOW_MS = 30 * MS_PER_DAY;
 
@@ -148,6 +205,7 @@ export const heartbeat = mutation({
     clientId: v.string(),
     isPwa: v.boolean(),
     isHomepage: v.optional(v.boolean()),
+    discoverySource: v.optional(v.string()),
     sessionToken: v.optional(v.string()),
     userAgent: v.optional(v.string()),
     country: v.optional(v.string()),
@@ -198,6 +256,18 @@ export const heartbeat = mutation({
     }
 
     if (/^[a-z0-9_-]{8,80}$/i.test(clientId)) {
+      const attribution = await discoveryAttribution(ctx, clientId, args.discoverySource);
+      if (attribution) {
+        await recordDiscoveryStage(ctx, clientId, "visit", attribution.source);
+        if (userId) {
+          const account = await ctx.db.query("users").withIndex("by_email", (q) => q.eq("email", userId!)).first();
+          const signupMarker = account ? `discovery.signup:${account._id}` : "";
+          if (account && account._creationTime >= attribution.firstVisit && !(await readCounter(ctx, signupMarker))) {
+            await recordDiscoveryStage(ctx, clientId, "signup", attribution.source, String(account._id));
+            await incrementCounter(ctx, signupMarker);
+          }
+        }
+      }
       if (args.isHomepage) {
         await recordGrowthOnce(ctx, homepageKey(clientId), "homepage", now);
       }
