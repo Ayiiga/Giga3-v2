@@ -35,12 +35,11 @@ import {
   buildPromptCacheKey,
   enhanceImageGenerationPrompt,
   imageAssetOrientation,
-  isDesignedImageRequest,
   shouldEnableWebSearch,
   shouldUseResponseCache,
 } from "./providerRouter";
 import { generateImageWithFallback } from "./mediaEngine";
-import { isImageDeliveryFollowup, isImageEditOrTransformQuery, resolveChatImagePrompt, resolveChatImageSourceUrl } from "./chatImageSource";
+import { isChatImageUploadForMessage, missingChatImageReferenceMessage, resolveChatImagePrompt, resolveChatImageSourceUrl } from "./chatImageSource";
 import { CREDIT_COSTS } from "./creditsConfig";
 import type { ActionCtx } from "./_generated/server";
 import type { FalImageSize } from "./falClient";
@@ -139,6 +138,8 @@ async function runHybridAiEngine(
   });
 
   if (routePlan.requestKind === "image_generation") {
+    const missingReference = missingChatImageReferenceMessage(args.query, args.sourceImageUrl);
+    if (missingReference) throw new Error(missingReference);
     const started = Date.now();
     const prompt = resolveChatImagePrompt(args.query, args.chatMessages.map(message => ({
       role: message.role, content: typeof message.content === "string" ? message.content : "",
@@ -500,22 +501,26 @@ export const regenerateMessage = action({
       sessionToken: args.sessionToken,
     });
     const regenerationQuery = latestUserPrompt(history.slice(0, targetIdx), "");
+    const regenerationUser = [...history.slice(0, targetIdx)].reverse().find(message => message.role === "user");
+    const uploadBelongsToTarget = isChatImageUploadForMessage({
+      storedAt: conv.lastVisionAttachmentsAt,
+      messageCreatedAt: regenerationUser?.createdAt,
+    });
     let sourceImageUrl: string | undefined;
     if (conv.lastVisionAttachmentsJson && Date.now() - (conv.lastVisionAttachmentsAt ?? 0) <= 45 * 60 * 1000) {
       try {
         sourceImageUrl = resolveChatImageSourceUrl({
+          query: regenerationQuery,
+          imageAttachmentsAreHistorical: !uploadBelongsToTarget,
           imageAttachments: JSON.parse(conv.lastVisionAttachmentsJson),
-          history: [],
+          history: history.slice(0, targetIdx),
         });
       } catch { /* Continue with available conversation images. */ }
     }
     sourceImageUrl ??= resolveChatImageSourceUrl({
+      query: regenerationQuery,
       imageAttachments: [], history: history.slice(0, targetIdx),
     });
-    const usesImageSource = isDesignedImageRequest(regenerationQuery) ||
-      isImageDeliveryFollowup(regenerationQuery) ||
-      isImageEditOrTransformQuery(regenerationQuery, Boolean(sourceImageUrl));
-    if (!usesImageSource) sourceImageUrl = undefined;
     const regenerationKind = buildChatRoutePlan({
       tier: "free", mode, query: regenerationQuery,
       hasEditableImageSource: Boolean(sourceImageUrl),
@@ -635,7 +640,7 @@ export const regenerateMessage = action({
       chatProvider: engineResult.providerId,
       chatProviderLabel: getChatProviderLabel(engineResult.providerId),
       usedFallback: engineResult.usedFallback,
-      quality: validated.report,
+      quality: validated?.report ?? null,
     };
   },
 });

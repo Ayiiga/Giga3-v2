@@ -64,6 +64,10 @@ jobs:
           NEXT_TELEMETRY_DISABLED: "1"
         run: npm run build
 
+      - name: SEO audit of proposed static export
+        working-directory: web
+        run: npm run seo:audit
+
       - name: Summarize
         if: always()
         run: |

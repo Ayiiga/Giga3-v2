@@ -40,7 +40,6 @@ import {
   buildPromptCacheKey,
   enhanceImageGenerationPrompt,
   imageAssetOrientation,
-  isDesignedImageRequest,
   shouldUseResponseCache,
   type RequestKind,
 } from "./providerRouter";
@@ -50,7 +49,7 @@ import type { FalImageSize } from "./falClient";
 import type { NewsEvidenceContext } from "./newsEvidence/types";
 import { buildNewsEvidencePackage } from "./newsEvidence/pipeline";
 import { isLiveNewsEnabled } from "./featureFlags";
-import { isImageDeliveryFollowup, isImageEditOrTransformQuery, resolveChatImagePrompt, resolveChatImageSourceUrl } from "./chatImageSource";
+import { isChatImageUploadForMessage, missingChatImageReferenceMessage, resolveChatImagePrompt, resolveChatImageSourceUrl } from "./chatImageSource";
 import { isLiveWebEnabled } from "./liveWeb/liveWebConfig";
 import {
   buildLiveWebMetadata,
@@ -225,6 +224,7 @@ async function runHybridAiEngine(
     hasAttachments: boolean;
     hasImageAttachment?: boolean;
     imageAttachments?: Array<{ dataUrl?: string }>;
+    imageAttachmentsAreHistorical?: boolean;
     conversationId: string;
     quotaReservationId: string;
     subscriptionPlan: string;
@@ -239,17 +239,15 @@ async function runHybridAiEngine(
     freeOpenAiQuotaReservationId?: string;
   }
 > {
-  const candidateImageUrl = resolveChatImageSourceUrl({
+  const sourceImageUrl = resolveChatImageSourceUrl({
+    query: args.query,
     imageAttachments: args.imageAttachments ?? [],
+    imageAttachmentsAreHistorical: args.imageAttachmentsAreHistorical,
     history: args.chatMessages.map((m) => ({
       role: m.role,
       content: typeof m.content === "string" ? m.content : "",
     })),
   });
-  const sourceImageUrl = (isImageEditOrTransformQuery(args.query, Boolean(candidateImageUrl)) ||
-    isDesignedImageRequest(args.query) || isImageDeliveryFollowup(args.query))
-    ? candidateImageUrl
-    : undefined;
   const hasEditableImageSource = Boolean(sourceImageUrl);
 
   const routePlan = buildChatRoutePlan({
@@ -295,6 +293,11 @@ async function runHybridAiEngine(
   let freeOpenAiQuotaReserved = false;
 
   if (routePlan.requestKind === "image_generation") {
+    const missingReference = missingChatImageReferenceMessage(args.query, sourceImageUrl);
+    if (missingReference) return {
+      content: missingReference, providerId: "local_fallback", usedFallback: true,
+      latencyMs: 0, cached: false, requestKind: "image_generation",
+    };
     const started = Date.now();
     const prompt = resolveChatImagePrompt(args.query, args.chatMessages.map(message => ({
       role: message.role,
@@ -523,6 +526,8 @@ export const processJob = internalAction({
       ? (JSON.parse(job.attachmentsJson) as ChatCompletionAttachment[])
       : [];
 
+    let hasCurrentImageAttachment = attachments.some(attachment => attachment.kind === "image" && Boolean(attachment.dataUrl));
+
     const isCancelled = async () => {
       const fresh = await ctx.runQuery(internal.chatReplyJobs.getJob, {
         jobId: args.jobId,
@@ -565,6 +570,15 @@ export const processJob = internalAction({
             );
             if (images.length > 0) {
               attachments = [...attachments, ...images.slice(0, 2)];
+              // Replacement jobs can omit attachmentsJson. Match the original
+              // user turn, not the replacement job's later creation time.
+              const targetUserMessage = [...history].reverse().find(message =>
+                message.role === "user" && message.content === job.content &&
+                message.createdAt <= job.createdAt
+              );
+              hasCurrentImageAttachment = isChatImageUploadForMessage({
+                storedAt, messageCreatedAt: targetUserMessage?.createdAt,
+              });
             }
           } catch {
             /* ignore corrupt JSON */
@@ -667,8 +681,10 @@ export const processJob = internalAction({
 
       const hasImageAttachment = attachments.some((a) => a.kind === "image");
       const imageGenerationRequest = classifyRequestKind(job.content, mode, {
-        hasImageAttachment,
+        hasImageAttachment: hasCurrentImageAttachment,
         hasEditableImageSource: Boolean(resolveChatImageSourceUrl({
+          query: job.content,
+          imageAttachmentsAreHistorical: !hasCurrentImageAttachment,
           imageAttachments: attachments.filter(attachment => attachment.kind === "image"),
           history,
         })),
@@ -960,7 +976,8 @@ export const processJob = internalAction({
               chatMessages,
               routing,
               hasAttachments: attachments.length > 0,
-              hasImageAttachment: attachments.some((a) => a.kind === "image"),
+              hasImageAttachment: hasCurrentImageAttachment,
+              imageAttachmentsAreHistorical: !hasCurrentImageAttachment,
               imageAttachments: attachments
                 .filter((a) => a.kind === "image")
                 .map((a) => ({ dataUrl: a.dataUrl })),
