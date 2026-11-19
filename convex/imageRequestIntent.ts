@@ -22,7 +22,7 @@ export function isImageCommentaryOrInstruction(query: string): boolean {
   // Read the requested output before its purpose/content clause. In compounds,
   // “text logo” requests a logo; “flyer copy” requests copy. Modifiers such as
   // “AI”, “detailed” or “professional” do not need a fixed whitelist.
-  const head = object.split(/\b(?:for|of|on|about|to|with|that|which|titled|saying|showing|depicting|featuring|containing|explaining|teaching)\b/i, 1)[0];
+  const head = object.split(/\b(?:for|of|on|about|to|with|without|excluding|except|but|not|that|which|titled|saying|showing|depicting|featuring|containing|explaining|teaching)\b/i, 1)[0];
   const nouns = [...head.matchAll(OUTPUT_NOUN_RE)];
   const output = nouns.at(-1);
   if (!output) return false;

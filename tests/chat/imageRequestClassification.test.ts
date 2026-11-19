@@ -10,6 +10,7 @@ const commentary = [
   'Draft a highly detailed AI prompt for an image of a school',
   'Create an AI prompt to render a text logo',
   'Generate flyer copy for a school open day',
+  'Create a prompt without an image',
   'Give a critique of this logo',
   'Please provide a review of my banner',
   'Can you analyse this image?',
@@ -38,6 +39,12 @@ describe('image request classification and source boundaries', () => {
   it.each([
     'Create a poster for our school open day',
     'Create a text logo for my bakery',
+    'Create an original poster for our school',
+    'Create a poster without text',
+    'Generate an image without captions',
+    'Create a poster, not text',
+    'Create a poster excluding captions',
+    'Create a source image for my robotics presentation',
     'Create a copy of this image with a blue background',
     'Create a clean copy of a bright image with a blue background',
     'Give me a text-based banner for my bakery',
@@ -105,6 +112,12 @@ describe('image request classification and source boundaries', () => {
     expect(missing).toBeUndefined();
     expect(missingChatImageReferenceMessage(generated,missing)).toContain('No image credits were charged');
     expect(missingChatImageReferenceMessage('Create a new school poster')).toBeUndefined();
+  });
+  it('does not mistake original/source design adjectives for references to an old upload', () => {
+    for (const query of ['Create an original poster for our school', 'Create a source image for my robotics presentation']) {
+      expect(resolveChatImageSourceUrl({query,history,imageAttachments:[{dataUrl:'https://example.com/old-upload.jpg'}],imageAttachmentsAreHistorical:true})).toBeUndefined();
+      expect(missingChatImageReferenceMessage(query)).toBeUndefined();
+    }
   });
   it('does not convert a delivery follow-up into an edit of a previously generated unrelated image', () => {
     expect(resolveChatImageSourceUrl({query:'I am waiting for the poster',history,imageAttachments:[]})).toBeUndefined();

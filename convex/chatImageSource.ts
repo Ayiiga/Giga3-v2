@@ -34,7 +34,7 @@ export function findPriorAssistantImageUrl(
 export function chatImageReferenceKind(query: string): "uploaded" | "generated" | "latest" | null {
   if (isImageCommentaryOrInstruction(query)) return null;
   if (!/\b(?:create|make|design|generate|render|use|using|turn|convert|edit|change|remove|retouch|replace|add|enhance|brighten|darken|crop|resize|rotate|upscale)\b/i.test(query)) return null;
-  if (/\b(?:uploaded|attached|original|source)\s+(?:image|picture|photo|photograph|portrait|design|poster|logo)\b|\b(?:my|our)\s+(?:photo|photograph|picture|portrait)\b|\b(?:image|picture|photo|photograph)\s+(?:(?:that|which)\s+)?(?:I|we)\s+(?:uploaded|attached|provided)\b/i.test(query)) return "uploaded";
+  if (/\b(?:uploaded|attached)\s+(?:image|picture|photo|photograph|portrait|design|poster|logo)\b|\b(?:the|this|that|my|our|previous|last|earlier)\s+(?:original|source)\s+(?:image|picture|photo|photograph|portrait|design|poster|logo)\b|\b(?:my|our)\s+(?:photo|photograph|picture|portrait)\b|\b(?:image|picture|photo|photograph)\s+(?:(?:that|which)\s+)?(?:I|we)\s+(?:uploaded|attached|provided)\b/i.test(query)) return "uploaded";
   if (/\b(?:the|this|that|same|previous|last|earlier|above)\s+(?:(?:previous|last|earlier|newly|AI)\s+)?(?:generated|rendered|created)\s+(?:image|picture|photo|design|poster|logo)\b/i.test(query)) return "generated";
   if (/\b(?:this|that|same|previous|last|earlier|above)\s+(?:image|picture|photo|design|poster|logo)\b/i.test(query)) return "latest";
   return null;
