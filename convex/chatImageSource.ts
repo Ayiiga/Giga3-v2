@@ -3,6 +3,7 @@
  */
 
 import { detectImageEditIntent } from "./mediaCapabilities";
+import { isImageCommentaryOrInstruction } from "./imageRequestIntent";
 
 const ASSISTANT_IMAGE_URL_RE =
   /^Here is your (?:generated|edited) image:\s*(https?:\/\/[^\s)]+|data:image\/[a-zA-Z0-9.+-]+;base64,[A-Za-z0-9+/=]+)\s*$/i;
@@ -35,27 +36,43 @@ export function isImageEditOrTransformQuery(
   hasEditableImageSource: boolean
 ): boolean {
   const q = query.trim();
-  if (!q) return false;
+  if (!q || isImageCommentaryOrInstruction(q)) return false;
   if (detectImageEditIntent(q)) return true;
   if (hasEditableImageSource && ITERATIVE_IMAGE_EDIT_RE.test(q)) return true;
+  if (hasEditableImageSource &&
+      /\b(?:this|that|same|previous|last|earlier|above)\s+(?:(?:generated|uploaded)\s+)?(?:image|picture|photo|design|poster)\b/i.test(q) &&
+      /\b(?:create|make|design|generate|render|use|using|turn|convert|edit|change|remove|retouch)\b/i.test(q)) return true;
   return false;
 }
 
 export function resolveChatImageSourceUrl(args: {
+  query: string;
   imageAttachments: Array<{ dataUrl?: string }>;
+  imageAttachmentsAreHistorical?: boolean;
   history: Array<{ role: string; content: string }>;
 }): string | undefined {
-  for (const attachment of args.imageAttachments) {
+  const historicalEdit = isImageEditOrTransformQuery(args.query, true);
+  if (args.imageAttachmentsAreHistorical && historicalEdit) {
+    const assistantImage = findPriorAssistantImageUrl(args.history);
+    if (assistantImage) return assistantImage;
+  }
+  const mayUseUpload = !args.imageAttachmentsAreHistorical || historicalEdit;
+  for (const attachment of mayUseUpload ? args.imageAttachments : []) {
     const dataUrl = attachment.dataUrl?.trim();
     if (dataUrl?.startsWith("data:image/") || /^https?:\/\//i.test(dataUrl ?? "")) {
       return dataUrl;
     }
   }
-  return findPriorAssistantImageUrl(args.history) ?? undefined;
+  // A fresh upload belongs to this request; a historical image requires an
+  // explicit edit/reference. A new creative brief must start a new image.
+  return isImageEditOrTransformQuery(args.query, true)
+    ? findPriorAssistantImageUrl(args.history) ?? undefined
+    : undefined;
 }
 
 /** Delivery follow-ups ask for the actual asset, rather than advice about it. */
 export function isImageDeliveryFollowup(query: string): boolean {
+  if (isImageCommentaryOrInstruction(query) && !/^where(?:\s+is|'s)\s+(?:(?:my|the)\s+)?(?:image|poster|picture|flyer|banner)\s*[?!]*$/i.test(query.trim())) return false;
   return /\b(?:waiting for|where is|where's|show me|send me|display|give me the actual|want the actual|want an actual|want a real|still need)\b[\s\S]{0,65}\b(?:poster|flyer|banner|image|picture|design)\b/i.test(query) ||
     /\b(?:poster|flyer|banner|image)\b[\s\S]{0,35}\b(?:not (?:text|code)|instead of (?:text|code))\b/i.test(query);
 }
@@ -64,7 +81,7 @@ export function resolveChatImagePrompt(query: string, history: Array<{ role: str
   if (!isImageDeliveryFollowup(query)) return query;
   const prior = [...history].reverse().find(turn =>
     turn.role === "user" && turn.content.trim() !== query.trim() &&
-    !isImageDeliveryFollowup(turn.content) &&
+    !isImageDeliveryFollowup(turn.content) && !isImageCommentaryOrInstruction(turn.content) &&
     /\b(?:poster|flyer|banner|image|picture|logo)\b/i.test(turn.content)
   );
   if (!prior) return query;

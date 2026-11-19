@@ -17,6 +17,7 @@ import {
 } from "./researchCapabilities";
 import { detectAnswerFromUserContextIntent } from "./newsEvidence/userContextRouting";
 import { isImageDeliveryFollowup, isImageEditOrTransformQuery } from "./chatImageSource";
+import { isImageCommentaryOrInstruction } from "./imageRequestIntent";
 
 /** User-facing AI access tier — drives default LLM provider. */
 export type AiProviderTier = "free" | "premium";
@@ -205,7 +206,7 @@ export function resolveAiProviderTier(profile: UserRoutingProfile): AiProviderTi
 /** An explicit request for a rendered design, including a design using an upload. */
 export function isDesignedImageRequest(query: string): boolean {
   const q = query.trim();
-  if (/\b(?:write|draft|suggest|explain|teach|describe)\b[\s\S]{0,45}\b(?:text|copy|caption|prompt|wording|how to)\b/i.test(q)) return false;
+  if (isImageCommentaryOrInstruction(q)) return false;
   return /\b(?:make|create|generate|design|produce|give|render|draw)\b(?:\s+[\w'-]+){0,10}\s+\b(?:poster|flyer|banner|infographic|invitation|thumbnail|certificate|logo|book cover|image|picture|photo|graphic)s?\b/i.test(q);
 }
 
@@ -224,6 +225,7 @@ export function classifyRequestKind(
   );
   const compact = query.trim();
   if (!compact) return "text_chat";
+  if (isImageCommentaryOrInstruction(compact) && !isImageDeliveryFollowup(compact)) return "text_chat";
 
   // Uploads / prior images: route edit/transform intents to the image pipeline;
   // otherwise keep vision/text analysis (do not force text for non-image files).

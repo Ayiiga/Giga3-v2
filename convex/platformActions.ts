@@ -35,12 +35,11 @@ import {
   buildPromptCacheKey,
   enhanceImageGenerationPrompt,
   imageAssetOrientation,
-  isDesignedImageRequest,
   shouldEnableWebSearch,
   shouldUseResponseCache,
 } from "./providerRouter";
 import { generateImageWithFallback } from "./mediaEngine";
-import { isImageDeliveryFollowup, isImageEditOrTransformQuery, resolveChatImagePrompt, resolveChatImageSourceUrl } from "./chatImageSource";
+import { resolveChatImagePrompt, resolveChatImageSourceUrl } from "./chatImageSource";
 import { CREDIT_COSTS } from "./creditsConfig";
 import type { ActionCtx } from "./_generated/server";
 import type { FalImageSize } from "./falClient";
@@ -500,22 +499,24 @@ export const regenerateMessage = action({
       sessionToken: args.sessionToken,
     });
     const regenerationQuery = latestUserPrompt(history.slice(0, targetIdx), "");
+    const regenerationUser = [...history.slice(0, targetIdx)].reverse().find(message => message.role === "user");
+    const uploadBelongsToTarget = typeof conv.lastVisionAttachmentsAt === "number" &&
+      regenerationUser?.createdAt === conv.lastVisionAttachmentsAt;
     let sourceImageUrl: string | undefined;
     if (conv.lastVisionAttachmentsJson && Date.now() - (conv.lastVisionAttachmentsAt ?? 0) <= 45 * 60 * 1000) {
       try {
         sourceImageUrl = resolveChatImageSourceUrl({
+          query: regenerationQuery,
+          imageAttachmentsAreHistorical: !uploadBelongsToTarget,
           imageAttachments: JSON.parse(conv.lastVisionAttachmentsJson),
-          history: [],
+          history: history.slice(0, targetIdx),
         });
       } catch { /* Continue with available conversation images. */ }
     }
     sourceImageUrl ??= resolveChatImageSourceUrl({
+      query: regenerationQuery,
       imageAttachments: [], history: history.slice(0, targetIdx),
     });
-    const usesImageSource = isDesignedImageRequest(regenerationQuery) ||
-      isImageDeliveryFollowup(regenerationQuery) ||
-      isImageEditOrTransformQuery(regenerationQuery, Boolean(sourceImageUrl));
-    if (!usesImageSource) sourceImageUrl = undefined;
     const regenerationKind = buildChatRoutePlan({
       tier: "free", mode, query: regenerationQuery,
       hasEditableImageSource: Boolean(sourceImageUrl),
