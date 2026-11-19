@@ -9,7 +9,7 @@ import {
 
 export const metadata = publicMetadata({
   path: "/gigalearn/exam/bece",
-  title: "BECE Practice Questions and Explanations in Ghana | GigaLearn",
+  title: "BECE Practice in Ghana | GigaLearn",
   description:
     "Choose a BECE subject, try a free original maths question and explore worked revision guides with GigaLearn, built in Ghana.",
 });

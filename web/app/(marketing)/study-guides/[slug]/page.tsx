@@ -14,7 +14,7 @@ export function generateMetadata({ params }: { params: { slug: string } }) {
   if (!guide) return {};
   return publicMetadata({
     path: `/study-guides/${guide.slug}`,
-    title: `${guide.title} | Giga3 AI Ghana Study Guide`,
+    title: `${guide.title} | GigaLearn Guide`,
     description: `Learn ${guide.title} with a worked explanation, guided exercise and revision tip for Ghanaian learners and teachers.`,
   });
 }
