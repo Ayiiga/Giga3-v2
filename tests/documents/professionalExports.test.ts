@@ -187,5 +187,9 @@ it("applies a document's design to editable Word and PowerPoint presentation exp
   expect(academicXml).toContain('w:fill="EDF1F5"');
   expect(academicXml).toContain('w:ascii="Georgia"');
   expect(academicXml).toContain("An editable project scope.");
+  const academicSlides = await JSZip.loadAsync(await exportDocumentPptx(doc));
+  const academicCover = await academicSlides.file("ppt/slides/slide1.xml")!.async("string");
+  expect(academicCover).toContain('<a:srgbClr val="EDF1F5"/>');
+  expect(academicCover).toContain('<a:latin typeface="Georgia"/>');
   expect((await PDFDocument.load(await exportDocumentPdf(doc))).getPageCount()).toBe(1);
 });
