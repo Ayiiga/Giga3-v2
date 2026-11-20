@@ -44,7 +44,7 @@ import {
   type RequestKind,
 } from "./providerRouter";
 import { generateImageWithFallback } from "./mediaEngine";
-import { MISSING_PERSON_POSTER_REPLY, planChatPoster, renderMissingPersonPoster, type ChatPosterPlan } from "./chatPoster";
+import { missingPersonPosterReply, planChatPoster, renderMissingPersonPoster, type ChatPosterPlan } from "./chatPoster";
 import { persistImageUrlIfNeeded } from "./mediaStorage";
 import type { FalImageSize } from "./falClient";
 import type { NewsEvidenceContext } from "./newsEvidence/types";
@@ -301,7 +301,7 @@ async function runHybridAiEngine(
     const svg = renderMissingPersonPoster(args.posterPlan);
     const url = await persistImageUrlIfNeeded(ctx, `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`);
     return {
-      content: `${MISSING_PERSON_POSTER_REPLY}\n\n${url}`,
+      content: missingPersonPosterReply(args.posterPlan, url),
       providerId: "local_fallback", usedFallback: false,
       latencyMs: 0, cached: false, requestKind: "image_generation",
     };
