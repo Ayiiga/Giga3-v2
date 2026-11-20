@@ -309,11 +309,9 @@ export const MessageBubble = memo(function MessageBubble({
             className="chat-assistant-body chat-message-bubble-inner chat-message-bubble-assistant-inner--app px-0 py-0.5 text-foreground sm:py-1"
           >
             {body}
-            {posterCopy !== null && !streaming ? (
+            {posterCopy !== null && !streaming && parsed.images.length === 0 ? (
               <p className="mt-2 text-sm text-muted" role="status">
-                {posterCopy
-                  ? "The poster image did not render. The text above is available as poster copy."
-                  : "The poster image did not render."}
+                This reply did not include a rendered poster.
               </p>
             ) : null}
           </div>

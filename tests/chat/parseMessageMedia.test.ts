@@ -47,3 +47,17 @@ describe("unrendered poster responses", () => {
     }
   });
 });
+
+
+it("removes a legacy auto-generated poster diagram and JSON while keeping the reply text", () => {
+  const intro = "### Giga3 AI\n\nWhat would you like to change?";
+  const blocks = [
+    "### Visual Aids", "", "```mermaid", "flowchart LR", "A --> B", "```", "",
+    "```giga-visual", "{", '  "version": "1.0",', '  "kind": "poster",', '  "title": "Please redesign the poster"', "}", "```",
+  ].join("\n");
+  const footer = "Made with Giga3 AI";
+  expect(splitUnrenderedPoster(intro + "\n\n" + blocks + "\n\n" + footer))
+    .toBe(intro + "\n\n\n" + footer);
+  expect(splitUnrenderedPoster(blocks.replace('  "kind": "poster",', '  "kind": "infographic",'))).toBeNull();
+  expect(splitUnrenderedPoster(blocks.slice(blocks.indexOf("```giga-visual")))).toBeNull();
+});

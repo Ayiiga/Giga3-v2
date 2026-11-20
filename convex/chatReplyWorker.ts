@@ -44,7 +44,8 @@ import {
   type RequestKind,
 } from "./providerRouter";
 import { generateImageWithFallback } from "./mediaEngine";
-import { missingPersonPosterReply, planChatPoster, renderMissingPersonPoster, type ChatPosterPlan } from "./chatPoster";
+import { isPosterRedesignRequest } from "./imageRequestIntent";
+import { imageBriefText, missingPersonPosterReply, POSTER_REDESIGN_HISTORY_LIMIT, planChatPoster, renderMissingPersonPoster, type ChatPosterPlan } from "./chatPoster";
 import { persistImageUrlIfNeeded } from "./mediaStorage";
 import type { FalImageSize } from "./falClient";
 import type { NewsEvidenceContext } from "./newsEvidence/types";
@@ -555,7 +556,9 @@ export const processJob = internalAction({
       // Conversation, bounded history, recap and user in ONE round trip.
       const context = await ctx.runQuery(internal.platform.loadReplyContextInternal, {
         jobId: args.jobId,
-        historyLimit: replyHistoryLimit(),
+        historyLimit: isPosterRedesignRequest(imageBriefText(job.content))
+          ? Math.max(POSTER_REDESIGN_HISTORY_LIMIT + 1, replyHistoryLimit())
+          : replyHistoryLimit(),
       });
       const conv = context?.conversation;
       if (!context || !conv) {

@@ -1,7 +1,8 @@
-import { isImageCommentaryOrInstruction } from "./imageRequestIntent";
+import { isImageCommentaryOrInstruction, isPosterRedesignRequest, posterRedesignLayout } from "./imageRequestIntent";
 
 export const POSTER_DESIGNS = { alert: "Alert", bulletin: "Bulletin" } as const;
 export type PosterDesign = keyof typeof POSTER_DESIGNS;
+export const POSTER_REDESIGN_HISTORY_LIMIT = 64;
 
 type Turn = { role: string; content: string; createdAt?: number };
 
@@ -34,7 +35,7 @@ export function isPhotoOnlyPosterFollowup(query: string): boolean {
 
 export function needsPosterHistory(query: string, hasPhoto = false): boolean {
   const text = imageBriefText(query);
-  return EDIT_CURRENT_POSTER.test(text) || RESUME_POSTER.test(text) || WITHOUT_PHOTO.test(text) || (hasPhoto && isPhotoOnlyPosterFollowup(text)) ||
+  return isPosterRedesignRequest(text) || EDIT_CURRENT_POSTER.test(text) || RESUME_POSTER.test(text) || WITHOUT_PHOTO.test(text) || (hasPhoto && isPhotoOnlyPosterFollowup(text)) ||
     text.split(/\r?\n/).some(line => FIELD_LABEL.test(line.trim())) ||
     (POSTER.test(text) && (DESIGN_REQUEST.test(text) || CONTEXT_REFERENCE.test(text) || POSTER_DELIVERY.test(text)));
 }
@@ -107,7 +108,7 @@ function savedPosterPhotos(
   let askedForPhoto = false;
   let askedForDetails = false;
   let selected: { urls: string[]; preview: boolean } | undefined;
-  for (const turn of history) {
+  for (const [index, turn] of history.entries()) {
     if (turn.role === "assistant") {
       askedForPhoto = turn.content === PHOTO_REQUIRED || turn.content === CHOOSE_PHOTO;
       askedForDetails = turn.content === DETAILS_REQUIRED;
@@ -117,11 +118,14 @@ function savedPosterPhotos(
     const text = imageBriefText(turn.content);
     const missingBrief = MISSING_PERSON.test(text) && !isImageCommentaryOrInstruction(text);
     const details = missingBrief || askedForDetails || askedForPhoto ? readPosterDetails(text) : undefined;
-    if (details || (missingBrief && !CONTEXT_REFERENCE.test(text) && !POSTER_DELIVERY.test(text))) {
+    if (details || (missingBrief && !CONTEXT_REFERENCE.test(text) && !POSTER_DELIVERY.test(text) && !isPosterRedesignRequest(text))) {
       matchingBrief = Boolean(details && samePerson(details.name, name));
       if (!matchingBrief) selected = undefined;
     }
-    if (matchingBrief && (details || (askedForPhoto && isPhotoOnlyPosterFollowup(text)))) {
+    const next = history[index + 1];
+    const renderedRedesign = posterRedesignLayout(text) && next?.role === "assistant" &&
+      next.content.startsWith(MISSING_PERSON_POSTER_REPLY);
+    if (matchingBrief && (details || renderedRedesign || (askedForPhoto && isPhotoOnlyPosterFollowup(text)))) {
       const hasSource = uploadAt !== undefined && turn.createdAt === uploadAt && photos.length > 0;
       const previews = [...turn.content.matchAll(/!\[[^\]\n]*\]\((data:image\/(?:jpeg|png|webp);base64,[a-z0-9+/=]{1,70000})\)/gi)]
         .map(match => match[1]);
@@ -144,6 +148,8 @@ export function planChatPoster(args: {
 }): ChatPosterPlan | undefined {
   const query = imageBriefText(args.query);
   const photoOnly = isPhotoOnlyPosterFollowup(query);
+  const redesign = isPosterRedesignRequest(query);
+  const requestedLayout = posterRedesignLayout(query);
   const photos = (args.images ?? []).filter(a => a.dataUrl);
   if (!needsPosterHistory(query, !args.historicalImages && photos.length > 0)) return undefined;
   const lastAssistant = args.history.filter(turn => turn.role === "assistant").at(-1);
@@ -164,11 +170,11 @@ export function planChatPoster(args: {
   const previous = args.history.filter(turn => turn.role === "user");
   const newestBrief = [...previous].reverse().find(turn => {
     const text = imageBriefText(turn.content);
-    return !isPhotoOnlyPosterFollowup(text) && !BARE_DESIGN.test(text) &&
+    return !isPhotoOnlyPosterFollowup(text) && !BARE_DESIGN.test(text) && !isPosterRedesignRequest(text) &&
       (readPosterDetails(text) || (!isImageCommentaryOrInstruction(text) &&
         !CONTEXT_REFERENCE.test(text) && !POSTER_DELIVERY.test(text) && /\S.{12}/s.test(text)));
   });
-  const reference = resume || CONTEXT_REFERENCE.test(query) || POSTER_DELIVERY.test(query);
+  const reference = resume || redesign || CONTEXT_REFERENCE.test(query) || POSTER_DELIVERY.test(query);
   const waitingForPhoto = photoOnly && !args.historicalImages && photos.length > 0 && pendingPoster;
   if (photoOnly && !waitingForPhoto) return undefined;
 
@@ -177,7 +183,7 @@ export function planChatPoster(args: {
     const text = imageBriefText(turn.content);
     const details = readPosterDetails(text);
     if (MISSING_PERSON.test(text) && !isImageCommentaryOrInstruction(text) &&
-        (details || (!CONTEXT_REFERENCE.test(text) && !POSTER_DELIVERY.test(text)))) return true;
+        (details || (!CONTEXT_REFERENCE.test(text) && !POSTER_DELIVERY.test(text) && !isPosterRedesignRequest(text)))) return true;
     if (!details) return false;
     const precedingReply = args.history.slice(0, args.history.indexOf(turn))
       .filter(message => message.role === "assistant").at(-1);
@@ -196,23 +202,41 @@ export function planChatPoster(args: {
     const details = brief && readPosterDetails(brief.content);
     // A partial correction must never silently render the previous person's fields.
     const hasPartialFields = /^(?:name|last seen|age|height|contacts?)\s*:/im.test(query);
-    const editsOldFacts = EDIT_CURRENT_POSTER.test(query) ||
+    const editsOldFacts = (!requestedLayout && EDIT_CURRENT_POSTER.test(query)) ||
       /\b(?:change|update|correct|replace|edit|fix|revise)\s+(?:(?:his|her|their|the)\s+)?(?:name|date|location|phone|contacts?|age|height|build|complexion)\b/i.test(query);
     if (!details || (!direct && (hasPartialFields || editsOldFacts))) return { kind: "ask", content: DETAILS_REQUIRED };
+    if (redesign && !requestedLayout && !direct) {
+      return { kind: "ask", content: "Say “Redesign the poster in Alert” or “Redesign the poster in Bulletin.” To change the details, tap the pencil on the existing poster." };
+    }
 
-    const selectedDesign = /^poster design\s*:\s*(alert|bulletin)\s*$/im.exec(query + "\n" + (brief?.content ?? ""))?.[1]?.toLowerCase() as PosterDesign | undefined;
-    if (WITHOUT_PHOTO.test(query)) return { kind: "missing_person", details, design: selectedDesign };
+    const briefDesign = /^poster design[ \t]*:[ \t]*(alert|bulletin)[ \t]*$/im.exec(query + "\n" + (brief?.content ?? ""))?.[1]?.toLowerCase() as PosterDesign | undefined;
+    const priorDetails = priorMissing && readPosterDetails(priorMissing.content);
+    const samePriorBrief = priorDetails && samePerson(priorDetails.name, details.name);
+    const posterHistoryAnchor = direct ? (samePriorBrief ? priorMissing : undefined) : brief;
+    const latestPoster = posterHistoryAnchor && args.history.slice(args.history.indexOf(posterHistoryAnchor))
+      .reverse().find(turn => turn.role === "assistant" && turn.content.startsWith(MISSING_PERSON_POSTER_REPLY));
+    const previousDesign = /^Poster design: (Alert|Bulletin)\.$/m.exec(latestPoster?.content ?? "")?.[1];
+    const currentDesign = previousDesign?.toLowerCase() ?? briefDesign ?? "alert";
+    const alternate = currentDesign === "bulletin" ? "alert" : "bulletin";
+    const selectedDesign = requestedLayout === "alternate" ? alternate : requestedLayout ?? briefDesign;
+    const freshPhoto = !args.historicalImages && photos.length > 0;
+    const lastPosterRequest = latestPoster && args.history.slice(0, args.history.indexOf(latestPoster))
+      .reverse().find(turn => turn.role === "user");
+    const wasTextOnly = latestPoster?.content.includes("\n\nThis poster has no photo.") ||
+      (lastPosterRequest && WITHOUT_PHOTO.test(lastPosterRequest.content));
+    if (WITHOUT_PHOTO.test(query) || (redesign && !freshPhoto && wasTextOnly)) {
+      return { kind: "missing_person", details, design: selectedDesign };
+    }
 
     // Fresh uploads take precedence. Recover a prior selection only from this
     // thread and only if it was tied to the same missing-person brief.
-    const priorDetails = priorMissing && readPosterDetails(priorMissing.content);
     const historyPhotos = args.historicalImages ? photos : [];
-    const saved = (!direct || (priorDetails && samePerson(priorDetails.name, details.name)))
+    const saved = (!direct || samePriorBrief)
       ? savedPosterPhotos(args.history, details.name, args.uploadAt, historyPhotos)
       : undefined;
     const uploadTurn = previous.at(-1);
     const explicitlyUsesPhoto = /\b(?:use|using|with|from)\s+(?:(?:the|my|this|that|our|his|her|their|uploaded|attached|original|brighter)\s+){0,4}(?:photo|picture|image|portrait)\b/i.test(query);
-    const explicitRecentUpload = args.historicalImages && priorDetails && samePerson(priorDetails.name, details.name) &&
+    const explicitRecentUpload = args.historicalImages && samePriorBrief &&
       args.uploadAt !== undefined &&
       uploadTurn?.createdAt === args.uploadAt &&
       priorMissing?.createdAt !== undefined && args.uploadAt > priorMissing.createdAt &&
@@ -223,6 +247,12 @@ export function planChatPoster(args: {
         ? { urls: historyPhotos.map(photo => photo.dataUrl!), preview: false }
         : saved;
     if (!source?.urls.length) {
+      if (redesign && lastPosterRequest && CANNOT_SEND_PHOTO.test(lastPosterRequest.content)) {
+        return { kind: "missing_person", details, design: selectedDesign };
+      }
+      if (redesign && latestPoster) {
+        return { kind: "ask", content: "Tap the pencil on your previous poster to change its design using the saved photo." };
+      }
       return CANNOT_SEND_PHOTO.test(query) ? { kind: "missing_person", details, design: selectedDesign } : { kind: "ask", content: PHOTO_REQUIRED };
     }
     if (source.urls.length !== 1) {
@@ -231,6 +261,10 @@ export function planChatPoster(args: {
     const [photo] = source.urls;
     if (!RASTER_DATA_URL.test(photo)) return { kind: "ask", content: PHOTO_REQUIRED };
     return { kind: "missing_person", photo, details, usedSavedPreview: source.preview, design: selectedDesign };
+  }
+
+  if (redesign) {
+    return { kind: "ask", content: "Open the poster and tap the pencil to change its design. If you’re starting a new poster, send the details you want to use." };
   }
 
   if (reference && !resume && !/\b(?:same|this|that|previous|earlier)\s+(?:design|poster|flyer|notice)\b/i.test(query)) {
@@ -356,6 +390,8 @@ export function renderMissingPersonPoster(plan: Extract<ChatPosterPlan, { kind: 
 export const MISSING_PERSON_POSTER_REPLY = "Here is your missing-person poster:";
 
 export function missingPersonPosterReply(plan: Extract<ChatPosterPlan, { kind: "missing_person" }>, url: string): string {
-  const note = plan.usedSavedPreview ? "\n\nI used the saved photo preview from this chat." : "";
-  return `${MISSING_PERSON_POSTER_REPLY}${note}\n\n${url}`;
+  const design = plan.design ? `\n\nPoster design: ${POSTER_DESIGNS[plan.design]}.` : "";
+  const note = plan.usedSavedPreview ? "\n\nI used the saved photo preview from this chat."
+    : plan.design && !plan.photo ? "\n\nThis poster has no photo." : "";
+  return `${MISSING_PERSON_POSTER_REPLY}${design}${note}\n\n${url}`;
 }

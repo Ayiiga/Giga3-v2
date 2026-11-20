@@ -35,3 +35,20 @@ export function isImageCommentaryOrInstruction(query: string): boolean {
   }
   return TEXT_OUTPUTS.has(output[1].toLowerCase());
 }
+
+
+// Match a request to change the poster itself, excluding commentary and tutorials.
+const POSTER_REDESIGN_LEAD = /^(?:please[ ,]+)?(?:(?:can|could|would|will) you\s+(?:please\s+)?)?(?:redesign|re-design|restyle|change (?:the )?(?:design|layout|style) of)\s+(?:(?:the|this|that|my|our|previous)\s+)?(?:missing[- ]person\s+)?poster\b/i;
+
+export function isPosterRedesignRequest(query: string): boolean {
+  return POSTER_REDESIGN_LEAD.test(query.trim());
+}
+
+export function posterRedesignLayout(query: string): "alert" | "bulletin" | "alternate" | undefined {
+  const lead = POSTER_REDESIGN_LEAD.exec(query.trim());
+  if (!lead) return undefined;
+  const suffix = query.trim().slice(lead[0].length).trim();
+  if (/^(?:(?:again|now)\s*)?(?:please)?[.!?]*$/i.test(suffix)) return "alternate";
+  const named = /^(?:in|using|with)\s+(?:the\s+)?(alert|bulletin)(?:\s+(?:design|layout|style))?(?:\s+please)?[.!?]*$/i.exec(suffix);
+  return named?.[1]?.toLowerCase() as "alert" | "bulletin" | undefined;
+}

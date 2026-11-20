@@ -1,3 +1,4 @@
+import { isPosterRedesignRequest } from "./imageRequestIntent";
 import type { AiModeId } from "./aiModes";
 import type {
   ChatCompletionAttachment,
@@ -313,6 +314,7 @@ type AutoVisualKind =
 
 /** True only when the user asked for a visual aid, diagram, chart, or similar. */
 export function userRequestedVisualAid(query: string): boolean {
+  if (isPosterRedesignRequest(query)) return false;
   return (
     /\b(visual\s+aids?|diagrams?|flow\s*charts?|mind\s*maps?|infographics?|posters?|flyers?|brochures?|mermaid|giga-visual|giga-chart|charts?|graphs?|plots?|illustrations?|timelines?|org(?:anizational)?\s+charts?|circuit\s+diagrams?)\b/i.test(
       query
