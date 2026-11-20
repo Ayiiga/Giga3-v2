@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { planChatPoster, renderMissingPersonPoster } from "../../convex/chatPoster";
+import { MISSING_PERSON_PLACEHOLDER_FALLBACK } from "../../convex/posterPlaceholder";
 
 const brief = `MISSING PERSON
 
@@ -151,6 +152,10 @@ describe("chat poster request and original-photo continuity", () => {
     });
     if (plan?.kind !== "missing_person") throw new Error("Expected recovered poster");
     expect(renderMissingPersonPoster(plan)).toContain(preview);
+    const normalized = [...past.slice(0, -1), { role: "assistant", content: MISSING_PERSON_PLACEHOLDER_FALLBACK, createdAt: 400 }];
+    expect(planChatPoster({ query: "It is becoming worse please", history: normalized })).toMatchObject({
+      kind: "missing_person", photo: preview, details: { name: "Example Person" },
+    });
   });
 
   it("delivers an image poster without a portrait when asked and no selected photo is available", () => {
