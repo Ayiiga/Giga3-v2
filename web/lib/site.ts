@@ -13,7 +13,7 @@ export const siteConfig = {
     location: "Ghana",
     role: "Basic school educationist",
     organization: "GIGA 3 ENTERPRISE",
-    organizationShort: "GIGA 3",
+    organizationShort: "GIGA 3 ENTERPRISE",
   },
   links: {
     login: "/chat/login",
