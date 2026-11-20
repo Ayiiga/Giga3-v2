@@ -88,6 +88,18 @@ describe("chat poster request and original-photo continuity", () => {
     })).toMatchObject({ kind: "ask" });
   });
 
+  it("retains a complete brief that begins with a request for delivery", () => {
+    const direct = `I need a missing person poster\n${brief}`;
+    const ask = planChatPoster({ query: direct, history: [] });
+    expect(ask).toMatchObject({ kind: "ask", content: expect.stringContaining("one original photo") });
+    if (ask?.kind !== "ask") throw new Error("Expected a question about the photo");
+    expect(planChatPoster({
+      query: "Analyze this image.",
+      history: [{ role: "user", content: direct }, { role: "assistant", content: ask.content }],
+      images: [{ dataUrl: photo }],
+    })).toMatchObject({ kind: "missing_person", details: { name: "Example Person" } });
+  });
+
   it("renders explicit text literally and requires JPEG, PNG or WebP bytes", () => {
     const direct = `Create a missing-person poster\n${brief.replace("Example Person", "<script>Test</script> & Name")}`;
     const plan = planChatPoster({ query: direct, history: [], images: [{ dataUrl: photo }] });

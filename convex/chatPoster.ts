@@ -121,9 +121,10 @@ export function planChatPoster(args: {
   const explicitMissing = MISSING_PERSON.test(query);
   const priorMissing = [...previous].reverse().find(turn => {
     const text = imageBriefText(turn.content);
-    if (MISSING_PERSON.test(text) && !CONTEXT_REFERENCE.test(text) && !POSTER_DELIVERY.test(text) &&
-        !isImageCommentaryOrInstruction(text)) return true;
-    if (!readPosterDetails(text)) return false;
+    const details = readPosterDetails(text);
+    if (MISSING_PERSON.test(text) && !isImageCommentaryOrInstruction(text) &&
+        (details || (!CONTEXT_REFERENCE.test(text) && !POSTER_DELIVERY.test(text)))) return true;
+    if (!details) return false;
     const precedingReply = args.history.slice(0, args.history.indexOf(turn))
       .filter(message => message.role === "assistant").at(-1);
     return precedingReply?.content === DETAILS_REQUIRED || precedingReply?.content === PHOTO_REQUIRED ||
