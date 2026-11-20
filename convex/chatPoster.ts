@@ -1,6 +1,6 @@
 import { isImageCommentaryOrInstruction, isPosterRedesignRequest, posterRedesignLayout } from "./imageRequestIntent";
 
-import { missingPersonPlaceholderIndex } from "./posterPlaceholder";
+import { MISSING_PERSON_PLACEHOLDER_FALLBACK, missingPersonPlaceholderIndex } from "./posterPlaceholder";
 
 export const POSTER_DESIGNS = { alert: "Alert", bulletin: "Bulletin" } as const;
 export type PosterDesign = keyof typeof POSTER_DESIGNS;
@@ -24,7 +24,7 @@ const EDIT_CURRENT_POSTER = /^(?:please\s+)?(?:edit|update|correct|fix|revise|ch
 const POSTER_DELIVERY = /^(?:here is your|where(?: is|'s)|show me|give me|i (?:am |’m |'m )?waiting for|i (?:need|want))\b.{0,50}\b(?:poster|flyer|banner|notice)\b/i;
 
 // A short reply can accept a poster handoff without restating the asset name.
-const POSTER_CONTINUATION = /^(?:please[ ,]+)?(?:yes|ok(?:ay)?|go ahead(?: and (?:generate|render|create|make|show|send) it)?|do it|continue|nothing has changed|still the same|(?:please )?(?:generate|render|create|make|show|send|give)(?: (?:me|us))? (?:it|(?:the|my|an?|actual|real|redesigned|visual|poster) )*(?:poster|image|visual)(?: itself)?|(?:generate|render|create|make|show|send) it|where(?: is|'s) (?:it|(?:the|my) (?:image|poster)))(?:[, ]+(?:please|now|then|go ahead|do it))*[.!?]*$/i;
+const POSTER_CONTINUATION = /^(?:please[ ,]+)?(?:yes|ok(?:ay)?|go ahead(?: and (?:generate|render|create|make|show|send) it)?|do it|continue|nothing has changed|still the same|(?:please )?(?:generate|render|create|make|show|send|give)(?: (?:me|us))? (?:it|(?:(?:the|my) missing[- ]person|the|my|an?|actual|real|redesigned|visual|poster) )*(?:poster|image|visual)(?: itself)?|(?:generate|render|create|make|show|send) it|where(?: is|'s) (?:it|(?:the|my) (?:image|poster)))(?:[, ]+(?:please|now|then|go ahead|do it))*[.!?]*$/i;
 const POSTER_HANDOFF_REPLY = /\b(?:missing[- ]person poster|(?:poster|visual image) (?:design|layout|itself)|(?:create|generate|redesign|render) (?:the|your|a|an|a new|an attractive) (?:[\w-]+ ){0,4}(?:poster|visual image))\b/i;
 
 export function needsExtendedPosterHistory(query: string): boolean {
@@ -129,7 +129,7 @@ function savedPosterPhotos(
     const text = imageBriefText(turn.content);
     const missingBrief = MISSING_PERSON.test(text) && !isImageCommentaryOrInstruction(text);
     const details = missingBrief || askedForDetails || askedForPhoto ? readPosterDetails(text) : undefined;
-    if (details || (missingBrief && !CONTEXT_REFERENCE.test(text) && !POSTER_DELIVERY.test(text) && !isPosterRedesignRequest(text))) {
+    if (details || (missingBrief && !CONTEXT_REFERENCE.test(text) && !POSTER_DELIVERY.test(text) && !isPosterRedesignRequest(text) && !POSTER_CONTINUATION.test(text))) {
       matchingBrief = Boolean(details && samePerson(details.name, name));
       if (!matchingBrief) selected = undefined;
     }
@@ -169,6 +169,7 @@ export function planChatPoster(args: {
   const lastUserText = imageBriefText(lastUser?.content ?? "");
   const posterHandoff = POSTER_CONTINUATION.test(query) && Boolean(lastAssistant &&
     (pendingPoster || lastAssistant.content.startsWith(MISSING_PERSON_POSTER_REPLY) ||
+      lastAssistant.content.startsWith(MISSING_PERSON_PLACEHOLDER_FALLBACK) ||
       missingPersonPlaceholderIndex(lastAssistant.content) >= 0 ||
       (POSTER_HANDOFF_REPLY.test(lastAssistant.content) && MISSING_PERSON.test(lastAssistant.content))) &&
     (POSTER.test(lastUserText) || POSTER_CONTINUATION.test(lastUserText) || isPhotoOnlyPosterFollowup(lastUserText)));
@@ -201,7 +202,7 @@ export function planChatPoster(args: {
     const text = imageBriefText(turn.content);
     const details = readPosterDetails(text);
     if (MISSING_PERSON.test(text) && !isImageCommentaryOrInstruction(text) &&
-        (details || (!CONTEXT_REFERENCE.test(text) && !POSTER_DELIVERY.test(text) && !isPosterRedesignRequest(text)))) return true;
+        (details || (!CONTEXT_REFERENCE.test(text) && !POSTER_DELIVERY.test(text) && !isPosterRedesignRequest(text) && !POSTER_CONTINUATION.test(text)))) return true;
     if (!details) return false;
     const precedingReply = args.history.slice(0, args.history.indexOf(turn))
       .filter(message => message.role === "assistant").at(-1);

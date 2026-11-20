@@ -5,6 +5,7 @@ import { convexTest } from "convex-test";
 import { afterEach, expect, it, vi } from "vitest";
 import { api, internal } from "../../convex/_generated/api";
 import schema from "../../convex/schema";
+import { MISSING_PERSON_PLACEHOLDER_FALLBACK } from "../../convex/posterPlaceholder";
 import { createSessionToken } from "../../convex/sessionAuth";
 
 const modules = import.meta.glob("../../convex/**/*.*s");
@@ -20,6 +21,7 @@ it.each([
   ["Please redesign the poster", "Please redesign the poster"],
   ["Yes, go ahead", "Yes, go ahead"],
   ["Generate it now", "Generate it now"],
+  ["Generate the missing-person poster now", "Generate the missing-person poster now"],
   ["Where is the image?", "Where is the image?"],
   ["Please generate the actual visual poster", "Please generate the actual visual poster"],
 ] as const)("renders a chat poster for %s without a provider call or debit", async (_name, continuation) => {
@@ -74,7 +76,7 @@ it.each([
       });
       await ctx.db.insert("messages", {
         conversationId, userId: email, role: "assistant", createdAt: now + 33,
-        content: [
+        content: continuation === "Generate the missing-person poster now" ? MISSING_PERSON_PLACEHOLDER_FALLBACK : [
           "Please provide the details for the redesigned poster.",
           "```giga-visual",
           '{"type":"poster","title":"MISSING PERSON","image":{"url":"https://example.com/logo.png","alt":"Placeholder"},',
