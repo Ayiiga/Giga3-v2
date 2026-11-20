@@ -2861,9 +2861,8 @@ html.giga-lite-extreme .chat-composer-surface {
   background: transparent !important;
 }
 
-:is(.cv-paper, .document-designed-paper) h1,
-:is(.cv-paper, .document-designed-paper) h2,
-:is(.cv-paper, .document-designed-paper) h3 {
+.cv-paper :is(h1, h2, h3),
+.document-designed-paper .ProseMirror :is(h1, h2, h3) {
   display: flow-root;
   color: var(--cv-accent);
 }
@@ -2877,7 +2876,8 @@ html.giga-lite-extreme .chat-composer-surface {
   border-bottom: 1px solid var(--cv-accent);
 }
 
-:is(.cv-paper, .document-designed-paper)[data-cv-treatment="signature"] h1 {
+.cv-paper[data-cv-treatment="signature"] h1,
+.document-designed-paper[data-cv-treatment="signature"] .ProseMirror h1 {
   background-color: var(--cv-accent);
   color: white;
   padding: 0.22em 0.35em;
