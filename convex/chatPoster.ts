@@ -25,6 +25,7 @@ const POSTER_DELIVERY = /^(?:here is your|where(?: is|'s)|show me|give me|i (?:a
 
 // A short reply can accept a poster handoff without restating the asset name.
 const POSTER_CONTINUATION = /^(?:please[ ,]+)?(?:yes|ok(?:ay)?|go ahead(?: and (?:generate|render|create|make|show|send) it)?|do it|continue|nothing has changed|still the same|(?:please )?(?:generate|render|create|make|show|send|give)(?: (?:me|us))? (?:it|(?:(?:the|my) missing[- ]person|the|my|an?|actual|real|redesigned|visual|poster) )*(?:poster|image|visual)(?: itself)?|(?:generate|render|create|make|show|send) it|where(?: is|'s) (?:it|(?:the|my) (?:image|poster)))(?:[, ]+(?:please|now|then|go ahead|do it))*[.!?]*$/i;
+const STORED_POSTER_URL = /https:\/\/[\w-]+\.convex\.(?:cloud|site)\/api\/storage\/[\w-]+\s*$/;
 const POSTER_HANDOFF_REPLY = /\b(?:missing[- ]person poster|(?:poster|visual image) (?:design|layout|itself)|(?:create|generate|redesign|render) (?:the|your|a|an|a new|an attractive) (?:[\w-]+ ){0,4}(?:poster|visual image))\b/i;
 
 export function needsExtendedPosterHistory(query: string): boolean {
@@ -212,6 +213,11 @@ export function planChatPoster(args: {
   const newestIsOtherDesign = newestBrief && newestBrief !== priorMissing &&
     !MISSING_PERSON.test(imageBriefText(newestBrief.content)) &&
     POSTER.test(imageBriefText(newestBrief.content)) && DESIGN_REQUEST.test(imageBriefText(newestBrief.content));
+  const completedHandoff = posterHandoff && !newestIsOtherDesign &&
+    lastAssistant?.content.startsWith(MISSING_PERSON_POSTER_REPLY);
+  if (completedHandoff && lastAssistant && STORED_POSTER_URL.test(lastAssistant.content)) {
+    return { kind: "ask", content: lastAssistant.content };
+  }
   const refersToMissing = (reference || waitingForPhoto) && priorMissing && !newestIsOtherDesign;
   if (explicitMissing || refersToMissing || suppliesRequestedDetails || resume || waitingForPhoto) {
     const direct = confirmedDetails;
@@ -235,11 +241,11 @@ export function planChatPoster(args: {
     const latestPoster = posterHistoryAnchor && args.history.slice(args.history.indexOf(posterHistoryAnchor))
       .reverse().find(turn => turn.role === "assistant" && turn.content.startsWith(MISSING_PERSON_POSTER_REPLY));
     const previousDesign = /^Poster design: (Alert|Bulletin)\.$/m.exec(latestPoster?.content ?? "")?.[1];
-    const currentDesign = previousDesign?.toLowerCase() ?? briefDesign ?? "alert";
+    const currentDesign = previousDesign === "Bulletin" ? "bulletin" : previousDesign === "Alert" ? "alert" : briefDesign ?? "alert";
     const alternate = currentDesign === "bulletin" ? "alert" : "bulletin";
-    const handoffLayout = posterHandoff ? posterRedesignLayout(lastUserText) : undefined;
+    const handoffLayout = posterHandoff && !completedHandoff ? posterRedesignLayout(lastUserText) : undefined;
     const layout = requestedLayout ?? handoffLayout;
-    const selectedDesign = layout === "alternate" ? alternate : layout ?? briefDesign;
+    const selectedDesign = layout === "alternate" ? alternate : layout ?? (completedHandoff ? currentDesign : briefDesign);
     const freshPhoto = !args.historicalImages && photos.length > 0;
     const lastPosterRequest = latestPoster && args.history.slice(0, args.history.indexOf(latestPoster))
       .reverse().find(turn => turn.role === "user");
@@ -269,7 +275,7 @@ export function planChatPoster(args: {
         : saved;
     if (!source?.urls.length) {
       if (posterHandoff && !layout && latestPoster &&
-          /https:\/\/[\w-]+\.convex\.(?:cloud|site)\/api\/storage\/[\w-]+\s*$/.test(latestPoster.content)) {
+          STORED_POSTER_URL.test(latestPoster.content)) {
         return { kind: "ask", content: latestPoster.content };
       }
       if (redesign && lastPosterRequest && CANNOT_SEND_PHOTO.test(lastPosterRequest.content)) {
@@ -289,12 +295,6 @@ export function planChatPoster(args: {
   }
 
   if (posterHandoff) {
-    // The asset can outlive the older input turns. A delivery request can show
-    // the existing rendered reply again, without entering paid generation.
-    if (!newestIsOtherDesign && lastAssistant?.content.startsWith(MISSING_PERSON_POSTER_REPLY) &&
-        /https:\/\/[\w-]+\.convex\.(?:cloud|site)\/api\/storage\/[\w-]+\s*$/.test(lastAssistant.content)) {
-      return { kind: "ask", content: lastAssistant.content };
-    }
     return { kind: "ask", content: "I couldn’t find a complete poster brief in this chat. If you have an earlier poster here, tap its pencil to update it." };
   }
   if (redesign) {

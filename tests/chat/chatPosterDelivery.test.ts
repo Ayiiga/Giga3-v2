@@ -23,8 +23,12 @@ it.each([
   ["Generate it now", "Generate it now"],
   ["Generate the missing-person poster now", "Generate the missing-person poster now"],
   ["Where is the image?", "Where is the image?"],
+  ["a completed Bulletin redesign", "Where is the image?"],
   ["Please generate the actual visual poster", "Please generate the actual visual poster"],
-] as const)("renders a chat poster for %s without a provider call or debit", async (_name, continuation) => {
+] as const)("renders a chat poster for %s without a provider call or debit", async (name, continuation) => {
+  const existing = name === "a completed Bulletin redesign"
+    ? "Here is your missing-person poster:\n\nPoster design: Bulletin.\n\nhttps://example.convex.cloud/api/storage/existing-poster"
+    : undefined;
   const redesign = continuation !== null;
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
   vi.stubEnv("SESSION_SIGNING_SECRET", "poster-delivery-test");
@@ -76,11 +80,11 @@ it.each([
       });
       await ctx.db.insert("messages", {
         conversationId, userId: email, role: "assistant", createdAt: now + 33,
-        content: continuation === "Generate the missing-person poster now" ? MISSING_PERSON_PLACEHOLDER_FALLBACK : [
+        content: existing ?? (continuation === "Generate the missing-person poster now" ? MISSING_PERSON_PLACEHOLDER_FALLBACK : [
           "Please provide the details for the redesigned poster.",
           "```giga-visual",
           '{"type":"poster","title":"MISSING PERSON","image":{"url":"https://example.com/logo.png","alt":"Placeholder"},',
-        ].join("\n"),
+        ].join("\n")),
       });
     });
   }
@@ -105,8 +109,9 @@ it.each([
   expect(reply).toMatch(/^Here is your missing-person poster:/);
   expect(reply).toMatch(/https?:\/\//);
   expect(reply).not.toMatch(/mermaid|giga-visual/);
-  expect(actual.files).toHaveLength(1);
-  if (redesign) {
+  expect(actual.files).toHaveLength(existing ? 0 : 1);
+  if (existing) expect(reply).toBe(existing);
+  if (redesign && !existing) {
     expect(reply).toContain("Poster design: Bulletin.");
     const svg = await t.run(async ctx => (await ctx.storage.get(actual.files[0]._id))?.text() ?? null);
     expect(svg).toContain('data-poster-design="bulletin"');
