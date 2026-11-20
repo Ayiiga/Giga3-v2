@@ -753,6 +753,7 @@ export const processJob = internalAction({
       const shouldResearch =
         allowResearch && shouldRunLiveWebResearch(researchCapability);
       const needsLiveWeb =
+        !posterPlan &&
         allowResearch &&
         queryNeedsLiveWeb({
           query: job.content,

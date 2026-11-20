@@ -68,6 +68,26 @@ describe("chat poster request and original-photo continuity", () => {
       .toMatchObject({ kind: "ask" });
   });
 
+  it("remembers a request for details when they arrive before the photo", () => {
+    const initialQuery = "Make a missing person poster";
+    const ask = planChatPoster({ query: initialQuery, history: [] });
+    if (ask?.kind !== "ask") throw new Error("Expected a question about the details");
+    const details = brief.slice(brief.indexOf("Name:"));
+    const pending = [{ role: "user", content: initialQuery }, { role: "assistant", content: ask.content }];
+    const photoAsk = planChatPoster({ query: details, history: pending });
+    expect(photoAsk).toMatchObject({ kind: "ask", content: expect.stringContaining("one original photo") });
+    if (photoAsk?.kind !== "ask") throw new Error("Expected a question about the photo");
+    expect(planChatPoster({
+      query: "Analyze this image.",
+      history: [...pending, { role: "user", content: details }, { role: "assistant", content: photoAsk.content }],
+      images: [{ dataUrl: photo }],
+    })).toMatchObject({ kind: "missing_person" });
+    expect(planChatPoster({
+      query: `Create a missing person poster\n${brief.replace("2020 at Example Town", "")}`,
+      history: [], images: [{ dataUrl: photo }],
+    })).toMatchObject({ kind: "ask" });
+  });
+
   it("renders explicit text literally and requires JPEG, PNG or WebP bytes", () => {
     const direct = `Create a missing-person poster\n${brief.replace("Example Person", "<script>Test</script> & Name")}`;
     const plan = planChatPoster({ query: direct, history: [], images: [{ dataUrl: photo }] });

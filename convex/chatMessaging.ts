@@ -292,7 +292,7 @@ export const acceptMessage = mutation({
       liveWebEnabled: args.liveWeb === true,
       hasImageAttachment,
     });
-    const needsLiveWeb = queryNeedsLiveWeb({
+    const needsLiveWeb = !posterPlan && queryNeedsLiveWeb({
       query: args.content,
       capability: resolvedResearchCapability,
       mode,
@@ -342,7 +342,7 @@ export const acceptMessage = mutation({
 
     let segmented = false;
     const segmentLimit = getSegmentExchangeLimit();
-    if (conversationId && conv && segmentLimit > 0 && !posterHistoryNeeded) {
+    if (conversationId && conv && segmentLimit > 0 && !posterPlan && requestKind !== "image_generation") {
       // Exchanges only need the newest 2×limit rows to be counted (and the recap
       // uses the tail), so never load the whole thread on the send path.
       const existingRows = await ctx.db
