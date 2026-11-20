@@ -186,6 +186,8 @@ it("redesigns the current poster with saved details and the same photo", () => {
   expect(planChatPoster({ query: "Please redesign the poster", history: source })).toMatchObject(expected);
   expect(planChatPoster({ query: "Could you redesign the poster in the Alert layout?", history: source }))
     .toMatchObject({ ...expected, design: "alert" });
+  expect(planChatPoster({ query: "Change the layout of the poster in Bulletin", history: source }))
+    .toMatchObject(expected);
   expect(planChatPoster({ query: "Please redesign the poster and add a reward", history: source }))
     .toMatchObject({ kind: "ask" });
   expect(planChatPoster({ query: "How can I redesign the poster in Canva?", history: source })).toBeUndefined();
@@ -199,4 +201,21 @@ it("alternates the rendered layout and preserves a text-only poster", () => {
     { role: "user", content: `Create a missing-person poster without a photo\n${brief}` },
     { role: "assistant", content: "Here is your missing-person poster:\n\nPoster design: Bulletin.\n\nThis poster has no photo.\n\nhttps://example.com/text.svg" },
   ] })).toMatchObject({ kind: "missing_person", design: "alert", details: { name: "Example Person" } });
+});
+
+
+it("uses a photo selected in a successful redesign for later layout changes", () => {
+  const replacement = "data:image/png;base64,AAAA";
+  const original = [
+    { role: "user", content: `${brief}\n![photo](${photo})` },
+    { role: "assistant", content: "Here is your missing-person poster:\n\nhttps://example.com/old.svg" },
+    { role: "user", content: `Please redesign the poster in Bulletin\n![photo](${replacement})`, createdAt: 20 },
+  ];
+  expect(planChatPoster({ query: "Please redesign the poster", history: [
+    ...original,
+    { role: "assistant", content: "Here is your missing-person poster:\n\nPoster design: Bulletin.\n\nhttps://example.com/replacement.svg" },
+  ] })).toMatchObject({ kind: "missing_person", photo: replacement, design: "alert" });
+  expect(planChatPoster({ query: "Please redesign the poster", history: [
+    ...original, { role: "assistant", content: "Here is an upload error." },
+  ] })).toMatchObject({ kind: "missing_person", photo, design: "bulletin" });
 });

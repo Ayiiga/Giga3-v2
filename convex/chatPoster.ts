@@ -108,7 +108,7 @@ function savedPosterPhotos(
   let askedForPhoto = false;
   let askedForDetails = false;
   let selected: { urls: string[]; preview: boolean } | undefined;
-  for (const turn of history) {
+  for (const [index, turn] of history.entries()) {
     if (turn.role === "assistant") {
       askedForPhoto = turn.content === PHOTO_REQUIRED || turn.content === CHOOSE_PHOTO;
       askedForDetails = turn.content === DETAILS_REQUIRED;
@@ -122,7 +122,10 @@ function savedPosterPhotos(
       matchingBrief = Boolean(details && samePerson(details.name, name));
       if (!matchingBrief) selected = undefined;
     }
-    if (matchingBrief && (details || (askedForPhoto && isPhotoOnlyPosterFollowup(text)))) {
+    const next = history[index + 1];
+    const renderedRedesign = posterRedesignLayout(text) && next?.role === "assistant" &&
+      next.content.startsWith(MISSING_PERSON_POSTER_REPLY);
+    if (matchingBrief && (details || renderedRedesign || (askedForPhoto && isPhotoOnlyPosterFollowup(text)))) {
       const hasSource = uploadAt !== undefined && turn.createdAt === uploadAt && photos.length > 0;
       const previews = [...turn.content.matchAll(/!\[[^\]\n]*\]\((data:image\/(?:jpeg|png|webp);base64,[a-z0-9+/=]{1,70000})\)/gi)]
         .map(match => match[1]);
@@ -199,7 +202,7 @@ export function planChatPoster(args: {
     const details = brief && readPosterDetails(brief.content);
     // A partial correction must never silently render the previous person's fields.
     const hasPartialFields = /^(?:name|last seen|age|height|contacts?)\s*:/im.test(query);
-    const editsOldFacts = EDIT_CURRENT_POSTER.test(query) ||
+    const editsOldFacts = (!requestedLayout && EDIT_CURRENT_POSTER.test(query)) ||
       /\b(?:change|update|correct|replace|edit|fix|revise)\s+(?:(?:his|her|their|the)\s+)?(?:name|date|location|phone|contacts?|age|height|build|complexion)\b/i.test(query);
     if (!details || (!direct && (hasPartialFields || editsOldFacts))) return { kind: "ask", content: DETAILS_REQUIRED };
     if (redesign && !requestedLayout && !direct) {
