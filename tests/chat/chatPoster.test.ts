@@ -100,6 +100,45 @@ describe("chat poster request and original-photo continuity", () => {
     })).toMatchObject({ kind: "missing_person", details: { name: "Example Person" } });
   });
 
+  it("resumes the actual mobile prompt and recovers a previously selected photo after the old analysis reply", () => {
+    const ask = planChatPoster({ query, history });
+    if (ask?.kind !== "ask") throw new Error("Expected a photo request");
+    const preview = "data:image/jpeg;base64,cHJldmlldw==";
+    const reply = `Use this\n\n![portrait.jpg](${preview})\n\n[Please respond in Twi where possible.]`;
+    const pending = [...history, { role: "user", content: query, createdAt: 200 }, { role: "assistant", content: ask.content, createdAt: 300 }];
+    expect(planChatPoster({ query: reply, history: pending, images: [{ dataUrl: photo }] }))
+      .toMatchObject({ kind: "missing_person", photo, details: { name: "Example Person" } });
+    const oldThread = [
+      ...pending,
+      { role: "user", content: reply, createdAt: 400 },
+      { role: "assistant", content: "Would you like me to create a missing person poster with the details you provided earlier?", createdAt: 500 },
+    ];
+    const followUp = "create a missing person poster with the details you provided earlier";
+    expect(planChatPoster({ query: followUp, history: oldThread, images: [{ dataUrl: photo }], historicalImages: true, uploadAt: 400 }))
+      .toMatchObject({ kind: "missing_person", photo, usedSavedPreview: false });
+    expect(planChatPoster({ query: followUp, history: oldThread }))
+      .toMatchObject({ kind: "missing_person", photo: preview, usedSavedPreview: true });
+    expect(planChatPoster({ query: brief, history: oldThread }))
+      .toMatchObject({ kind: "missing_person", photo: preview });
+    expect(planChatPoster({ query: brief.replace("Example Person", "Another Person"), history: oldThread }))
+      .toMatchObject({ kind: "ask", content: ask.content });
+    expect(planChatPoster({ query: "Use this", history: [distractor], images: [{ dataUrl: photo }] })).toBeUndefined();
+    expect(planChatPoster({ query: "I have already sent", history: [...oldThread, { role: "assistant", content: ask.content }] }))
+      .toMatchObject({ kind: "missing_person", photo: preview });
+  });
+
+  it("delivers an image poster without a portrait when asked and no selected photo is available", () => {
+    const ask = planChatPoster({ query, history });
+    if (ask?.kind !== "ask") throw new Error("Expected a photo request");
+    const plan = planChatPoster({ query: "I can't send you any image", history: [...history, { role: "assistant", content: ask.content }] });
+    expect(plan?.kind).toBe("missing_person");
+    if (plan?.kind !== "missing_person") throw new Error("Expected a poster");
+    expect(plan.photo).toBeUndefined();
+    expect(renderMissingPersonPoster(plan)).toContain("Example Person");
+    expect(renderMissingPersonPoster(plan)).not.toContain("<image ");
+    expect(planChatPoster({ query: "I can't send you any image", history: [distractor] })).toBeUndefined();
+  });
+
   it("renders explicit text literally and requires JPEG, PNG or WebP bytes", () => {
     const direct = `Create a missing-person poster\n${brief.replace("Example Person", "<script>Test</script> & Name")}`;
     const plan = planChatPoster({ query: direct, history: [], images: [{ dataUrl: photo }] });

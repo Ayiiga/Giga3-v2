@@ -43,7 +43,7 @@ import { isChatImageUploadForMessage, missingChatImageReferenceMessage, resolveC
 import { CREDIT_COSTS } from "./creditsConfig";
 import type { ActionCtx } from "./_generated/server";
 import type { FalImageSize } from "./falClient";
-import { MISSING_PERSON_POSTER_REPLY, planChatPoster, renderMissingPersonPoster, type ChatPosterPlan } from "./chatPoster";
+import { missingPersonPosterReply, planChatPoster, renderMissingPersonPoster, type ChatPosterPlan } from "./chatPoster";
 import { persistImageUrlIfNeeded } from "./mediaStorage";
 import { isLiveNewsEnabled } from "./featureFlags";
 
@@ -144,7 +144,7 @@ async function runHybridAiEngine(
     const svg = renderMissingPersonPoster(args.posterPlan);
     const url = await persistImageUrlIfNeeded(ctx, `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`);
     return {
-      content: `${MISSING_PERSON_POSTER_REPLY}\n\n${url}`,
+      content: missingPersonPosterReply(args.posterPlan, url),
       providerId: "local_fallback", usedFallback: false,
       latencyMs: 0, cached: false, requestKind: "image_generation",
     };

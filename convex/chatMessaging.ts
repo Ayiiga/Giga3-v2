@@ -457,7 +457,8 @@ export const acceptMessage = mutation({
     });
 
     if (
-      imageCapability.status === "analysis_unavailable" ||
+      (imageCapability.status === "analysis_unavailable" &&
+        posterPlan?.kind !== "missing_person" && posterPlan?.kind !== "ask") ||
       imageCapability.status === "upload_failed" ||
       imageCapability.status === "unsupported_format"
     ) {

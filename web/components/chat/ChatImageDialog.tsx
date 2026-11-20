@@ -51,11 +51,11 @@ export function ChatImageDialog({
         const svg = new DOMParser().parseFromString(await response.text(), "image/svg+xml");
         const brief = svg.querySelector("desc")?.textContent;
         const original = svg.querySelector("image")?.getAttribute("href");
-        if (!brief || !original || !/^data:image\/(?:jpeg|png|webp);base64,/i.test(original)) {
+        if (!brief || (original && !/^data:image\/(?:jpeg|png|webp);base64,/i.test(original))) {
           throw new Error("Poster details unavailable");
         }
         setDraft(brief);
-        setPhoto(original);
+        setPhoto(original ?? "");
       } catch {
         if (!controller.signal.aborted) setError("Could not open the poster details. Try opening the editor again.");
       } finally {
@@ -67,10 +67,15 @@ export function ChatImageDialog({
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
-    if (editDisabled || sending || !onSend || !draft.trim() || (poster && !photo)) return;
+    if (editDisabled || sending || !onSend || !draft.trim()) return;
     setSending(true);
     setError("");
     try {
+      if (poster && !photo) {
+        onSend(`Create a missing-person poster without a photo\n${draft.trim()}`, []);
+        onClose();
+        return;
+      }
       let blob: Blob;
       if (poster) {
         const [header, data] = photo.split(",", 2);
@@ -152,7 +157,7 @@ export function ChatImageDialog({
             {error && <p role="alert" className="text-sm text-red-600 dark:text-red-400">{error}</p>}
             <button
               type="submit"
-              disabled={editDisabled || sending || loadingPoster || !draft.trim() || (poster && !photo)}
+              disabled={editDisabled || sending || loadingPoster || !draft.trim()}
               className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-semibold text-white disabled:opacity-50"
             >
               {(sending || loadingPoster) && <Loader2 className="size-4 animate-spin" aria-hidden />}

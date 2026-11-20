@@ -5,8 +5,11 @@ type Turn = { role: string; content: string; createdAt?: number };
 const MISSING_PERSON = /\bmissing[- ](?:person|child|boy|girl|man|woman|teen(?:ager)?)\b/i;
 const POSTER = /\b(?:poster|flyer|notice)\b/i;
 const DESIGN_REQUEST = /\b(?:design|create|make|generate|render|give|send|show|want|need|update|correct|edit|fix|revise|change)\b/i;
-const CONTEXT_REFERENCE = /\b(?:use|using|based on|with)\s+(?:(?:the|my|our|these|those|this)\s+)?(?:information|info|details|brief|content|text|copy|words|instructions)(?:\s+(?:above|earlier|provided|I (?:gave|shared|sent)))\b|\b(?:above|earlier|previous)\s+(?:information|info|details|brief|content|text|copy|instructions)\b|\b(?:same|this|that|previous|earlier)\s+(?:design|poster|flyer|notice)\b/i;
+const CONTEXT_REFERENCE = /\b(?:use|using|based on|with)\s+(?:(?:the|my|our|these|those|this)\s+)?(?:information|info|details|brief|content|text|copy|words|instructions)(?:\s+(?:above|earlier|provided|(?:I|we|you) (?:gave|shared|sent|provided|uploaded|attached)))\b|\b(?:above|earlier|previous)\s+(?:information|info|details|brief|content|text|copy|instructions)\b|\b(?:same|this|that|previous|earlier)\s+(?:design|poster|flyer|notice)\b/i;
 const BARE_DESIGN = /^(?:(?:yes|please)[,\s]+)*(?:(?:can|could|would|will) you\s+)?(?:please\s+)?(?:design|create|make|generate|render|produce|give (?:me|us))\s+(?:(?:a|an|me|us|my|our|the)\s+)?(?:(?:beautiful|good|nice|clean|professional|promotional|bright|clear|custom|original|new)\s+){0,5}(?:poster|flyer|banner)(?:\s+please)?[.?!]*$/i;
+const RESUME_POSTER = /^(?:please[ ,]+)?(?:i (?:have |['’]ve )?(?:already (?:sent|shared|uploaded|attached|provided)|(?:can['’]t|cannot|can not) (?:send(?:ing)?|attach|upload|resend))\b|(?:please )?use what i (?:already )?(?:sent|shared|uploaded|attached|provided)\b)/i;
+const WITHOUT_PHOTO = /\b(?:without (?:a |an |the )?(?:photo|picture|image|portrait)|(?:please )?(?:skip|omit|leave out) the (?:photo|picture|image)|text[- ]only poster)\b/i;
+const CANNOT_SEND_PHOTO = /\b(?:can['’]t|cannot|can not) (?:send|attach|upload|resend) (?:you )?(?:(?:any|another|the|a|an) )?(?:photo|picture|image|portrait)\b/i;
 const PHOTO_REQUIRED = "Please attach one original photo of the person to use in the poster. No image credits were charged.";
 const CHOOSE_PHOTO = "Please attach only the one photo you want on the poster. No image credits were charged.";
 const FIELD_LABEL = /^(?:name|full name|last seen|age|height|high|complexion|build|contacts?)\s*[:–-]/i;
@@ -23,12 +26,12 @@ export function imageBriefText(content: string): string {
 }
 
 export function isPhotoOnlyPosterFollowup(query: string): boolean {
-  return /^(?:analy[sz]e (?:this image|the uploaded files)|(?:here is|here's|use) (?:the|this|my) (?:photo|picture|image)(?: for (?:the|this) (?:poster|flyer))?|photo attached)[.!?]*$/i.test(imageBriefText(query));
+  return /^(?:analy[sz]e (?:this image|the uploaded files)|(?:please\s+)?use (?:this|that)(?: one)?|(?:here is|here's|use) (?:the|this|my) (?:photo|picture|image)(?: for (?:the|this) (?:poster|flyer))?|photo attached)[.!?]*$/i.test(imageBriefText(query));
 }
 
 export function needsPosterHistory(query: string, hasPhoto = false): boolean {
   const text = imageBriefText(query);
-  return EDIT_CURRENT_POSTER.test(text) || (hasPhoto && isPhotoOnlyPosterFollowup(text)) ||
+  return EDIT_CURRENT_POSTER.test(text) || RESUME_POSTER.test(text) || WITHOUT_PHOTO.test(text) || (hasPhoto && isPhotoOnlyPosterFollowup(text)) ||
     text.split(/\r?\n/).some(line => FIELD_LABEL.test(line.trim())) ||
     (POSTER.test(text) && (DESIGN_REQUEST.test(text) || CONTEXT_REFERENCE.test(text) || POSTER_DELIVERY.test(text)));
 }
@@ -79,8 +82,55 @@ const RASTER_DATA_URL = /^data:image\/(?:jpeg|png|webp);base64,[a-z0-9+/]+={0,2}
 
 export type ChatPosterPlan =
   | { kind: "ask"; content: string }
-  | { kind: "missing_person"; photo: string; details: PosterDetails }
+  | { kind: "missing_person"; photo?: string; details: PosterDetails; usedSavedPreview?: boolean }
   | { kind: "image"; prompt: string };
+
+function isPosterClarification(content?: string): boolean {
+  return content === PHOTO_REQUIRED || content === CHOOSE_PHOTO || content === DETAILS_REQUIRED;
+}
+
+function samePerson(name: string, other: string): boolean {
+  const normalize = (value: string) => value.normalize("NFKC").toLowerCase().replace(/\s+/g, " ").trim();
+  return normalize(name) === normalize(other);
+}
+
+function savedPosterPhotos(
+  history: Turn[],
+  name: string,
+  uploadAt: number | undefined,
+  photos: Array<{ dataUrl?: string }>
+): { urls: string[]; preview: boolean } | undefined {
+  let matchingBrief = false;
+  let askedForPhoto = false;
+  let askedForDetails = false;
+  let selected: { urls: string[]; preview: boolean } | undefined;
+  for (const turn of history) {
+    if (turn.role === "assistant") {
+      askedForPhoto = turn.content === PHOTO_REQUIRED || turn.content === CHOOSE_PHOTO;
+      askedForDetails = turn.content === DETAILS_REQUIRED;
+      continue;
+    }
+    if (turn.role !== "user") continue;
+    const text = imageBriefText(turn.content);
+    const missingBrief = MISSING_PERSON.test(text) && !isImageCommentaryOrInstruction(text);
+    const details = missingBrief || askedForDetails || askedForPhoto ? readPosterDetails(text) : undefined;
+    if (details || (missingBrief && !CONTEXT_REFERENCE.test(text) && !POSTER_DELIVERY.test(text))) {
+      matchingBrief = Boolean(details && samePerson(details.name, name));
+      if (!matchingBrief) selected = undefined;
+    }
+    if (matchingBrief && (details || (askedForPhoto && isPhotoOnlyPosterFollowup(text)))) {
+      const hasSource = uploadAt !== undefined && turn.createdAt === uploadAt && photos.length > 0;
+      const previews = [...turn.content.matchAll(/!\[[^\]\n]*\]\((data:image\/(?:jpeg|png|webp);base64,[a-z0-9+/=]{1,70000})\)/gi)]
+        .map(match => match[1]);
+      if (hasSource) selected = { urls: photos.map(photo => photo.dataUrl!).filter(Boolean), preview: false };
+      else if (previews.length) selected = { urls: previews, preview: true };
+    }
+    if (matchingBrief && WITHOUT_PHOTO.test(text)) selected = undefined;
+    askedForPhoto = false;
+    askedForDetails = false;
+  }
+  return selected;
+}
 
 export function planChatPoster(args: {
   query: string;
@@ -93,13 +143,14 @@ export function planChatPoster(args: {
   const photoOnly = isPhotoOnlyPosterFollowup(query);
   const photos = (args.images ?? []).filter(a => a.dataUrl);
   if (!needsPosterHistory(query, !args.historicalImages && photos.length > 0)) return undefined;
-  if (!photoOnly && isImageCommentaryOrInstruction(query) && !POSTER_DELIVERY.test(query)) return undefined;
   const lastAssistant = args.history.filter(turn => turn.role === "assistant").at(-1);
+  const pendingPoster = isPosterClarification(lastAssistant?.content);
+  const resume = pendingPoster && (RESUME_POSTER.test(query) || WITHOUT_PHOTO.test(query));
+  if (!photoOnly && !resume && isImageCommentaryOrInstruction(query) && !POSTER_DELIVERY.test(query)) return undefined;
   const confirmedDetails = readPosterDetails(query);
-  const suppliesRequestedDetails = Boolean(confirmedDetails &&
-    (lastAssistant?.content === DETAILS_REQUIRED || lastAssistant?.content === PHOTO_REQUIRED ||
-      lastAssistant?.content === CHOOSE_PHOTO));
-  if (!POSTER.test(query) && !suppliesRequestedDetails) {
+  const suppliesRequestedDetails = Boolean(confirmedDetails && pendingPoster);
+  const completeMissingBrief = Boolean(confirmedDetails && MISSING_PERSON.test(query));
+  if (!POSTER.test(query) && !suppliesRequestedDetails && !completeMissingBrief && !resume) {
     if (!photoOnly && (!photos.length || args.historicalImages) && EDIT_CURRENT_POSTER.test(query) &&
       lastAssistant?.content.startsWith(MISSING_PERSON_POSTER_REPLY)) {
       return { kind: "ask", content: DETAILS_REQUIRED };
@@ -107,15 +158,15 @@ export function planChatPoster(args: {
     if (!photoOnly) return undefined;
   }
 
-  const previous = args.history.filter(turn => turn.role === "user" && imageBriefText(turn.content) !== query);
+  const previous = args.history.filter(turn => turn.role === "user");
   const newestBrief = [...previous].reverse().find(turn => {
     const text = imageBriefText(turn.content);
     return !isPhotoOnlyPosterFollowup(text) && !BARE_DESIGN.test(text) &&
       (readPosterDetails(text) || (!isImageCommentaryOrInstruction(text) &&
         !CONTEXT_REFERENCE.test(text) && !POSTER_DELIVERY.test(text) && /\S.{12}/s.test(text)));
   });
-  const reference = CONTEXT_REFERENCE.test(query) || POSTER_DELIVERY.test(query);
-  const waitingForPhoto = photoOnly && (lastAssistant?.content === PHOTO_REQUIRED || lastAssistant?.content === CHOOSE_PHOTO);
+  const reference = resume || CONTEXT_REFERENCE.test(query) || POSTER_DELIVERY.test(query);
+  const waitingForPhoto = photoOnly && !args.historicalImages && photos.length > 0 && pendingPoster;
   if (photoOnly && !waitingForPhoto) return undefined;
 
   const explicitMissing = MISSING_PERSON.test(query);
@@ -134,7 +185,7 @@ export function planChatPoster(args: {
     !MISSING_PERSON.test(imageBriefText(newestBrief.content)) &&
     POSTER.test(imageBriefText(newestBrief.content)) && DESIGN_REQUEST.test(imageBriefText(newestBrief.content));
   const refersToMissing = (reference || waitingForPhoto) && priorMissing && !newestIsOtherDesign;
-  if (explicitMissing || refersToMissing || suppliesRequestedDetails) {
+  if (explicitMissing || refersToMissing || suppliesRequestedDetails || resume || waitingForPhoto) {
     const direct = confirmedDetails;
     const brief = direct
       ? { content: query, createdAt: undefined }
@@ -146,22 +197,39 @@ export function planChatPoster(args: {
       /\b(?:change|update|correct|replace|edit|fix|revise)\s+(?:(?:his|her|their|the)\s+)?(?:name|date|location|phone|contacts?|age|height|build|complexion)\b/i.test(query);
     if (!details || (!direct && (hasPartialFields || editsOldFacts))) return { kind: "ask", content: DETAILS_REQUIRED };
 
-    // A historical portrait must come from the same brief or a later upload in
-    // this thread. Direct briefs require an attachment in the same request.
-    const uploadTurn = args.history.find(turn => turn.role === "user" && turn.createdAt === args.uploadAt);
-    const explicitlyUsesPhoto = /\b(?:use|using|with|from)\s+(?:(?:the|my|this|our|his|her|their|uploaded|attached|original|brighter)\s+){0,4}(?:photo|picture|image|portrait)\b/i.test(query);
-    const uploadMatches = !args.historicalImages ||
-      (brief?.createdAt !== undefined && (args.uploadAt === brief.createdAt ||
-        (explicitlyUsesPhoto && uploadTurn && uploadTurn.createdAt !== undefined &&
-          uploadTurn.createdAt > brief.createdAt && uploadTurn === previous.at(-1))));
-    if (!uploadMatches || photos.length === 0) return { kind: "ask", content: PHOTO_REQUIRED };
-    if (photos.length !== 1) return { kind: "ask", content: CHOOSE_PHOTO };
-    const photo = photos[0].dataUrl!;
+    if (WITHOUT_PHOTO.test(query)) return { kind: "missing_person", details };
+
+    // Fresh uploads take precedence. Recover a prior selection only from this
+    // thread and only if it was tied to the same missing-person brief.
+    const priorDetails = priorMissing && readPosterDetails(priorMissing.content);
+    const historyPhotos = args.historicalImages ? photos : [];
+    const saved = (!direct || (priorDetails && samePerson(priorDetails.name, details.name)))
+      ? savedPosterPhotos(args.history, details.name, args.uploadAt, historyPhotos)
+      : undefined;
+    const uploadTurn = previous.at(-1);
+    const explicitlyUsesPhoto = /\b(?:use|using|with|from)\s+(?:(?:the|my|this|that|our|his|her|their|uploaded|attached|original|brighter)\s+){0,4}(?:photo|picture|image|portrait)\b/i.test(query);
+    const explicitRecentUpload = args.historicalImages && priorDetails && samePerson(priorDetails.name, details.name) &&
+      args.uploadAt !== undefined &&
+      uploadTurn?.createdAt === args.uploadAt &&
+      priorMissing?.createdAt !== undefined && args.uploadAt > priorMissing.createdAt &&
+      explicitlyUsesPhoto;
+    const source = !args.historicalImages && photos.length
+      ? { urls: photos.map(photo => photo.dataUrl!), preview: false }
+      : explicitRecentUpload && historyPhotos.length
+        ? { urls: historyPhotos.map(photo => photo.dataUrl!), preview: false }
+        : saved;
+    if (!source?.urls.length) {
+      return CANNOT_SEND_PHOTO.test(query) ? { kind: "missing_person", details } : { kind: "ask", content: PHOTO_REQUIRED };
+    }
+    if (source.urls.length !== 1) {
+      return CANNOT_SEND_PHOTO.test(query) ? { kind: "missing_person", details } : { kind: "ask", content: CHOOSE_PHOTO };
+    }
+    const [photo] = source.urls;
     if (!RASTER_DATA_URL.test(photo)) return { kind: "ask", content: PHOTO_REQUIRED };
-    return { kind: "missing_person", photo, details };
+    return { kind: "missing_person", photo, details, usedSavedPreview: source.preview };
   }
 
-  if (reference && !/\b(?:same|this|that|previous|earlier)\s+(?:design|poster|flyer|notice)\b/i.test(query)) {
+  if (reference && !resume && !/\b(?:same|this|that|previous|earlier)\s+(?:design|poster|flyer|notice)\b/i.test(query)) {
     if (!newestBrief) return { kind: "ask", content: "What is the poster for, and what exact details should it include? No image credits were charged." };
     return {
       kind: "image",
@@ -187,10 +255,11 @@ export function renderMissingPersonPoster(plan: Extract<ChatPosterPlan, { kind: 
     const fit = Math.min(size, Math.floor(1320 / Math.max(1, Array.from(copy).length)));
     return `<text x="500" y="${y}" text-anchor="middle" fill="${color}" font-size="${fit}"${bold ? ' font-weight="700"' : ""}>${escapeXml(copy)}</text>`;
   };
-  let y = 830;
+  const top = photo ? 0 : 485;
+  let y = 830 - top;
   const body: string[] = [
-    text(details.name, 735, 74, "#142035", true),
-    text("LAST SEEN", 785, 28, "#9e2336", true),
+    text(details.name, 735 - top, 74, "#142035", true),
+    text("LAST SEEN", 785 - top, 28, "#9e2336", true),
     text(details.lastSeen, y, 43, "#142035"),
   ];
   for (const [label, value] of details.description) {
@@ -201,9 +270,9 @@ export function renderMissingPersonPoster(plan: Extract<ChatPosterPlan, { kind: 
   const footer = y;
   body.push(text("PLEASE CONTACT", y += 58, 32, "#fff", true));
   for (const contact of details.contacts) body.push(text(contact, y += 54, 45, "#fff", true));
-  const height = Math.max(y + 66, 1160);
+  const height = Math.max(y + 66, photo ? 1160 : 760);
   const editableBrief = [
-      `Name: ${details.name}`,
+    `Name: ${details.name}`,
     `Last seen: ${details.lastSeen}`,
     ...details.description.map(([label, value]) => `${label}: ${value}`),
     ...details.contacts.map(contact => `Contact: ${contact}`),
@@ -212,11 +281,16 @@ export function renderMissingPersonPoster(plan: Extract<ChatPosterPlan, { kind: 
   <desc>${escapeXml(editableBrief)}</desc>
   <rect width="100%" height="100%" fill="#fffaf1"/>
   <rect width="100%" height="155" fill="#ad1732"/>
-  <rect x="95" y="195" width="810" height="454" rx="20" fill="#ece8df"/>
-  <image x="110" y="205" width="780" height="434" href="${photo}" preserveAspectRatio="xMidYMid meet"/>
+  ${photo ? `<rect x="95" y="195" width="810" height="454" rx="20" fill="#ece8df"/>
+  <image x="110" y="205" width="780" height="434" href="${photo}" preserveAspectRatio="xMidYMid meet"/>` : ""}
   <rect y="${footer}" width="100%" height="${height - footer}" fill="#142035"/>
   <g font-family="Arial, sans-serif">${text("MISSING PERSON", 103, 78, "#fff", true)}${body.join("")}</g>
 </svg>`;
 }
 
 export const MISSING_PERSON_POSTER_REPLY = "Here is your missing-person poster:";
+
+export function missingPersonPosterReply(plan: Extract<ChatPosterPlan, { kind: "missing_person" }>, url: string): string {
+  const note = plan.usedSavedPreview ? "\n\nI used the saved photo preview from this chat." : "";
+  return `${MISSING_PERSON_POSTER_REPLY}${note}\n\n${url}`;
+}
