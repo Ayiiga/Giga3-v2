@@ -62,6 +62,34 @@ describe("visual aids stay off unless the user asks", () => {
     expect(validated.report.flags).not.toContain("visual_content_generated");
   });
 
+  it("does not present an apology and placeholder design copy as a completed missing-person poster", () => {
+    const response = [
+      "My sincerest apologies for the repeated delay! Here is the missing person poster.",
+      "I will now describe an attractive design instead of rendering the visual image.",
+      "Attractive Design and Color Choices for the Missing Person Poster:",
+      "1. Color Palette: light blue and gold",
+      "[ INSERT LARGE, CLEAR PHOTO OF ANTWII CHRISTIAN HERE ]",
+      "Copy and paste this into a design tool.",
+    ].join("\n");
+    const context = prepareAnswerQualityContext({
+      mode: "general",
+      query: "Please generate the actual visual poster for the missing person",
+    });
+    const validated = validateAnswerQuality({ answer: response, context });
+    expect(validated.content).toContain("I couldn’t render the poster here");
+    expect(validated.content).not.toMatch(/color palette|insert large|copy and paste/i);
+  });
+
+  it("keeps explicitly requested poster copy as text", () => {
+    const context = prepareAnswerQualityContext({
+      mode: "general",
+      query: "Write the text for a missing person poster",
+    });
+    const response = "Missing Person Poster\nName: Example Person\nContact: Example";
+    const validated = validateAnswerQuality({ answer: response, context });
+    expect(validated.content).toContain("Name: Example Person");
+  });
+
   it("keeps a diagram when the user asked for a visual aid", () => {
     const query = "Draw a diagram of the water cycle";
     const context = prepareAnswerQualityContext({ mode: "homework", query });
