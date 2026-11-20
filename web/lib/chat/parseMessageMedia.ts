@@ -12,10 +12,16 @@ export interface ParsedMessageMedia {
 }
 
 /**
- * Model-authored poster JSON containing inline image bytes is not a rendered
- * poster. Match the opening fields so this also handles a reply cut off mid-image.
+ * Strip legacy poster placeholders from assistant messages. Keep explicitly
+ * requested visual specs that lack the automatic Visual Aids wrapper.
  */
 export function splitUnrenderedPoster(text: string): string | null {
+  const generated = /^(?:#{2,3})[ \t]+Visual Aids[ \t]*\r?\n[ \t\r\n]*```mermaid[ \t]*\r?\n(?:(?!^```)[\s\S])*^```[ \t]*\r?\n[ \t\r\n]*```giga-visual[ \t]*\r?\n((?:(?!^```)[\s\S])*)(?:^```[ \t]*(?:\r?\n|$)|(?![\s\S]))/gim;
+  for (const match of text.matchAll(generated)) {
+    if (/^\s*"kind"\s*:\s*"poster"\s*[,}]/mi.test(match[1])) {
+      return (text.slice(0, match.index) + text.slice(match.index + match[0].length)).trim();
+    }
+  }
   const poster = /^(?:[ \t]*```(?:json|giga-visual|visual)?[ \t]*\r?\n)?[ \t]*\{\s*"(?:type|kind)"\s*:\s*"poster"\s*,/gim;
   for (const match of text.matchAll(poster)) {
     if (/"(?:url|src)"\s*:\s*"data:image\/[a-z0-9.+-]+;base64,/i.test(text.slice(match.index))) {

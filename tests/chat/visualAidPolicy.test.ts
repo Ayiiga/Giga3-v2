@@ -36,6 +36,17 @@ describe("visual aids stay off unless the user asks", () => {
     expect(validated.report.flags).not.toContain("visual_content_generated");
   });
 
+  it("never substitutes an automatic diagram for a poster redesign", () => {
+    const query = "Please redesign the poster";
+    expect(userRequestedVisualAid(query)).toBe(false);
+    const validated = validateAnswerQuality({
+      answer: "Which poster would you like to redesign?",
+      context: prepareAnswerQualityContext({ mode: "general", query }),
+    });
+    expect(validated.content).not.toContain("Visual Aids");
+    expect(validated.content).not.toContain("giga-visual");
+  });
+
   it("keeps a diagram when the user asked for a visual aid", () => {
     const query = "Draw a diagram of the water cycle";
     const context = prepareAnswerQualityContext({ mode: "homework", query });
