@@ -1,5 +1,7 @@
 import { isImageCommentaryOrInstruction, isPosterRedesignRequest, posterRedesignLayout } from "./imageRequestIntent";
 
+import { missingPersonPlaceholderIndex } from "./posterPlaceholder";
+
 export const POSTER_DESIGNS = { alert: "Alert", bulletin: "Bulletin" } as const;
 export type PosterDesign = keyof typeof POSTER_DESIGNS;
 export const POSTER_REDESIGN_HISTORY_LIMIT = 64;
@@ -21,6 +23,15 @@ const DETAILS_REQUIRED = "Please send the confirmed details as separate lines: N
 const EDIT_CURRENT_POSTER = /^(?:please\s+)?(?:edit|update|correct|fix|revise|change|replace|make it|brighten|darken)\b/i;
 const POSTER_DELIVERY = /^(?:here is your|where(?: is|'s)|show me|give me|i (?:am |’m |'m )?waiting for|i (?:need|want))\b.{0,50}\b(?:poster|flyer|banner|notice)\b/i;
 
+// A short reply can accept a poster handoff without restating the asset name.
+const POSTER_CONTINUATION = /^(?:please[ ,]+)?(?:yes|ok(?:ay)?|go ahead(?: and (?:generate|render|create|make|show|send) it)?|do it|continue|nothing has changed|still the same|(?:please )?(?:generate|render|create|make|show|send|give)(?: (?:me|us))? (?:it|(?:the|my|an?|actual|real|redesigned|visual|poster) )*(?:poster|image|visual)(?: itself)?|(?:generate|render|create|make|show|send) it|where(?: is|'s) (?:it|(?:the|my) (?:image|poster)))(?:[, ]+(?:please|now|then|go ahead|do it))*[.!?]*$/i;
+const POSTER_HANDOFF_REPLY = /\b(?:missing[- ]person poster|(?:poster|visual image) (?:design|layout|itself)|(?:create|generate|redesign|render) (?:the|your|a|an|a new|an attractive) (?:[\w-]+ ){0,4}(?:poster|visual image))\b/i;
+
+export function needsExtendedPosterHistory(query: string): boolean {
+  const text = imageBriefText(query);
+  return isPosterRedesignRequest(text) || POSTER_CONTINUATION.test(text);
+}
+
 export function imageBriefText(content: string): string {
   return content
     .replace(/!\[[^\]\n]*\]\(data:image\/[^)]+\)/gi, "")
@@ -35,7 +46,7 @@ export function isPhotoOnlyPosterFollowup(query: string): boolean {
 
 export function needsPosterHistory(query: string, hasPhoto = false): boolean {
   const text = imageBriefText(query);
-  return isPosterRedesignRequest(text) || EDIT_CURRENT_POSTER.test(text) || RESUME_POSTER.test(text) || WITHOUT_PHOTO.test(text) || (hasPhoto && isPhotoOnlyPosterFollowup(text)) ||
+  return needsExtendedPosterHistory(text) || EDIT_CURRENT_POSTER.test(text) || RESUME_POSTER.test(text) || WITHOUT_PHOTO.test(text) || (hasPhoto && isPhotoOnlyPosterFollowup(text)) ||
     text.split(/\r?\n/).some(line => FIELD_LABEL.test(line.trim())) ||
     (POSTER.test(text) && (DESIGN_REQUEST.test(text) || CONTEXT_REFERENCE.test(text) || POSTER_DELIVERY.test(text)));
 }
@@ -154,12 +165,19 @@ export function planChatPoster(args: {
   if (!needsPosterHistory(query, !args.historicalImages && photos.length > 0)) return undefined;
   const lastAssistant = args.history.filter(turn => turn.role === "assistant").at(-1);
   const pendingPoster = isPosterClarification(lastAssistant?.content);
+  const lastUser = args.history.filter(turn => turn.role === "user").at(-1);
+  const lastUserText = imageBriefText(lastUser?.content ?? "");
+  const posterHandoff = POSTER_CONTINUATION.test(query) && Boolean(lastAssistant &&
+    (pendingPoster || lastAssistant.content.startsWith(MISSING_PERSON_POSTER_REPLY) ||
+      missingPersonPlaceholderIndex(lastAssistant.content) >= 0 ||
+      (POSTER_HANDOFF_REPLY.test(lastAssistant.content) && MISSING_PERSON.test(lastAssistant.content))) &&
+    (POSTER.test(lastUserText) || POSTER_CONTINUATION.test(lastUserText) || isPhotoOnlyPosterFollowup(lastUserText)));
   const resume = pendingPoster && (RESUME_POSTER.test(query) || WITHOUT_PHOTO.test(query));
-  if (!photoOnly && !resume && isImageCommentaryOrInstruction(query) && !POSTER_DELIVERY.test(query)) return undefined;
+  if (!photoOnly && !resume && !posterHandoff && isImageCommentaryOrInstruction(query) && !POSTER_DELIVERY.test(query)) return undefined;
   const confirmedDetails = readPosterDetails(query);
   const suppliesRequestedDetails = Boolean(confirmedDetails && pendingPoster);
   const completeMissingBrief = Boolean(confirmedDetails && MISSING_PERSON.test(query));
-  if (!POSTER.test(query) && !suppliesRequestedDetails && !completeMissingBrief && !resume) {
+  if (!POSTER.test(query) && !suppliesRequestedDetails && !completeMissingBrief && !resume && !posterHandoff) {
     if (!photoOnly && (!photos.length || args.historicalImages) && EDIT_CURRENT_POSTER.test(query) &&
       lastAssistant?.content.startsWith(MISSING_PERSON_POSTER_REPLY)) {
       return { kind: "ask", content: DETAILS_REQUIRED };
@@ -170,11 +188,11 @@ export function planChatPoster(args: {
   const previous = args.history.filter(turn => turn.role === "user");
   const newestBrief = [...previous].reverse().find(turn => {
     const text = imageBriefText(turn.content);
-    return !isPhotoOnlyPosterFollowup(text) && !BARE_DESIGN.test(text) && !isPosterRedesignRequest(text) &&
+    return !isPhotoOnlyPosterFollowup(text) && !BARE_DESIGN.test(text) && !isPosterRedesignRequest(text) && !POSTER_CONTINUATION.test(text) &&
       (readPosterDetails(text) || (!isImageCommentaryOrInstruction(text) &&
         !CONTEXT_REFERENCE.test(text) && !POSTER_DELIVERY.test(text) && /\S.{12}/s.test(text)));
   });
-  const reference = resume || redesign || CONTEXT_REFERENCE.test(query) || POSTER_DELIVERY.test(query);
+  const reference = resume || posterHandoff || redesign || CONTEXT_REFERENCE.test(query) || POSTER_DELIVERY.test(query);
   const waitingForPhoto = photoOnly && !args.historicalImages && photos.length > 0 && pendingPoster;
   if (photoOnly && !waitingForPhoto) return undefined;
 
@@ -218,13 +236,15 @@ export function planChatPoster(args: {
     const previousDesign = /^Poster design: (Alert|Bulletin)\.$/m.exec(latestPoster?.content ?? "")?.[1];
     const currentDesign = previousDesign?.toLowerCase() ?? briefDesign ?? "alert";
     const alternate = currentDesign === "bulletin" ? "alert" : "bulletin";
-    const selectedDesign = requestedLayout === "alternate" ? alternate : requestedLayout ?? briefDesign;
+    const handoffLayout = posterHandoff ? posterRedesignLayout(lastUserText) : undefined;
+    const layout = requestedLayout ?? handoffLayout;
+    const selectedDesign = layout === "alternate" ? alternate : layout ?? briefDesign;
     const freshPhoto = !args.historicalImages && photos.length > 0;
     const lastPosterRequest = latestPoster && args.history.slice(0, args.history.indexOf(latestPoster))
       .reverse().find(turn => turn.role === "user");
     const wasTextOnly = latestPoster?.content.includes("\n\nThis poster has no photo.") ||
       (lastPosterRequest && WITHOUT_PHOTO.test(lastPosterRequest.content));
-    if (WITHOUT_PHOTO.test(query) || (redesign && !freshPhoto && wasTextOnly)) {
+    if (WITHOUT_PHOTO.test(query) || ((redesign || posterHandoff) && !freshPhoto && wasTextOnly)) {
       return { kind: "missing_person", details, design: selectedDesign };
     }
 
@@ -247,10 +267,14 @@ export function planChatPoster(args: {
         ? { urls: historyPhotos.map(photo => photo.dataUrl!), preview: false }
         : saved;
     if (!source?.urls.length) {
+      if (posterHandoff && !layout && latestPoster &&
+          /https:\/\/[\w-]+\.convex\.(?:cloud|site)\/api\/storage\/[\w-]+\s*$/.test(latestPoster.content)) {
+        return { kind: "ask", content: latestPoster.content };
+      }
       if (redesign && lastPosterRequest && CANNOT_SEND_PHOTO.test(lastPosterRequest.content)) {
         return { kind: "missing_person", details, design: selectedDesign };
       }
-      if (redesign && latestPoster) {
+      if ((redesign || posterHandoff) && latestPoster) {
         return { kind: "ask", content: "Tap the pencil on your previous poster to change its design using the saved photo." };
       }
       return CANNOT_SEND_PHOTO.test(query) ? { kind: "missing_person", details, design: selectedDesign } : { kind: "ask", content: PHOTO_REQUIRED };
@@ -263,6 +287,15 @@ export function planChatPoster(args: {
     return { kind: "missing_person", photo, details, usedSavedPreview: source.preview, design: selectedDesign };
   }
 
+  if (posterHandoff) {
+    // The asset can outlive the older input turns. A delivery request can show
+    // the existing rendered reply again, without entering paid generation.
+    if (!newestIsOtherDesign && lastAssistant?.content.startsWith(MISSING_PERSON_POSTER_REPLY) &&
+        /https:\/\/[\w-]+\.convex\.(?:cloud|site)\/api\/storage\/[\w-]+\s*$/.test(lastAssistant.content)) {
+      return { kind: "ask", content: lastAssistant.content };
+    }
+    return { kind: "ask", content: "I couldn’t find a complete poster brief in this chat. If you have an earlier poster here, tap its pencil to update it." };
+  }
   if (redesign) {
     return { kind: "ask", content: "Open the poster and tap the pencil to change its design. If you’re starting a new poster, send the details you want to use." };
   }

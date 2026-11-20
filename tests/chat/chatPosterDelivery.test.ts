@@ -16,9 +16,14 @@ afterEach(() => {
 });
 
 it.each([
-  ["a selected upload", false],
-  ["Please redesign the poster", true],
-] as const)("renders a chat poster for %s without a provider call or debit", async (_name, redesign) => {
+  ["a selected upload", null],
+  ["Please redesign the poster", "Please redesign the poster"],
+  ["Yes, go ahead", "Yes, go ahead"],
+  ["Generate it now", "Generate it now"],
+  ["Where is the image?", "Where is the image?"],
+  ["Please generate the actual visual poster", "Please generate the actual visual poster"],
+] as const)("renders a chat poster for %s without a provider call or debit", async (_name, continuation) => {
+  const redesign = continuation !== null;
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
   vi.stubEnv("SESSION_SIGNING_SECRET", "poster-delivery-test");
   vi.stubEnv("CHAT_ENABLE_VISION", "false");
@@ -69,13 +74,17 @@ it.each([
       });
       await ctx.db.insert("messages", {
         conversationId, userId: email, role: "assistant", createdAt: now + 33,
-        content: "What specifically would you like to change or improve in the design?",
+        content: [
+          "Please provide the details for the redesigned poster.",
+          "```giga-visual",
+          '{"type":"poster","title":"MISSING PERSON","image":{"url":"https://example.com/logo.png","alt":"Placeholder"},',
+        ].join("\n"),
       });
     });
   }
   const result = await t.mutation(api.chatMessaging.acceptMessage, {
     sessionToken, conversationId,
-    content: redesign ? "Please redesign the poster" : `Use this\n\n![portrait.png](${photo})\n\n[Please respond in Twi where possible.]`,
+    content: continuation ?? `Use this\n\n![portrait.png](${photo})\n\n[Please respond in Twi where possible.]`,
     attachments: redesign ? [] : [{ kind: "image", name: "portrait.png", mimeType: "image/png",
       sizeBytes: Buffer.from(photo.split(",")[1], "base64").length, dataUrl: photo }],
     clientRequestId: "poster-upload-test",

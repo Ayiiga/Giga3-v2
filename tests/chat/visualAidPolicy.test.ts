@@ -47,6 +47,21 @@ describe("visual aids stay off unless the user asks", () => {
     expect(validated.content).not.toContain("giga-visual");
   });
 
+  it("never presents a missing-person placeholder as a delivered visual", () => {
+    const query = "Generate a visual poster for the missing person";
+    const validated = validateAnswerQuality({
+      answer: [
+        "Here is your proposed visual poster with placeholders.",
+        "```giga-visual",
+        '{"type":"poster","title":"MISSING PERSON","elements":[{"content":"[Please provide Age]"',
+      ].join("\n"),
+      context: prepareAnswerQualityContext({ mode: "general", query }),
+    });
+    expect(validated.content).toContain("I couldn’t render the poster here");
+    expect(validated.content).not.toMatch(/mermaid|giga-visual|provide Age/);
+    expect(validated.report.flags).not.toContain("visual_content_generated");
+  });
+
   it("keeps a diagram when the user asked for a visual aid", () => {
     const query = "Draw a diagram of the water cycle";
     const context = prepareAnswerQualityContext({ mode: "homework", query });
