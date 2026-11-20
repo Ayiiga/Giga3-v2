@@ -31,7 +31,7 @@ export default function PressPage() {
           path: "/press",
           name: "Giga3 AI Press Room",
           description:
-            "Media information about Giga3 AI — Africa's AI Super App built in Ghana by Intelligence Global Arena (GIGA).",
+            "Media information about Giga3 AI — Africa's AI Super App built in Ghana by GIGA 3 ENTERPRISE.",
         }}
       />
       <JsonLd
