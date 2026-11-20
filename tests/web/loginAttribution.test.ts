@@ -5,14 +5,14 @@ import { describe, expect, it } from "vitest";
 const read = (p: string) => readFileSync(resolve(__dirname, "../..", p), "utf8");
 
 describe("login page brand attribution", () => {
-  it("shows A product of GIGA without the founder personal name", () => {
+  it("shows registered GIGA 3 ENTERPRISE without the founder personal name", () => {
     const login = read("web/components/chat/ChatLoginForm.tsx");
     expect(login).toContain("A product of {siteConfig.founder.organizationShort}");
     expect(login).not.toContain("Founded by");
     expect(login).not.toContain("siteConfig.founder.name");
 
     const site = read("web/lib/site.ts");
-    expect(site).toContain('organizationShort: "GIGA"');
+    expect(site).toContain('organizationShort: "GIGA 3 ENTERPRISE"');
   });
 
   it("does not repeat the old attribution string elsewhere in auth UI", () => {
