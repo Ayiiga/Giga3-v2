@@ -91,6 +91,27 @@ export async function watermarkImageBlob(blob: Blob): Promise<Blob> {
 }
 
 export async function prepareImageForGallery(blob: Blob): Promise<Blob> {
+  if (blob.type === "image/svg+xml" && typeof document !== "undefined") {
+    // Android's gallery expects a raster file. Rasterize our vector poster
+    // before saving or sending it to other apps.
+    const url = URL.createObjectURL(blob);
+    try {
+      const image = new Image();
+      image.src = url;
+      await image.decode();
+      const canvas = document.createElement("canvas");
+      canvas.width = image.naturalWidth;
+      canvas.height = image.naturalHeight;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("Could not open the poster for export.");
+      ctx.drawImage(image, 0, 0);
+      blob = await new Promise<Blob>((resolve, reject) =>
+        canvas.toBlob(result => result ? resolve(result) : reject(new Error("Could not export the poster.")), "image/png")
+      );
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }
   if (!readExportWatermarkPreference()) return blob;
   return watermarkImageBlob(blob);
 }

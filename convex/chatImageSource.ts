@@ -86,6 +86,8 @@ export function resolveChatImageSourceUrl(args: {
     .find(url => url?.startsWith("data:image/") || /^https?:\/\//i.test(url ?? ""));
   const generated = historicalEdit ? findPriorAssistantImageUrl(args.history) ?? undefined : undefined;
   const explicitlyEarlier = /\b(?:previous|last|earlier|above)\s+(?:(?:uploaded|attached|generated|rendered|created|original|source)\s+)?(?:image|picture|photo|photograph|portrait|design|poster|logo)\b/i.test(args.query);
+  // The in-chat edit dialog explicitly attaches the selected image as its source.
+  if (!args.imageAttachmentsAreHistorical && upload && /^Edit this image:/i.test(args.query)) return upload;
   // Current attachments supply “this image”, regardless of how it was made.
   // An explicit earlier reference must not silently consume a new attachment.
   if (!args.imageAttachmentsAreHistorical && upload && !explicitlyEarlier) return upload;

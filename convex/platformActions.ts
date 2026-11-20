@@ -43,6 +43,7 @@ import { isChatImageUploadForMessage, missingChatImageReferenceMessage, resolveC
 import { CREDIT_COSTS } from "./creditsConfig";
 import type { ActionCtx } from "./_generated/server";
 import type { FalImageSize } from "./falClient";
+import { MISSING_PERSON_POSTER_REPLY, planChatPoster, renderMissingPersonPoster, type ChatPosterPlan } from "./chatPoster";
 import { persistImageUrlIfNeeded } from "./mediaStorage";
 import { isLiveNewsEnabled } from "./featureFlags";
 
@@ -117,6 +118,8 @@ async function runHybridAiEngine(
     hasAttachments: boolean;
     hasImageAttachment?: boolean;
     sourceImageUrl?: string;
+    priorTurns: Array<{ role: string; content: string }>;
+    posterPlan?: ChatPosterPlan;
     conversationId: string;
     subscriptionPlan: string;
     subscriptionExpiresAt?: number | null;
@@ -137,13 +140,20 @@ async function runHybridAiEngine(
     tier: args.routing.tier,
   });
 
-  if (routePlan.requestKind === "image_generation") {
+  if (args.posterPlan?.kind === "missing_person") {
+    const svg = renderMissingPersonPoster(args.posterPlan);
+    const url = await persistImageUrlIfNeeded(ctx, `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`);
+    return {
+      content: `${MISSING_PERSON_POSTER_REPLY}\n\n${url}`,
+      providerId: "local_fallback", usedFallback: false,
+      latencyMs: 0, cached: false, requestKind: "image_generation",
+    };
+  }
+  if (routePlan.requestKind === "image_generation" || args.posterPlan?.kind === "image") {
     const missingReference = missingChatImageReferenceMessage(args.query, args.sourceImageUrl);
     if (missingReference) throw new Error(missingReference);
     const started = Date.now();
-    const prompt = resolveChatImagePrompt(args.query, args.chatMessages.map(message => ({
-      role: message.role, content: typeof message.content === "string" ? message.content : "",
-    })));
+    const prompt = args.posterPlan?.prompt ?? resolveChatImagePrompt(args.query, args.priorTurns);
     const orientation = imageAssetOrientation(prompt);
     const imageSize: FalImageSize = orientation === "portrait"
       ? "portrait_4_3" : orientation === "landscape" ? "landscape_4_3" : "square_hd";
@@ -165,7 +175,7 @@ async function runHybridAiEngine(
     return result;
   }
 
-  const cacheEligible = shouldUseResponseCache({
+  const cacheEligible = args.priorTurns.length === 0 && shouldUseResponseCache({
     hasAttachments: args.hasAttachments,
     queryLength: args.query.length,
   });
@@ -506,26 +516,31 @@ export const regenerateMessage = action({
       storedAt: conv.lastVisionAttachmentsAt,
       messageCreatedAt: regenerationUser?.createdAt,
     });
-    let sourceImageUrl: string | undefined;
-    if (conv.lastVisionAttachmentsJson && Date.now() - (conv.lastVisionAttachmentsAt ?? 0) <= 45 * 60 * 1000) {
+    const priorTurns = regenerationUser ? history.slice(0, history.lastIndexOf(regenerationUser)) : [];
+    let imageAttachments: Array<{ dataUrl?: string }> = [];
+    const uploadAt = conv.lastVisionAttachmentsAt;
+    if (conv.lastVisionAttachmentsJson && uploadAt !== undefined &&
+        uploadAt <= (regenerationUser?.createdAt ?? 0) && Date.now() - uploadAt <= 45 * 60 * 1000) {
       try {
-        sourceImageUrl = resolveChatImageSourceUrl({
-          query: regenerationQuery,
-          imageAttachmentsAreHistorical: !uploadBelongsToTarget,
-          imageAttachments: JSON.parse(conv.lastVisionAttachmentsJson),
-          history: history.slice(0, targetIdx),
-        });
+        imageAttachments = JSON.parse(conv.lastVisionAttachmentsJson);
       } catch { /* Continue with available conversation images. */ }
     }
-    sourceImageUrl ??= resolveChatImageSourceUrl({
-      query: regenerationQuery,
-      imageAttachments: [], history: history.slice(0, targetIdx),
+    const posterPlan = planChatPoster({
+      query: regenerationQuery, history: priorTurns, images: imageAttachments,
+      historicalImages: !uploadBelongsToTarget, uploadAt,
     });
-    const regenerationKind = buildChatRoutePlan({
+    if (posterPlan?.kind === "ask") throw new Error(posterPlan.content);
+    const sourceImageUrl = resolveChatImageSourceUrl({
+      query: regenerationQuery, imageAttachments,
+      imageAttachmentsAreHistorical: !uploadBelongsToTarget, history: priorTurns,
+    });
+    const regenerationKind = posterPlan ? "image_generation" : buildChatRoutePlan({
       tier: "free", mode, query: regenerationQuery,
+      hasImageAttachment: uploadBelongsToTarget,
       hasEditableImageSource: Boolean(sourceImageUrl),
     }).requestKind;
-    if (regenerationKind === "image_generation" && (refreshedUser?.credits ?? 0) < CREDIT_COSTS.image) {
+    if (regenerationKind === "image_generation" && posterPlan?.kind !== "missing_person" &&
+        (refreshedUser?.credits ?? 0) < CREDIT_COSTS.image) {
       throw new Error(`Insufficient credits (${CREDIT_COSTS.image} required for an image).`);
     }
     const replySince = Date.now();
@@ -600,6 +615,8 @@ export const regenerateMessage = action({
       chatMessages,
       routing,
       hasAttachments: Boolean(sourceImageUrl),
+      priorTurns,
+      posterPlan,
       sourceImageUrl,
       conversationId: args.conversationId,
       subscriptionPlan: refreshedUser?.subscriptionPlan ?? "free",
@@ -625,7 +642,7 @@ export const regenerateMessage = action({
     await ctx.runMutation(internal.platform.appendAssistantReplyIfMissing, {
       conversationId: args.conversationId, userId: email, content: assistantContent,
       since: replySince,
-      imageCreditReference: imageReply ? `regenerate:${args.assistantMessageId}` : undefined,
+      imageCreditReference: imageReply && engineResult.providerId !== "local_fallback" ? `regenerate:${args.assistantMessageId}` : undefined,
       replaceFromMessageId: imageReply ? args.assistantMessageId : undefined,
     });
 

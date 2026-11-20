@@ -7,6 +7,8 @@ import { MessageBubbleActions } from "@/components/chat/MessageBubbleActions";
 import { DocumentResultCard } from "@/components/documents/DocumentResultCard";
 import { inferKindFromRequest } from "@/lib/documents/intent";
 import { looksLikeDocumentContent } from "@/lib/documents/model";
+import type { ChatImageSend } from "@/components/chat/ChatImageDialog";
+import { MISSING_PERSON_POSTER_REPLY } from "../../../convex/chatPoster";
 import { MessageMediaBlock } from "@/components/chat/MessageMediaBlock";
 import { ChatUploadedImagePreview } from "@/components/chat/ChatUploadedImagePreview";
 import { MessageMarkdown } from "@/components/chat/MessageMarkdown";
@@ -41,6 +43,8 @@ export interface MessageBubbleProps {
   onRegenerate?: (messageId: string) => void;
   onEdit?: (messageId: string, content: string) => void;
   onDelete?: (messageId: string) => void;
+  onImageSend?: ChatImageSend;
+  imageEditDisabled?: boolean;
 }
 
 function bubblePropsEqual(
@@ -59,7 +63,9 @@ function bubblePropsEqual(
     prev.streaming === next.streaming &&
     prev.onRegenerate === next.onRegenerate &&
     prev.onEdit === next.onEdit &&
-    prev.onDelete === next.onDelete
+    prev.onDelete === next.onDelete &&
+    prev.onImageSend === next.onImageSend &&
+    prev.imageEditDisabled === next.imageEditDisabled
   );
 }
 
@@ -76,6 +82,8 @@ export const MessageBubble = memo(function MessageBubble({
   onRegenerate,
   onEdit,
   onDelete,
+  onImageSend,
+  imageEditDisabled,
 }: MessageBubbleProps) {
   useRenderDiagnostic("MessageBubble");
 
@@ -213,7 +221,14 @@ export const MessageBubble = memo(function MessageBubble({
             </div>
           ) : (
             parsed.images.map((url) => (
-              <MessageMediaBlock key={url} url={url} kind="image" />
+              <MessageMediaBlock
+                key={url}
+                url={url}
+                kind="image"
+                onImageSend={onImageSend}
+                imageEditDisabled={imageEditDisabled}
+                poster={!isUser && content.startsWith(MISSING_PERSON_POSTER_REPLY)}
+              />
             ))
           )}
           {parsed.videos.map((url) => (

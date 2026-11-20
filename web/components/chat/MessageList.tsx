@@ -1,5 +1,6 @@
 "use client";
 
+import type { ChatImageSend } from "@/components/chat/ChatImageDialog";
 import { MessageBubble } from "@/components/chat/MessageBubble";
 import type { DocumentTemplateId } from "@/lib/chat/documentTemplates";
 import { watchLocalDay } from "@/lib/chat/dailyChat";
@@ -45,6 +46,8 @@ interface MessageListProps {
   onRegenerate?: (messageId: string) => void;
   onEditMessage?: (messageId: string, content: string) => void;
   onDeleteMessage?: (messageId: string) => void;
+  onImageSend?: ChatImageSend;
+  imageEditDisabled?: boolean;
   /** Home quick actions (Learn / Research / Create / Code) — mode switch only. */
   onQuickAction?: (action: HomeQuickActionId) => void;
   /** Compact "Continue" history — only the user's own authorized conversations. */
@@ -79,6 +82,8 @@ function MessageListInner({
   onRegenerate,
   onEditMessage,
   onDeleteMessage,
+  onImageSend,
+  imageEditDisabled,
   onQuickAction,
   recentConversations,
   onSelectConversation,
@@ -360,6 +365,8 @@ function MessageListInner({
                     onRegenerate={onRegenerate}
                     onEdit={onEditMessage}
                     onDelete={onDeleteMessage}
+                    onImageSend={onImageSend}
+                    imageEditDisabled={imageEditDisabled}
                   />
                 ))}
               </div>
@@ -384,6 +391,8 @@ function propsEqual(prev: MessageListProps, next: MessageListProps): boolean {
     prev.onRegenerate === next.onRegenerate &&
     prev.onEditMessage === next.onEditMessage &&
     prev.onDeleteMessage === next.onDeleteMessage &&
+    prev.onImageSend === next.onImageSend &&
+    prev.imageEditDisabled === next.imageEditDisabled &&
     prev.onQuickAction === next.onQuickAction &&
     prev.recentConversations === next.recentConversations &&
     prev.onSelectConversation === next.onSelectConversation &&
