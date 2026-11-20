@@ -1,5 +1,6 @@
 import { signatureImageBytes } from "@/lib/documents/signature";
-import { cvAppearance, cvHeadingStyle, type CvAppearance } from "@/lib/documents/cvLayouts";
+import { documentAppearance, type DocumentAppearance } from "@/lib/documents/designs";
+import { cvHeadingStyle } from "@/lib/documents/cvLayouts";
 import {
   AlignmentType,
   Document,
@@ -37,7 +38,7 @@ function colorHex(value?: string): string {
   return "18181B";
 }
 
-function runsFromNode(node: unknown, heading?: { color: string; size: number }): TextRun[] {
+function runsFromNode(node: unknown, font: string, heading?: { color: string; size: number }): TextRun[] {
   if (!node || typeof node !== "object") return [];
   const n = node as {
     type?: string;
@@ -54,18 +55,19 @@ function runsFromNode(node: unknown, heading?: { color: string; size: number }):
         bold: Boolean(heading) || marks.some((m) => m.type === "bold"),
         italics: marks.some((m) => m.type === "italic"),
         underline: marks.some((m) => m.type === "underline") ? {} : undefined,
-        color: colorHex(heading?.color ?? marks.find((m) => m.type === "textStyle")?.attrs?.color),
-        font: "Calibri",
+        color: colorHex(heading?.color === "#ffffff" ? heading.color : marks.find((m) => m.type === "textStyle")?.attrs?.color ?? heading?.color),
+        font,
         size: heading?.size ?? 22,
       }),
     ];
   }
-  if (Array.isArray(n.content)) return n.content.flatMap((child) => runsFromNode(child, heading));
+  if (Array.isArray(n.content)) return n.content.flatMap((child) => runsFromNode(child, font, heading));
   return [];
 }
 
-function paragraphsFromJson(doc: DocJson | null | undefined, appearance: CvAppearance | null): Paragraph[] {
+function paragraphsFromJson(doc: DocJson | null | undefined, appearance: DocumentAppearance): Paragraph[] {
   const out: Paragraph[] = [];
+  const font = appearance.serif ? "Georgia" : "Calibri";
   if (!doc?.content || !Array.isArray(doc.content)) return out;
 
   function walk(node: unknown): void {
@@ -77,11 +79,11 @@ function paragraphsFromJson(doc: DocJson | null | undefined, appearance: CvAppea
     };
     if (n.type === "heading") {
       const level = n.attrs?.level ?? 1;
-      const styled = wordCvHeading(appearance, level);
+      const styled = wordHeading(appearance, level);
       out.push(
         new Paragraph({
-          children: runsFromNode(n, styled?.run),
-          ...styled?.paragraph,
+          children: runsFromNode(n, font, styled.run),
+          ...styled.paragraph,
           heading:
             level === 1
               ? HeadingLevel.HEADING_1
@@ -97,7 +99,7 @@ function paragraphsFromJson(doc: DocJson | null | undefined, appearance: CvAppea
     if (n.type === "paragraph") {
       out.push(
         new Paragraph({
-          children: runsFromNode(n),
+          children: runsFromNode(n, font),
           alignment: alignOf(n.attrs?.textAlign),
           spacing: { after: 120, line: 276 },
         })
@@ -108,7 +110,7 @@ function paragraphsFromJson(doc: DocJson | null | undefined, appearance: CvAppea
       for (const item of n.content ?? []) {
         out.push(
           new Paragraph({
-            children: runsFromNode(item),
+            children: runsFromNode(item, font),
             bullet: { level: 0 },
             spacing: { after: 60 },
           })
@@ -121,7 +123,7 @@ function paragraphsFromJson(doc: DocJson | null | undefined, appearance: CvAppea
       for (const item of n.content ?? []) {
         out.push(
           new Paragraph({
-            children: runsFromNode(item),
+            children: runsFromNode(item, font),
             numbering: { reference: "doc-numbers", level: 0 },
             spacing: { after: 60 },
           })
@@ -150,11 +152,10 @@ function paragraphsFromJson(doc: DocJson | null | undefined, appearance: CvAppea
 }
 
 /** Markdown-only imports should not combine separate CV bullets into one line. */
-function wordCvHeading(appearance: CvAppearance | null, level: number) {
-  if (!appearance) return null;
+function wordHeading(appearance: DocumentAppearance, level: number) {
   const style = cvHeadingStyle(appearance, level);
   return {
-    run: { color: style.color, size: level === 1 ? 40 : level === 2 ? 27 : 23 },
+    run: { color: style.color, size: level === 1 ? 46 : level === 2 ? 27 : 23 },
     paragraph: {
       keepNext: true,
       shading: style.fill ? { fill: colorHex(style.fill) } : undefined,
@@ -163,7 +164,7 @@ function wordCvHeading(appearance: CvAppearance | null, level: number) {
   };
 }
 
-function paragraphsFromMarkdown(markdown: string, appearance: CvAppearance | null): Paragraph[] {
+function paragraphsFromMarkdown(markdown: string, appearance: DocumentAppearance): Paragraph[] {
   const out: Paragraph[] = [];
   let paragraph: string[] = [];
   const clean = (value: string) => value
@@ -189,12 +190,13 @@ function paragraphsFromMarkdown(markdown: string, appearance: CvAppearance | nul
     if (heading) {
       flush();
       const level = heading[1].length;
-      const styled = wordCvHeading(appearance, level);
+      const styled = wordHeading(appearance, level);
       out.push(new Paragraph({
-        ...(styled
-          ? { children: [new TextRun({ text: clean(heading[2]), bold: true, size: styled.run.size, color: colorHex(styled.run.color) })] }
-          : { text: clean(heading[2]) }),
-        ...styled?.paragraph,
+        children: [new TextRun({
+          text: clean(heading[2]), bold: true, size: styled.run.size,
+          color: colorHex(styled.run.color), font: appearance.serif ? "Georgia" : "Calibri",
+        })],
+        ...styled.paragraph,
         heading: level === 1 ? HeadingLevel.HEADING_1 : level === 2 ? HeadingLevel.HEADING_2 : HeadingLevel.HEADING_3,
         spacing: { after: level === 1 ? 160 : level === 2 ? 140 : 120 },
       }));
@@ -228,7 +230,7 @@ function paragraphsFromMarkdown(markdown: string, appearance: CvAppearance | nul
 
 /** Build a real OOXML .docx buffer from the structured document. */
 export async function exportDocumentDocx(doc: GigaDocument): Promise<Uint8Array> {
-  const appearance = cvAppearance(doc);
+  const appearance = documentAppearance(doc);
   let children = paragraphsFromJson(
     doc.content?.content && doc.content.content.length > 0 ? doc.content : null,
     appearance
@@ -274,6 +276,7 @@ export async function exportDocumentDocx(doc: GigaDocument): Promise<Uint8Array>
 
   const document = new Document({
     title: doc.title,
+    styles: { default: { document: { run: { font: appearance.serif ? "Georgia" : "Calibri", size: 22 } } } },
     numbering: {
       config: [
         {

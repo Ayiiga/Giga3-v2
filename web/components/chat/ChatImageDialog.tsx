@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { POSTER_DESIGNS, type PosterDesign } from "../../../convex/chatPoster";
 import { Loader2, Minus, Plus, X } from "lucide-react";
 import {
   buildUserDisplayContent,
@@ -33,6 +34,7 @@ export function ChatImageDialog({
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [photo, setPhoto] = useState("");
+  const [design, setDesign] = useState<PosterDesign>("alert");
   const [loadingPoster, setLoadingPoster] = useState(Boolean(poster && onEdit));
 
   useEffect(() => {
@@ -55,6 +57,7 @@ export function ChatImageDialog({
           throw new Error("Poster details unavailable");
         }
         setDraft(brief);
+        setDesign(svg.documentElement.getAttribute("data-poster-design") === "bulletin" ? "bulletin" : "alert");
         setPhoto(original ?? "");
       } catch {
         if (!controller.signal.aborted) setError("Could not open the poster details. Try opening the editor again.");
@@ -72,7 +75,7 @@ export function ChatImageDialog({
     setError("");
     try {
       if (poster && !photo) {
-        onSend(`Create a missing-person poster without a photo\n${draft.trim()}`, []);
+        onSend(`Create a missing-person poster without a photo\nPoster design: ${design}\n${draft.trim()}`, []);
         onClose();
         return;
       }
@@ -97,7 +100,7 @@ export function ChatImageDialog({
         attachment.mimeType = blob.type;
         attachment.sizeBytes = blob.size;
       }
-      const prompt = poster ? `Create a missing-person poster\n${draft.trim()}` : `Edit this image:\n${draft.trim()}`;
+      const prompt = poster ? `Create a missing-person poster\nPoster design: ${design}\n${draft.trim()}` : `Edit this image:\n${draft.trim()}`;
       onSend(buildUserDisplayContent(prompt, [attachment]), [attachment]);
       onClose();
     } catch {
@@ -142,6 +145,15 @@ export function ChatImageDialog({
           <form onSubmit={submit} className="space-y-3 overflow-y-auto p-4">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={url} alt="Image selected for editing" className="mx-auto max-h-40 max-w-full rounded-lg object-contain" />
+            {poster && (
+              <label className="block space-y-1 text-sm font-medium">
+                <span>Poster design</span>
+                <select value={design} onChange={event => setDesign(event.target.value as PosterDesign)}
+                  disabled={sending || loadingPoster} className="block min-h-11 w-full rounded-lg border border-border bg-background px-3 text-base">
+                  {Object.entries(POSTER_DESIGNS).map(([id, name]) => <option key={id} value={id}>{name}</option>)}
+                </select>
+              </label>
+            )}
             <label className="block space-y-1 text-sm font-medium">
               <span>{poster ? "Confirmed poster details" : "What should change?"}</span>
               <textarea

@@ -1,4 +1,5 @@
 import JSZip from "jszip";
+import { documentAppearance, type DocumentAppearance } from "@/lib/documents/designs";
 import type { GigaDocument } from "@/lib/documents/types";
 import { tipTapJsonToMarkdown } from "@/lib/documents/model";
 
@@ -87,19 +88,26 @@ export function slidesFromDocument(doc: GigaDocument): SlideContent[] {
   return slides;
 }
 
-function shape(id: number, name: string, text: string[], x: number, y: number, w: number, h: number, size: number, color: string): string {
-  const paragraphs = text.map((v) => `<a:p><a:pPr marL="0" marR="0" algn="l"><a:buNone/></a:pPr><a:r><a:rPr lang="en-US" sz="${size}" dirty="0"><a:solidFill><a:srgbClr val="${color}"/></a:solidFill><a:latin typeface="Aptos"/></a:rPr><a:t>${esc(v)}</a:t></a:r><a:endParaRPr lang="en-US"/></a:p>`).join("");
+function shape(id: number, name: string, text: string[], x: number, y: number, w: number, h: number, size: number, color: string, font: string): string {
+  const paragraphs = text.map((v) => `<a:p><a:pPr marL="0" marR="0" algn="l"><a:buNone/></a:pPr><a:r><a:rPr lang="en-US" sz="${size}" dirty="0"><a:solidFill><a:srgbClr val="${color}"/></a:solidFill><a:latin typeface="${font}"/></a:rPr><a:t>${esc(v)}</a:t></a:r><a:endParaRPr lang="en-US"/></a:p>`).join("");
   return `<p:sp><p:nvSpPr><p:cNvPr id="${id}" name="${esc(name)}"/><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="${x}" y="${y}"/><a:ext cx="${w}" cy="${h}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/><a:ln><a:noFill/></a:ln></p:spPr><p:txBody><a:bodyPr wrap="square" lIns="0" tIns="0" rIns="0" bIns="0"/><a:lstStyle/>${paragraphs}</p:txBody></p:sp>`;
 }
 
 const SP_TREE = '<p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/></a:xfrm></p:grpSpPr>';
 
-function slideXml(slide: SlideContent, index: number): string {
-  const title = shape(2, "Title", [slide.title], 720000, index === 0 ? 1700000 : 500000, 10800000, 1280000, index === 0 ? 4200 : 3500, "1E1B4B");
+function slideXml(slide: SlideContent, index: number, appearance: DocumentAppearance): string {
+  const accent = appearance.color.substring(1).toUpperCase();
+  const isCover = index === 0;
+  const darkCover = isCover && appearance.treatment === "signature";
+  const background = darkCover ? accent : isCover && appearance.treatment === "band" ? "EDF1F5" : "FFFFFF";
+  const color = darkCover ? "FFFFFF" : accent;
+  const font = appearance.serif ? "Georgia" : "Aptos";
+  const title = shape(2, "Title", [slide.title], 720000, isCover ? 1900000 : 490000, 10800000, 1170000, isCover ? 4200 : 3500, color, font);
   const body = slide.lines.length
-    ? shape(3, "Body", slide.lines.map(x => "•  " + x), 900000, 1680000, 10400000, 4520000, 2400, "334155")
+    ? shape(3, "Body", slide.lines.map(x => "•  " + x), 830000, 1800000, 10400000, 4300000, 2400, "263649", font)
     : "";
-  return XML + `<p:sld xmlns:p="${NS.p}" xmlns:a="${NS.a}" xmlns:r="${NS.r}"><p:cSld><p:spTree>${SP_TREE}${title}${body}</p:spTree></p:cSld><p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:sld>`;
+  const accentRule = appearance.treatment === "plain" ? "" : `<p:sp><p:nvSpPr><p:cNvPr id="4" name="Accent rule"/><p:cNvSpPr/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="720000" y="${isCover ? 1510000 : 1540000}"/><a:ext cx="${isCover ? 1180000 : 870000}" cy="53000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:solidFill><a:srgbClr val="${color}"/></a:solidFill><a:ln><a:noFill/></a:ln></p:spPr></p:sp>`;
+  return XML + `<p:sld xmlns:p="${NS.p}" xmlns:a="${NS.a}" xmlns:r="${NS.r}"><p:cSld><p:bg><p:bgPr><a:solidFill><a:srgbClr val="${background}"/></a:solidFill><a:effectLst/></p:bgPr></p:bg><p:spTree>${SP_TREE}${accentRule}${title}${body}</p:spTree></p:cSld><p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:sld>`;
 }
 const RELS_ROOT = `xmlns="${NS.pr}"`;
 const rel = (id: string, type: string, target: string) =>
@@ -139,8 +147,9 @@ export async function exportDocumentPptx(doc: GigaDocument): Promise<Uint8Array>
   zip.file("ppt/slideMasters/_rels/slideMaster1.xml.rels", XML + `<Relationships ${RELS_ROOT}>${rel("rId1","slideLayout","../slideLayouts/slideLayout1.xml")}${rel("rId2","theme","../theme/theme1.xml")}</Relationships>`);
   zip.file("ppt/slideLayouts/slideLayout1.xml", XML + `<p:sldLayout xmlns:p="${NS.p}" xmlns:a="${NS.a}" xmlns:r="${NS.r}" type="blank" preserve="1" showMasterSp="0"><p:cSld name="Blank"><p:spTree>${SP_TREE}</p:spTree></p:cSld><p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:sldLayout>`);
   zip.file("ppt/slideLayouts/_rels/slideLayout1.xml.rels", XML + `<Relationships ${RELS_ROOT}>${rel("rId1","slideMaster","../slideMasters/slideMaster1.xml")}</Relationships>`);
+  const appearance = documentAppearance(doc);
   slides.forEach((slide, i) => {
-    zip.file(`ppt/slides/slide${i+1}.xml`, slideXml(slide,i));
+    zip.file(`ppt/slides/slide${i+1}.xml`, slideXml(slide, i, appearance));
     zip.file(`ppt/slides/_rels/slide${i+1}.xml.rels`, XML + `<Relationships ${RELS_ROOT}>${rel("rId1","slideLayout","../slideLayouts/slideLayout1.xml")}</Relationships>`);
   });
   return new Uint8Array(await zip.generateAsync({ type: "uint8array", compression: "DEFLATE" }));

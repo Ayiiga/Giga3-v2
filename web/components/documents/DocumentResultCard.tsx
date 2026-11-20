@@ -5,9 +5,9 @@ import {
   documentFromMarkdown,
   looksLikeDocumentContent,
 } from "@/lib/documents/model";
-import { saveDocumentDraft } from "@/lib/documents/drafts";
+import { getDocumentDraft, saveDocumentDraft } from "@/lib/documents/drafts";
 import type { DocumentTemplateKind, GigaDocument } from "@/lib/documents/types";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type DocumentResultCardProps = {
   content: string;
@@ -33,16 +33,16 @@ export function DocumentResultCard({
       }),
     [content, title, templateKind, messageId]
   );
-  const [doc, setDoc] = useState<GigaDocument>(initial);
+  const [doc, setDoc] = useState<GigaDocument | null>(null);
+  useEffect(() => {
+    const saved = messageId ? getDocumentDraft(initial.id) : null;
+    setDoc(saved ?? initial);
+  }, [initial, messageId]);
 
-  if (!looksLikeDocumentContent(content) && !templateKind) return null;
+  if ((!looksLikeDocumentContent(content) && !templateKind) || !doc || doc.id !== initial.id) return null;
 
   return (
     <div className="mt-2" data-testid="document-result-card">
-      <p className="mb-2 text-sm text-muted">
-        Edit below, then use Export PDF or Export Word when you want a file. Nothing is
-        downloaded until you tap export.
-      </p>
       <DocumentStudio
         document={doc}
         onChange={(next) => {

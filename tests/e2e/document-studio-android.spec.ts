@@ -124,6 +124,29 @@ test.describe("Document Studio — Android mobile browser workflow", () => {
     await expect(page.locator(".document-studio .ProseMirror")).toContainText("Verified additional classroom experience.");
   });
 
+  test("previews and saves a non-CV document design on mobile", async ({ page }) => {
+    await page.goto("/documents/", { waitUntil: "domcontentloaded" });
+    await page.getByRole("button", { name: "Proposal Client or project proposal" }).click();
+    const studio = page.locator(".document-studio");
+    const design = studio.getByLabel("Document design");
+    const editor = studio.locator(".ProseMirror");
+    await expect(design).toHaveValue("business");
+    await expect(editor.locator("h1")).toHaveCSS("background-color", "rgb(22, 62, 106)");
+    await expect(editor.locator("h1")).toHaveCSS("color", "rgb(255, 255, 255)");
+
+    await design.selectOption("editorial");
+    await studio.getByRole("button", { name: "Burgundy", exact: true }).click();
+    await expect(editor.locator("h2").first()).toHaveCSS("color", "rgb(139, 37, 75)");
+    await expect(editor.locator("h2").first()).toHaveCSS("border-bottom-style", "solid");
+    await studio.getByRole("button", { name: "Save draft" }).click();
+
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.getByRole("button", { name: "Edit Proposal", exact: true }).click();
+    await expect(design).toHaveValue("editorial");
+    await expect(studio.getByRole("button", { name: "Burgundy", exact: true })).toHaveAttribute("aria-pressed", "true");
+    await expect(editor.locator("h2").first()).toHaveText("Overview");
+  });
+
   test("narrow Android viewport keeps controls reachable with keyboard-sized screen", async ({ page }) => {
     test.skip(test.info().project.name !== "mobile-chrome", "Run on the Pixel mobile Chrome project");
     await page.setViewportSize({ width: 360, height: 800 });

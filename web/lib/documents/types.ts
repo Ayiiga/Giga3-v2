@@ -1,3 +1,4 @@
+import type { DocumentDesign } from "@/lib/documents/designs";
 import type { CvAccent, CvLayout } from "@/lib/documents/cvLayouts";
 
 /** Shared structured document model for Chat, GigaLearn, and Create. */
@@ -72,6 +73,8 @@ export type GigaDocument = {
   profilePhotoDataUrl?: string;
   cvLayout?: CvLayout;
   cvAccent?: CvAccent;
+  documentDesign?: DocumentDesign;
+  documentAccent?: CvAccent;
   /** Optional handwritten PNG, stored only in the local document draft. */
   signatureDataUrl?: string;
 };

@@ -5,7 +5,8 @@ import { cvNodes, type CvNode } from "@/lib/documents/cvSections";
 import { DocumentSignature } from "@/components/documents/DocumentSignature";
 import { DocumentToolbar } from "@/components/documents/DocumentToolbar";
 import { Button } from "@/components/ui/Button";
-import { CV_ACCENTS, CV_LAYOUTS, cvAppearance, type CvAccent, type CvLayout } from "@/lib/documents/cvLayouts";
+import { DOCUMENT_DESIGNS, documentAppearance, type DocumentDesign } from "@/lib/documents/designs";
+import { CV_ACCENTS, CV_LAYOUTS, type CvAccent, type CvLayout } from "@/lib/documents/cvLayouts";
 import { saveDocumentDraft } from "@/lib/documents/drafts";
 import { downloadDocumentExport, shareDocumentFile } from "@/lib/documents/download";
 import {
@@ -141,7 +142,9 @@ export function DocumentStudio({
     editor?.setEditable(!previewOnly);
   }, [editor, previewOnly]);
 
-  const appearance = cvAppearance(doc);
+  const isCv = doc.templateKind === "cv";
+  const appearance = documentAppearance(doc);
+  const designs = isCv ? CV_LAYOUTS : DOCUMENT_DESIGNS;
   const preview = previewPageCss(doc.paper, compact && !fullscreen ? 360 : 720);
 
   const pdfUnicode = useMemo(
@@ -467,49 +470,58 @@ export function DocumentStudio({
         </div>
       ) : null}
 
-      {appearance ? (
-        <div className="flex flex-wrap items-end gap-3 rounded-xl border border-violet-200 bg-violet-50/40 p-3">
-          <label className="min-w-0 text-xs font-semibold text-foreground">
-            CV layout
-            <select className="mt-1 block min-h-11 w-full rounded-lg border border-border bg-white px-2 text-slate-900"
-              value={appearance.layout} onChange={(e) => emit({ ...doc, cvLayout: e.target.value as CvLayout, updatedAt: Date.now() })}>
-              {Object.entries(CV_LAYOUTS).map(([id, layout]) => <option key={id} value={id}>{layout.name}</option>)}
-            </select>
-          </label>
-          <div className="min-w-0" aria-label="CV accent colour" role="group">
-            <p className="text-xs font-semibold text-foreground">Accent colour</p>
-            <div className="mt-1 flex flex-wrap gap-1.5">
-              {(Object.entries(CV_ACCENTS) as [CvAccent, string][]).map(([accent, color]) => (
-                <button key={accent} type="button" aria-label={accent} aria-pressed={accent === appearance.accent}
-                  title={accent} className="flex h-11 w-11 items-center justify-center rounded-lg border border-transparent aria-pressed:border-violet-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-700"
-                  onClick={() => emit({ ...doc, cvAccent: accent, updatedAt: Date.now() })}>
-                  <span aria-hidden className="h-6 w-6 rounded-full" style={{ backgroundColor: color }} />
-                </button>
-              ))}
-            </div>
+      <div className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-background p-3">
+        <label className="min-w-0 text-xs font-semibold text-foreground">
+          {isCv ? "CV layout" : "Document design"}
+          <select className="mt-1 block min-h-11 w-full rounded-lg border border-border bg-white px-2 text-slate-900"
+            value={appearance.layout} onChange={(e) => {
+              const design = isCv ? { cvLayout: e.target.value as CvLayout } : { documentDesign: e.target.value as DocumentDesign };
+              emit({ ...doc, ...design, updatedAt: Date.now() });
+            }}>
+            {Object.entries(designs).map(([id, layout]) => <option key={id} value={id}>{layout.name}</option>)}
+          </select>
+        </label>
+        <div className="min-w-0" aria-label="Accent colour" role="group">
+          <p className="text-xs font-semibold text-foreground">Accent colour</p>
+          <div className="mt-1 flex flex-wrap gap-1.5">
+            {(Object.entries(CV_ACCENTS) as [CvAccent, string][]).map(([accent, color]) => (
+              <button key={accent} type="button" aria-label={accent} aria-pressed={accent === appearance.accent}
+                title={accent} className="flex h-11 w-11 items-center justify-center rounded-lg border border-transparent aria-pressed:border-violet-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-700"
+                onClick={() => {
+                  const chosen = isCv ? { cvAccent: accent } : { documentAccent: accent };
+                  emit({ ...doc, ...chosen, updatedAt: Date.now() });
+                }}>
+                <span aria-hidden className="h-6 w-6 rounded-full" style={{ backgroundColor: color }} />
+              </button>
+            ))}
           </div>
-          <Button type="button" size="sm" variant="secondary" onClick={() => { setStatus(null); setProfileOpen(true); }}>
-            {previewOnly ? "Edit CV" : "Edit sections"}
-          </Button>
-          {!previewOnly ? <Button type="button" size="sm" variant="secondary" onClick={() => setPreviewOnly(true)}>Preview CV</Button> : null}
         </div>
-      ) : null}
+        {isCv && (
+          <>
+            <Button type="button" size="sm" variant="secondary" onClick={() => { setStatus(null); setProfileOpen(true); }}>
+              {previewOnly ? "Edit CV" : "Edit sections"}
+            </Button>
+            {!previewOnly && <Button type="button" size="sm" variant="secondary" onClick={() => setPreviewOnly(true)}>Preview CV</Button>}
+          </>
+        )}
+      </div>
 
       {!previewOnly ? <DocumentToolbar editor={editor} /> : null}
 
       <div className="overflow-x-auto pb-1">
         <div
-          className={cn("mx-auto flow-root rounded-sm border border-[#d4d4d8] bg-white shadow-md", appearance && "cv-paper")}
-          data-cv-treatment={appearance?.treatment}
+          className="document-designed-paper mx-auto flow-root rounded-sm border border-[#d4d4d8] bg-white shadow-md"
+          data-cv-treatment={appearance.treatment}
+          data-document-typeface={appearance.serif ? "serif" : "sans"}
           style={{
             width: "100%",
             maxWidth: preview.widthPx,
             aspectRatio: preview.aspectRatio,
-            padding: "12px 14px",
-            "--cv-accent": appearance?.color,
+            padding: "clamp(14px, 4vw, 40px)",
+            "--cv-accent": appearance.color,
           } as CSSProperties}
         >
-          {appearance && doc.profilePhotoDataUrl ? (
+          {isCv && doc.profilePhotoDataUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={doc.profilePhotoDataUrl} alt="Passport-style CV portrait" width={62} height={79}
               className="float-right ml-3 mb-2 h-auto max-w-[23%] rounded-sm object-cover" />

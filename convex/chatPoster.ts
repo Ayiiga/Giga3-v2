@@ -1,5 +1,8 @@
 import { isImageCommentaryOrInstruction } from "./imageRequestIntent";
 
+export const POSTER_DESIGNS = { alert: "Alert", bulletin: "Bulletin" } as const;
+export type PosterDesign = keyof typeof POSTER_DESIGNS;
+
 type Turn = { role: string; content: string; createdAt?: number };
 
 const MISSING_PERSON = /\bmissing[- ](?:person|child|boy|girl|man|woman|teen(?:ager)?)\b/i;
@@ -82,7 +85,7 @@ const RASTER_DATA_URL = /^data:image\/(?:jpeg|png|webp);base64,[a-z0-9+/]+={0,2}
 
 export type ChatPosterPlan =
   | { kind: "ask"; content: string }
-  | { kind: "missing_person"; photo?: string; details: PosterDetails; usedSavedPreview?: boolean }
+  | { kind: "missing_person"; photo?: string; details: PosterDetails; usedSavedPreview?: boolean; design?: PosterDesign }
   | { kind: "image"; prompt: string };
 
 function isPosterClarification(content?: string): boolean {
@@ -197,7 +200,8 @@ export function planChatPoster(args: {
       /\b(?:change|update|correct|replace|edit|fix|revise)\s+(?:(?:his|her|their|the)\s+)?(?:name|date|location|phone|contacts?|age|height|build|complexion)\b/i.test(query);
     if (!details || (!direct && (hasPartialFields || editsOldFacts))) return { kind: "ask", content: DETAILS_REQUIRED };
 
-    if (WITHOUT_PHOTO.test(query)) return { kind: "missing_person", details };
+    const selectedDesign = /^poster design\s*:\s*(alert|bulletin)\s*$/im.exec(query + "\n" + (brief?.content ?? ""))?.[1]?.toLowerCase() as PosterDesign | undefined;
+    if (WITHOUT_PHOTO.test(query)) return { kind: "missing_person", details, design: selectedDesign };
 
     // Fresh uploads take precedence. Recover a prior selection only from this
     // thread and only if it was tied to the same missing-person brief.
@@ -219,14 +223,14 @@ export function planChatPoster(args: {
         ? { urls: historyPhotos.map(photo => photo.dataUrl!), preview: false }
         : saved;
     if (!source?.urls.length) {
-      return CANNOT_SEND_PHOTO.test(query) ? { kind: "missing_person", details } : { kind: "ask", content: PHOTO_REQUIRED };
+      return CANNOT_SEND_PHOTO.test(query) ? { kind: "missing_person", details, design: selectedDesign } : { kind: "ask", content: PHOTO_REQUIRED };
     }
     if (source.urls.length !== 1) {
-      return CANNOT_SEND_PHOTO.test(query) ? { kind: "missing_person", details } : { kind: "ask", content: CHOOSE_PHOTO };
+      return CANNOT_SEND_PHOTO.test(query) ? { kind: "missing_person", details, design: selectedDesign } : { kind: "ask", content: CHOOSE_PHOTO };
     }
     const [photo] = source.urls;
     if (!RASTER_DATA_URL.test(photo)) return { kind: "ask", content: PHOTO_REQUIRED };
-    return { kind: "missing_person", photo, details, usedSavedPreview: source.preview };
+    return { kind: "missing_person", photo, details, usedSavedPreview: source.preview, design: selectedDesign };
   }
 
   if (reference && !resume && !/\b(?:same|this|that|previous|earlier)\s+(?:design|poster|flyer|notice)\b/i.test(query)) {
@@ -249,42 +253,103 @@ function escapeXml(value: string): string {
 }
 
 export function renderMissingPersonPoster(plan: Extract<ChatPosterPlan, { kind: "missing_person" }>): string {
-  const { details, photo } = plan;
-  const width = 1000;
-  const text = (copy: string, y: number, size: number, color: string, bold = false) => {
-    const fit = Math.min(size, Math.floor(1320 / Math.max(1, Array.from(copy).length)));
-    return `<text x="500" y="${y}" text-anchor="middle" fill="${color}" font-size="${fit}"${bold ? ' font-weight="700"' : ""}>${escapeXml(copy)}</text>`;
+  const { details, photo, design = "alert" } = plan;
+  const bulletin = design === "bulletin";
+  const compact = Boolean(photo && !bulletin);
+  const ink = bulletin ? "#173445" : "#231a2a";
+  const accent = bulletin ? "#17645a" : "#a51b3b";
+  const muted = bulletin ? "#50636f" : "#655560";
+  const paper = bulletin ? "#f1f5f3" : "#faf4ef";
+  const text = (copy: string, x: number, y: number, size: number, color: string, weight = 400, spacing = 0) =>
+    `<text x="${x}" y="${y}" fill="${color}" font-size="${size}" font-weight="${weight}" letter-spacing="${spacing}">${escapeXml(copy)}</text>`;
+  const rect = (x: number, y: number, w: number, h: number, fill: string, rx = 0) =>
+    `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" fill="${fill}"/>`;
+  const lines = (copy: string, width: number, size: number, bold = false) => {
+    const limit = Math.max(1, Math.floor(width / (size * (bold ? 0.68 : 0.62))));
+    const parts: string[] = [];
+    let line = "";
+    for (const word of copy.split(/\s+/)) {
+      const length = Array.from(word).length;
+      if (line && Array.from(line).length + length + 1 > limit) {
+        parts.push(line);
+        line = "";
+      }
+      const letters = Array.from(word);
+      while (letters.length > limit) parts.push(letters.splice(0, limit).join(""));
+      line += (line ? " " : "") + letters.join("");
+    }
+    if (line) parts.push(line);
+    return parts;
   };
-  const top = photo ? 0 : 485;
-  let y = 830 - top;
-  const body: string[] = [
-    text(details.name, 735 - top, 74, "#142035", true),
-    text("LAST SEEN", 785 - top, 28, "#9e2336", true),
-    text(details.lastSeen, y, 43, "#142035"),
-  ];
-  for (const [label, value] of details.description) {
-    y += 51;
-    body.push(text(`${label}: ${value}`, y, 39, "#142035"));
+
+  const photoY = 206;
+  const photoHeight = compact ? 514 : 512;
+  const x = compact ? 510 : 72;
+  const width = 928 - x;
+  let y = compact ? 262 : photo ? photoY + photoHeight + 90 : 254;
+  const fields: string[] = [];
+  const write = (copy: string, size: number, color: string, bold = false) => {
+    for (const line of lines(copy, width, size, bold)) {
+      fields.push(text(line, x, y, size, color, bold ? 700 : 400));
+      y += Math.ceil(size * 1.18);
+    }
+  };
+  write(details.name, compact ? 62 : 76, ink, true);
+  y += 12;
+  fields.push(rect(x, y, 64, 5, accent, 2));
+  y += 49;
+  fields.push(text("LAST SEEN", x, y, 23, accent, 700, 2.5));
+  y += 43;
+  write(details.lastSeen, 38, ink, true);
+  const columnGap = 24;
+  const columnWidth = (width - columnGap) / 2;
+  for (let i = 0; i < details.description.length; i += 2) {
+    const labelY = y + 19;
+    const valueY = labelY + 36;
+    let bottom = valueY;
+    details.description.slice(i, i + 2).forEach(([label, value], index) => {
+      const left = x + index * (columnWidth + columnGap);
+      fields.push(text(label.toUpperCase(), left, labelY, 20, muted, 700, 1.5));
+      const longestWord = Math.max(...value.split(/\s+/).map(word => Array.from(word).length));
+      const size = Math.max(23, Math.min(29, Math.floor(columnWidth / (Math.max(1, longestWord) * 0.62))));
+      const values = lines(value, columnWidth, size);
+      values.forEach((line, row) => fields.push(text(line, left, valueY + row * 35, size, ink)));
+      bottom = Math.max(bottom, valueY + values.length * 35);
+    });
+    y = bottom;
   }
-  y += 45;
-  const footer = y;
-  body.push(text("PLEASE CONTACT", y += 58, 32, "#fff", true));
-  for (const contact of details.contacts) body.push(text(contact, y += 54, 45, "#fff", true));
-  const height = Math.max(y + 66, photo ? 1160 : 760);
+
+  const footerY = Math.max(y + 29, photo ? photoY + photoHeight + 42 : 0);
+  let contactY = footerY + 59;
+  const contacts = [text("PLEASE CONTACT", 72, contactY, 24, "#f6d9d8", 700, 3)];
+  for (const contact of details.contacts) {
+    contactY += 46;
+    for (const [index, line] of lines(contact, 856, 38, true).entries()) {
+      if (index) contactY += 46;
+      contacts.push(text(line, 72, contactY, 38, "#ffffff", 700));
+    }
+  }
+  const height = contactY + 68;
   const editableBrief = [
     `Name: ${details.name}`,
     `Last seen: ${details.lastSeen}`,
     ...details.description.map(([label, value]) => `${label}: ${value}`),
     ...details.contacts.map(contact => `Contact: ${contact}`),
   ].join("\n");
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="${height}" viewBox="0 0 1000 ${height}" data-poster-design="${design}">
   <desc>${escapeXml(editableBrief)}</desc>
-  <rect width="100%" height="100%" fill="#fffaf1"/>
-  <rect width="100%" height="155" fill="#ad1732"/>
-  ${photo ? `<rect x="95" y="195" width="810" height="454" rx="20" fill="#ece8df"/>
-  <image x="110" y="205" width="780" height="434" href="${photo}" preserveAspectRatio="xMidYMid meet"/>` : ""}
-  <rect y="${footer}" width="100%" height="${height - footer}" fill="#142035"/>
-  <g font-family="Arial, sans-serif">${text("MISSING PERSON", 103, 78, "#fff", true)}${body.join("")}</g>
+  ${rect(0, 0, 1000, height, paper)}
+  ${rect(0, 0, 1000, 154, bulletin ? ink : accent)}
+  ${rect(0, 150, 1000, 5, bulletin ? "#7ecbb9" : "#ef977c")}
+  ${photo ? `${rect(56, photoY - 10, compact ? 414 : 888, photoHeight + 20, bulletin ? "#dce8e3" : "#f0e2da", 16)}
+  <image x="66" y="${photoY}" width="${compact ? 394 : 868}" height="${photoHeight}" href="${photo}" preserveAspectRatio="xMidYMid meet"/>` : ""}
+  ${rect(0, footerY, 1000, height - footerY, ink)}
+  <g font-family="Arial, sans-serif">
+    ${text("MISSING PERSON", 72, 101, 69, "#ffffff", 700, 1.5)}
+    ${fields.join("")}
+    ${contacts.join("")}
+  </g>
 </svg>`;
 }
 

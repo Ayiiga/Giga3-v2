@@ -166,3 +166,30 @@ describe("handwritten signatures", () => {
     expect(xml).toContain("Handwritten signature");
   });
 });
+
+it("applies a document's design to editable Word and PowerPoint presentation exports", async () => {
+  const doc = documentFromMarkdown("# Project proposal\n\n## Scope\n\nAn editable project scope.",
+    { templateKind: "proposal" });
+  doc.documentAccent = "Teal";
+  const word = await JSZip.loadAsync(await exportDocumentDocx(doc));
+  const wordXml = await word.file("word/document.xml")!.async("string");
+  expect(wordXml).toContain('w:fill="00675F"');
+  expect(wordXml).toContain("An editable project scope.");
+
+  const slides = await JSZip.loadAsync(await exportDocumentPptx(doc));
+  const cover = await slides.file("ppt/slides/slide1.xml")!.async("string");
+  expect(cover).toContain('<a:srgbClr val="00675F"/>');
+  expect(cover).toContain("<a:t>Project proposal</a:t>");
+
+  doc.documentDesign = "academic";
+  const academicWord = await JSZip.loadAsync(await exportDocumentDocx(doc));
+  const academicXml = await academicWord.file("word/document.xml")!.async("string");
+  expect(academicXml).toContain('w:fill="EDF1F5"');
+  expect(academicXml).toContain('w:ascii="Georgia"');
+  expect(academicXml).toContain("An editable project scope.");
+  const academicSlides = await JSZip.loadAsync(await exportDocumentPptx(doc));
+  const academicCover = await academicSlides.file("ppt/slides/slide1.xml")!.async("string");
+  expect(academicCover).toContain('<a:srgbClr val="EDF1F5"/>');
+  expect(academicCover).toContain('<a:latin typeface="Georgia"/>');
+  expect((await PDFDocument.load(await exportDocumentPdf(doc))).getPageCount()).toBe(1);
+});
