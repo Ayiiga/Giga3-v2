@@ -12,8 +12,8 @@ export const siteConfig = {
     alias: "Young Anointed",
     location: "Ghana",
     role: "Basic school educationist",
-    organization: "Intelligence Global Arena (GIGA)",
-    organizationShort: "GIGA",
+    organization: "GIGA 3 ENTERPRISE",
+    organizationShort: "GIGA 3",
   },
   links: {
     login: "/chat/login",
