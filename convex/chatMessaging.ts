@@ -38,6 +38,7 @@ import {
   resolveResearchCapability,
   shouldUseConversationalWorker,
 } from "./researchCapabilities";
+import { needsPosterHistory, planChatPoster } from "./chatPoster";
 import { isChatAssistantFailureStub } from "./chatUserMessages";
 import {
   CREDIT_COSTS,
@@ -45,7 +46,7 @@ import {
 } from "./creditsConfig";
 import { classifyRequestKind } from "./providerRouter";
 import { resolveMediaCapability } from "./mediaCapabilities";
-import { extractImageUrlFromContent, isImageEditOrTransformQuery } from "./chatImageSource";
+import { isChatImageUploadForMessage, extractImageUrlFromContent, isImageEditOrTransformQuery } from "./chatImageSource";
 import { getAgeAccessForEmail } from "./childSafety";
 import {
   scanTextForSafetyHits,
@@ -254,7 +255,19 @@ export const acceptMessage = mutation({
       hasImageAttachment,
       hasEditableImageSource,
     });
-    if (requestKind === "image_generation") {
+    const posterHistoryNeeded = needsPosterHistory(args.content, hasImageAttachment);
+    const posterHistory = posterHistoryNeeded
+      ? await ctx.db.query("messages")
+        .withIndex("by_conversation", q => q.eq("conversationId", conversationId!))
+        .order("desc")
+        .take(28)
+      : [];
+    const posterPlan = posterHistoryNeeded ? planChatPoster({
+      query: args.content,
+      history: posterHistory.reverse(),
+      images: attachments.filter(a => a.kind === "image"),
+    }) : undefined;
+    if (requestKind === "image_generation" && (!posterPlan || posterPlan.kind === "image")) {
       const creditUser = await ctx.db
         .query("users")
         .withIndex("by_email", (q) => q.eq("email", email))
@@ -279,7 +292,7 @@ export const acceptMessage = mutation({
       liveWebEnabled: args.liveWeb === true,
       hasImageAttachment,
     });
-    const needsLiveWeb = queryNeedsLiveWeb({
+    const needsLiveWeb = !posterPlan && queryNeedsLiveWeb({
       query: args.content,
       capability: resolvedResearchCapability,
       mode,
@@ -329,7 +342,7 @@ export const acceptMessage = mutation({
 
     let segmented = false;
     const segmentLimit = getSegmentExchangeLimit();
-    if (conversationId && conv && segmentLimit > 0) {
+    if (conversationId && conv && segmentLimit > 0 && !posterPlan && requestKind !== "image_generation") {
       // Exchanges only need the newest 2×limit rows to be counted (and the recap
       // uses the tail), so never load the whole thread on the send path.
       const existingRows = await ctx.db
@@ -493,7 +506,7 @@ export const acceptMessage = mutation({
     const useConversationalWorker = shouldUseConversationalWorker({
       needsLiveWeb,
       attachmentCount: attachments.length,
-      needsMediaWorker: requestKind === "image_generation" ||
+      needsMediaWorker: Boolean(posterPlan) || requestKind === "image_generation" ||
         resolveMediaCapability({ query: args.content, hasImageAttachment }) !== "none",
     });
     const jobId = await ctx.db.insert("chatReplyJobs", {
@@ -812,10 +825,15 @@ export const retryFailedReply = mutation({
     const priorAssistant = rows.slice(rows.indexOf(lastUser) + 1).find((m) => m.role === "assistant");
     const hasEditableImageSource = Boolean(priorAssistant && extractImageUrlFromContent(priorAssistant.content));
     const requestKind = classifyRequestKind(lastUser.content, mode, { hasEditableImageSource });
+    const retryHasImage = isChatImageUploadForMessage({
+      storedAt: conv.lastVisionAttachmentsAt,
+      messageCreatedAt: lastUser.createdAt,
+    });
     const useConversationalWorker = shouldUseConversationalWorker({
       needsLiveWeb,
       attachmentCount: 0,
       needsMediaWorker: requestKind === "image_generation" ||
+        needsPosterHistory(lastUser.content, retryHasImage) ||
         resolveMediaCapability({ query: lastUser.content }) !== "none",
     });
     const jobId = await ctx.runMutation(internal.chatReplyJobs.createJob, {

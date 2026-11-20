@@ -44,6 +44,7 @@ import {
   type RequestKind,
 } from "./providerRouter";
 import { generateImageWithFallback } from "./mediaEngine";
+import { MISSING_PERSON_POSTER_REPLY, planChatPoster, renderMissingPersonPoster, type ChatPosterPlan } from "./chatPoster";
 import { persistImageUrlIfNeeded } from "./mediaStorage";
 import type { FalImageSize } from "./falClient";
 import type { NewsEvidenceContext } from "./newsEvidence/types";
@@ -225,6 +226,8 @@ async function runHybridAiEngine(
     hasImageAttachment?: boolean;
     imageAttachments?: Array<{ dataUrl?: string }>;
     imageAttachmentsAreHistorical?: boolean;
+    priorTurns: Array<{ role: string; content: string }>;
+    posterPlan?: ChatPosterPlan;
     conversationId: string;
     quotaReservationId: string;
     subscriptionPlan: string;
@@ -243,10 +246,7 @@ async function runHybridAiEngine(
     query: args.query,
     imageAttachments: args.imageAttachments ?? [],
     imageAttachmentsAreHistorical: args.imageAttachmentsAreHistorical,
-    history: args.chatMessages.map((m) => ({
-      role: m.role,
-      content: typeof m.content === "string" ? m.content : "",
-    })),
+    history: args.priorTurns,
   });
   const hasEditableImageSource = Boolean(sourceImageUrl);
 
@@ -266,7 +266,8 @@ async function runHybridAiEngine(
   if (
     args.routing.tier === "free" &&
     args.routing.chatSystem === "pro" &&
-    routePlan.requestKind === "text_chat"
+    routePlan.requestKind === "text_chat" &&
+    !args.posterPlan
   ) {
     const exhausted: ChatEngineResult & { cached: boolean; requestKind: RequestKind } = {
       content:
@@ -292,17 +293,28 @@ async function runHybridAiEngine(
   // once a usable reply has been persisted.
   let freeOpenAiQuotaReserved = false;
 
-  if (routePlan.requestKind === "image_generation") {
+  if (args.posterPlan?.kind === "ask") return {
+    content: args.posterPlan.content, providerId: "local_fallback", usedFallback: false,
+    latencyMs: 0, cached: false, requestKind: "image_generation",
+  };
+  if (args.posterPlan?.kind === "missing_person") {
+    const svg = renderMissingPersonPoster(args.posterPlan);
+    const url = await persistImageUrlIfNeeded(ctx, `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`);
+    return {
+      content: `${MISSING_PERSON_POSTER_REPLY}\n\n${url}`,
+      providerId: "local_fallback", usedFallback: false,
+      latencyMs: 0, cached: false, requestKind: "image_generation",
+    };
+  }
+
+  if (routePlan.requestKind === "image_generation" || args.posterPlan?.kind === "image") {
     const missingReference = missingChatImageReferenceMessage(args.query, sourceImageUrl);
     if (missingReference) return {
       content: missingReference, providerId: "local_fallback", usedFallback: true,
       latencyMs: 0, cached: false, requestKind: "image_generation",
     };
     const started = Date.now();
-    const prompt = resolveChatImagePrompt(args.query, args.chatMessages.map(message => ({
-      role: message.role,
-      content: typeof message.content === "string" ? message.content : "",
-    })));
+    const prompt = args.posterPlan?.prompt ?? resolveChatImagePrompt(args.query, args.priorTurns);
     const orientation = imageAssetOrientation(prompt);
     const imageSize: FalImageSize = orientation === "portrait"
       ? "portrait_4_3" : orientation === "landscape" ? "landscape_4_3" : "square_hd";
@@ -346,7 +358,7 @@ async function runHybridAiEngine(
     return result;
   }
 
-  const cacheEligible = shouldUseResponseCache({
+  const cacheEligible = args.priorTurns.length === 0 && shouldUseResponseCache({
     hasAttachments: args.hasAttachments,
     queryLength: args.query.length,
   });
@@ -550,6 +562,12 @@ export const processJob = internalAction({
         throw new Error("Conversation not found");
       }
       const history = context.history;
+      const targetUserMessage = [...history].reverse().find(message =>
+        message.role === "user" && message.content === job.content && message.createdAt <= job.createdAt
+      );
+      const priorTurns = targetUserMessage
+        ? history.slice(0, history.indexOf(targetUserMessage))
+        : history.filter(message => message.createdAt < job.createdAt);
       const segmentRecap = context.segmentRecap;
 
       // Follow-ups like "explain that diagram" often omit a re-upload. Reuse the
@@ -559,6 +577,7 @@ export const processJob = internalAction({
         const storedAt = conv.lastVisionAttachmentsAt ?? 0;
         if (
           conv.lastVisionAttachmentsJson &&
+          storedAt <= (targetUserMessage?.createdAt ?? job.createdAt) &&
           Date.now() - storedAt <= VISION_FOLLOWUP_TTL_MS
         ) {
           try {
@@ -572,10 +591,6 @@ export const processJob = internalAction({
               attachments = [...attachments, ...images.slice(0, 2)];
               // Replacement jobs can omit attachmentsJson. Match the original
               // user turn, not the replacement job's later creation time.
-              const targetUserMessage = [...history].reverse().find(message =>
-                message.role === "user" && message.content === job.content &&
-                message.createdAt <= job.createdAt
-              );
               hasCurrentImageAttachment = isChatImageUploadForMessage({
                 storedAt, messageCreatedAt: targetUserMessage?.createdAt,
               });
@@ -680,13 +695,20 @@ export const processJob = internalAction({
       let newsEvidenceContext: NewsEvidenceContext | null = null;
 
       const hasImageAttachment = attachments.some((a) => a.kind === "image");
-      const imageGenerationRequest = classifyRequestKind(job.content, mode, {
+      const posterPlan = planChatPoster({
+        query: job.content,
+        images: attachments.filter(a => a.kind === "image"),
+        historicalImages: !hasCurrentImageAttachment,
+        uploadAt: conv.lastVisionAttachmentsAt,
+        history: priorTurns,
+      });
+      const imageGenerationRequest = Boolean(posterPlan) || classifyRequestKind(job.content, mode, {
         hasImageAttachment: hasCurrentImageAttachment,
         hasEditableImageSource: Boolean(resolveChatImageSourceUrl({
           query: job.content,
           imageAttachmentsAreHistorical: !hasCurrentImageAttachment,
           imageAttachments: attachments.filter(attachment => attachment.kind === "image"),
-          history,
+          history: priorTurns,
         })),
       }) === "image_generation";
       const hasVideoAttachment = attachments.some((a) =>
@@ -731,6 +753,7 @@ export const processJob = internalAction({
       const shouldResearch =
         allowResearch && shouldRunLiveWebResearch(researchCapability);
       const needsLiveWeb =
+        !posterPlan &&
         allowResearch &&
         queryNeedsLiveWeb({
           query: job.content,
@@ -918,7 +941,7 @@ export const processJob = internalAction({
       const chatMessages = trimChatMessages([
         { role: "system" as const, content: systemPrompt },
         ...toRetrievalSystemMessage(qualityContext),
-        ...history.slice(0, -1).map((m) => ({
+        ...priorTurns.map((m) => ({
           role: m.role as "user" | "assistant",
           content: m.content,
         })),
@@ -978,6 +1001,8 @@ export const processJob = internalAction({
               hasAttachments: attachments.length > 0,
               hasImageAttachment: hasCurrentImageAttachment,
               imageAttachmentsAreHistorical: !hasCurrentImageAttachment,
+              priorTurns,
+              posterPlan,
               imageAttachments: attachments
                 .filter((a) => a.kind === "image")
                 .map((a) => ({ dataUrl: a.dataUrl })),

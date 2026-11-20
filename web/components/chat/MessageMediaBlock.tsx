@@ -1,5 +1,6 @@
 "use client";
 
+import { ChatImageDialog, type ChatImageSend } from "@/components/chat/ChatImageDialog";
 import { ShareActionFeedback } from "@/components/chat/ShareActionFeedback";
 import { MediaVideoPlayer } from "@/components/media/MediaVideoPlayer";
 import { useConnectionQuality } from "@/hooks/useConnectionQuality";
@@ -18,6 +19,7 @@ import {
   Copy,
   Download,
   ImageIcon,
+  Expand,
   Loader2,
   Pencil,
   RefreshCw,
@@ -31,6 +33,9 @@ interface MessageMediaBlockProps {
   url: string;
   kind: "image" | "video";
   className?: string;
+  onImageSend?: ChatImageSend;
+  imageEditDisabled?: boolean;
+  poster?: boolean;
 }
 
 function MediaActionButton({
@@ -62,9 +67,13 @@ export const MessageMediaBlock = memo(function MessageMediaBlock({
   url,
   kind,
   className,
+  onImageSend,
+  imageEditDisabled,
+  poster,
 }: MessageMediaBlockProps) {
   const { feedback, runAction, busy } = useShareAction();
   const { saveData, isSlowNetwork } = useConnectionQuality();
+  const [imageDialog, setImageDialog] = useState<"view" | "edit" | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState(false);
   const [userRequestedLoad, setUserRequestedLoad] = useState(false);
@@ -94,7 +103,7 @@ export const MessageMediaBlock = memo(function MessageMediaBlock({
   return (
     <div className={cn("relative mt-3 min-w-0 max-w-full space-y-2", className)}>
       <ShareActionFeedback feedback={feedback} />
-      <div className="premium-card relative aspect-video min-h-[12rem] w-full max-w-full overflow-hidden bg-card">
+      <div className={cn("premium-card relative w-full max-w-full overflow-hidden bg-card", kind === "video" ? "aspect-video min-h-[12rem]" : !loaded && "min-h-[12rem]")}>
         {deferLoad ? (
           <button
             type="button"
@@ -123,29 +132,50 @@ export const MessageMediaBlock = memo(function MessageMediaBlock({
                 <Loader2 className="h-6 w-6 animate-spin text-muted" aria-hidden />
               </div>
             )}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={url}
-              alt="Generated or shared image"
-              className={cn(
-                "h-auto max-h-[min(70vh,24rem)] w-full max-w-full object-contain transition-opacity",
-                loaded ? "opacity-100" : "opacity-0"
+            <button
+              type="button"
+              aria-label="View image full screen"
+              disabled={!loaded}
+              onClick={() => setImageDialog("view")}
+              className="relative flex w-full items-center justify-center bg-muted/10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={url}
+                alt={poster ? "Missing-person poster" : "Generated or shared image"}
+                className={cn("h-auto max-h-[min(70vh,24rem)] w-full object-contain", !loaded && "opacity-0")}
+                loading="lazy"
+                decoding="async"
+                width={640}
+                height={360}
+                onLoad={() => {
+                  setLoaded(true);
+                  setLoadError(false);
+                }}
+                onError={handleMediaError}
+              />
+              {loaded && (
+                <span className="absolute bottom-2 right-2 rounded-full bg-zinc-900/80 p-2 text-white">
+                  <Expand size={16} aria-hidden />
+                </span>
               )}
-              loading="lazy"
-              decoding="async"
-              width={640}
-              height={360}
-              onLoad={() => {
-                setLoaded(true);
-                setLoadError(false);
-              }}
-              onError={handleMediaError}
-            />
+            </button>
           </>
         ) : (
           <MediaVideoPlayer url={url} className="absolute inset-0" />
         )}
       </div>
+      {imageDialog && (
+        <ChatImageDialog
+          url={url}
+          label={imageDialog === "view" ? "Image preview" : poster ? "Edit poster in chat" : "Edit image in chat"}
+          onClose={() => setImageDialog(null)}
+          onEdit={imageDialog === "edit"}
+          onSend={onImageSend}
+          editDisabled={imageEditDisabled}
+          poster={poster}
+        />
+      )}
       <div className="flex flex-wrap items-center gap-2">
         <MediaActionButton
           label={kind === "image" ? "Save image" : "Save video"}
@@ -181,22 +211,30 @@ export const MessageMediaBlock = memo(function MessageMediaBlock({
         </MediaActionButton>
         {kind === "image" && (
           <>
-            <Link
-              href={buildImageStudioActionUrl("edit", url)}
-              className="touch-target inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg border border-border bg-card px-2 text-sm font-medium text-foreground shadow-sm hover:bg-accent/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
-              aria-label="Edit image in studio"
-              title="Edit in Image Studio"
-            >
-              <Pencil className="h-4 w-4" aria-hidden />
-            </Link>
-            <Link
-              href={buildImageStudioActionUrl("enhance", url)}
-              className="touch-target inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg border border-border bg-card px-2 text-sm font-medium text-foreground shadow-sm hover:bg-accent/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
-              aria-label="Enhance image"
-              title="Enhance"
-            >
-              <Wand2 className="h-4 w-4" aria-hidden />
-            </Link>
+            {onImageSend ? (
+              <MediaActionButton label={poster ? "Edit poster in chat" : "Edit image in chat"} disabled={imageEditDisabled} onClick={() => setImageDialog("edit")}>
+                <Pencil className="h-4 w-4" aria-hidden />
+              </MediaActionButton>
+            ) : !poster && (
+              <Link
+                href={buildImageStudioActionUrl("edit", url)}
+                className="touch-target inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg border border-border bg-card px-2 text-sm text-foreground"
+                aria-label="Edit image in studio"
+                title="Edit in Image Studio"
+              >
+                <Pencil className="h-4 w-4" aria-hidden />
+              </Link>
+            )}
+            {!poster && (
+              <Link
+                href={buildImageStudioActionUrl("enhance", url)}
+                className="touch-target inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg border border-border bg-card px-2 text-sm text-foreground"
+                aria-label="Enhance image in studio"
+                title="Enhance in Image Studio"
+              >
+                <Wand2 className="h-4 w-4" aria-hidden />
+              </Link>
+            )}
           </>
         )}
         <span className="inline-flex items-center gap-1 text-xs text-muted">
