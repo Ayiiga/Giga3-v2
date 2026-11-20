@@ -129,6 +129,30 @@ describe("chat poster request and original-photo continuity", () => {
     }
   });
 
+  it("recovers an already-uploaded portrait after a text-only apology and a frustrated follow-up", () => {
+    const previousReply = [
+      "My sincerest apologies! I could not display the missing person poster.",
+      "Here is a text layout instead.",
+      "Color Palette: navy and gold",
+      "[ INSERT LARGE, CLEAR PHOTO HERE ]",
+    ].join("\n");
+    const preview = "data:image/jpeg;base64,cHJldmlldw==";
+    const past = [
+      { role: "user", content: brief, createdAt: 100 },
+      { role: "assistant", content: "Please attach one original photo of the person to use in the poster. No image credits were charged.", createdAt: 200 },
+      { role: "user", content: "Use this\n\n![portrait.jpg](" + preview + ")", createdAt: 300 },
+      { role: "assistant", content: previousReply, createdAt: 400 },
+    ];
+    const plan = planChatPoster({ query: "It is becoming worse please", history: past });
+    expect(plan).toMatchObject({
+      kind: "missing_person",
+      photo: preview,
+      details: { name: "Example Person" },
+    });
+    if (plan?.kind !== "missing_person") throw new Error("Expected recovered poster");
+    expect(renderMissingPersonPoster(plan)).toContain(preview);
+  });
+
   it("delivers an image poster without a portrait when asked and no selected photo is available", () => {
     const ask = planChatPoster({ query, history });
     if (ask?.kind !== "ask") throw new Error("Expected a photo request");
