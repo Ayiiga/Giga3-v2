@@ -17,6 +17,7 @@ import {
 } from "./answerQuality";
 import { requireSessionWithMonitoring } from "./auth";
 import { CREDIT_COSTS } from "./creditsConfig";
+import { requiresCreatorStudioEntitlement } from "./gigalearnCreationAccess";
 import {
   personaSystemPromptAddon,
   resolvePersonaForGigaLearnTool,
@@ -236,10 +237,14 @@ export const generateContent = action({
       args.sessionToken,
       ctx
     );
-    await ctx.runQuery(internal.entitlements.assertFeatureInternal, {
-      userId: verifiedEmail,
-      feature: "creator_studio",
-    });
+    // GigaLearn Create is credit-funded and available on the free plan.
+    // Preserve the subscription gate for unrelated Creator Studio actions.
+    if (requiresCreatorStudioEntitlement(args.toolId)) {
+      await ctx.runQuery(internal.entitlements.assertFeatureInternal, {
+        userId: verifiedEmail,
+        feature: "creator_studio",
+      });
+    }
     const trimmed = args.prompt.trim();
     if (!trimmed) {
       throw new Error("Please describe what you want to learn or create.");

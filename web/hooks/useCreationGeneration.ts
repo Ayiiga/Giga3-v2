@@ -102,7 +102,11 @@ export function useCreationGeneration() {
         ) {
           requestIdsRef.current.delete(stageKey);
         }
-        setError(message);
+        setError(
+          message === "Generation failed. Please try again in a moment."
+            ? "We couldn't finish this document. Your details remain on this screen. You can retry, or use Save Draft before leaving. If it keeps failing, contact support@giga3ai.com."
+            : message
+        );
         return null;
       } finally {
         setLoading(false);
