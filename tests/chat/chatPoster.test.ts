@@ -123,8 +123,10 @@ describe("chat poster request and original-photo continuity", () => {
     expect(planChatPoster({ query: brief.replace("Example Person", "Another Person"), history: oldThread }))
       .toMatchObject({ kind: "ask", content: ask.content });
     expect(planChatPoster({ query: "Use this", history: [distractor], images: [{ dataUrl: photo }] })).toBeUndefined();
-    expect(planChatPoster({ query: "I have already sent", history: [...oldThread, { role: "assistant", content: ask.content }] }))
-      .toMatchObject({ kind: "missing_person", photo: preview });
+    for (const reply of ["I have already sent", "I've already sent the photo", "I’ve already sent the photo"]) {
+      expect(planChatPoster({ query: reply, history: [...oldThread, { role: "assistant", content: ask.content }] }))
+        .toMatchObject({ kind: "missing_person", photo: preview });
+    }
   });
 
   it("delivers an image poster without a portrait when asked and no selected photo is available", () => {
