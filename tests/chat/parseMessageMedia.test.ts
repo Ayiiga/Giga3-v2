@@ -32,6 +32,17 @@ describe("unrendered poster responses", () => {
     expect(splitUnrenderedPoster(content)).toBe(copy);
   });
 
+  it("hides a legacy placeholder poster and its fake photo", () => {
+    const content = [
+      "I will generate the image. Please provide all details.",
+      "```giga-visual",
+      '{"type":"poster","title":"MISSING PERSON","image":{"url":"https://example.com/logo.png","alt":"Placeholder"},',
+    ].join("\n");
+    const text = splitUnrenderedPoster(content);
+    expect(text).toContain("open it and tap the pencil");
+    expect(text).not.toMatch(/logo|giga-visual|provide all details/);
+  });
+
   it("handles a JSON fence and a response with no poster copy", () => {
     const content = '```json\n{"kind":"poster","image":{"src":"data:image/png;base64,AAAA"}}\n```';
     expect(splitUnrenderedPoster(content)).toBe("");

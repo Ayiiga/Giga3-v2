@@ -1,3 +1,4 @@
+import { missingPersonPlaceholderIndex, MISSING_PERSON_PLACEHOLDER_FALLBACK } from "../../../convex/posterPlaceholder";
 const URL_RE = /https?:\/\/[^\s<>"')\]]+/gi;
 const DATA_IMAGE_MD_RE = /!\[[^\]]*\]\((data:image\/[^)]+)\)/gi;
 const DATA_IMAGE_RAW_RE = /(data:image\/[a-zA-Z0-9.+-]+;base64,[A-Za-z0-9+/=\s]+)/gi;
@@ -22,6 +23,7 @@ export function splitUnrenderedPoster(text: string): string | null {
       return (text.slice(0, match.index) + text.slice(match.index + match[0].length)).trim();
     }
   }
+  if (missingPersonPlaceholderIndex(text) >= 0) return MISSING_PERSON_PLACEHOLDER_FALLBACK;
   const poster = /^(?:[ \t]*```(?:json|giga-visual|visual)?[ \t]*\r?\n)?[ \t]*\{\s*"(?:type|kind)"\s*:\s*"poster"\s*,/gim;
   for (const match of text.matchAll(poster)) {
     if (/"(?:url|src)"\s*:\s*"data:image\/[a-z0-9.+-]+;base64,/i.test(text.slice(match.index))) {

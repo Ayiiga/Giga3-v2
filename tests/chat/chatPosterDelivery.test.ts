@@ -5,6 +5,7 @@ import { convexTest } from "convex-test";
 import { afterEach, expect, it, vi } from "vitest";
 import { api, internal } from "../../convex/_generated/api";
 import schema from "../../convex/schema";
+import { MISSING_PERSON_PLACEHOLDER_FALLBACK } from "../../convex/posterPlaceholder";
 import { createSessionToken } from "../../convex/sessionAuth";
 
 const modules = import.meta.glob("../../convex/**/*.*s");
@@ -16,9 +17,19 @@ afterEach(() => {
 });
 
 it.each([
-  ["a selected upload", false],
-  ["Please redesign the poster", true],
-] as const)("renders a chat poster for %s without a provider call or debit", async (_name, redesign) => {
+  ["a selected upload", null],
+  ["Please redesign the poster", "Please redesign the poster"],
+  ["Yes, go ahead", "Yes, go ahead"],
+  ["Generate it now", "Generate it now"],
+  ["Generate the missing-person poster now", "Generate the missing-person poster now"],
+  ["Where is the image?", "Where is the image?"],
+  ["a completed Bulletin redesign", "Where is the image?"],
+  ["Please generate the actual visual poster", "Please generate the actual visual poster"],
+] as const)("renders a chat poster for %s without a provider call or debit", async (name, continuation) => {
+  const existing = name === "a completed Bulletin redesign"
+    ? "Here is your missing-person poster:\n\nPoster design: Bulletin.\n\nhttps://example.convex.cloud/api/storage/existing-poster"
+    : undefined;
+  const redesign = continuation !== null;
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
   vi.stubEnv("SESSION_SIGNING_SECRET", "poster-delivery-test");
   vi.stubEnv("CHAT_ENABLE_VISION", "false");
@@ -69,13 +80,17 @@ it.each([
       });
       await ctx.db.insert("messages", {
         conversationId, userId: email, role: "assistant", createdAt: now + 33,
-        content: "What specifically would you like to change or improve in the design?",
+        content: existing ?? (continuation === "Generate the missing-person poster now" ? MISSING_PERSON_PLACEHOLDER_FALLBACK : [
+          "Please provide the details for the redesigned poster.",
+          "```giga-visual",
+          '{"type":"poster","title":"MISSING PERSON","image":{"url":"https://example.com/logo.png","alt":"Placeholder"},',
+        ].join("\n")),
       });
     });
   }
   const result = await t.mutation(api.chatMessaging.acceptMessage, {
     sessionToken, conversationId,
-    content: redesign ? "Please redesign the poster" : `Use this\n\n![portrait.png](${photo})\n\n[Please respond in Twi where possible.]`,
+    content: continuation ?? `Use this\n\n![portrait.png](${photo})\n\n[Please respond in Twi where possible.]`,
     attachments: redesign ? [] : [{ kind: "image", name: "portrait.png", mimeType: "image/png",
       sizeBytes: Buffer.from(photo.split(",")[1], "base64").length, dataUrl: photo }],
     clientRequestId: "poster-upload-test",
@@ -94,8 +109,9 @@ it.each([
   expect(reply).toMatch(/^Here is your missing-person poster:/);
   expect(reply).toMatch(/https?:\/\//);
   expect(reply).not.toMatch(/mermaid|giga-visual/);
-  expect(actual.files).toHaveLength(1);
-  if (redesign) {
+  expect(actual.files).toHaveLength(existing ? 0 : 1);
+  if (existing) expect(reply).toBe(existing);
+  if (redesign && !existing) {
     expect(reply).toContain("Poster design: Bulletin.");
     const svg = await t.run(async ctx => (await ctx.storage.get(actual.files[0]._id))?.text() ?? null);
     expect(svg).toContain('data-poster-design="bulletin"');

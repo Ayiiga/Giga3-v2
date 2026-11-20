@@ -1,3 +1,4 @@
+import { missingPersonPlaceholderIndex, MISSING_PERSON_PLACEHOLDER_FALLBACK } from "./posterPlaceholder";
 import { isPosterRedesignRequest } from "./imageRequestIntent";
 import type { AiModeId } from "./aiModes";
 import type {
@@ -1258,12 +1259,15 @@ export function validateAnswerQuality(params: {
     flags.push("high_stakes_unverified");
   }
 
+  const hasMissingPersonPlaceholder = missingPersonPlaceholderIndex(normalizedAnswer) >= 0;
+  if (hasMissingPersonPlaceholder) normalizedAnswer = MISSING_PERSON_PLACEHOLDER_FALLBACK;
+
   if (!userRequestedVisualAid(params.context.query)) {
     const stripped = stripUnsolicitedVisualAids(normalizedAnswer);
     if (stripped) normalizedAnswer = stripped;
   }
 
-  if (shouldAttachAutoVisuals(params.context, normalizedAnswer, flags)) {
+  if (!hasMissingPersonPlaceholder && shouldAttachAutoVisuals(params.context, normalizedAnswer, flags)) {
     const visualAugmentation = buildAutoVisualAugmentation(
       params.context,
       normalizedAnswer

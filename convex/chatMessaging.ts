@@ -38,8 +38,7 @@ import {
   resolveResearchCapability,
   shouldUseConversationalWorker,
 } from "./researchCapabilities";
-import { isPosterRedesignRequest } from "./imageRequestIntent";
-import { imageBriefText, needsPosterHistory, planChatPoster, POSTER_REDESIGN_HISTORY_LIMIT } from "./chatPoster";
+import { needsExtendedPosterHistory, needsPosterHistory, planChatPoster, POSTER_REDESIGN_HISTORY_LIMIT } from "./chatPoster";
 import { isChatAssistantFailureStub } from "./chatUserMessages";
 import {
   CREDIT_COSTS,
@@ -261,7 +260,7 @@ export const acceptMessage = mutation({
       ? await ctx.db.query("messages")
         .withIndex("by_conversation", q => q.eq("conversationId", conversationId!))
         .order("desc")
-        .take(isPosterRedesignRequest(imageBriefText(args.content)) ? POSTER_REDESIGN_HISTORY_LIMIT : 28)
+        .take(needsExtendedPosterHistory(args.content) ? POSTER_REDESIGN_HISTORY_LIMIT : 28)
       : [];
     const posterPlan = posterHistoryNeeded ? planChatPoster({
       query: args.content,
