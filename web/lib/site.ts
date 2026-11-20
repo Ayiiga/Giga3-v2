@@ -46,6 +46,7 @@ export const siteConfig = {
     github: "https://github.com/Ayiiga/Giga3-v2",
     crunchbase: "https://www.crunchbase.com/organization/giga3-ai",
     saashub: "https://www.saashub.com/giga3-ai",
+    startupListAfrica: "https://www.startuplist.africa/startups/giga3-ai",
   },
   contact: {
     email: "support@giga3ai.com",

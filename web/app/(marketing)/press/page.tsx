@@ -16,7 +16,7 @@ export const metadata = publicMetadata({
 });
 
 const PRODUCT_HIGHLIGHTS = PRODUCT_CATALOG.filter((p) =>
-  ["/gigalearn", "/media", "/gigaedit", "/gigasocial", "/marketplace", "/creator-studio"].includes(
+  ["/gigalearn", "/gigalearn/academy/", "/gigalearn/exam/", "/gigasocial", "/marketplace", "/documents", "/creator-studio"].includes(
     p.href
   )
 );
@@ -183,6 +183,20 @@ export default function PressPage() {
             </section>
 
             <section className="mt-10 space-y-4">
+              <h2 className="text-lg font-semibold text-foreground">Adoption and review context</h2>
+              <p className="text-base leading-relaxed text-muted">
+                As of 20 November 2026, Giga3 AI reports 117 registered accounts and 110 real
+                users, with more than half of its real users being teachers. Teachers have been
+                reviewing and providing feedback on GigaLearn, helping guide product improvements.
+              </p>
+              <p className="text-sm leading-relaxed text-muted">
+                These are founder-reported figures, not independently audited usage totals.
+                A public directory listing or a teacher review does not constitute endorsement by
+                WAEC, GES, a government agency or the directory provider.
+              </p>
+            </section>
+
+            <section className="mt-10 space-y-4">
               <h2 className="text-lg font-semibold text-foreground">Official website &amp; profiles</h2>
               <ul className="list-disc space-y-2 pl-5 text-sm text-muted">
                 <li>
@@ -204,6 +218,7 @@ export default function PressPage() {
                 </li>
                 <li>Company directory profile: <a href={siteConfig.links.crunchbase} className="text-accent underline" target="_blank" rel="noopener noreferrer">Giga3 AI on Crunchbase</a></li>
                 <li>Product directory profile: <a href={siteConfig.links.saashub} className="text-accent underline" target="_blank" rel="noopener noreferrer">Giga3 AI on SaaSHub</a></li>
+                <li>African startup directory: <a href={siteConfig.links.startupListAfrica} className="text-accent underline" target="_blank" rel="noopener noreferrer">Giga3 AI on StartupList Africa</a></li>
               </ul>
               <p className="text-xs text-muted">Directory profiles include submitted product information. For current access conditions and prices, refer to the official product pages.</p>
             </section>
