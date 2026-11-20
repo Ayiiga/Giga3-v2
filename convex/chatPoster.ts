@@ -171,7 +171,7 @@ export function planChatPoster(args: {
   const pendingPoster = isPosterClarification(lastAssistant?.content);
   const lastUser = args.history.filter(turn => turn.role === "user").at(-1);
   const lastUserText = imageBriefText(lastUser?.content ?? "");
-  const posterHandoff = (POSTER_CONTINUATION.test(query) || (POSTER_REPAIR_FOLLOWUP.test(query) && Boolean(lastAssistant && isUndeliveredMissingPersonPosterReply(lastAssistant.content)))) && Boolean(lastAssistant &&
+  const posterHandoff = (POSTER_CONTINUATION.test(query) || (POSTER_REPAIR_FOLLOWUP.test(query) && Boolean(lastAssistant && (lastAssistant.content.startsWith(MISSING_PERSON_PLACEHOLDER_FALLBACK) || isUndeliveredMissingPersonPosterReply(lastAssistant.content))))) && Boolean(lastAssistant &&
     (pendingPoster || lastAssistant.content.startsWith(MISSING_PERSON_POSTER_REPLY) ||
       lastAssistant.content.startsWith(MISSING_PERSON_PLACEHOLDER_FALLBACK) ||
       missingPersonPlaceholderIndex(lastAssistant.content) >= 0 ||
