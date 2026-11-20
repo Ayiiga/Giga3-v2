@@ -1,5 +1,5 @@
-import { missingPersonPlaceholderIndex, MISSING_PERSON_PLACEHOLDER_FALLBACK } from "./posterPlaceholder";
-import { isPosterRedesignRequest } from "./imageRequestIntent";
+import { missingPersonPlaceholderIndex, MISSING_PERSON_PLACEHOLDER_FALLBACK, isUndeliveredMissingPersonPosterReply } from "./posterPlaceholder";
+import { isPosterRedesignRequest, isImageCommentaryOrInstruction } from "./imageRequestIntent";
 import type { AiModeId } from "./aiModes";
 import type {
   ChatCompletionAttachment,
@@ -1259,7 +1259,13 @@ export function validateAnswerQuality(params: {
     flags.push("high_stakes_unverified");
   }
 
-  const hasMissingPersonPlaceholder = missingPersonPlaceholderIndex(normalizedAnswer) >= 0;
+  // A real poster request must not be satisfied by an apology, color palette,
+  // or copy-and-paste template. Keep explicitly requested poster COPY as text.
+  const renderedPosterRequested = !isImageCommentaryOrInstruction(params.context.query) &&
+    /\b(?:make|create|generate|design|render|show|give|send|deliver|waiting)\b/i.test(params.context.query) &&
+    /\b(?:poster|image)\b/i.test(params.context.query);
+  const hasMissingPersonPlaceholder = missingPersonPlaceholderIndex(normalizedAnswer) >= 0 ||
+    (renderedPosterRequested && isUndeliveredMissingPersonPosterReply(normalizedAnswer));
   if (hasMissingPersonPlaceholder) normalizedAnswer = MISSING_PERSON_PLACEHOLDER_FALLBACK;
 
   if (!userRequestedVisualAid(params.context.query)) {
