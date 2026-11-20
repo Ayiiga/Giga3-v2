@@ -27,7 +27,7 @@ export function cvAppearance(doc: Pick<GigaDocument, "templateKind" | "cvLayout"
 
 export type CvAppearance = NonNullable<ReturnType<typeof cvAppearance>>;
 
-export function cvHeadingStyle(appearance: CvAppearance, level: number) {
+export function cvHeadingStyle(appearance: Pick<CvAppearance, "color" | "treatment">, level: number) {
   const banner = level === 1 && appearance.treatment === "signature";
   return {
     color: banner ? "#ffffff" : appearance.color,

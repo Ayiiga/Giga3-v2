@@ -2861,26 +2861,55 @@ html.giga-lite-extreme .chat-composer-surface {
   background: transparent !important;
 }
 
-.cv-paper h1,
-.cv-paper h2,
-.cv-paper h3 {
+:is(.cv-paper, .document-designed-paper) h1,
+:is(.cv-paper, .document-designed-paper) h2,
+:is(.cv-paper, .document-designed-paper) h3 {
   display: flow-root;
   color: var(--cv-accent);
 }
 
-.cv-paper[data-cv-treatment="band"] h2 {
+:is(.cv-paper, .document-designed-paper)[data-cv-treatment="band"] h2 {
   background-color: #edf1f5;
   padding: 0.15em 0.3em;
 }
 
-.cv-paper[data-cv-treatment="rule"] h2 {
+:is(.cv-paper, .document-designed-paper)[data-cv-treatment="rule"] h2 {
   border-bottom: 1px solid var(--cv-accent);
 }
 
-.cv-paper[data-cv-treatment="signature"] h1 {
+:is(.cv-paper, .document-designed-paper)[data-cv-treatment="signature"] h1 {
   background-color: var(--cv-accent);
   color: white;
   padding: 0.22em 0.35em;
+}
+
+.document-studio .document-designed-paper .ProseMirror {
+  color: #202738;
+  overflow-wrap: anywhere;
+}
+
+.document-studio .document-designed-paper[data-document-typeface="sans"] .ProseMirror {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.document-designed-paper .ProseMirror h1 {
+  margin-top: 0;
+  margin-bottom: 0.65rem;
+  font-size: clamp(1.35rem, 4vw, 2.1rem);
+  line-height: 1.12;
+  letter-spacing: -0.025em;
+}
+
+.document-designed-paper .ProseMirror h2 {
+  margin-top: 1rem;
+  padding-bottom: 0.2rem;
+  font-size: 1.12rem;
+  line-height: 1.25;
+}
+
+.document-designed-paper .ProseMirror h3 {
+  font-size: 1rem;
+  line-height: 1.25;
 }
 
 .cv-paper-sample {

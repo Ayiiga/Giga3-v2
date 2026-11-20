@@ -153,3 +153,23 @@ describe("chat poster request and original-photo continuity", () => {
       .toMatchObject({ kind: "ask" });
   });
 });
+
+it("keeps the brief and photo when switching poster layouts", () => {
+  const selected = planChatPoster({
+    query: `Create a missing-person poster\nPoster design: Bulletin\n${brief}`,
+    history: [],
+    images: [{ dataUrl: photo }],
+  });
+  expect(selected?.kind).toBe("missing_person");
+  if (selected?.kind !== "missing_person") throw new Error("Expected a poster");
+  const bulletin = renderMissingPersonPoster(selected);
+  const alert = renderMissingPersonPoster({ ...selected, design: "alert" });
+  expect(bulletin).toContain('data-poster-design="bulletin"');
+  expect(alert).toContain('data-poster-design="alert"');
+  for (const svg of [bulletin, alert]) {
+    expect(svg).toContain(`href="${photo}" preserveAspectRatio="xMidYMid meet"`);
+    expect(svg).toContain("Last seen: 2020 at Example Town");
+    expect(svg).toContain("Second Contact: 0200000456");
+  }
+  expect(alert).not.toBe(bulletin);
+});

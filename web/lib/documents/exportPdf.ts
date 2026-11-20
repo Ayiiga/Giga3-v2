@@ -1,5 +1,6 @@
 import { signatureImageBytes } from "@/lib/documents/signature";
-import { cvAppearance, cvHeadingStyle } from "@/lib/documents/cvLayouts";
+import { documentAppearance } from "@/lib/documents/designs";
+import { cvHeadingStyle } from "@/lib/documents/cvLayouts";
 import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from "pdf-lib";
 import type { DocJson, GigaDocument } from "@/lib/documents/types";
 import { DOC_TEXT_COLORS } from "@/lib/documents/types";
@@ -233,10 +234,11 @@ export async function exportDocumentPdf(doc: GigaDocument): Promise<Uint8Array> 
   }
 
   const pdf = await PDFDocument.create();
-  const regular = await pdf.embedFont(StandardFonts.TimesRoman);
-  const bold = await pdf.embedFont(StandardFonts.TimesRomanBold);
-  const italic = await pdf.embedFont(StandardFonts.TimesRomanItalic);
-  const boldItalic = await pdf.embedFont(StandardFonts.TimesRomanBoldItalic);
+  const appearance = documentAppearance(doc);
+  const regular = await pdf.embedFont(appearance.serif ? StandardFonts.TimesRoman : StandardFonts.Helvetica);
+  const bold = await pdf.embedFont(appearance.serif ? StandardFonts.TimesRomanBold : StandardFonts.HelveticaBold);
+  const italic = await pdf.embedFont(appearance.serif ? StandardFonts.TimesRomanItalic : StandardFonts.HelveticaOblique);
+  const boldItalic = await pdf.embedFont(appearance.serif ? StandardFonts.TimesRomanBoldItalic : StandardFonts.HelveticaBoldOblique);
   const fonts = { regular, bold, italic, boldItalic };
   const profileImage = doc.templateKind === "cv" && doc.profilePhotoDataUrl
     ? await pdf.embedJpg(passportPhotoBytes(doc.profilePhotoDataUrl))
@@ -298,14 +300,15 @@ export async function exportDocumentPdf(doc: GigaDocument): Promise<Uint8Array> 
   const drawLines = (
     lines: Array<Array<Run & { width: number; size: number }>>,
     align: string | undefined,
-    gapAfter: number
+    gapAfter: number,
+    padding = 0,
   ) => {
     for (const line of lines) {
       const lineW = line.reduce((s, r) => s + r.width, 0);
       const lineWidth = availableWidth();
-      let x = margin.left;
+      let x = margin.left + padding;
       if (align === "center") x = margin.left + (lineWidth - lineW) / 2;
-      else if (align === "right") x = margin.left + lineWidth - lineW;
+      else if (align === "right") x = margin.left + lineWidth - lineW - padding;
       const size = line[0]?.size ?? bodySize;
       ensureSpace(size * 1.35);
       for (const run of line) {
@@ -346,7 +349,6 @@ export async function exportDocumentPdf(doc: GigaDocument): Promise<Uint8Array> 
     y -= gapAfter;
   };
 
-  const appearance = cvAppearance(doc);
   for (const block of blocks) {
     if (block.kind === "hr") {
       ensureSpace(12);
@@ -360,11 +362,12 @@ export async function exportDocumentPdf(doc: GigaDocument): Promise<Uint8Array> 
       continue;
     }
     if (block.kind === "heading") {
-      const size = block.level === 1 ? bodySize + 7 : block.level === 2 ? bodySize + 4 : bodySize + 2;
-      const style = appearance ? cvHeadingStyle(appearance, block.level) : null;
-      const runs = block.runs.map((r) => ({ ...r, color: style?.color ?? r.color, bold: true, fontSize: size }));
+      const size = block.level === 1 ? bodySize + 12 : block.level === 2 ? bodySize + 4 : bodySize + 2;
+      const style = cvHeadingStyle(appearance, block.level);
+      const runs = block.runs.map((r) => ({ ...r, color: style.color === "#ffffff" ? style.color : r.color ?? style.color, bold: true, fontSize: size }));
       ensureSpace(size * 1.35 + bodySize * 1.35);
-      const lines = wrapRuns(runs, availableWidth(), size, fonts);
+      const padding = style.fill ? 6 : 0;
+      const lines = wrapRuns(runs, availableWidth() - padding * 2, size, fonts);
       for (const line of lines) {
         ensureSpace(size * 1.35);
         const width = availableWidth();
@@ -372,7 +375,7 @@ export async function exportDocumentPdf(doc: GigaDocument): Promise<Uint8Array> 
           const { r, g, b } = hexToRgb(style.fill);
           page.drawRectangle({ x: margin.left, y: y - size * 1.27, width, height: size * 1.35, color: rgb(r, g, b) });
         }
-        drawLines([line], block.align, 0);
+        drawLines([line], block.align, 0, padding);
       }
       if (style?.rule) {
         const { r, g, b } = hexToRgb(style.rule);
