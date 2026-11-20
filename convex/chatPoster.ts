@@ -1,6 +1,6 @@
 import { isImageCommentaryOrInstruction, isPosterRedesignRequest, posterRedesignLayout } from "./imageRequestIntent";
 
-import { MISSING_PERSON_PLACEHOLDER_FALLBACK, missingPersonPlaceholderIndex } from "./posterPlaceholder";
+import { MISSING_PERSON_PLACEHOLDER_FALLBACK, missingPersonPlaceholderIndex, isUndeliveredMissingPersonPosterReply } from "./posterPlaceholder";
 
 export const POSTER_DESIGNS = { alert: "Alert", bulletin: "Bulletin" } as const;
 export type PosterDesign = keyof typeof POSTER_DESIGNS;
@@ -25,12 +25,15 @@ const POSTER_DELIVERY = /^(?:here is your|where(?: is|'s)|show me|give me|i (?:a
 
 // A short reply can accept a poster handoff without restating the asset name.
 const POSTER_CONTINUATION = /^(?:please[ ,]+)?(?:yes|ok(?:ay)?|go ahead(?: and (?:generate|render|create|make|show|send) it)?|do it|continue|nothing has changed|still the same|(?:please )?(?:generate|render|create|make|show|send|give)(?: (?:me|us))? (?:it|(?:(?:the|my) missing[- ]person|the|my|an?|actual|real|redesigned|visual|poster) )*(?:poster|image|visual)(?: itself)?|(?:generate|render|create|make|show|send) it|where(?: is|'s) (?:it|(?:the|my) (?:image|poster)))(?:[, ]+(?:please|now|then|go ahead|do it))*[.!?]*$/i;
+// Frustrated follow-ups only resume a poster when the preceding assistant truly
+// delivered instructions instead of the image. Do not hijack other chats.
+const POSTER_REPAIR_FOLLOWUP = /^(?:(?:it is|it's|this is|things are)\s+)?(?:becoming|getting)\s+worse\b|^(?:this is|it's)\s+not\s+working\b|^please\s+stop\s+(?:giving|sending)\s+(?:text|instructions)\b/i;
 const STORED_POSTER_URL = /https:\/\/[\w-]+\.convex\.(?:cloud|site)\/api\/storage\/[\w-]+\s*$/;
 const POSTER_HANDOFF_REPLY = /\b(?:missing[- ]person poster|(?:poster|visual image) (?:design|layout|itself)|(?:create|generate|redesign|render) (?:the|your|a|an|a new|an attractive) (?:[\w-]+ ){0,4}(?:poster|visual image))\b/i;
 
 export function needsExtendedPosterHistory(query: string): boolean {
   const text = imageBriefText(query);
-  return isPosterRedesignRequest(text) || POSTER_CONTINUATION.test(text);
+  return isPosterRedesignRequest(text) || POSTER_CONTINUATION.test(text) || POSTER_REPAIR_FOLLOWUP.test(text);
 }
 
 export function imageBriefText(content: string): string {
@@ -168,10 +171,11 @@ export function planChatPoster(args: {
   const pendingPoster = isPosterClarification(lastAssistant?.content);
   const lastUser = args.history.filter(turn => turn.role === "user").at(-1);
   const lastUserText = imageBriefText(lastUser?.content ?? "");
-  const posterHandoff = POSTER_CONTINUATION.test(query) && Boolean(lastAssistant &&
+  const posterHandoff = (POSTER_CONTINUATION.test(query) || (POSTER_REPAIR_FOLLOWUP.test(query) && Boolean(lastAssistant && (lastAssistant.content.startsWith(MISSING_PERSON_PLACEHOLDER_FALLBACK) || isUndeliveredMissingPersonPosterReply(lastAssistant.content))))) && Boolean(lastAssistant &&
     (pendingPoster || lastAssistant.content.startsWith(MISSING_PERSON_POSTER_REPLY) ||
       lastAssistant.content.startsWith(MISSING_PERSON_PLACEHOLDER_FALLBACK) ||
       missingPersonPlaceholderIndex(lastAssistant.content) >= 0 ||
+       isUndeliveredMissingPersonPosterReply(lastAssistant.content) ||
       (POSTER_HANDOFF_REPLY.test(lastAssistant.content) && MISSING_PERSON.test(lastAssistant.content))) &&
     (POSTER.test(lastUserText) || POSTER_CONTINUATION.test(lastUserText) || isPhotoOnlyPosterFollowup(lastUserText)));
   const resume = pendingPoster && (RESUME_POSTER.test(query) || WITHOUT_PHOTO.test(query));

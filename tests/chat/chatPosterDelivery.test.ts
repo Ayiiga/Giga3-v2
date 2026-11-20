@@ -25,6 +25,8 @@ it.each([
   ["Where is the image?", "Where is the image?"],
   ["a completed Bulletin redesign", "Where is the image?"],
   ["Please generate the actual visual poster", "Please generate the actual visual poster"],
+  ["a text-only apology", "It is becoming worse please"],
+  ["a normalized failed poster", "It is becoming worse please"],
 ] as const)("renders a chat poster for %s without a provider call or debit", async (name, continuation) => {
   const existing = name === "a completed Bulletin redesign"
     ? "Here is your missing-person poster:\n\nPoster design: Bulletin.\n\nhttps://example.convex.cloud/api/storage/existing-poster"
@@ -80,7 +82,11 @@ it.each([
       });
       await ctx.db.insert("messages", {
         conversationId, userId: email, role: "assistant", createdAt: now + 33,
-        content: existing ?? (continuation === "Generate the missing-person poster now" ? MISSING_PERSON_PLACEHOLDER_FALLBACK : [
+        content: name === "a normalized failed poster"
+          ? MISSING_PERSON_PLACEHOLDER_FALLBACK
+          : name === "a text-only apology"
+          ? "My sincerest apologies! Here is the missing person poster design as a text layout. Color Palette: navy and gold. [ INSERT LARGE, CLEAR PHOTO HERE ]"
+          : existing ?? (continuation === "Generate the missing-person poster now" ? MISSING_PERSON_PLACEHOLDER_FALLBACK : [
           "Please provide the details for the redesigned poster.",
           "```giga-visual",
           '{"type":"poster","title":"MISSING PERSON","image":{"url":"https://example.com/logo.png","alt":"Placeholder"},',
