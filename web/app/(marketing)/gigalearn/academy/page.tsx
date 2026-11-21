@@ -29,12 +29,12 @@ export const metadata = publicMetadata({
 
 
 const learnDestinations = [
-  { title: "GigaLearn Academy (Workspace)", subtitle: "Learn by doing. Explore courses and track your progress.", href: "/gigalearn/academy/workspace/", art: "academy", background: "from-[#1478ed] to-[#06b6ed]" },
-  { title: "Education and Business Tools", subtitle: "Writing, research, documents and business plans.", href: "/documents/", art: "writing", background: "from-[#159b3a] to-[#7bdc12]" },
-  { title: "Creators' Tools", subtitle: "Create and share original content.", href: "/creator-studio/", art: "creator", background: "from-[#ff9200] to-[#ffc12c]" },
-  { title: "Early Years (KG to Lower Primary)", subtitle: "Learn with objects, rhymes, stories and play.", href: "/gigalearn/?tab=early-years", art: "early", background: "from-[#ed299e] to-[#f875c3]" },
-  { title: "JHS, SHS and TLMs", subtitle: "Lessons, exam practice and teaching materials.", href: "/gigalearn/?tab=learn", art: "school", background: "from-[#028fa8] to-[#16cbd4]" },
-  { title: "University", subtitle: "Advanced study, research and academic support.", href: "/gigalearn/?tab=learn", art: "university", background: "from-[#7130da] to-[#a65af1]" },
+  { title: "GigaLearn Academy (Workspace)", subtitle: "Learn by doing. Explore courses and track your progress.", href: "/gigalearn/academy/workspace/", illustration: "🎓", background: "#1459c7" },
+  { title: "Education and Business Tools", subtitle: "Writing, research, documents and business plans.", href: "/documents/", illustration: "📚", background: "#147d45" },
+  { title: "Creators' Tools", subtitle: "Create and share original content.", href: "/creator-studio/", illustration: "🎬", background: "#a94c08" },
+  { title: "Early Years (KG to Lower Primary)", subtitle: "Learn with objects, rhymes, stories and play.", href: "/gigalearn/?tab=early-years", illustration: "🧸", background: "#b52b73" },
+  { title: "JHS, SHS and TLMs", subtitle: "Lessons, exam practice and teaching materials.", href: "/gigalearn/?tab=learn", illustration: "🔬", background: "#087889" },
+  { title: "University", subtitle: "Advanced study, research and academic support.", href: "/gigalearn/?tab=learn", illustration: "🏛️", background: "#6334b6" },
 ] as const;
 
 function LearnDestinations() {
@@ -50,15 +50,15 @@ function LearnDestinations() {
         <Link
           key={item.title}
           href={item.href}
-          className={`group flex min-h-[112px] items-center gap-3 rounded-3xl bg-gradient-to-r ${item.background} p-4 text-white shadow-md transition-transform active:scale-[0.99] focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-violet-700 sm:gap-5 sm:p-5`}
+          className="group flex min-h-[116px] items-center gap-3 rounded-3xl p-4 shadow-md focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-violet-700 sm:gap-5 sm:p-5"\n          style={{ backgroundColor: item.background, color: "#ffffff" }}
           data-testid={`learn-destination-${index + 1}`}
         >
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-white/80 bg-violet-700 text-lg font-extrabold">{index + 1}</span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-lg font-extrabold leading-tight drop-shadow-sm sm:text-xl">{item.title}</span>
-            <span className="mt-1 block text-sm font-medium leading-snug text-white drop-shadow-sm">{item.subtitle}</span>
+          <span className="min-w-0 flex-1" style={{ color: "#ffffff" }}>
+            <span className="block text-lg font-extrabold leading-tight sm:text-xl" style={{ color: "#ffffff", WebkitTextFillColor: "#ffffff" }}>{item.title}</span>
+            <span className="mt-1 block text-sm font-medium leading-snug" style={{ color: "#ffffff", WebkitTextFillColor: "#ffffff" }}>{item.subtitle}</span>
           </span>
-          <svg aria-hidden="true" viewBox="0 0 64 64" className="h-12 w-12 shrink-0 drop-shadow-md sm:h-16 sm:w-16"><use href={`/images/gigalearn/learn-destinations.svg#${item.art}`} /></svg>
+          <span aria-hidden="true" className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-white/20 text-5xl sm:h-20 sm:w-20 sm:text-6xl">{item.illustration}</span>
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-violet-800 shadow-sm group-hover:translate-x-1 transition-transform" aria-hidden="true">
             <ArrowRight className="h-6 w-6" />
           </span>
