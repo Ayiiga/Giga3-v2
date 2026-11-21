@@ -29,12 +29,12 @@ export const metadata = publicMetadata({
 
 
 const learnDestinations = [
-  { title: "GigaLearn Academy (Workspace)", subtitle: "Learn by doing. Explore courses and track your progress.", href: "/gigalearn/academy/workspace/", art: "university", background: "from-[#1478ed] to-[#06b6ed]" },
-  { title: "Education and Business Tools", subtitle: "Writing, research, documents and business plans.", href: "/documents/", art: "📝💼", background: "from-[#159b3a] to-[#7bdc12]" },
-  { title: "Creators' Tools", subtitle: "Create and share original content.", href: "/creator-studio/", art: "🎬🎨", background: "from-[#ff9200] to-[#ffc12c]" },
-  { title: "Early Years (KG to Lower Primary)", subtitle: "Learn with objects, rhymes, stories and play.", href: "/gigalearn/?tab=early-years", art: "🧸🔤", background: "from-[#ed299e] to-[#f875c3]" },
-  { title: "JHS, SHS and TLMs", subtitle: "Lessons, exam practice and teaching materials.", href: "/gigalearn/?tab=learn", art: "📚🔬", background: "from-[#028fa8] to-[#16cbd4]" },
-  { title: "University", subtitle: "Advanced study, research and academic support.", href: "/gigalearn/?tab=learn", art: "🎓📖", background: "from-[#7130da] to-[#a65af1]" },
+  { title: "GigaLearn Academy (Workspace)", subtitle: "Learn by doing. Explore courses and track your progress.", href: "/gigalearn/academy/workspace/", art: "academy", background: "from-[#1478ed] to-[#06b6ed]" },
+  { title: "Education and Business Tools", subtitle: "Writing, research, documents and business plans.", href: "/documents/", art: "writing", background: "from-[#159b3a] to-[#7bdc12]" },
+  { title: "Creators' Tools", subtitle: "Create and share original content.", href: "/creator-studio/", art: "creator", background: "from-[#ff9200] to-[#ffc12c]" },
+  { title: "Early Years (KG to Lower Primary)", subtitle: "Learn with objects, rhymes, stories and play.", href: "/gigalearn/?tab=early-years", art: "early", background: "from-[#ed299e] to-[#f875c3]" },
+  { title: "JHS, SHS and TLMs", subtitle: "Lessons, exam practice and teaching materials.", href: "/gigalearn/?tab=learn", art: "school", background: "from-[#028fa8] to-[#16cbd4]" },
+  { title: "University", subtitle: "Advanced study, research and academic support.", href: "/gigalearn/?tab=learn", art: "university", background: "from-[#7130da] to-[#a65af1]" },
 ] as const;
 
 function LearnDestinations() {
