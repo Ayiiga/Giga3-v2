@@ -1,6 +1,7 @@
 "use client";
 
 import { CreateHub } from "@/components/gigalearn/hubs/CreateHub";
+import { GigaLearnVisualHub } from "@/components/gigalearn/GigaLearnVisualHub";
 import { InsightHub } from "@/components/gigalearn/hubs/InsightHub";
 import { ParentHub } from "@/components/gigalearn/hubs/ParentHub";
 import { StudentHub } from "@/components/gigalearn/hubs/StudentHub";
@@ -131,6 +132,8 @@ function GigaLearnContent() {
 
   return (
     <div className="gigalearn-stable document-compact mx-auto w-full max-w-6xl min-w-0 space-y-3 pb-[calc(var(--primary-nav-offset,0px)+1rem)]">
+      <GigaLearnVisualHub openArea={(next) => selectArea(next)} />
+
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <Link
