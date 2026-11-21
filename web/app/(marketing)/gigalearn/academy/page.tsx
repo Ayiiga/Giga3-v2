@@ -50,7 +50,8 @@ function LearnDestinations() {
         <Link
           key={item.title}
           href={item.href}
-          className="group flex min-h-[116px] items-center gap-3 rounded-3xl p-4 shadow-md focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-violet-700 sm:gap-5 sm:p-5"\n          style={{ backgroundColor: item.background, color: "#ffffff" }}
+          className="group flex min-h-[116px] items-center gap-3 rounded-3xl p-4 shadow-md focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-violet-700 sm:gap-5 sm:p-5"
+          style={{ backgroundColor: item.background, color: "#ffffff" }}
           data-testid={`learn-destination-${index + 1}`}
         >
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-white/80 bg-violet-700 text-lg font-extrabold">{index + 1}</span>
