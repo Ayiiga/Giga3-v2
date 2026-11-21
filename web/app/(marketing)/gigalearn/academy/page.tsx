@@ -29,7 +29,7 @@ export const metadata = publicMetadata({
 
 
 const learnDestinations = [
-  { title: "GigaLearn Academy (Workspace)", subtitle: "Learn by doing. Explore courses and track your progress.", href: "/gigalearn/academy/workspace/", art: "🎓💻", background: "from-[#1478ed] to-[#06b6ed]" },
+  { title: "GigaLearn Academy (Workspace)", subtitle: "Learn by doing. Explore courses and track your progress.", href: "/gigalearn/academy/workspace/", art: "university", background: "from-[#1478ed] to-[#06b6ed]" },
   { title: "Education and Business Tools", subtitle: "Writing, research, documents and business plans.", href: "/documents/", art: "📝💼", background: "from-[#159b3a] to-[#7bdc12]" },
   { title: "Creators' Tools", subtitle: "Create and share original content.", href: "/creator-studio/", art: "🎬🎨", background: "from-[#ff9200] to-[#ffc12c]" },
   { title: "Early Years (KG to Lower Primary)", subtitle: "Learn with objects, rhymes, stories and play.", href: "/gigalearn/?tab=early-years", art: "🧸🔤", background: "from-[#ed299e] to-[#f875c3]" },
@@ -58,7 +58,7 @@ function LearnDestinations() {
             <span className="block text-lg font-extrabold leading-tight drop-shadow-sm sm:text-xl">{item.title}</span>
             <span className="mt-1 block text-sm font-medium leading-snug text-white drop-shadow-sm">{item.subtitle}</span>
           </span>
-          <span aria-hidden="true" className="hidden shrink-0 text-3xl sm:block">{item.art}</span>
+          <svg aria-hidden="true" viewBox="0 0 64 64" className="h-12 w-12 shrink-0 drop-shadow-md sm:h-16 sm:w-16"><use href={`/images/gigalearn/learn-destinations.svg#${item.art}`} /></svg>
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-violet-800 shadow-sm group-hover:translate-x-1 transition-transform" aria-hidden="true">
             <ArrowRight className="h-6 w-6" />
           </span>
