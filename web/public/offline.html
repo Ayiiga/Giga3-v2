@@ -88,7 +88,7 @@
   </div>
   <script>
 (function () {
-  var RETRY_MS = 3000;
+  var RETRY_MS = 10000;
   var HEALTH_MS = 5000;
   var statusEl = document.getElementById("status");
   var statusText = document.getElementById("status-text");
@@ -99,12 +99,14 @@
   var retryTimer = null;
   var checking = false;
 
-  function setOffline() {
+  function setOffline(serviceUnavailable) {
     statusEl.className = "status offline";
     dotEl.className = "dot";
-    statusText.textContent = "You're offline";
-    titleEl.textContent = "You're offline";
-    messageEl.textContent = "No network detected. Giga3 will try again when your device reconnects.";
+    statusText.textContent = serviceUnavailable ? "Connection issue" : "You're offline";
+    titleEl.textContent = serviceUnavailable ? "Giga3 is taking longer to respond" : "You're offline";
+    messageEl.textContent = serviceUnavailable
+      ? "Your device is connected, but Giga3 could not load. We will retry automatically."
+      : "No network detected. Giga3 will try again when your device reconnects.";
   }
 
   function setOnline() {
@@ -124,10 +126,10 @@
   function checkHealth() {
     var ctrl = new AbortController();
     var timer = setTimeout(function () { ctrl.abort(); }, HEALTH_MS);
-    return fetch("/api/health", { cache: "no-store", signal: ctrl.signal })
+    return fetch("/", { cache: "no-store", signal: ctrl.signal, headers: { "Accept": "text/html" } })
       .then(function (r) {
         clearTimeout(timer);
-        return r.ok ? r.json() : Promise.reject(r.status);
+        return r.ok && (r.headers.get("content-type") || "").includes("text/html") ? true : Promise.reject(r.status);
       })
       .catch(function (e) { clearTimeout(timer); throw e; });
   }
@@ -163,8 +165,7 @@
         }, 350);
       })
       .catch(function () {
-        setOffline();
-        messageEl.textContent = "Your device is online but Giga3 didn't respond yet. Retrying…";
+        setOffline(true);
         showCachedIfAny();
         scheduleRetry();
       })

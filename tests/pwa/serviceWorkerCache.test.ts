@@ -41,11 +41,13 @@ describe("service worker cache version", () => {
 });
 
 describe("offline.html", () => {
-  it("is lightweight and probes /api/health with retry", () => {
+  it("is lightweight and probes public HTML with retry", () => {
     const html = readFileSync(resolve(__dirname, "../../web/public/offline.html"), "utf8");
     expect(html.length).toBeLessThan(10 * 1024);
     expect(html).toContain("#5B21B6");
-    expect(html).toContain("/api/health");
+    expect(html).toContain('fetch("/", { cache: "no-store"');
+    expect(html).toContain("Connection issue");
+    expect(html).toContain("setOffline(true)");
     expect(html).toContain("navigator.onLine");
     expect(html).toContain("Try again");
     expect(html).toContain("Go to home");
