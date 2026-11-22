@@ -37,6 +37,34 @@ const learnDestinations = [
   { title: "University", subtitle: "Advanced study, research and academic support.", href: "/gigalearn/?tab=learn", illustration: "🏛️", background: "#6334b6" },
 ] as const;
 
+const quickTools = [
+  { title: "Teacher Pace", description: "Education tools and academic writing.", href: "/documents/", pictogram: "👩🏽‍🏫", color: "#164cc9" },
+  { title: "Creators", description: "Create and share original content.", href: "/creator-studio/", pictogram: "🎬", color: "#b94c06" },
+  { title: "Business Tools", description: "Plan, write and grow your business.", href: "/documents/", pictogram: "📈", color: "#08783b" },
+] as const;
+
+function QuickTools() {
+  return (
+    <nav aria-label="Teacher, creator and business tools" className="mx-auto max-w-3xl px-3 pt-4 sm:px-6">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+        {quickTools.map((tool) => (
+          <Link
+            key={tool.title}
+            href={tool.href}
+            className="flex min-w-0 flex-col items-center rounded-2xl px-2 py-4 text-center shadow-md focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-violet-700 sm:px-4"
+            style={{ backgroundColor: tool.color, color: "#ffffff" }}
+          >
+            <span aria-hidden="true" className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/20 text-4xl sm:h-20 sm:w-20 sm:text-5xl">{tool.pictogram}</span>
+            <span className="mt-2 text-sm font-extrabold leading-tight sm:text-lg" style={{ color: "#ffffff", WebkitTextFillColor: "#ffffff" }}>{tool.title}</span>
+            <span className="mt-2 flex-1 text-xs font-medium leading-snug sm:text-sm" style={{ color: "#ffffff", WebkitTextFillColor: "#ffffff" }}>{tool.description}</span>
+            <span aria-hidden="true" className="mt-3 flex h-9 w-9 items-center justify-center rounded-full bg-white text-violet-800"><ArrowRight className="h-5 w-5" /></span>
+          </Link>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
 function LearnDestinations() {
   return (
     <nav aria-label="GigaLearn learning destinations" className="mx-auto max-w-3xl space-y-3 px-3 pt-4 pb-5 sm:px-6">
@@ -101,6 +129,7 @@ export default function GigaLearnAcademyPage() {
           Open Academy Workspace
         </a>
       </div>
+      <QuickTools />
       <LearnDestinations />
       <AcademyCourseDirectory />
       <div className="marketing-stable gigalearn-stable px-3 py-3 sm:px-6 sm:py-6">
