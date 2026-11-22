@@ -68,12 +68,6 @@ function QuickTools() {
 function LearnDestinations() {
   return (
     <nav aria-label="GigaLearn learning destinations" className="mx-auto max-w-3xl space-y-3 px-3 pt-4 pb-5 sm:px-6">
-      <div className="rounded-3xl bg-gradient-to-r from-[#5a16d7] to-[#8b36ed] px-5 py-6 text-white shadow-lg">
-        <p className="text-xs font-bold uppercase tracking-widest text-white/90">Giga3 AI</p>
-        <h2 className="mt-1 text-3xl font-extrabold">GigaLearn</h2>
-        <p className="mt-1 text-lg font-semibold">Learn. Practice. Excel.</p>
-        <p className="mt-2 text-sm text-white/95">Choose where you want to begin.</p>
-      </div>
       {learnDestinations.map((item, index) => (
         <Link
           key={item.title}
