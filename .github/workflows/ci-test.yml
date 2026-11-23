@@ -64,6 +64,10 @@ jobs:
           NEXT_TELEMETRY_DISABLED: "1"
         run: npm run build
 
+      - name: Verify generated offline page and Cloudflare bundle
+        working-directory: web
+        run: node scripts/verify-offline-shell.mjs
+
       - name: SEO audit of proposed static export
         working-directory: web
         run: npm run seo:audit
