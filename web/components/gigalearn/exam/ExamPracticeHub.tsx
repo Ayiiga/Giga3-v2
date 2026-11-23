@@ -120,10 +120,10 @@ export function ExamPracticeHub() {
         <label className="flex min-h-14 items-center gap-3 rounded-2xl border-2 border-violet-100 bg-white px-4 shadow-sm">
           <BookOpen className="h-6 w-6 shrink-0 text-violet-700" />
           <span className="sr-only">{exam === "promotion" ? "Promotion rank" : "Subject"}</span>
-          <select value={selectedId} onChange={(e) => setSubject(e.target.value)} className="w-full appearance-none bg-transparent py-3 text-base font-bold text-slate-950 outline-none">
+          <select aria-label={exam === "promotion" ? "Promotion rank" : "Subject"} value={selectedId} onChange={(e) => setSubject(e.target.value)} className="w-full appearance-none bg-transparent py-3 text-base font-bold text-slate-950 outline-none">
             {subjects.length === 0 ? <option value="">No subjects available</option> : subjects.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
           </select>
-          <span className="text-xl text-violet-900">⌄</span>
+          <span aria-hidden="true" className="text-xl text-violet-900">⌄</span>
         </label>
       </section>
 
