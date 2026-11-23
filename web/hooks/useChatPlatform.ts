@@ -783,12 +783,12 @@ export function useChatPlatform() {
     [mode, personaId, beginReplyWait, trackChatGeneration, effectiveOnline]
   );
 
-  const flushOutbox = useCallback(async () => {
+  const flushOutbox = useCallback(async (force = false) => {
     if (
       syncingOutboxRef.current ||
       typeof navigator === "undefined" ||
       !navigator.onLine ||
-      !effectiveOnline
+      (!force && !effectiveOnline)
     ) {
       return;
     }
@@ -830,16 +830,9 @@ export function useChatPlatform() {
         } catch (e) {
           const msg = toUserFacingError(e, "Sync failed");
           await bumpOutboxAttempt(row.id, msg);
-          const maxOutboxAttempts = isSlowNetwork
-            ? MAX_SEND_RETRIES_SLOW
-            : MAX_SEND_RETRIES;
-          if (row.attempts + 1 >= maxOutboxAttempts) {
-            await removeOutbox(row.id);
-            if (pendingUserText === row.content) {
-              setPendingUserText(null);
-            }
-            setError(toUserFacingError(e, msg));
-          }
+          // Keep queued messages until delivery is confirmed or the user cancels.
+          // A fixed retry ceiling must not silently destroy a learner's prompt.
+          setError(toUserFacingError(e, msg));
         } finally {
           setFlushingOutboxId((current) => (current === row.id ? null : current));
         }
@@ -1503,7 +1496,7 @@ export function useChatPlatform() {
     isSyncingOutbox,
     flushingOutboxId,
     cancelOutboxMessage,
-    retryOutboxSync: flushOutbox,
+    retryOutboxSync: () => flushOutbox(true),
     retryFailedReply,
     error,
     startNewChat,
