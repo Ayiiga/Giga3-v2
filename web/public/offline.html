@@ -88,8 +88,8 @@
   </div>
   <script>
 (function () {
-  var RETRY_MS = 3000;
-  var HEALTH_MS = 5000;
+  var RETRY_MS = 10000;
+  var HEALTH_MS = 12000;
   var statusEl = document.getElementById("status");
   var statusText = document.getElementById("status-text");
   var titleEl = document.getElementById("title");
@@ -98,13 +98,17 @@
   var cachedEl = document.getElementById("cached");
   var retryTimer = null;
   var checking = false;
+  var attemptId = 0;
+  var activeController = null;
 
-  function setOffline() {
+  function setOffline(serviceUnavailable) {
     statusEl.className = "status offline";
     dotEl.className = "dot";
-    statusText.textContent = "You're offline";
-    titleEl.textContent = "You're offline";
-    messageEl.textContent = "No network detected. Giga3 will try again when your device reconnects.";
+    statusText.textContent = serviceUnavailable ? "Connection issue" : "You're offline";
+    titleEl.textContent = serviceUnavailable ? "Giga3 is taking longer to respond" : "You're offline";
+    messageEl.textContent = serviceUnavailable
+      ? "Your device is connected, but Giga3 could not load. We will retry automatically."
+      : "No network detected. Giga3 will try again when your device reconnects.";
   }
 
   function setOnline() {
@@ -121,22 +125,28 @@
     statusText.textContent = "Checking connection…";
   }
 
+  // Query nonce and network-only worker path prevent cached HTML from faking recovery.
   function checkHealth() {
     var ctrl = new AbortController();
+    activeController = ctrl;
     var timer = setTimeout(function () { ctrl.abort(); }, HEALTH_MS);
-    return fetch("/api/health", { cache: "no-store", signal: ctrl.signal })
+    var probeUrl = "/?__giga3_connectivity_probe=" + Date.now();
+    return fetch(probeUrl, { cache: "no-store", signal: ctrl.signal, headers: { "Accept": "text/html" } })
       .then(function (r) {
-        clearTimeout(timer);
-        return r.ok ? r.json() : Promise.reject(r.status);
+        if (r.ok && (r.headers.get("content-type") || "").toLowerCase().includes("text/html")) return true;
+        return Promise.reject(r.status);
       })
-      .catch(function (e) { clearTimeout(timer); throw e; });
+      .finally(function () {
+        clearTimeout(timer);
+        if (activeController === ctrl) activeController = null;
+      });
   }
 
   function showCachedIfAny() {
     if (!("caches" in window)) return;
     caches.match("/").then(function (hit) {
       if (hit) cachedEl.style.display = "block";
-    });
+    }).catch(function () { /* Cache Storage may be unavailable. */ });
   }
 
   function scheduleRetry() {
@@ -144,42 +154,65 @@
     retryTimer = setTimeout(runCheck, RETRY_MS);
   }
 
+  function cancelCurrentCheck() {
+    attemptId++;
+    checking = false;
+    if (activeController) {
+      activeController.abort();
+      activeController = null;
+    }
+  }
+
   function runCheck() {
     if (checking) return;
+    var currentAttempt = ++attemptId;
     checking = true;
     setChecking();
     if (!navigator.onLine) {
-      setOffline();
+      setOffline(false);
       showCachedIfAny();
       checking = false;
+      scheduleRetry();
       return;
     }
     checkHealth()
       .then(function () {
+        if (currentAttempt !== attemptId || !navigator.onLine) return;
         setOnline();
         setTimeout(function () {
+          if (currentAttempt !== attemptId || !navigator.onLine) return;
           if (location.pathname === "/offline.html") location.replace("/");
           else location.reload();
         }, 350);
       })
       .catch(function () {
-        setOffline();
-        messageEl.textContent = "Your device is online but Giga3 didn't respond yet. Retrying…";
+        if (currentAttempt !== attemptId) return;
+        setOffline(navigator.onLine);
         showCachedIfAny();
         scheduleRetry();
       })
-      .finally(function () { checking = false; });
+      .finally(function () {
+        if (currentAttempt === attemptId) checking = false;
+      });
   }
 
   document.getElementById("retry").addEventListener("click", function () {
     if (retryTimer) clearTimeout(retryTimer);
+    cancelCurrentCheck();
     runCheck();
   });
 
-  window.addEventListener("online", runCheck);
+  window.addEventListener("online", function () {
+    if (retryTimer) clearTimeout(retryTimer);
+    cancelCurrentCheck();
+    runCheck();
+  });
   window.addEventListener("offline", function () {
     if (retryTimer) clearTimeout(retryTimer);
-    setOffline();
+    cancelCurrentCheck();
+    setOffline(false);
+    showCachedIfAny();
+    scheduleRetry();
   });
 
   showCachedIfAny();

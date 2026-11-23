@@ -138,7 +138,7 @@ describe("canonical host redirect", () => {
     const bundled = readFileSync(resolve(root, "web/functions/offlinePageHtml.js"), "utf8");
     expect(bundled).toContain("OFFLINE_PAGE_HTML");
     // JSON.stringify of the public file must appear in the module export.
-    expect(bundled).toContain(JSON.stringify(pub).slice(1, 40));
+    expect(bundled).toContain("export const OFFLINE_PAGE_HTML = " + JSON.stringify(pub) + ";");
     expect(bundled.length).toBeGreaterThan(pub.length);
   });
 });

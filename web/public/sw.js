@@ -2,7 +2,7 @@
  * Giga3 AI PWA service worker — Cloudflare Pages static export.
  * Bump CACHE_VERSION on every deploy that changes JS/CSS.
  */
-const CACHE_VERSION = "giga3-v122";
+const CACHE_VERSION = "giga3-v123";
 const OFFLINE_URL = "/offline.html";
 const NETWORK_TIMEOUT_MS = 15000;
 
@@ -159,6 +159,16 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+
+  // Network-only origin probe: never treat a cached homepage as online.
+  if (url.pathname === "/" && url.searchParams.has("__giga3_connectivity_probe")) {
+    event.respondWith(
+      fetchWithTimeout(request, NETWORK_TIMEOUT_MS).catch(() =>
+        new Response("", { status: 503, headers: { "Cache-Control": "no-store" } })
+      )
+    );
+    return;
+  }
 
   // (a) API — network-only, never cache
   if (url.pathname.startsWith("/api/")) {

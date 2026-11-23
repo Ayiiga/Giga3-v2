@@ -235,6 +235,9 @@ jobs:
           fi
           npm run supabase:verify
 
+      - name: Verify generated offline page and Cloudflare bundle
+        run: node scripts/verify-offline-shell.mjs
+
       - name: Verify static output
         run: |
           find out -maxdepth 4 -name 'index.html' | head -30
