@@ -9,6 +9,8 @@ describe("service worker cache version", () => {
     expect(sw).toContain('OFFLINE_URL = "/offline.html"');
     expect(sw).toContain("requireInteraction: true");
     expect(sw).toContain("NETWORK_TIMEOUT_MS");
+    expect(sw).toContain("giga3-v123");
+    expect(sw).toContain('url.searchParams.has("__giga3_connectivity_probe")');
     expect(sw).toContain("fetchWithTimeout");
     expect(sw).toContain("handleStaleChunk");
     expect(sw).toContain('"/api/"');
@@ -45,9 +47,12 @@ describe("offline.html", () => {
     const html = readFileSync(resolve(__dirname, "../../web/public/offline.html"), "utf8");
     expect(html.length).toBeLessThan(10 * 1024);
     expect(html).toContain("#5B21B6");
-    expect(html).toContain('fetch("/", { cache: "no-store"');
+    expect(html).toContain('fetch(probeUrl, { cache: "no-store"');
+    expect(html).toContain("__giga3_connectivity_probe=");
+    expect(html).toContain("RETRY_MS = 10000");
+    expect(html).toContain("HEALTH_MS = 12000");
     expect(html).toContain("Connection issue");
-    expect(html).toContain("setOffline(true)");
+    expect(html).toContain("setOffline(navigator.onLine)");
     expect(html).toContain("navigator.onLine");
     expect(html).toContain("Try again");
     expect(html).toContain("Go to home");
@@ -114,6 +119,18 @@ describe("offline fetch behavior", () => {
     const outage = new Response('{"error":"offline"}', { status: 503 });
     expect(await offlineFetch("/gigasocial/", "navigate", cached, outage)).toBe(cached);
     expect(await offlineFetch("/chat/", "navigate", cached, outage)).not.toBe(cached);
+  });
+
+  it("does not mistake cached homepage HTML for origin connectivity", async () => {
+    const cached = new Response("<html>Cached homepage</html>", { headers: { "Content-Type": "text/html" } });
+    const failed = await offlineFetch("/?__giga3_connectivity_probe=1", "cors", cached);
+    expect(failed.status).toBe(503);
+    expect(await failed.text()).toBe("");
+
+    const live = new Response("<html>Live homepage</html>", { headers: { "Content-Type": "text/html" } });
+    const healthy = await offlineFetch("/?__giga3_connectivity_probe=2", "cors", cached, live);
+    expect(healthy.status).toBe(200);
+    expect(await healthy.text()).toContain("Live homepage");
   });
 
   it("does not delete offline caches when an uncached script cannot load", async () => {
