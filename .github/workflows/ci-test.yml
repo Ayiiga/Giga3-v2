@@ -72,6 +72,15 @@ jobs:
         working-directory: web
         run: npm run seo:audit
 
+      - name: Exercise the exported mobile interface
+        run: |
+          npx playwright install chromium --with-deps
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory web/out >/tmp/giga3-static.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid"' EXIT
+          curl --retry 8 --retry-connrefused --fail --silent http://127.0.0.1:4173/gigalearn/ >/dev/null
+          GIGA3_E2E_BASE_URL=http://127.0.0.1:4173 npx playwright test tests/e2e/mobile-interface.spec.ts tests/e2e/production-exam-practice.spec.ts --project=mobile-chrome --grep 'Learn exposes|Discover keeps|Free practice: pre-start|Practice Test setup'
+
       - name: Summarize
         if: always()
         run: |

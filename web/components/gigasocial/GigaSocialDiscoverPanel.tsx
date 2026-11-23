@@ -1,7 +1,9 @@
 "use client";
 
+import { SocialPostGrid } from "./SocialPostGrid";
+import { GigaSocialPostCard } from "./GigaSocialPostCard";
+import type { Id } from "convex/_generated/dataModel";
 import { GigaSocialTemplatesPanel } from "@/components/gigasocial/template/GigaSocialTemplatesPanel";
-import { GigaSocialPostCard } from "@/components/gigasocial/GigaSocialPostCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { useGigaSocialFeatures } from "@/lib/gigasocial/featureFlags";
@@ -9,10 +11,9 @@ import { DISCOVER_FILTERS, type DiscoverFilterId } from "@/lib/gigasocial/sectio
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
-import type { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import { LayoutTemplate, Search } from "lucide-react";
-import { memo, useState } from "react";
+import { memo, useEffect, useState } from "react";
 
 type DiscoverView = "posts" | "templates";
 
@@ -30,13 +31,19 @@ export const GigaSocialDiscoverPanel = memo(function GigaSocialDiscoverPanel({
   const [filter, setFilter] = useState<DiscoverFilterId>("trending");
   const [query, setQuery] = useState("");
 
+  const [search, setSearch] = useState("");
+  useEffect(() => {
+    const timer = window.setTimeout(() => setSearch(query.trim()), 250);
+    return () => window.clearTimeout(timer);
+  }, [query]);
+
   const data = useQuery(
     api.gigaSocial.listDiscover,
     view === "posts"
       ? {
           sessionToken: sessionToken ?? undefined,
           filter,
-          query: query.trim() || undefined,
+          query: search || undefined,
           limit: 24,
         }
       : "skip"
@@ -59,11 +66,11 @@ export const GigaSocialDiscoverPanel = memo(function GigaSocialDiscoverPanel({
     );
   }
 
-  if (data === undefined) {
-    return <LoadingState label="Discovering posts…" />;
-  }
 
-  const posts = (data.posts ?? []) as SocialPost[];
+  const posts = (data?.posts ?? []) as SocialPost[];
+
+  const creators = Array.from(new Map(posts.map(post => [post.author.handle, post.author])).values()).slice(0, 8);
+  const hashtags = Array.from(new Set(posts.flatMap(post => post.hashtags ?? []))).slice(0, 8);
 
   return (
     <div className="space-y-4">
@@ -78,6 +85,7 @@ export const GigaSocialDiscoverPanel = memo(function GigaSocialDiscoverPanel({
           <button
             key={f.id}
             type="button"
+            aria-pressed={filter === f.id}
             onClick={() => setFilter(f.id)}
             className={cn(
               "min-h-9 rounded-full border px-3 py-1.5 text-xs font-medium",
@@ -102,17 +110,27 @@ export const GigaSocialDiscoverPanel = memo(function GigaSocialDiscoverPanel({
         />
       </div>
 
-      {posts.length === 0 ? (
+      {creators.length > 0 && <section aria-label="Creators in these results">
+        <h3 className="mb-2 font-bold">Discover creators</h3>
+        <div className="creator-strip">{creators.map(author => (
+          <a key={author.handle} href={`/gigasocial/profile/?handle=${encodeURIComponent(author.handle)}`}>
+            {author.avatarUrl ? <img src={author.avatarUrl} alt="" width="48" height="48" /> : <b>{author.displayName.slice(0, 1)}</b>}
+            <small>{author.displayName}</small>
+          </a>
+        ))}</div>
+      </section>}
+      {hashtags.length > 0 && <div aria-label="Explore hashtags" className="flex gap-2 overflow-x-auto">{hashtags.map(tag =>
+        <button type="button" key={tag} className="min-h-11 shrink-0 rounded-full border px-3" onClick={() => setQuery("#" + tag.replace(/^#/, ""))}>#{tag.replace(/^#/, "")}</button>
+      )}</div>}
+      {data === undefined ? <LoadingState label="Discovering posts…" /> : posts.length === 0 ? (
         <EmptyState
           icon={Search}
           title="No results"
           description="Try another filter or search term."
         />
       ) : (
-        <ul className="space-y-4">
-          {posts.map((post) => (
-            <li key={post._id}>
-              <GigaSocialPostCard
+        <SocialPostGrid posts={posts} renderPost={post => (
+            <GigaSocialPostCard
                 post={post}
                 sessionToken={sessionToken}
                 onRequireAuth={requireAuth}
@@ -147,9 +165,7 @@ export const GigaSocialDiscoverPanel = memo(function GigaSocialDiscoverPanel({
                   });
                 }}
               />
-            </li>
-          ))}
-        </ul>
+        )} />
       )}
     </div>
   );

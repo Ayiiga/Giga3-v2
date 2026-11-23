@@ -94,7 +94,7 @@ export const GigaSocialCreatorDashboard = memo(function GigaSocialCreatorDashboa
   return (
     <div className="space-y-4">
       <div className="saas-card rounded-2xl border border-border p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="social-profile-banner flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold text-foreground">Creator Dashboard</h2>
             <p className="text-sm text-muted">
@@ -114,6 +114,12 @@ export const GigaSocialCreatorDashboard = memo(function GigaSocialCreatorDashboa
         </div>
       </div>
 
+      <section aria-label="Post performance" className="creator-metrics">
+        <Stat icon={Eye} label="Views" value={formatCompactCount(dashboard.postPerformance.totalViews)} />
+        <Stat icon={TrendingUp} label="Likes" value={formatCompactCount(dashboard.postPerformance.totalLikes)} />
+        <Stat icon={Users} label="Fans" value={formatCompactCount(dashboard.fanCount)} />
+        <Stat icon={BarChart3} label="Comments" value={formatCompactCount(dashboard.postPerformance.totalComments)} />
+      </section>
       <section className="saas-card rounded-2xl border border-border p-4">
         <h3 className="text-sm font-semibold text-foreground">Eligibility</h3>
         <p className="mt-1 text-sm text-foreground">{statusMessage}</p>
@@ -269,12 +275,13 @@ export const GigaSocialCreatorDashboard = memo(function GigaSocialCreatorDashboa
             ) : null}
           </div>
           <ul className="mt-3 space-y-2">
-            {dashboard.topPosts.map((p) => (
+            {dashboard.topPosts.map((p: {postId: string; body: string; viewCount: number; likeCount: number; commentCount: number; shareCount: number}) => (
               <li
                 key={p.postId}
                 className="rounded-xl border border-border bg-white px-3 py-2 text-sm"
               >
-                <p className="line-clamp-2 text-foreground">{p.body || "(media post)"}</p>
+                <a className="line-clamp-2 font-semibold text-foreground underline" href={`/gigasocial/post/?id=${encodeURIComponent(p.postId)}`}>{p.body || "Open media post"}</a>
+                <meter aria-label="Share of total views" className="block w-full" min={0} max={Math.max(1, dashboard.postPerformance.totalViews)} value={p.viewCount} />
                 <p className="mt-1 text-xs text-muted">
                   {p.viewCount} views · {p.likeCount} likes · {p.commentCount} comments ·{" "}
                   {p.shareCount} shares

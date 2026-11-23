@@ -93,7 +93,7 @@ export function ExamPracticeHub() {
             <h2 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">Practice <span className="text-yellow-300">Test</span></h2>
             <p className="mt-2 max-w-xl text-sm leading-6 text-white/95 sm:text-base">Choose an exam, subject and start solving questions immediately.</p>
           </div>
-          <div className="hidden shrink-0 text-6xl sm:block" aria-hidden>🎯</div>
+          <img src="/images/interface/exam.webp" alt="" width="138" height="93" className="w-24 shrink-0 rounded-xl sm:w-36" />
         </div>
       </header>
 
@@ -143,14 +143,14 @@ export function ExamPracticeHub() {
         </div>
       </section>
 
-      <section className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-        <label className="flex min-h-14 items-center gap-3 rounded-2xl border-2 border-slate-200 bg-white px-4">
+      <section className="flex items-center justify-between gap-2 rounded-2xl border border-slate-200 bg-white px-3">
+        <label htmlFor="practice-count" className="flex min-h-12 items-center gap-2">
           <Layers className="h-6 w-6 shrink-0 text-violet-700" />
           <span className="text-sm font-bold text-slate-950">Number of Questions</span>
         </label>
-        {exam === "promotion" ? <select aria-label="Number of questions" value={count} onChange={(e) => setCount(e.target.value)} className="min-h-14 rounded-2xl border-2 border-slate-200 bg-white px-4 font-bold text-slate-950 outline-none focus:border-violet-500">
+        {exam === "promotion" ? <select id="practice-count" aria-label="Number of questions" value={count} onChange={(e) => setCount(e.target.value)} className="min-h-11 min-w-0 max-w-[54%] rounded-xl bg-violet-50 px-1 text-sm font-bold text-slate-950 outline-none focus:border-violet-500">
           <option value="50">50 (Free)</option><option value="100">100 (Premium)</option><option value="250">250 (Premium)</option><option value="500">500 (Premium)</option>
-        </select> : <select aria-label="Number of questions" value={freeCount} onChange={(e) => setCount(e.target.value)} className="min-h-14 rounded-2xl border-2 border-slate-200 bg-white px-4 font-bold text-slate-950 outline-none focus:border-violet-500">{freeCounts.map((n) => <option key={n} value={n}>{n === subjectCount ? `All ${n} questions (Free)` : `${n} questions (Free)`}</option>)}</select>}
+        </select> : <select id="practice-count" aria-label="Number of questions" value={freeCount} onChange={(e) => setCount(e.target.value)} className="min-h-11 min-w-0 max-w-[54%] rounded-xl bg-violet-50 px-1 text-sm font-bold text-slate-950 outline-none focus:border-violet-500">{freeCounts.map((n) => <option key={n} value={n}>{n === subjectCount ? `All ${n} questions (Free)` : `${n} questions (Free)`}</option>)}</select>}
       </section>
 
       <a href={available ? href : undefined} aria-disabled={!available} data-testid="start-practice-test"

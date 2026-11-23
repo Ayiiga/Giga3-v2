@@ -84,7 +84,6 @@ export function buildHomeGreeting(args: {
 
 /**
  * Sync resume cards from device storage (privacy-safe, no extra API calls).
- * GigaEdit IndexedDB projects are loaded separately (async).
  */
 export function listSyncHomeResumeItems(limit = 4): HomeResumeItem[] {
   if (typeof window === "undefined") return [];
@@ -98,7 +97,7 @@ export function listSyncHomeResumeItems(limit = 4): HomeResumeItem[] {
       id: `practice-${practice.toolId}-${practice.startedAt}`,
       label: "Resume practice",
       detail: `${practice.toolId} · ${answered}/${total} answered`,
-      href: "/gigalearn",
+      href: "/gigalearn/?tab=resume",
       kind: "learn",
     });
   }

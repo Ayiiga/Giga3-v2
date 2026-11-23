@@ -1,5 +1,6 @@
 "use client";
 
+import { SocialPostGrid } from "./SocialPostGrid";
 import { GigaSocialPostCard } from "@/components/gigasocial/GigaSocialPostCard";
 import { GigaSocialGrowthHub } from "@/components/gigasocial/growth/GigaSocialGrowthHub";
 import { GigaSocialCreatorStudio } from "@/components/gigasocial/studio/GigaSocialCreatorStudio";
@@ -39,6 +40,8 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
   const prepareAvatarUpload = useAction(api.gigaSocialStorage.prepareAvatarUpload);
   const resolveStorageUrl = useMutation(api.gigaSocialStorage.resolveStorageUrl);
 
+  const [contentTab, setContentTab] = useState<"Posts" | "Videos" | "Saved">("Posts");
+  const bookmarks = useQuery(api.gigaSocial.listBookmarks, contentTab === "Saved" ? { sessionToken } : "skip");
   const [editing, setEditing] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [handle, setHandle] = useState("");
@@ -69,6 +72,7 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
 
   const profile = data?.profile;
   const posts = (data?.recentPosts ?? []) as SocialPost[];
+  const visiblePosts = contentTab === "Saved" ? (bookmarks?.posts ?? []) as SocialPost[] : contentTab === "Videos" ? posts.filter(post => post.mediaType === "video" || post.postType === "video") : posts;
   const gamification = profile?.gamification;
   const accounts = (data?.accounts ?? []) as Array<{
     profileId: string;
@@ -233,7 +237,7 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
   return (
     <div className="gigasocial-profile-stable gigasocial-pro space-y-6">
       <div className="saas-card rounded-2xl border border-border p-4 sm:p-6">
-        <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="social-profile-banner flex flex-wrap items-start justify-between gap-3">
           <div className="flex items-center gap-4">
             <div className="relative">
               <SocialAvatar
@@ -292,7 +296,7 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
           </p>
         )}
 
-        <div className="mt-4 rounded-xl border border-border/80 bg-muted/10 p-3">
+        <details className="mt-4 rounded-xl border border-border/80 bg-muted/10 p-3"><summary className="cursor-pointer font-semibold">Manage creator accounts</summary>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-xs font-semibold text-foreground">
               Creator accounts · {accounts.length}
@@ -389,7 +393,7 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
               </div>
             </div>
           ) : null}
-        </div>
+        </details>
 
         {editing ? (
           <form
@@ -520,6 +524,12 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
         )}
       </div>
 
+      <nav aria-label="Creator shortcuts" className="profile-shortcuts">
+        <a href="/gigasocial/?tab=creator&creatorTab=dashboard">Analytics</a>
+        <a href="/gigasocial/?tab=creator&creatorTab=awards">My awards</a>
+        <a href="/gigasocial/?tab=creator&creatorTab=earnings">My earnings</a>
+        <a href="/gigalearn/academy/certificates/">Certificates</a>
+      </nav>
       <details className="rounded-xl border border-border p-3">
         <summary className="cursor-pointer font-semibold text-foreground">Rewards & challenges</summary>
         <GigaSocialGrowthHub sessionToken={sessionToken} xp={gamification?.xp ?? 0} />
@@ -550,16 +560,17 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
 
       <section>
         <h4 className="platform-section-title mb-3">Your posts</h4>
-        {posts.length === 0 ? (
-          <p className="text-sm text-muted">You have not posted yet.</p>
+        <nav aria-label="Your content" className="mb-3 flex gap-2">{(["Posts", "Videos", "Saved"] as const).map(tab =>
+          <button className="min-h-11 rounded-full border px-4" type="button" key={tab} aria-pressed={tab === contentTab} onClick={() => setContentTab(tab)}>{tab}</button>
+        )}</nav>
+        {contentTab === "Saved" && bookmarks === undefined ? <p role="status">Loading saved posts…</p> : visiblePosts.length === 0 ? (
+          <p className="text-sm text-muted">No {contentTab.toLowerCase()} to show yet.</p>
         ) : (
-          <ul className="space-y-4">
-            {posts.map((post) => (
-              <li key={post._id}>
-                <GigaSocialPostCard
+          <SocialPostGrid key={contentTab} posts={visiblePosts} renderPost={post => (
+              <GigaSocialPostCard
                   post={post}
                   sessionToken={sessionToken}
-                  canDelete
+                  canDelete={contentTab !== "Saved"}
                   enableEdit
                   onEdit={async (postId, args: { body: string; postType: SocialPostTypeId }) => {
                     await updatePost({
@@ -581,7 +592,7 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
                   onDelete={async (postId) => {
                     await deletePost({ sessionToken, postId: postId as Id<"socialPosts"> });
                   }}
-                  onPin={async (postId, pinned) => {
+                  onPin={contentTab === "Saved" ? undefined : async (postId, pinned) => {
                     await setPostPinned({
                       sessionToken,
                       postId: postId as Id<"socialPosts">,
@@ -589,9 +600,7 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
                     });
                   }}
                 />
-              </li>
-            ))}
-          </ul>
+          )} />
         )}
       </section>
     </div>

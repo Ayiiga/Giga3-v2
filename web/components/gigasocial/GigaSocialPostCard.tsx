@@ -107,7 +107,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
 }: GigaSocialPostCardProps) {
   const features = useGigaSocialFeatures();
   const { ref: viewRef, recordedViewCount } =
-    useRecordGigaSocialPostView<HTMLArticleElement>(post._id);
+    useRecordGigaSocialPostView<HTMLElement>(post._id);
   const [liked, setLiked] = useState(Boolean(post.likedByMe));
   const [likeCount, setLikeCount] = useState(post.likeCount);
   const [bookmarked, setBookmarked] = useState(Boolean(post.bookmarkedByMe));
@@ -116,6 +116,10 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [actionsOpen, setActionsOpen] = useState(false);
   const actionsId = useId();
+  const optionsRef = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    if (actionsOpen) optionsRef.current?.showModal();
+  }, [actionsOpen]);
   const [editorOpen, setEditorOpen] = useState(false);
   const [boostOpen, setBoostOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
@@ -486,6 +490,13 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
                 />
                 <span>{likeCount}</span>
               </button>
+              <button type="button" aria-label="Open comments" aria-expanded={commentsOpen}
+                className="gigasocial-post-card__media-action" onClick={() => setCommentsOpen(open => !open)}>
+                <MessageCircle className="h-5 w-5" aria-hidden /><span>{post.commentCount}</span>
+              </button>
+              <button type="button" aria-label="Share post" disabled={busy} className="gigasocial-post-card__media-action" onClick={() => void handleShare()}>
+                <Share2 className="h-5 w-5" aria-hidden /><span>{shareCount}</span>
+              </button>
               {canTip ? (
                 <GigaSocialTipButton
                   sessionToken={sessionToken!}
@@ -564,17 +575,23 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
           </button>
         </div>
 
-        <div id={actionsId} hidden={!actionsOpen}>
+        <dialog id={actionsId} ref={optionsRef} className="social-options-sheet" aria-label="Post options"
+          onClose={() => setActionsOpen(false)} onClick={event => {
+            if (event.target === event.currentTarget) optionsRef.current?.close();
+          }}>
           {actionsOpen ? (
             <div className="mx-3 mb-2 rounded-xl border border-border bg-accent/5 p-2 sm:mx-4">
-              <div className="flex flex-wrap items-center gap-1">
+              <header className="mb-3 flex items-center justify-between"><h3 className="font-bold">Post options</h3>
+                <button type="button" aria-label="Close post options" onClick={() => optionsRef.current?.close()}>✕</button>
+              </header>
+              <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
                 {/* Like/Tip live on media for visual posts; keep in footer for text posts. */}
                 {!isVisualPost ? (
                   <ActionButton
                     active={liked}
                     label={`${liked ? "Unlike" : "Like"} · ${likeCount}`}
                     icon={Heart}
-                    onClick={() => void handleLike()}
+                    onClick={() => { optionsRef.current?.close(); void handleLike(); }}
                     disabled={busy}
                     className="gigasocial-reaction-like"
                   />
@@ -583,7 +600,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
                   compact={isVisualPost}
                   label={`Share · ${shareCount}`}
                   icon={Share2}
-                  onClick={() => void handleShare()}
+                  onClick={() => { optionsRef.current?.close(); void handleShare(); }}
                   disabled={busy}
                 />
                 <ActionButton
@@ -591,7 +608,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
                   active={bookmarked}
                   label={bookmarked ? "Unsave" : "Save"}
                   icon={Bookmark}
-                  onClick={() => void handleBookmark()}
+                  onClick={() => { optionsRef.current?.close(); void handleBookmark(); }}
                   disabled={busy}
                 />
                 {!isVisualPost && canTip ? (
@@ -607,10 +624,10 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
                     disabled={busy}
                     onRemix={() => {
                       if (!sessionToken) {
-                        promptAuth();
+                        optionsRef.current?.close(); promptAuth();
                         return;
                       }
-                      onRemix(post);
+                      optionsRef.current?.close(); onRemix(post);
                     }}
                   />
                 ) : null}
@@ -619,10 +636,10 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
                     disabled={busy}
                     onUseTemplate={() => {
                       if (!sessionToken) {
-                        promptAuth();
+                        optionsRef.current?.close(); promptAuth();
                         return;
                       }
-                      onUseAsTemplate!(post);
+                      optionsRef.current?.close(); onUseAsTemplate!(post);
                     }}
                   />
                 ) : null}
@@ -632,7 +649,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
                     size="sm"
                     variant="ghost"
                     className="text-accent"
-                    onClick={() => setBoostOpen(true)}
+                    onClick={() => { optionsRef.current?.close(); setBoostOpen(true); }}
                     aria-label="Boost post"
                   >
                     <Megaphone className="h-4 w-4" aria-hidden />
@@ -659,7 +676,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
                     size="sm"
                     variant="ghost"
                     className="text-muted"
-                    onClick={() => setEditorOpen(true)}
+                    onClick={() => { optionsRef.current?.close(); setEditorOpen(true); }}
                     aria-label="Edit post"
                   >
                     <Pencil className="h-4 w-4" aria-hidden />
@@ -686,11 +703,11 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
                     className="text-muted"
                     onClick={() => {
                       if (!sessionToken) {
-                        promptAuth();
+                        optionsRef.current?.close(); promptAuth();
                         return;
                       }
                       setStatusMessage(null);
-                      setReportOpen(true);
+                      optionsRef.current?.close(); setReportOpen(true);
                     }}
                     aria-label="Report post"
                   >
@@ -702,7 +719,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
               {enablePostAIActions ? <GigaSocialPostAIActions post={post} compact={isVisualPost} /> : null}
             </div>
           ) : null}
-        </div>
+        </dialog>
 
         {commentsOpen ? (
           <div className={cn("gigasocial-post-card__thread", isVisualPost ? "px-4 pb-3 pt-2" : undefined)}>
