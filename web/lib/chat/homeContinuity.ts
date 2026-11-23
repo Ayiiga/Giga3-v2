@@ -108,7 +108,7 @@ export function listSyncHomeResumeItems(limit = 4): HomeResumeItem[] {
       id: `doc-${draft.id}`,
       label: draft.title?.trim() || "Untitled document",
       detail: "Document draft on this device",
-      href: "/documents",
+      href: `/documents/?draft=${encodeURIComponent(draft.id)}`,
       kind: "document",
     });
   }

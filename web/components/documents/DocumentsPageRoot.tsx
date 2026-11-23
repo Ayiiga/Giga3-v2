@@ -44,7 +44,15 @@ export function DocumentsPageRoot() {
   }, []);
 
   useEffect(() => {
-    setDrafts(listDocumentDrafts());
+    const localDrafts = listDocumentDrafts();
+    setDrafts(localDrafts);
+    const draftId = new URLSearchParams(window.location.search).get("draft");
+    const selected = localDrafts.find(item => item.id === draftId);
+    if (selected) {
+      setDoc(selected);
+      setEditProfile(selected.templateKind === "cv");
+      requestAnimationFrame(() => document.getElementById("active-document")?.scrollIntoView({ block: "start" }));
+    }
     const onPageHide = () => persistPending(false);
     window.addEventListener("pagehide", onPageHide);
     return () => {

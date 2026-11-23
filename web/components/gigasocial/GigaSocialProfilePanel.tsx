@@ -5,6 +5,8 @@ import { GigaSocialPostCard } from "@/components/gigasocial/GigaSocialPostCard";
 import { GigaSocialGrowthHub } from "@/components/gigasocial/growth/GigaSocialGrowthHub";
 import { GigaSocialCreatorStudio } from "@/components/gigasocial/studio/GigaSocialCreatorStudio";
 import { ProfileSkeleton } from "@/components/gigasocial/ux/PanelSkeletons";
+import { shareText } from "@/lib/share/clientShare";
+import { buildGigaSocialProfileUrl } from "@/lib/gigasocial/shareLinks";
 import { FAN_LABELS } from "@/lib/gigasocial/fanBranding";
 import { SocialAvatar } from "@/components/gigasocial/SocialAvatar";
 import { Button } from "@/components/ui/Button";
@@ -287,6 +289,12 @@ export const GigaSocialProfilePanel = memo(function GigaSocialProfilePanel({
           >
             {editing ? "Cancel" : "Edit profile"}
           </Button>
+          {!editing && <Button variant="outline" size="sm" type="button" onClick={async () => {
+            const url = buildGigaSocialProfileUrl(profile.handle);
+            const result = await shareText({ title: profile.displayName, text: "My GigaSocial profile", url });
+            if (result.ok) setSuccess("Profile shared or copied.");
+            else if (result.reason !== "Share cancelled") setSuccess(url);
+          }}>Share profile</Button>}
         </div>
 
         {success && !editing && (
