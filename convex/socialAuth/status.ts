@@ -12,19 +12,20 @@ import {
 export const getSocialAuthDeploymentReadiness = query({
   args: {},
   handler: async () => {
+    const callbackUrl = socialOAuthCallbackUrl();
     const providers = SOCIAL_AUTH_PROVIDER_CONFIGS.map((provider) => {
       const missingEnvKeys = missingEnvKeysForSocialProvider(provider);
       return {
         id: provider.id,
         label: provider.label,
         authKind: provider.authKind,
-        configured: isSocialProviderConfigured(provider),
+        configured: isSocialProviderConfigured(provider) && Boolean(callbackUrl),
         missingEnvKeys,
         scopes: provider.scopes,
       };
     });
     return {
-      oauthCallbackUrl: socialOAuthCallbackUrl() || null,
+      oauthCallbackUrl: callbackUrl || null,
       providers,
       readyProviderCount: providers.filter((p) => p.configured).length,
       needsConfigurationCount: providers.filter((p) => !p.configured).length,

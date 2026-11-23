@@ -12,6 +12,10 @@ type LinkedState = {
   providers: string[];
 };
 
+type ProviderReadiness = {
+  providers: Array<{ id: string; configured: boolean }>;
+};
+
 const OAUTH_PROVIDERS: { id: SocialProvider; label: string }[] = [
   { id: "microsoft", label: "Microsoft" },
   { id: "apple", label: "Apple" },
@@ -26,12 +30,34 @@ export function LinkedProvidersSettings() {
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [providerReady, setProviderReady] = useState<Record<string, boolean>>({});
+  const [readinessLoaded, setReadinessLoaded] = useState(false);
   const googleEnabled = Boolean(googleClientId());
 
   useEffect(() => {
     const token = getSessionToken();
     const convexUrl = getConvexUrl();
-    if (!token || !convexUrl) return;
+    if (!convexUrl) {
+      setReadinessLoaded(true);
+      return;
+    }
+
+    void convexHttpCall<ProviderReadiness>(
+      convexUrl,
+      "query",
+      "socialAuth/status:getSocialAuthDeploymentReadiness",
+      {},
+      { timeoutMs: 15_000, retries: 1 }
+    )
+      .then((result) => {
+        setProviderReady(
+          Object.fromEntries(result.providers.map((provider) => [provider.id, provider.configured]))
+        );
+      })
+      .catch(() => setProviderReady({}))
+      .finally(() => setReadinessLoaded(true));
+
+    if (!token) return;
     void convexHttpCall<LinkedState>(
       convexUrl,
       "query",
@@ -126,7 +152,9 @@ export function LinkedProvidersSettings() {
             </span>
             {linked.providers.includes(p.id) ? (
               <span className="text-xs text-muted">Connected</span>
-            ) : (
+            ) : !readinessLoaded ? (
+              <span className="text-xs text-muted" role="status">Checking availability…</span>
+            ) : providerReady[p.id] ? (
               <button
                 type="button"
                 disabled={busy}
@@ -135,6 +163,10 @@ export function LinkedProvidersSettings() {
               >
                 Link
               </button>
+            ) : (
+              <span className="text-xs text-muted" title="Provider credentials and callback setup are required on the server">
+                Admin setup required
+              </span>
             )}
           </li>
         ))}

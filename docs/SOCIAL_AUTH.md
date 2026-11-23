@@ -24,7 +24,21 @@ Shared: `FRONTEND_URL`, `CONVEX_SITE_URL`, `SESSION_SIGNING_SECRET`
 
 Redirect URI (all redirect providers):
 
-`https://perfect-lark-521.convex.site/auth/oauth/callback`
+`<CONVEX_SITE_URL>/auth/oauth/callback`
+
+## Provider setup checklist
+
+Use the social sign-in credentials below. Do not reuse `*_CONNECTOR_*` secrets.
+
+1. Confirm the active Convex deployment site URL (the `*.convex.site` host) and set `CONVEX_SITE_URL` plus `FRONTEND_URL=https://www.giga3ai.com`.
+2. Register the exact callback URL `<CONVEX_SITE_URL>/auth/oauth/callback` in each provider's developer console.
+3. Apple: create/enable a Sign in with Apple Services ID, associate the website domain and return URL, create a Sign in with Apple key, then set the Services ID as `AUTH_APPLE_CLIENT_ID` and the Team ID, Key ID and `.p8` private key in the other Apple variables.
+4. Microsoft: create an Entra ID app registration, add a Web redirect URI, create a client secret, and set the application (client) ID and secret. Choose `AUTH_MICROSOFT_TENANT=common` for supported personal/work accounts or the intended tenant ID for a restricted deployment.
+5. GitHub: create an OAuth App, set its Authorization callback URL to the same Convex callback, and set its client ID and client secret.
+6. Set the secrets on the production Convex deployment (not only local `.env`), then deploy the Convex functions.
+7. Open Settings → Linked sign-in providers. A provider becomes linkable only after its credentials and callback are available. Test provider consent, callback, verified identity and final linked status.
+
+Do not paste private keys or client secrets into chat, source code, screenshots, or frontend environment variables. Use the Convex dashboard or `npx convex env set KEY` from an authenticated project environment.
 
 ## Account linking
 
