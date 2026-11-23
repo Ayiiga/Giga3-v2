@@ -33,7 +33,22 @@ Redirect URI (all redirect providers):
 - Existing email without this provider → reject `account_exists_requires_link`
 - Explicit link: signed-in session + verified provider identity whose email matches the session account (Settings → Linked sign-in providers)
 
-## Ops readiness
+## Production setup checklist
+
+Before showing a provider as linkable, configure its server-side credentials on the production Convex deployment:
+
+- **Apple:** create a Sign in with Apple Services ID and key; set `AUTH_APPLE_CLIENT_ID`, `AUTH_APPLE_TEAM_ID`, `AUTH_APPLE_KEY_ID`, and `AUTH_APPLE_PRIVATE_KEY`.
+- **Microsoft:** create an Entra web app registration; set `AUTH_MICROSOFT_CLIENT_ID` and `AUTH_MICROSOFT_CLIENT_SECRET`. Set `AUTH_MICROSOFT_TENANT` only when a tenant restriction is intentional.
+- **GitHub:** create a GitHub OAuth App; set `AUTH_GITHUB_CLIENT_ID` and `AUTH_GITHUB_CLIENT_SECRET`.
+- **Google:** set `GOOGLE_CLIENT_ID` on Convex and the matching `NEXT_PUBLIC_GOOGLE_CLIENT_ID` on the web build.
+
+Register this exact social-auth callback for Apple and Microsoft:
+
+`https://perfect-lark-521.convex.site/auth/oauth/callback`
+
+GitHub OAuth App callback URL must use the same address. Do not substitute the connector callback path. After changing Convex variables, deploy Convex functions and check `getSocialAuthDeploymentReadiness`. The Settings page disables unconfigured providers instead of allowing users to hit a server-side UnauthorizedError.
+
+
 
 `socialAuth/status:getSocialAuthDeploymentReadiness` — reports configured flags and missing env **key names** only.
 

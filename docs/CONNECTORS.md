@@ -48,6 +48,18 @@ Register this exact redirect on each provider console:
 
 `https://perfect-lark-521.convex.site/connectors/oauth/callback`
 
+### Google OAuth Testing / 403 access_denied
+
+The Drive and Gmail integrations use the separate `GOOGLE_CONNECTOR_*` web OAuth client. If Google shows “Access blocked” / “app is currently being tested”, this is Google's consent-screen policy, not a Giga3 account-linking failure:
+
+1. In Google Cloud Console, select the project that owns the connector OAuth client.
+2. Open Google Auth Platform → Audience → Test users.
+3. Add the exact Google account that will connect Drive/Gmail and save.
+4. Retry Connect. For general public access, complete the Google verification process for the requested scopes before moving the app out of Testing.
+5. Confirm the authorised redirect URI is exactly `https://perfect-lark-521.convex.site/connectors/oauth/callback`.
+
+Do not use the social sign-in `GOOGLE_CLIENT_ID` for Drive/Gmail. Gmail scopes can require additional verification even after test-user access is granted.
+
 ### Provider console checklist (owner)
 
 | Provider | Console | Redirect URI | Convex secrets |

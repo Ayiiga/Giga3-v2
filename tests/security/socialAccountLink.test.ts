@@ -117,6 +117,15 @@ describe("social auth registry boundary", () => {
     ).toEqual(["auth-google-id.apps.googleusercontent.com"]);
   });
 
+
+  it("only renders social provider linking when server readiness is configured", () => {
+    const component = read("web/components/account/LinkedProvidersSettings.tsx");
+    expect(component).toContain("getSocialAuthDeploymentReadiness");
+    expect(component).toContain("providerReady(p.id)");
+    expect(component).toContain("Not configured");
+    expect(component).toContain("never");
+  });
+
   it("keeps social OAuth secrets server-side and sessions on verified flows", () => {
     const oauth = read("convex/socialAuth/oauth.ts");
     expect(oauth).toContain("createSessionToken");
