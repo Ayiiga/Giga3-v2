@@ -38,8 +38,10 @@ describe("feature announcement emails", () => {
 
   it("schedules weekly feature announcements via crons", () => {
     const crons = readFileSync(resolve(__dirname, "../../convex/crons.ts"), "utf8");
-    expect(crons).toContain("feature announcement emails");
+    expect(crons).toContain("feature announcement emails — gradual rollout");
     expect(crons).toContain("sendFeatureAnnouncementEmails");
     expect(crons).toContain("minDaysSinceLastEmail: 12");
+    expect(crons).toContain("limit: 10");
+    expect(crons).toContain("crons.daily(");
   });
 });
