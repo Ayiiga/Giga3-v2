@@ -48,7 +48,7 @@ interface GigaSocialPostMediaProps {
   onVideoEnded?: () => void;
 }
 
-const SLIDESHOW_MS = 4500;
+const SLIDESHOW_MS = 4000;
 
 export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
   post,
@@ -92,6 +92,8 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
     ? offlineMedia.posterUrl ?? post.videoThumbnailUrl
     : post.videoThumbnailUrl;
   const [activeImage, setActiveImage] = useState(0);
+  const [galleryInteracting, setGalleryInteracting] = useState(false);
+  const galleryTouchStart = useRef<{ x: number; y: number } | null>(null);
   const [muted, setMuted] = useState(false);
   const [browserMuted, setBrowserMuted] = useState(false);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
@@ -204,6 +206,7 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
 
   useEffect(() => {
     setActiveImage(0);
+    setGalleryInteracting(false);
     setBrowserMuted(false);
     setMuted(readVideoMutedPreference());
     setMediaUnlocked(false);
@@ -219,20 +222,38 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
   }, [mediaKind, onVideoEnded, post._id, shouldPlay]);
 
   useEffect(() => {
-    if (!shouldPlay || mediaUrls.length < 2) return;
+    if (!shouldPlay || galleryInteracting || lightboxUrl || mediaUrls.length < 2) return;
     if (mediaKind !== "gallery" && mediaKind !== "photo-music") return;
-
-    let frameIndex = 0;
     const timer = window.setInterval(() => {
-      if (frameIndex >= mediaUrls.length - 1) {
-        onVideoEnded?.();
-        return;
-      }
-      frameIndex += 1;
-      setActiveImage(frameIndex);
+      setActiveImage((index) => (index + 1) % mediaUrls.length);
     }, SLIDESHOW_MS);
     return () => window.clearInterval(timer);
-  }, [mediaKind, mediaUrls.length, onVideoEnded, post._id, shouldPlay]);
+  }, [galleryInteracting, lightboxUrl, mediaKind, mediaUrls.length, shouldPlay]);
+
+  const gallerySwipeHandlers = {
+    onTouchStart: (event: import("react").TouchEvent<HTMLDivElement>) => {
+      const touch = event.touches[0];
+      if (touch) galleryTouchStart.current = { x: touch.clientX, y: touch.clientY };
+      setGalleryInteracting(true);
+    },
+    onTouchEnd: (event: import("react").TouchEvent<HTMLDivElement>) => {
+      const start = galleryTouchStart.current;
+      const touch = event.changedTouches[0];
+      galleryTouchStart.current = null;
+      if (start && touch) {
+        const dx = touch.clientX - start.x;
+        const dy = touch.clientY - start.y;
+        if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.25) {
+          setActiveImage((index) => (index + (dx < 0 ? 1 : mediaUrls.length - 1)) % mediaUrls.length);
+        }
+      }
+      setGalleryInteracting(false);
+    },
+    onTouchCancel: () => {
+      galleryTouchStart.current = null;
+      setGalleryInteracting(false);
+    },
+  };
 
   useEffect(() => {
     const video = videoRef.current;
