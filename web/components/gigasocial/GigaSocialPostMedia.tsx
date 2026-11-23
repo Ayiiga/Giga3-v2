@@ -351,7 +351,7 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
     if (mediaUrls.length === 1) {
       return (
         <>
-          <div className={feedMediaWrapperClass}>
+          <div className={feedMediaWrapperClass} {...gallerySwipeHandlers}>
             {renderExpandableImage(
               mediaUrls[0],
               "Photo with music",
@@ -633,7 +633,7 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
   if (mediaKind === "image") {
     return (
       <>
-        <div className={feedMediaWrapperClass}>
+        <div className={feedMediaWrapperClass} {...gallerySwipeHandlers}>
           {renderExpandableImage(
             mediaUrls[0],
             "Post image",
