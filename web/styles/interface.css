@@ -1,0 +1,271 @@
+.home-greeting {
+  width: 100%;
+  max-width: 28rem;
+  padding: 1.4rem 38% 1.4rem 0.8rem;
+  text-align: left;
+  background: #f4edff url("/images/interface/home.webp") right center / 36% auto
+    no-repeat;
+  border-radius: 1.25rem;
+  color: #251048;
+}
+.home-greeting .chat-welcome-title {
+  color: #381367;
+}
+.home-greeting p {
+  color: #544461;
+}
+.home-shortcuts button {
+  min-width: 0;
+  padding: 0.65rem 0.12rem;
+  flex-direction: column;
+  color: #31214f;
+  background: #f0e7ff;
+}
+.home-shortcuts button:nth-child(2),
+.learning-tools a:nth-child(6n) {
+  background: #e3f2ff;
+}
+.home-shortcuts button:nth-child(3),
+.learning-tools a:nth-child(3n) {
+  background: #fff0e6;
+}
+.home-shortcuts button:nth-child(4),
+.learning-tools a:nth-child(2) {
+  background: #e4f8e7;
+}
+.home-shortcuts button span {
+  font-size: 1.35rem;
+}
+.learning-progress,
+.discover-banner,
+.social-profile-banner {
+  padding: 1.25rem;
+  border-radius: 1.1rem;
+  background: linear-gradient(115deg, #482088, #771bc7 55%, #351060);
+  color: white;
+}
+.learning-progress {
+  display: grid;
+  align-content: center;
+  min-height: 6.5rem;
+  padding-left: 7.1rem;
+  background:
+    url("/images/interface/progress.webp") left center / 6.5rem 100% no-repeat,
+    linear-gradient(115deg, #7520c0, #360c68);
+}
+.learning-progress strong,
+.discover-banner h2 {
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+.learning-progress span,
+.discover-banner p {
+  font-size: 0.85rem;
+}
+.level-cards {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.3rem;
+}
+.level-cards :is(a, button) {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 0.4rem;
+  overflow: hidden;
+  text-align: center;
+  border-radius: 0.8rem;
+  padding-top: 0.65rem;
+  background: #f2ecff;
+  color: #20113e;
+  font-size: clamp(0.68rem, 2.8vw, 1rem);
+  font-weight: 750;
+}
+.level-cards [aria-pressed="true"] {
+  outline: 2px solid #7923ce;
+}
+.level-cards img {
+  width: 100%;
+  aspect-ratio: 1.16;
+  object-fit: cover;
+}
+.learning-tools,
+.discover-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+.learning-tools a {
+  display: grid;
+  align-content: center;
+  gap: 0.25rem;
+  padding: 1rem;
+  border-radius: 0.95rem;
+  background: #efe6fc;
+  color: #211138;
+}
+.learning-tools span {
+  font-size: 0.8rem;
+}
+.discover-tiles {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+.discover-tile {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  background: linear-gradient(140deg, #5b2a91, #141127);
+  color: white;
+}
+.discover-tile img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.discover-tile span {
+  position: relative;
+  width: 100%;
+  padding: 0.5rem;
+  background: linear-gradient(transparent, rgba(13, 9, 26, 0.92) 35%);
+}
+.discover-tile strong,
+.discover-tile small {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.75rem;
+}
+.discover-banner {
+  background: #1c1037 url("/images/interface/discover.webp") right center / auto
+    100% no-repeat;
+  padding-right: 50%;
+  min-height: 5rem;
+}
+.social-profile-banner :is(h2, h3, p) {
+  color: white;
+}
+@media (min-width: 640px) {
+  .home-greeting {
+    padding-right: 10rem;
+  }
+  .learning-tools {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.social-options-sheet {
+  position: fixed;
+  inset: auto 0 0;
+  margin: 0 auto;
+  width: min(100%, 36rem);
+  max-height: 80vh;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid #62468c;
+  border-radius: 1.25rem 1.25rem 0 0;
+  background: #1d1531;
+  color: #fff;
+  padding: 1rem 0.5rem calc(1rem + env(safe-area-inset-bottom));
+}
+.social-options-sheet::backdrop {
+  background: rgb(7 5 16 / 65%);
+}
+.social-options-sheet button {
+  min-height: 44px;
+}
+.profile-shortcuts,
+.creator-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+.profile-shortcuts a {
+  display: grid;
+  place-items: center;
+  min-height: 3rem;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 650;
+  color: white;
+  border: 1px solid #55416d;
+  border-radius: 0.8rem;
+  background: #261a3d;
+}
+.creator-metrics > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.creator-strip {
+  display: flex;
+  gap: 0.65rem;
+  overflow-x: auto;
+}
+.creator-strip a {
+  display: grid;
+  justify-items: center;
+  gap: 0.2rem;
+  flex: 0 0 4.5rem;
+  min-width: 0;
+}
+.creator-strip :is(img, b) {
+  width: 3rem;
+  height: 3rem;
+  display: grid;
+  place-items: center;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid #b760fa;
+  background: #57298a;
+  color: white;
+}
+.creator-strip small {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.learning-tools .illustrated-tool {
+  position: relative;
+  align-content: start;
+  min-height: 7.4rem;
+  padding: 0.8rem;
+  overflow: hidden;
+}
+.illustrated-tool img {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 36%;
+  height: auto;
+  border-radius: 0.75rem 0 0 0;
+}
+.illustrated-tool span {
+  width: 64%;
+}
+.certificate-banner {
+  padding-left: 5.8rem;
+  background: #49147b url("/images/interface/certificate.webp") 0.5rem center /
+    4.7rem auto no-repeat;
+}
+.home-welcome [aria-label="Resume unfinished work"] ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+.home-welcome [aria-label="Resume unfinished work"] li {
+  margin: 0;
+}
+.home-welcome [aria-label="Resume unfinished work"] a {
+  align-items: flex-start;
+  flex-direction: column;
+  background: #efe8fc;
+  color: #2f194e;
+}

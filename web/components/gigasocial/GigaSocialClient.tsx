@@ -325,10 +325,7 @@ function GigaSocialContent() {
 
         {section === "discover" && (
           <>
-            <SectionIntro
-              title="Discover"
-              description="Trending posts, creative templates, creators, and educational content."
-            />
+            <header className="discover-banner"><h2>Discover</h2><p>Explore posts, topics and creators.</p></header>
             <SurfaceRecommendations
               surface="social"
               title="Suggested community actions"

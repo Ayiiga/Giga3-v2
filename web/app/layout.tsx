@@ -21,6 +21,7 @@ import { pwaStartupImages } from "@/lib/pwaSplash";
 import { siteConfig } from "@/lib/site";
 import "@/styles/globals.css";
 import "@/styles/primary-nav.css";
+import "@/styles/interface.css";
 import "@/styles/a11y.css";
 import "@/styles/generation.css";
 import "@/styles/install-prompt.css";

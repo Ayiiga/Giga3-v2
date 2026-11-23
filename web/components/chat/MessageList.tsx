@@ -22,7 +22,6 @@ import { messageListScrollKey } from "@/lib/chat/stableMessages";
 import { groupMessagesByDate } from "@/lib/chat/groupMessagesByDate";
 import type { OutboxEntry } from "@/lib/chat/offlineOutbox";
 import { resolvePendingDeliveryState } from "@/lib/chat/outboxUi";
-import { listGigaEditProjects } from "@/lib/gigaedit/projects";
 import Link from "next/link";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 
@@ -141,34 +140,6 @@ function MessageListInner({
     if (messages.length > 0) return;
     setResumeItems(listSyncHomeResumeItems(4));
     setSavedPrompts(listUserSavedPrompts(3));
-    let cancelled = false;
-    void listGigaEditProjects()
-      .then((projects) => {
-        if (cancelled) return;
-        const draft = projects
-          .filter((p) => p.status === "draft")
-          .sort((a, b) => b.updatedAt - a.updatedAt)[0];
-        if (!draft) return;
-        setResumeItems((prev) => {
-          if (prev.some((i) => i.id === `edit-${draft.id}`)) return prev;
-          return [
-            {
-              id: `edit-${draft.id}`,
-              label: draft.title?.trim() || "Untitled edit",
-              detail: "GigaEdit draft on this device",
-              href: `/gigaedit/?project=${encodeURIComponent(draft.id)}`,
-              kind: "create" as const,
-            },
-            ...prev,
-          ].slice(0, 4);
-        });
-      })
-      .catch(() => {
-        /* IndexedDB unavailable — skip */
-      });
-    return () => {
-      cancelled = true;
-    };
   }, [messages.length]);
 
   return (
@@ -182,14 +153,14 @@ function MessageListInner({
         )}
 
         {messages.length === 0 && !isLoading && (
-          <div className="chat-rail flex w-full flex-col items-center px-4 pt-5 text-center sm:pt-8">
-            <h2 className="chat-welcome-title text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+          <div className="home-welcome chat-rail flex w-full flex-col items-center px-4 pt-5 text-center sm:pt-8">
+            <div className="home-greeting"><h2 className="chat-welcome-title text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
               {greeting.title}
             </h2>
-            <p className="mt-1.5 text-sm text-muted sm:text-base">{greeting.subtitle}</p>
+            <p className="mt-1.5 text-sm text-muted sm:text-base">{greeting.subtitle}</p></div>
 
             <div
-              className="mt-4 grid w-full max-w-md grid-cols-2 gap-2"
+              className="home-shortcuts mt-4 grid w-full max-w-md grid-cols-4 gap-1.5"
               role="group"
               aria-label="Quick actions"
             >
@@ -203,7 +174,7 @@ function MessageListInner({
                   className="flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-border bg-white px-4 py-2.5 text-sm font-medium text-foreground shadow-sm hover:border-accent/30 hover:bg-accent/5"
                 >
                   <span aria-hidden>{action.emoji}</span>
-                  {action.label}
+                  <strong>{action.label}</strong>
                 </button>
               ))}
             </div>
@@ -243,7 +214,7 @@ function MessageListInner({
                 aria-label="Resume unfinished work"
               >
                 <h3 className="px-1 text-xs font-semibold uppercase tracking-wide text-muted">
-                  Pick up unfinished work
+                  Continue your work
                 </h3>
                 <ul className="mt-2 space-y-1.5">
                   {resumeItems.map((item) => (

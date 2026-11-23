@@ -42,9 +42,10 @@ describe("Academy Early years & Basic school visibility", () => {
     expect(earlyAt).toBeLessThan(hubsAt);
   });
 
-  it("keeps Learn primary-nav pointing at Academy (education-first)", () => {
+  it("opens the learning dashboard from the Learn tab and offers Academy there", () => {
     const nav = read("web/lib/navigation/primaryNav.ts");
-    expect(nav).toContain("gigalearnAcademy");
+    expect(nav).toContain("href: siteConfig.links.gigalearn,");
+    expect(read("web/components/gigalearn/LearningHome.tsx")).toContain("/gigalearn/academy/");
     expect(nav).toContain('id: "learn"');
   });
 });

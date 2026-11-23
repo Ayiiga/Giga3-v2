@@ -2,6 +2,7 @@
 
 import { GigaSocialAvatarFollow } from "@/components/gigasocial/GigaSocialAvatarFollow";
 import { GigaSocialFanButton } from "@/components/gigasocial/fans/GigaSocialFanButton";
+import { SocialPostGrid } from "./SocialPostGrid";
 import { GigaSocialPostCard } from "@/components/gigasocial/GigaSocialPostCard";
 import { GigaSocialAuthPrompt } from "@/components/gigasocial/ux/GigaSocialAuthPrompt";
 import { ConvexAppShell } from "@/components/providers/ConvexAppShell";
@@ -33,7 +34,7 @@ function profileCoverGradient(handle: string): string {
   for (let i = 0; i < handle.length; i += 1) {
     hash = handle.charCodeAt(i) + ((hash << 5) - hash);
   }
-  const hue1 = Math.abs(hash % 360);
+  const hue1 = 260 + Math.abs(hash % 25);
   const hue2 = (hue1 + 40) % 360;
   return `linear-gradient(135deg, hsl(${hue1} 55% 42%) 0%, hsl(${hue2} 60% 28%) 100%)`;
 }
@@ -120,7 +121,7 @@ export const GigaSocialPublicProfileClient = memo(function GigaSocialPublicProfi
   }
 
   return (
-    <div className="space-y-6">
+    <div className="public-social-profile space-y-6">
       <div className="saas-card overflow-hidden rounded-2xl border border-border">
         <div
           className="h-32 w-full bg-cover bg-center sm:h-40"
@@ -224,6 +225,16 @@ export const GigaSocialPublicProfileClient = memo(function GigaSocialPublicProfi
           ) : null}
 
           <div className="mt-4 flex flex-wrap gap-2">
+            {isOwnProfile && <Link className="rounded-full bg-violet-700 px-4 py-2 font-semibold text-white" href="/gigasocial/?tab=profile">Edit profile</Link>}
+            <Button type="button" variant="outline" onClick={async () => {
+              const url = buildGigaSocialProfileUrl(handle);
+              try {
+                if (navigator.share) await navigator.share({ title: profile.displayName, url });
+                else { await navigator.clipboard.writeText(url); setReportStatus("Profile link copied."); }
+              } catch (error) {
+                if (!(error instanceof Error && error.name === "AbortError")) setReportStatus(url);
+              }
+            }}>Share profile</Button>
             <Link
               href={`/creator/?handle=${encodeURIComponent(profile.handle)}`}
               className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-border px-3 text-xs font-medium hover:bg-accent/5"
@@ -326,9 +337,8 @@ export const GigaSocialPublicProfileClient = memo(function GigaSocialPublicProfi
       ) : filteredPosts.length === 0 ? (
         <p className="text-center text-sm text-muted">No {tab} to show yet.</p>
       ) : (
-        <div className="space-y-4">
-          {filteredPosts.map((post) => (
-            <GigaSocialPostCard
+        <SocialPostGrid posts={filteredPosts} renderPost={post => (
+              <GigaSocialPostCard
               key={post._id}
               post={post}
               sessionToken={sessionToken}
@@ -368,8 +378,7 @@ export const GigaSocialPublicProfileClient = memo(function GigaSocialPublicProfi
                   : undefined
               }
             />
-          ))}
-        </div>
+          )} />
       )}
 
       {authOpen ? (

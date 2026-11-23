@@ -927,7 +927,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
       ) : null}
 
       {features.enableFeedCategories ? (
-        <div className="hidden sm:block">
+        <div className="min-w-0 overflow-x-auto">
           <FeedCategoryBar value={feedCategory} onChange={setFeedCategory} />
         </div>
       ) : null}

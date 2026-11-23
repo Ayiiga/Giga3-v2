@@ -99,6 +99,6 @@ describe("homeContinuity", () => {
       })
     );
     const items = listSyncHomeResumeItems();
-    expect(items.some((i) => i.kind === "learn" && i.href === "/gigalearn")).toBe(true);
+    expect(items.some((i) => i.kind === "learn" && i.href === "/gigalearn/?tab=resume")).toBe(true);
   });
 });

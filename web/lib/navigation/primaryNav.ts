@@ -42,7 +42,7 @@ export const PRIMARY_NAV_TABS: PrimaryNavTab[] = [
   {
     id: "learn",
     label: "Learn",
-    href: siteConfig.links.gigalearnAcademy,
+    href: siteConfig.links.gigalearn,
     match: (pathname) => {
       const path = normalizePath(pathname);
       if (!path.startsWith("/gigalearn")) return false;

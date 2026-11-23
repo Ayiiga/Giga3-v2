@@ -1,5 +1,7 @@
 "use client";
 
+import { PracticeSession } from "./PracticeSession";
+import { LearningHome } from "./LearningHome";
 import { CreateHub } from "@/components/gigalearn/hubs/CreateHub";
 import { InsightHub } from "@/components/gigalearn/hubs/InsightHub";
 import { ParentHub } from "@/components/gigalearn/hubs/ParentHub";
@@ -110,18 +112,32 @@ function GigaLearnContent() {
     return <ClientAppHydrationNotice productName="GigaLearn" />;
   }
 
+  if (!tabParam && !intentParam) return <LearningHome />;
+
   if (!email && !hasPersistedAuth()) {
     return (
       <ProductSignInPrompt
         productName="GigaLearn"
         description="Sign in to use homework help, practice questions, and study plans with your Giga3 credits."
-        nextPath="/gigalearn"
+        nextPath={`/gigalearn/?${params.toString()}`}
       />
     );
   }
 
   if (!email) {
     return <ClientAppHydrationNotice productName="GigaLearn" signInHref="/chat/login/" />;
+  }
+
+  if (tabParam === "resume") {
+    const saved = loadPracticeSession();
+    if (!saved || saved.finished) return <LearningHome />;
+    return <section className="mx-auto max-w-3xl space-y-4">
+      <Link href="/gigalearn/">← GigaLearn</Link>
+      <h2 className="text-xl font-bold">Resume practice</h2>
+      <PracticeSession questions={saved.questions} subject={saved.subject ?? ""} level={saved.level}
+        curriculum={saved.curriculum} toolId={saved.toolId} topic={saved.questions[0]?.topic ?? ""}
+        sessionToken={getSessionToken()} />
+    </section>;
   }
 
   const studentSub = resolveStudentSubView(tabParam, getStudioContext().levelId);
@@ -155,16 +171,11 @@ function GigaLearnContent() {
           </div>
           <div className="mt-2.5 flex flex-wrap gap-2">
             {hasUnfinishedPractice ? (
-              <button
-                type="button"
-                onClick={() => {
-                  selectArea("student");
-                  setStudentSubOverride("revision");
-                }}
+              <Link href="/gigalearn/?tab=resume"
                 className="inline-flex min-h-10 items-center rounded-xl border border-accent/40 bg-accent/10 px-3 text-sm font-semibold text-foreground hover:bg-accent/15"
               >
                 Continue Learning
-              </button>
+              </Link>
             ) : null}
             <ButtonLink href="/gigalearn/academy/" className="min-h-10">
               Open GigaLearn Academy
