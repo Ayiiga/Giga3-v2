@@ -14,20 +14,37 @@ const bands = [
 ] as const;
 
 const destinations = [
-  ["GigaLearn Academy", "Courses and certificates", "/gigalearn/academy/"],
+  [
+    "GigaLearn Academy",
+    "Courses and certificates",
+    "/gigalearn/academy/",
+    "course",
+  ],
   [
     "Teacher Dashboard",
     "Plan lessons and manage classes",
     "/gigalearn/?tab=teacher",
+    "teacher",
   ],
-  ["Creator Tools", "Create educational content", "/gigalearn/?tab=create"],
-  ["AI Tutor", "Get help with a subject", "/gigalearn/?tab=tutor"],
+  [
+    "Creator Tools",
+    "Create educational content",
+    "/gigalearn/?tab=create",
+    "creator",
+  ],
+  ["AI Tutor", "Get help with a subject", "/gigalearn/?tab=tutor", "tutor"],
   [
     "Teaching materials",
     "Charts, worksheets and practical guides",
     "/gigalearn/resources/",
+    "materials",
   ],
-  ["Practice", "BECE, WASSCE and Teacher Promotion", "/gigalearn/exam/"],
+  [
+    "Practice",
+    "BECE, WASSCE and Teacher Promotion",
+    "/gigalearn/exam/",
+    "exam",
+  ],
   ["Parent", "View learning activities", "/gigalearn/?tab=parent"],
   ["Insights", "Explore learning progress", "/gigalearn/?tab=insight"],
 ];
@@ -140,8 +157,21 @@ export function LearningHome() {
       )}
       <h3 className="text-lg font-bold">Workspaces &amp; tools</h3>
       <div className="learning-tools">
-        {tools.map(([name, detail, href]) => (
-          <Link key={href} href={href}>
+        {tools.map(([name, detail, href, illustration]) => (
+          <Link
+            key={href}
+            href={href}
+            className={illustration ? "illustrated-tool" : undefined}
+          >
+            {illustration && (
+              <img
+                loading="lazy"
+                alt=""
+                width="68"
+                height="60"
+                src={`/images/interface/${illustration}.webp`}
+              />
+            )}
             <strong>{name}</strong>
             <span>{detail}</span>
           </Link>
@@ -154,7 +184,7 @@ export function LearningHome() {
           <p role="status">No matching levels or tools.</p>
         )}
       <Link
-        className="block rounded-xl bg-violet-800 p-4 font-semibold text-white"
+        className="certificate-banner block rounded-xl bg-violet-800 p-4 font-semibold text-white"
         href="/gigalearn/academy/certificates/"
       >
         View my certificates →

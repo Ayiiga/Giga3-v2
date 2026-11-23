@@ -231,3 +231,41 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.learning-tools .illustrated-tool {
+  position: relative;
+  align-content: start;
+  min-height: 7.4rem;
+  padding: 0.8rem;
+  overflow: hidden;
+}
+.illustrated-tool img {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 36%;
+  height: auto;
+  border-radius: 0.75rem 0 0 0;
+}
+.illustrated-tool span {
+  width: 64%;
+}
+.certificate-banner {
+  padding-left: 5.8rem;
+  background: #49147b url("/images/interface/certificate.webp") 0.5rem center /
+    4.7rem auto no-repeat;
+}
+.home-welcome [aria-label="Resume unfinished work"] ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+.home-welcome [aria-label="Resume unfinished work"] li {
+  margin: 0;
+}
+.home-welcome [aria-label="Resume unfinished work"] a {
+  align-items: flex-start;
+  flex-direction: column;
+  background: #efe8fc;
+  color: #2f194e;
+}

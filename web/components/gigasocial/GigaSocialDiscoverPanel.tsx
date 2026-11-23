@@ -8,7 +8,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { useGigaSocialFeatures } from "@/lib/gigasocial/featureFlags";
 import { DISCOVER_FILTERS, type DiscoverFilterId } from "@/lib/gigasocial/sections";
-import type { SocialPost } from "@/lib/gigasocial/types";
+import type { SocialAuthor, SocialPost } from "@/lib/gigasocial/types";
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
@@ -49,6 +49,11 @@ export const GigaSocialDiscoverPanel = memo(function GigaSocialDiscoverPanel({
       : "skip"
   );
 
+  const profileQuery = search.replace(/^@/, "");
+  const matchingProfiles = useQuery(api.gigaSocial.searchProfiles,
+    view === "posts" && !search.startsWith("#") && profileQuery.length >= 2
+      ? {query: profileQuery, limit: 8} : "skip");
+
   const toggleLike = useMutation(api.gigaSocial.toggleLike);
   const toggleBookmark = useMutation(api.gigaSocial.toggleBookmark);
   const recordShare = useMutation(api.gigaSocial.recordShare);
@@ -69,7 +74,7 @@ export const GigaSocialDiscoverPanel = memo(function GigaSocialDiscoverPanel({
 
   const posts = (data?.posts ?? []) as SocialPost[];
 
-  const creators = Array.from(new Map(posts.map(post => [post.author.handle, post.author])).values()).slice(0, 8);
+  const creators: SocialAuthor[] = matchingProfiles?.profiles ?? Array.from(new Map(posts.map(post => [post.author.handle, post.author])).values()).slice(0, 8);
   const hashtags = Array.from(new Set(posts.flatMap(post => post.hashtags ?? []))).slice(0, 8);
 
   return (
@@ -104,7 +109,7 @@ export const GigaSocialDiscoverPanel = memo(function GigaSocialDiscoverPanel({
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search posts, topics, prompts…"
+          placeholder="Search posts, creators or hashtags…"
           aria-label="Search posts"
           className="w-full rounded-xl border border-border bg-white py-2.5 pl-10 pr-3 text-sm"
         />
