@@ -196,7 +196,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   const shouldAutoPlayMedia =
     feedAutoPlay &&
     !feedPaused &&
-    (visualMediaKind === "video" || visualMediaKind === "photo-music");
+    (visualMediaKind === "video" || visualMediaKind === "photo-music" || visualMediaKind === "gallery");
   const { observeVideo, isActiveVideo } = useFeedVideoPlayback();
   const videoRegionRef = useCallback(
     (element: HTMLDivElement | null) => {
