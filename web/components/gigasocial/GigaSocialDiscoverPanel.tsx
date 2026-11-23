@@ -75,7 +75,11 @@ export const GigaSocialDiscoverPanel = memo(function GigaSocialDiscoverPanel({
   const posts = (data?.posts ?? []) as SocialPost[];
 
   const creators: SocialAuthor[] = matchingProfiles?.profiles ?? Array.from(new Map(posts.map(post => [post.author.handle, post.author])).values()).slice(0, 8);
-  const hashtags = Array.from(new Set(posts.flatMap(post => post.hashtags ?? []))).slice(0, 8);
+  const tags = new Set<string>();
+  for (const post of posts) {
+    for (const tag of post.hashtags ?? []) tags.add(tag);
+  }
+  const hashtags: string[] = [...tags].slice(0, 8);
 
   return (
     <div className="space-y-4">
