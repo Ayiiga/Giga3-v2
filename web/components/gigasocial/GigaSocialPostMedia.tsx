@@ -351,7 +351,7 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
     if (mediaUrls.length === 1) {
       return (
         <>
-          <div className={feedMediaWrapperClass} {...gallerySwipeHandlers}>
+          <div className={feedMediaWrapperClass}>
             {renderExpandableImage(
               mediaUrls[0],
               "Photo with music",
@@ -368,7 +368,7 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
     return (
       <>
       <div className={cn(featured ? "space-y-2" : "mt-3 space-y-2")}>
-        <div className={feedMediaWrapperClass}>
+        <div className={feedMediaWrapperClass} {...gallerySwipeHandlers}>
           {renderExpandableImage(
             mediaUrls[activeImage],
             `Photo with music ${activeImage + 1} of ${mediaUrls.length}`,
@@ -633,7 +633,7 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
   if (mediaKind === "image") {
     return (
       <>
-        <div className={feedMediaWrapperClass} {...gallerySwipeHandlers}>
+        <div className={feedMediaWrapperClass}>
           {renderExpandableImage(
             mediaUrls[0],
             "Post image",
@@ -649,7 +649,7 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
   return (
     <>
     <div className={cn(featured ? "space-y-2" : "mt-3 space-y-2")}>
-      <div className={feedMediaWrapperClass}>
+      <div className={feedMediaWrapperClass} {...gallerySwipeHandlers}>
         {renderExpandableImage(
           mediaUrls[activeImage],
           `Post image ${activeImage + 1} of ${mediaUrls.length}`,
