@@ -116,7 +116,8 @@ describe("Android document quality regressions", () => {
 
 describe("CV layout parity", () => {
   it("defaults old CV drafts to Classic and leaves non-CV documents outside the CV styles", () => {
-    expect(cvAppearance(createDocumentFromTemplate("cv"))?.layout).toBe("classic");
+    expect(cvAppearance({ templateKind: "cv" })?.layout).toBe("classic");
+    expect(cvAppearance(createDocumentFromTemplate("cv"))?.layout).toBe("atelier");
     expect(cvAppearance(createDocumentFromTemplate("thesis"))).toBeNull();
   });
 
@@ -192,4 +193,21 @@ it("applies a document's design to editable Word and PowerPoint presentation exp
   expect(academicCover).toContain('<a:srgbClr val="EDF1F5"/>');
   expect(academicCover).toContain('<a:latin typeface="Georgia"/>');
   expect((await PDFDocument.load(await exportDocumentPdf(doc))).getPageCount()).toBe(1);
+});
+
+describe("featured templates", () => {
+  it.each([
+    ["poster", "Festival poster", "8B254B", 72],
+    ["flyer", "Workshop flyer", "00675F", 72],
+    ["application-letter", "Editorial cover letter", "00675F", 46],
+  ] as const)("exports the selected %s design in Word and PDF", async (kind, title, color, size) => {
+    const document = createDocumentFromTemplate(kind, title);
+    const pdf = await PDFDocument.load(await exportDocumentPdf(document));
+    expect(pdf.getPageCount()).toBe(1);
+    expect(pdf.getPage(0).getWidth()).toBeCloseTo(kind === "flyer" ? 420 : 595, -1);
+    const zip = await JSZip.loadAsync(await exportDocumentDocx(document));
+    const xml = await zip.file("word/document.xml")!.async("string");
+    expect(xml).toContain('w:fill="' + color + '"');
+    expect(xml).toContain('<w:sz w:val="' + size + '"');
+  });
 });

@@ -36,7 +36,7 @@ function HubInner() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="awards-collection space-y-6">
       <section className="space-y-2">
         <h2 className="text-xl font-semibold text-foreground">{season.title}</h2>
         <p className="text-sm text-muted">Status: {season.status.replaceAll("_", " ")}</p>
@@ -67,7 +67,7 @@ function HubInner() {
             {announcements.map((item) => (
               <article
                 key={item.announcementId}
-                className="overflow-hidden rounded-2xl border border-violet-200 bg-gradient-to-br from-violet-50 via-white to-fuchsia-50"
+                className="awards-news overflow-hidden rounded-2xl border border-violet-200"
               >
                 {item.imageUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element

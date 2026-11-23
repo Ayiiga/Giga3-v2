@@ -50,6 +50,7 @@ export function DocumentResultCard({
           saveDocumentDraft(next);
         }}
         onRegenerate={onRegenerate}
+        initialPreview={doc.templateKind === "cv"}
         compact
       />
     </div>

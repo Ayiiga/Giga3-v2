@@ -6,6 +6,7 @@ type Seed = {
   title: string;
   description: string;
   markdown: string;
+  design?: GigaDocument["documentDesign"];
   paperSize?: "A4" | "A5";
   onePageFit?: boolean;
   pageTarget?: 1 | 2;
@@ -106,6 +107,36 @@ Available upon request, unless names are specifically requested.
 `,
   },
   {
+    kind: "poster", title: "Festival poster", description: "A bold A4 announcement for a performance or school event",
+    design: "festival",
+    markdown: `# Creative Arts Night
+
+## Music · Dance · Theatre
+An evening celebrating local talent.
+
+## When and where
+[Day and time] · [Venue]
+
+## Join us
+[Admission details and booking contact]`,
+  },
+  {
+    kind: "flyer", title: "Workshop flyer", description: "An A5 handout with a programme and booking details",
+    design: "bulletin", paperSize: "A5",
+    markdown: `# Make It Workshop
+
+## Hands-on learning
+[Introduce the skill participants will take home.]
+
+## The programme
+- [First activity]
+- [Second activity]
+
+## Reserve your place
+[Date and time] · [Venue]
+[Registration link or contact]`,
+  },
+  {
     kind: "application-letter",
     title: "Application letter",
     description: "Formal letter for a job application",
@@ -127,6 +158,31 @@ I would welcome the opportunity to discuss how my experience supports your goals
 Yours sincerely,  
 [Your Name]
 `,
+  },
+  {
+    kind: "application-letter", title: "Editorial cover letter", description: "A tailored introduction with a teal letterhead",
+    design: "bulletin",
+    markdown: `# [Your name]
+
+[Professional title] · [Email] · [Phone]
+
+[Date]
+
+[Recipient and organisation]
+
+## Application for [position]
+
+Dear [hiring manager],
+
+[Introduce yourself and explain your interest in the position.]
+
+[Describe a relevant achievement and the experience you would bring.]
+
+[Invite the reader to discuss your application.]
+
+Yours sincerely,
+
+[Your name]`,
   },
   {
     kind: "business-plan",
@@ -355,11 +411,12 @@ export function createDocumentFromTemplate(kind: DocumentTemplateKind, variantTi
     DOCUMENT_STUDIO_TEMPLATES.find(
       (t) => t.kind === kind && (!variantTitle || t.title === variantTitle)
     ) ?? DOCUMENT_STUDIO_TEMPLATES.find((t) => t.kind === kind) ?? DOCUMENT_STUDIO_TEMPLATES[0]!;
-  return documentFromMarkdown(seed.markdown, {
+  const document = documentFromMarkdown(seed.markdown, {
     title: seed.title,
     templateKind: seed.kind,
     paperSize: seed.paperSize,
     onePageFit: seed.onePageFit,
     pageTarget: seed.pageTarget,
   });
+  return seed.design ? { ...document, documentDesign: seed.design } : document;
 }

@@ -217,6 +217,7 @@ export function documentFromMarkdown(
     id: options?.id ?? newId(),
     title,
     templateKind,
+    ...(templateKind === "cv" ? { cvLayout: "atelier" as const, cvAccent: "Violet" as const } : {}),
     paper,
     content: { type: "doc", content: [] },
     markdown,
