@@ -24,8 +24,9 @@ test("Learn exposes working starter activities in all four worlds", async ({ pag
   await expect(page.getByRole("heading", { name: "Roll and take turns" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Sphere" })).toHaveCount(0);
   await page.getByRole("button", { name: "KG shape activity" }).click();
-  await page.getByRole("button", { name: "Sphere", exact: true }).click();
-  await expect(page.getByRole("status").filter({ hasText: "Correct" })).toBeVisible();
+  const shapes = page.getByRole("region", { name: "Flat and solid shapes" });
+  await shapes.getByRole("button", { name: "Sphere", exact: true }).click();
+  await expect(shapes.getByRole("status")).toContainText("Correct");
 
   await page.getByRole("link", { name: "Back to Learn" }).click();
   await page.getByRole("link", { name: /Foundation World/ }).click();
