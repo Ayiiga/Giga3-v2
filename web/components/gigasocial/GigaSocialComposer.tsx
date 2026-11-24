@@ -1106,7 +1106,8 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
     setBusy(true);
     setError(null);
     setSuccess(null);
-    setUploadPercent(0);
+    // Text-only posts retain their original composer and retry control. Only media needs decoder isolation.
+    setUploadPercent(hasMedia ? 0 : null);
     const controller = new AbortController();
     uploadAbortRef.current = controller;
 
@@ -1779,7 +1780,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           className="ml-auto min-h-10"
         >
           <Send className="h-4 w-4" aria-hidden />
-          Post
+          {publishing ? "Publishing…" : "Post"}
         </Button>
       </div>
 
