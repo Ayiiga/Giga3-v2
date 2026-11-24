@@ -316,6 +316,7 @@ function GigaSocialContent() {
                 sessionToken={sessionToken}
                 communitySlug={communitySlug}
                 highlightPostId={highlightPostId}
+                onNavigate={openSection}
                 autoOpenStories={params.get("stories") === "1"}
                 autoOpenStoriesRing={params.get("ring")?.trim() || undefined}
                 onOpenLive={features.enableGigaLive ? () => openSection("live") : undefined}

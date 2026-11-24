@@ -348,6 +348,17 @@
   #gigasocial-feed-posts .gigasocial-post-card__media-actions {bottom:4.2rem;right:max(.45rem,env(safe-area-inset-right));gap:.35rem}
   #gigasocial-feed-posts .gigasocial-slideshow-frame {animation:none}
 }
-#gigasocial-feed-posts article:fullscreen {display:block;width:100%;height:100%;overflow:auto;background:#110d19}
-#gigasocial-feed-posts article:fullscreen .gigasocial-post-card__media-region {height:100%;height:100svh;aspect-ratio:auto}
-#gigasocial-feed-posts article:fullscreen video.gigasocial-feed-media-frame {object-fit:cover}
+.social-feed-dock {display:none}
+@media(max-width:767px) {
+  body:has(.social-feed-dock) :is(.primary-nav--mobile,.social-hub-launcher) {display:none}
+  .social-feed-dock {
+    display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:fixed;z-index:58;
+    bottom:0;left:0;right:0;margin:0!important;padding:5px 4px max(5px,env(safe-area-inset-bottom));
+    background:#171022;border:1px solid #584172;border-radius:18px 18px 0 0;color:white;
+  }
+  .social-feed-dock button {min-height:48px;display:grid;justify-items:center;align-content:center;gap:2px;
+    font-size:clamp(9px,2.6vw,12px);font-weight:650;color:#f5ebff;border-radius:14px}
+  .social-feed-dock svg {width:22px;height:22px}
+  .social-feed-dock [aria-current="page"] {background:#6322a6}
+  .social-feed-dock .social-feed-create svg {box-sizing:content-box;padding:3px 14px;border-radius:14px;background:#8b2fd6}
+}

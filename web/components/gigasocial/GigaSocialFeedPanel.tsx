@@ -79,7 +79,7 @@ import {
   resolveActiveSocialAccount,
   type SocialAccountSummary,
 } from "@/lib/gigasocial/activeSocialAccount";
-import { MessageCircle, SquarePen, X } from "lucide-react";
+import { Bell, Compass, House, MessageCircle, Plus, SquarePen, UserRound, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -106,6 +106,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   communitySlug,
   highlightPostId,
   onOpenLive,
+  onNavigate,
   autoOpenStories = false,
   autoOpenStoriesRing,
 }: {
@@ -113,6 +114,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   communitySlug?: string;
   highlightPostId?: string;
   onOpenLive?: () => void;
+  onNavigate: (tab: "discover" | "notifications" | "profile") => void;
   autoOpenStories?: boolean;
   autoOpenStoriesRing?: string;
 }) {
@@ -128,6 +130,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   const [discoveryCountry, setDiscoveryCountry] = useState<"" | SocialBoostCountry>("");
   const [cursor, setCursor] = useState<number | undefined>(undefined);
   const [extraPosts, setExtraPosts] = useState<SocialPost[]>([]);
+  const [hubSignal, setHubSignal] = useState(0);
   const [composerOpen, setComposerOpen] = useState(false);
   const [aiStudioOpen, setAiStudioOpen] = useState(false);
   const [typeFilter, setTypeFilter] = useState<"all" | SocialPostTypeId>("all");
@@ -1136,8 +1139,16 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         </div>
       ) : null}
 
+      <nav className="social-feed-dock" aria-label="Feed navigation">
+        <button type="button" aria-current="page" onClick={() => document.getElementById("gigasocial-feed-posts")?.scrollIntoView({ block: "start" })}><House />Feed</button>
+        <button type="button" onClick={() => onNavigate("discover")}><Compass />Discover</button>
+        <button type="button" className="social-feed-create" onClick={() => sessionToken ? setHubSignal(n => n + 1) : requireAuth()}><Plus />Create</button>
+        <button type="button" onClick={() => onNavigate("notifications")}><Bell />Notifications</button>
+        <button type="button" onClick={() => onNavigate("profile")}><UserRound />Profile</button>
+      </nav>
       <GigaSocialPanelErrorBoundary panelName="Create">
         <GigaCreatorHub
+          openSignal={hubSignal}
           disabled={!sessionToken || composerOpen}
           onSelect={(action) => handleGigaCreate({ action })}
         />

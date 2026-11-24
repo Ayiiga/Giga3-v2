@@ -148,7 +148,11 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
   const [stageFullscreen, setStageFullscreen] = useState(false);
   useEffect(() => {
     if (mediaKind !== "video") return;
-    const sync = () => setStageFullscreen(Boolean(document.fullscreenElement?.contains(videoRef.current)));
+    const sync = () => {
+      const stage = videoRef.current?.closest<HTMLElement>("[data-social-fullscreen]");
+      setStageFullscreen(Boolean(stage && document.fullscreenElement === document.documentElement));
+      if (stage && !document.fullscreenElement) delete stage.dataset.socialFullscreen;
+    };
     document.addEventListener("fullscreenchange", sync);
     return () => document.removeEventListener("fullscreenchange", sync);
   }, [mediaKind]);
@@ -156,15 +160,17 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
   const openVideoLightbox = useCallback(async () => {
     if (!allowFullView || featured || mediaKind !== "video") return;
     const stage = videoRef.current?.closest<HTMLElement>("#gigasocial-feed-posts article");
-    if (stage && document.fullscreenElement === stage) {
+    if (stage && document.fullscreenElement === document.documentElement) {
       await document.exitFullscreen().catch(() => undefined);
       return;
     }
-    if (stage?.requestFullscreen) {
+    if (stage && document.documentElement.requestFullscreen) {
       try {
-        await stage.requestFullscreen();
+        stage.dataset.socialFullscreen = "true";
+        await document.documentElement.requestFullscreen();
+        stage.scrollIntoView({ block: "start", behavior: "instant" });
         return;
-      } catch { /* Embedded browsers can restrict native fullscreen. */ }
+      } catch { delete stage.dataset.socialFullscreen; }
     }
     const url = mediaUrls[0];
     if (url) {
