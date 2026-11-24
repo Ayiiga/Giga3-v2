@@ -9,7 +9,6 @@ import {
 } from "@/lib/gigalearn/concreteObjects";
 import {
   getCountry,
-  getCurriculum,
   getLevel,
   getSubject,
   resolveSubjectId,
@@ -94,7 +93,7 @@ export const EarlyYearsActivityPanel = memo(function EarlyYearsActivityPanel({
     return `Create ${action} for ${grade} ${subjectLabel}: "${topicLabel}".
 Use concrete objects familiar in Ghana (fruits, vegetables, animals, household items).
 Structure with short sections: SEE, HEAR, SAY, TOUCH, PLAY, PRACTISE, ANSWER.
-Use emojis for objects. Very simple words — no long paragraphs. Maximum 350 words.
+Name the objects for the teacher or caregiver to gather. Give instructions that can be read aloud. Use short, simple sentences. Maximum 350 words.
 Include a simple progress note for teacher/parent at the end.`;
   }
 
@@ -112,7 +111,9 @@ Include a simple progress note for teacher/parent at the end.`;
     await run({
       toolId: "topic-explainer",
       prompt: buildPrompt(kind),
-      curriculum: getCurriculum("gh-ccp")?.label,
+      curriculum: levelDef?.band === "primary"
+        ? "Ghana Lower Primary Standards-Based Curriculum"
+        : "Ghana Kindergarten Standards-Based Curriculum",
       subject: getSubject(subjectId)?.label ?? subjectLabel,
       level: levelDef?.label,
       country: getCountry("ghana")?.name,

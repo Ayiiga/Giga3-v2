@@ -98,9 +98,9 @@ export const GHANA_CURRICULA: CurriculumDefinition[] = [
   {
     id: "gh-ccp",
     countryId: "ghana",
-    label: "Common Core Programme",
-    shortLabel: "CCP",
-    description: "NaCCA Common Core Programme — Early Years, Primary and JHS",
+    label: "Ghana Basic Education (KG–JHS)",
+    shortLabel: "KG–JHS",
+    description: "Kindergarten and Primary Standards-Based curricula and the JHS Common Core Programme",
     levelIds: [
       "kg-1",
       "kg-2",

@@ -1,7 +1,9 @@
-import { describe, expect, it, beforeEach } from "vitest";
+import { IDBFactory } from "fake-indexeddb";
+import { afterEach, describe, expect, it, beforeEach, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { isOfflineAssessmentStale } from "../../web/lib/gigalearn/offlineProgressMerge";
+import { offlineProgressOwner } from "../../web/lib/gigalearn/offlineProgressOwner";
 import {
   bumpOfflineProgressAttempt,
   listOfflineProgressEvents,
@@ -15,11 +17,19 @@ import {
 
 const read = (p: string) => readFileSync(resolve(__dirname, "../..", p), "utf8");
 
-const hasIndexedDb = typeof indexedDB !== "undefined";
+const owner = "learner@example.com";
+afterEach(() => vi.unstubAllGlobals());
 
 const T1 = 1_000;
 const T2 = 2_000;
 const T3 = 3_000;
+
+it("uses a stable local owner across refreshed sessions", () => {
+  const payload = Buffer.from(JSON.stringify({ email: "Learner@example.com" })).toString("base64url");
+  expect(offlineProgressOwner(`giga3.v1.${payload}.first`)).toBe(owner);
+  expect(offlineProgressOwner(`giga3.v1.${payload}.second`)).toBe(owner);
+  expect(offlineProgressOwner("bad-token")).toBeNull();
+});
 
 describe("GigaLearn offline progress merge (server-side logic)", () => {
   it("Test 1 — stale offline event: server newer progress is preserved", () => {
@@ -51,27 +61,45 @@ describe("GigaLearn offline progress merge (server-side logic)", () => {
   });
 });
 
-describe.skipIf(!hasIndexedDb)("GigaLearn offline progress queue correctness", () => {
-  beforeEach(async () => {
-    indexedDB.deleteDatabase("giga3-gigalearn-offline");
-    await new Promise((r) => setTimeout(r, 20));
+describe("GigaLearn offline progress queue correctness", () => {
+  beforeEach(() => {
+    vi.stubGlobal("indexedDB", new IDBFactory());
+  });
+
+  it("keeps other learners' and legacy rows local when an account reconnects", async () => {
+    await queueOfflineAssessmentEvent({ clientEventId: "alice", owner, score: 75 });
+    await queueOfflineAssessmentEvent({ clientEventId: "bob", owner: "another@example.com", score: 90 });
+    await queueOfflineAssessmentEvent({ clientEventId: "legacy", score: 80 });
+
+    const upload = vi.fn(async () => {});
+    expect(await flushOfflineProgressQueue("another@example.com", upload)).toMatchObject({ synced: 1, remaining: 0 });
+    expect(upload).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ clientEventId: "bob" }));
+    expect((await listOfflineProgressEvents()).map((row) => row.clientEventId)).toEqual(["alice", "legacy"]);
+
+    upload.mockClear();
+    expect(await flushOfflineProgressQueue(owner, upload)).toMatchObject({ synced: 1, remaining: 0 });
+    expect(upload).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ clientEventId: "alice" }));
+    expect((await listOfflineProgressEvents()).map((row) => row.clientEventId)).toEqual(["legacy"]);
   });
 
   it("Test 3 — multiple offline events flush in chronological order", async () => {
     const ids = [newOfflineProgressEventId(), newOfflineProgressEventId(), newOfflineProgressEventId()];
     await queueOfflineAssessmentEvent({
+      owner,
       clientEventId: ids[0],
       topicKey: "math/fractions",
       score: 50,
       createdAt: T1,
     });
     await queueOfflineAssessmentEvent({
+      owner,
       clientEventId: ids[1],
       topicKey: "math/fractions",
       score: 65,
       createdAt: T2,
     });
     await queueOfflineAssessmentEvent({
+      owner,
       clientEventId: ids[2],
       topicKey: "math/fractions",
       score: 80,
@@ -82,7 +110,7 @@ describe.skipIf(!hasIndexedDb)("GigaLearn offline progress queue correctness", (
     let serverScore = 0;
     const appliedScores: number[] = [];
 
-    await flushOfflineProgressQueue(async (event) => {
+    await flushOfflineProgressQueue(owner, async (event) => {
       if (!isOfflineAssessmentStale({ updatedAt: serverUpdatedAt, lastAssessedAt: serverUpdatedAt }, event.createdAt)) {
         serverScore = event.score;
         serverUpdatedAt = event.createdAt;
@@ -97,16 +125,10 @@ describe.skipIf(!hasIndexedDb)("GigaLearn offline progress queue correctness", (
 
   it("Test 4 — duplicate queue ID keeps only one record", async () => {
     const clientEventId = newOfflineProgressEventId();
-    await queueOfflineAssessmentEvent({
-      clientEventId,
-      topicKey: "science",
-      score: 70,
-    });
-    await queueOfflineAssessmentEvent({
-      clientEventId,
-      topicKey: "science",
-      score: 99,
-    });
+    await Promise.all([
+      queueOfflineAssessmentEvent({ owner, clientEventId, topicKey: "science", score: 70 }),
+      queueOfflineAssessmentEvent({ owner, clientEventId, topicKey: "science", score: 99 }),
+    ]);
     expect(await listOfflineProgressEvents()).toHaveLength(1);
     expect((await listOfflineProgressEvents())[0]?.score).toBe(70);
   });
@@ -114,6 +136,7 @@ describe.skipIf(!hasIndexedDb)("GigaLearn offline progress queue correctness", (
   it("Test 5 — bumpOfflineProgressAttempt increments attempts", async () => {
     const clientEventId = newOfflineProgressEventId();
     await queueOfflineAssessmentEvent({
+      owner,
       clientEventId,
       topicKey: "english",
       score: 60,
@@ -129,12 +152,13 @@ describe.skipIf(!hasIndexedDb)("GigaLearn offline progress queue correctness", (
   it("Test 6 — retry failure keeps event queued and increments attempts", async () => {
     const clientEventId = newOfflineProgressEventId();
     await queueOfflineAssessmentEvent({
+      owner,
       clientEventId,
       topicKey: "history",
       score: 72,
     });
 
-    const result = await flushOfflineProgressQueue(async () => {
+    const result = await flushOfflineProgressQueue(owner, async () => {
       throw new Error("temporary outage");
     });
 
@@ -149,13 +173,14 @@ describe.skipIf(!hasIndexedDb)("GigaLearn offline progress queue correctness", (
   it("Test 7 — max attempts removes permanently pending events", async () => {
     const clientEventId = newOfflineProgressEventId();
     await queueOfflineAssessmentEvent({
+      owner,
       clientEventId,
       topicKey: "geography",
       score: 55,
       attempts: MAX_OFFLINE_PROGRESS_SYNC_ATTEMPTS,
     });
 
-    const result = await flushOfflineProgressQueue(async () => {
+    const result = await flushOfflineProgressQueue(owner, async () => {
       throw new Error("should not run");
     });
 
@@ -167,6 +192,7 @@ describe.skipIf(!hasIndexedDb)("GigaLearn offline progress queue correctness", (
   it("Test 8 — stale reconciliation removes event without retry attempts", async () => {
     const clientEventId = newOfflineProgressEventId();
     await queueOfflineAssessmentEvent({
+      owner,
       clientEventId,
       topicKey: "math/algebra",
       score: 55,
@@ -177,7 +203,7 @@ describe.skipIf(!hasIndexedDb)("GigaLearn offline progress queue correctness", (
     const serverUpdatedAt = T2;
     const serverScore = 88;
 
-    const result = await flushOfflineProgressQueue(async (event) => {
+    const result = await flushOfflineProgressQueue(owner, async (event) => {
       if (
         isOfflineAssessmentStale(
           { updatedAt: serverUpdatedAt, lastAssessedAt: serverUpdatedAt },

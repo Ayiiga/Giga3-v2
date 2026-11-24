@@ -156,21 +156,21 @@ export const ITEM_PRONUNCIATION: Record<string, Record<AfricanLanguageKey, Local
     { text: "Ewúrẹ́", phonetic: "eh-woo-reh" },
     { text: "Mbuzi", phonetic: "m-boo-zee" }
   ),
-  "ball-circle": word(
-    { text: "Bɔɔl. Kurukuruwa", phonetic: "ball. koo-roo-koo-roo-wah" },
-    { text: "Ƙwallo. Da'ira", phonetic: "kwah-loh. dah-ee-rah" },
-    { text: "Ball. Circle", phonetic: "ball. sir-kul" },
-    { text: "Bɔl. Circle", phonetic: "ball. sir-kul" },
-    { text: "Bọọlu. Circle", phonetic: "baw-loo. sir-kul" },
-    { text: "Mpira. Duara", phonetic: "m-pee-rah. doo-ah-rah" }
+  "ball-sphere": word(
+    { text: "Bɔɔl", phonetic: "ball" },
+    { text: "Ƙwallo", phonetic: "kwah-loh" },
+    { text: "Ball", phonetic: "ball" },
+    { text: "Bɔl", phonetic: "ball" },
+    { text: "Bọọlu", phonetic: "baw-loo" },
+    { text: "Mpira", phonetic: "m-pee-rah" }
   ),
-  "box-square": word(
-    { text: "Adaka. Square", phonetic: "ah-dah-kah. skwair" },
-    { text: "Akwati. Murabba'i", phonetic: "ah-kwah-tee. moo-rah-bah-ee" },
-    { text: "Box. Square", phonetic: "boks. skwair" },
-    { text: "Adaka. Square", phonetic: "ah-dah-kah. skwair" },
-    { text: "Apoti. Square", phonetic: "ah-poh-tee. skwair" },
-    { text: "Sanduku. Mraba", phonetic: "sahn-doo-koo. m-rah-bah" }
+  "box-cuboid": word(
+    { text: "Adaka", phonetic: "ah-dah-kah" },
+    { text: "Akwati", phonetic: "ah-kwah-tee" },
+    { text: "Box", phonetic: "boks" },
+    { text: "Adaka", phonetic: "ah-dah-kah" },
+    { text: "Apoti", phonetic: "ah-poh-tee" },
+    { text: "Sanduku", phonetic: "sahn-doo-koo" }
   ),
   "red-tomato": word(
     { text: "Kɔkɔɔ", phonetic: "kaw-kaw" },

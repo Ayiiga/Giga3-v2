@@ -15,6 +15,8 @@ import {
 } from "@/lib/gigalearn/mediaLibrary/mediaProgress";
 import type { LearningMediaItem, OfflineMediaPack } from "@/lib/gigalearn/mediaLibrary/types";
 import { LANGUAGE_LABELS } from "@/lib/gigalearn/mediaLibrary/types";
+import { getSessionToken } from "@/lib/auth";
+import { offlineProgressOwner } from "@/lib/gigalearn/offlineProgressOwner";
 import { speakWithGigaLearnVoice } from "@/lib/gigalearn/speechSynthesis";
 import { cn } from "@/lib/utils";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -186,6 +188,7 @@ export function MediaItemPlayer({ item, onClose, onOfflineChange }: MediaItemPla
         itemId: item.id,
         kind: "game_completed",
         score: 100,
+        owner: offlineProgressOwner(getSessionToken()) ?? undefined,
         subject: item.subject,
         curriculum: item.curriculumLevelId,
         countryId: item.countryId,

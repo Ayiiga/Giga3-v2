@@ -18,14 +18,16 @@ export type FlushOfflineProgressResult = {
 
 /** Flush queued assessment events oldest-first; skips duplicates within one flush. */
 export async function flushOfflineProgressQueue(
+  owner: string,
   syncHandler: AssessmentSyncHandler
 ): Promise<FlushOfflineProgressResult> {
-  if (typeof navigator !== "undefined" && !navigator.onLine) {
-    const remaining = await listOfflineProgressEvents();
+  if (!owner) return { synced: 0, failed: 0, remaining: 0, deadLettered: 0 };
+  if (typeof navigator !== "undefined" && navigator.onLine === false) {
+    const remaining = await listOfflineProgressEvents(owner);
     return { synced: 0, failed: 0, remaining: remaining.length, deadLettered: 0 };
   }
 
-  const rows = await listOfflineProgressEvents();
+  const rows = await listOfflineProgressEvents(owner);
   const applied = new Set<string>();
   let synced = 0;
   let failed = 0;
@@ -51,6 +53,6 @@ export async function flushOfflineProgressQueue(
     }
   }
 
-  const remaining = await listOfflineProgressEvents();
+  const remaining = await listOfflineProgressEvents(owner);
   return { synced, failed, remaining: remaining.length, deadLettered };
 }

@@ -17,6 +17,56 @@ test("Learn exposes each school band, the university pathway and searchable tool
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
+test("Learn exposes working starter activities in all four worlds", async ({ page }) => {
+  await page.goto("/gigalearn/");
+  await page.getByRole("link", { name: /Discovery World/ }).click();
+  await page.getByRole("button", { name: "Crèche caregiver activity" }).click();
+  await expect(page.getByRole("heading", { name: "Roll and take turns" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Sphere" })).toHaveCount(0);
+  await page.getByRole("button", { name: "KG shape activity" }).click();
+  const shapes = page.getByRole("region", { name: "Flat and solid shapes" });
+  await shapes.getByRole("button", { name: "Sphere", exact: true }).click();
+  await expect(shapes.getByRole("status")).toContainText("Correct");
+
+  await page.getByRole("link", { name: "Back to Learn" }).click();
+  await page.getByRole("link", { name: /Foundation World/ }).click();
+  await page.getByRole("button", { name: "Add a counter" }).click();
+  await page.getByRole("button", { name: "Add a counter" }).click();
+  await page.getByRole("button", { name: "5", exact: true }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Count on from three" })).toBeVisible();
+  await page.getByRole("button", { name: "Reading", exact: true }).click();
+  const reading = page.getByRole("region", { name: "Mansa and the mangoes" });
+  await reading.getByRole("button", { name: "To share them with her brother" }).click();
+  await expect(reading.getByRole("status")).toContainText("The second sentence");
+  await page.getByRole("button", { name: "Mathematics", exact: true }).click();
+  const review = page.getByRole("region", { name: "Practice and review" });
+  await expect(review.getByRole("button", { name: "Check answer" })).toBeDisabled();
+  await review.getByRole("button", { name: "Show a hint" }).click();
+  await expect(review.getByText("Use four counters", { exact: false })).toBeVisible();
+  await review.getByRole("button", { name: "6", exact: true }).click();
+  await review.getByRole("button", { name: "Check answer" }).click();
+  await expect(review.getByText("Four plus two is six", { exact: false })).toBeVisible();
+  await review.getByRole("button", { name: "Try another example" }).click();
+  await expect(review.getByText("There are five books", { exact: false })).toBeVisible();
+
+  await page.getByRole("link", { name: "Back to Learn" }).click();
+  await page.getByRole("link", { name: /Exploration World/ }).click();
+  const model = page.getByRole("region", { name: "Sink or float simulation" });
+  await expect(model.getByRole("button", { name: "Test in the model" })).toBeDisabled();
+  await model.getByLabel("Object").selectOption("1");
+  await model.getByRole("button", { name: "Sinks", exact: true }).click();
+  await model.getByRole("button", { name: "Test in the model" }).click();
+  await expect(model.getByRole("table")).toContainText("Dense solid stone");
+  await expect(model.getByRole("status")).toContainText("denser than water");
+
+  await page.getByRole("link", { name: "Back to Learn" }).click();
+  await page.getByRole("link", { name: /Mastery World/ }).click();
+  await page.getByRole("button", { name: /paired shaded and unshaded plots/ }).click();
+  await expect(page.getByRole("status").filter({ hasText: "compare the conditions directly" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Open BECE practice" })).toHaveAttribute("href", "/gigalearn/exam/bece/");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
 test("Discover keeps the keyboard target while filters and results update", async ({ page }) => {
   await page.goto("/gigasocial/?tab=discover");
   const input = page.getByRole("textbox", { name: "Search posts", exact: true });

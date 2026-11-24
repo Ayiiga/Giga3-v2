@@ -3,6 +3,10 @@
 import Link from "next/link";
 import { useState } from "react";
 import { CURRICULUM_LEVELS } from "@/lib/gigalearn/curriculumEngine";
+import { LEARNING_WORLDS } from "@/lib/gigalearn/learningWorlds";
+import { getSessionToken } from "@/lib/auth";
+import { offlineProgressOwner } from "@/lib/gigalearn/offlineProgressOwner";
+import { loadWorldReview } from "@/lib/gigalearn/worldReview";
 import { saveStudioContext } from "@/lib/gigalearn/studioContext";
 import { getProgressSnapshot } from "@/lib/gigalearn/workspace";
 
@@ -54,6 +58,7 @@ export function LearningHome() {
   const [query, setQuery] = useState("");
   const [band, setBand] = useState("");
   const progress = getProgressSnapshot();
+  const owner = offlineProgressOwner(getSessionToken());
   const search = query.trim().toLowerCase();
   const tools = destinations.filter(([name, detail]) =>
     (name + " " + detail).toLowerCase().includes(search),
@@ -78,10 +83,33 @@ export function LearningHome() {
       <Link href="/gigalearn/?tab=my-learning" className="learning-progress">
         <strong>Your learning progress</strong>
         <span>
-          {progress.streakDays}-day streak · {progress.quizzesCompleted} quizzes
-          completed
+          {progress.quizzesCompleted} quizzes completed
         </span>
       </Link>
+      {!search && (
+        <section aria-labelledby="learning-worlds-heading" className="space-y-3">
+          <h3 id="learning-worlds-heading" className="text-lg font-bold">Learning worlds</h3>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {LEARNING_WORLDS.map((world) => {
+              const review = owner ? loadWorldReview(owner, world.id) : null;
+              return (
+                <Link
+                  key={world.id}
+                  href={`/gigalearn/?world=${world.id}`}
+                  className="flex min-h-24 flex-col gap-1 rounded-2xl border border-violet-500/30 bg-card p-4 hover:border-violet-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-500"
+                >
+                  <strong className="text-lg">{world.title}</strong>
+                  <span className="text-sm text-muted">{world.grades}</span>
+                  <span className="text-sm font-semibold">{world.activity}</span>
+                  {review && review.dueAt <= Date.now() && (
+                    <span className="text-sm font-semibold text-accent">Review due</span>
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
       <h3 className="text-lg font-bold">Explore by level</h3>
       {!search && (
         <div className="level-cards">

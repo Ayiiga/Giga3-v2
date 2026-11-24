@@ -238,6 +238,7 @@ describe("Discover media progress", () => {
     await recordMediaProgress({ itemId: "pic-mango-kg2", kind: "viewed" });
     await recordMediaProgress({ itemId: "pic-mango-kg2", kind: "heard" });
     await recordMediaProgress({
+      owner: "learner@example.com",
       itemId: "pic-mango-kg2",
       kind: "game_completed",
       score: 100,
@@ -261,6 +262,7 @@ describe("Discover media progress", () => {
       get: () => true,
     });
     await recordMediaProgress({
+      owner: "learner@example.com",
       itemId: "pic-mango-kg2",
       kind: "game_completed",
       score: 100,
@@ -269,7 +271,7 @@ describe("Discover media progress", () => {
       countryId: "ghana",
     });
     const mutate = vi.fn(async () => undefined);
-    const result = await flushOfflineProgressQueue(mutate);
+    const result = await flushOfflineProgressQueue("learner@example.com", mutate);
     expect(result.synced).toBeGreaterThanOrEqual(1);
     expect(mutate).toHaveBeenCalled();
     const remaining = await listOfflineProgressEvents();

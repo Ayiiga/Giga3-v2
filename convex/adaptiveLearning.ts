@@ -205,6 +205,10 @@ export const tutorTurn = action({
     academyContext: v.optional(academyContextValidator),
   },
   handler: async (ctx, args) => {
+    const age = await ctx.runQuery(api.childSafety.getAgeAccess, { sessionToken: args.sessionToken });
+    if (age.category !== "adult") {
+      throw new Error("Use the guided activities in Learning Worlds for age-appropriate help.");
+    }
     const studentInput = args.studentInput.trim().slice(0, 2000);
     if (!studentInput && args.mode !== "check" && args.mode !== "practice") {
       throw new Error("Tell the tutor what you want to work on.");

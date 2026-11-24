@@ -60,8 +60,8 @@ export const CONCRETE_CATEGORIES: ConcreteCategory[] = [
     title: "Shapes",
     badge: "Concrete",
     items: [
-      { id: "ball-circle", emoji: "⚽", title: "Ball = Circle", subtitle: "Shapes from real objects" },
-      { id: "box-square", emoji: "📦", title: "Box = Square", subtitle: "Shapes from real objects" },
+      { id: "ball-sphere", emoji: "⚽", title: "A ball is shaped like a sphere", subtitle: "It is round all the way around." },
+      { id: "box-cuboid", emoji: "📦", title: "A rectangular box is shaped like a cuboid", subtitle: "A box with six equal square faces is a cube." },
     ],
   },
   {
@@ -345,7 +345,7 @@ export const EARLY_YEARS_TOPICS: Record<EarlyYearsSubjectId, Array<{ id: string;
     { id: "count-1-5", label: "Counting 1–5" },
     { id: "count-1-10", label: "Counting 1–10" },
     { id: "count-1-20", label: "Counting 1–20" },
-    { id: "shapes", label: "Shapes (circle, square)" },
+    { id: "shapes", label: "Flat and solid shapes" },
     { id: "more-less", label: "More and less" },
   ],
   english: [

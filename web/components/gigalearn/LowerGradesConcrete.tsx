@@ -25,6 +25,7 @@ import {
 import { speakPronunciationSequence } from "@/lib/gigalearn/speechSynthesis";
 import { warmUpBrowserVoices } from "@/lib/speech/loadBrowserVoices";
 import { EarlyYearsActivityPanel } from "@/components/gigalearn/EarlyYearsActivityPanel";
+import { ShapePractice } from "@/components/gigalearn/ShapePractice";
 import { GroupedTemplate } from "@/components/learn/GroupedTemplate";
 import { ItemViewer } from "@/components/gigalearn/ItemViewer";
 import {
@@ -68,6 +69,7 @@ export function LowerGradesConcrete({ credits = null, ctx, onCtxChange }: LowerG
 
   function handleLevelChange(level: GigaLearnLevelId) {
     setSelectedLevel(level);
+    if (level === "Creche") return;
     onCtxChange?.({
       countryId: "ghana",
       curriculumId: "gh-ccp",
@@ -86,6 +88,23 @@ export function LowerGradesConcrete({ credits = null, ctx, onCtxChange }: LowerG
       setHearingId(null);
       setHearError("Speech not available on this device. Check volume and try again.");
     }
+  }
+
+  if (selectedLevel === "Creche") {
+    return (
+      <div className="gigalearn-early-years space-y-5">
+        <LevelSelector selectedLevel={selectedLevel} onChange={handleLevelChange} />
+        <section aria-labelledby="creche-play" className="space-y-3 rounded-3xl border border-border bg-accent/5 p-4">
+          <h3 id="creche-play" className="text-lg font-bold">Play together away from the screen</h3>
+          <ol className="list-decimal space-y-2 pl-5">
+            <li>Sit together and roll a soft, age-appropriate ball back and forth. Say “roll” as it moves.</li>
+            <li>Sing a familiar rhyme in the language you use at home. Pause to let the child respond with a sound or gesture.</li>
+            <li>Show a familiar object, such as a cup. Name it, then give the child time to point to it or repeat the word.</li>
+          </ol>
+          <p className="text-sm text-muted">Caregiver guidance. Stay with the child during play.</p>
+        </section>
+      </div>
+    );
   }
 
   return (
@@ -143,10 +162,12 @@ export function LowerGradesConcrete({ credits = null, ctx, onCtxChange }: LowerG
         </section>
       ) : (
         <p className="rounded-2xl border border-[#2A3441] bg-[#1A233A] p-4 text-xs text-gray-300">
-          {selectedLevel} uses curriculum mode (BECE / WASSCE prep, study plans, past questions).
+          Open My Path for study plans and practice for {selectedLevel}.
           Switch to Creche–P3 for concrete objects, fruits, and real items.
         </p>
       )}
+
+      {lower && <ShapePractice />}
 
       {lower && ctx && onCtxChange ? (
         <EarlyYearsActivityPanel
