@@ -793,9 +793,15 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
           </div>
         ) : null}
         {showGifts && <div className="space-y-2 rounded-xl border border-white/15 bg-white/5 p-3">
-          <p className="text-sm font-semibold">{isHost ? "Recent gifts received" : "Send a gift · credits"}</p>
-          {isHost ? (data.gifts.length ? <ul className="max-h-32 overflow-y-auto space-y-1">{data.gifts.map((gift, i) => <li key={i} className="text-xs text-white/90">{gift.sender?.displayName ?? "A viewer"} sent {LIVE_GIFTS.find(item => item.id === gift.giftType)?.emoji ?? "🎁"} {gift.giftType} · {gift.amount} credits</li>)}</ul> : <p className="text-xs text-white/70">No gifts received yet.</p>) : <div className="grid grid-cols-2 gap-2">{LIVE_GIFTS.map(gift => <Button key={gift.id} type="button" variant="outline" disabled={giftBusyId !== null || stream.status !== "live"} className="min-h-11 border-white/30 bg-white/10 text-white" onClick={() => void handleSendGift(gift.id, gift.credits)}>{gift.emoji} {gift.label} · {gift.credits}</Button>)}</div>}
-          {giftNotice && <p role="status" className="text-xs text-emerald-300">{giftNotice}</p>}
+          {isHost && <div className="space-y-2">
+            <p className="text-sm font-semibold">Recent gifts received</p>
+            {data.gifts.length ? <ul className="max-h-32 overflow-y-auto space-y-1">{data.gifts.map((gift, i) => <li key={i} className="text-xs text-white/90">{gift.sender?.displayName ?? "A viewer"} sent {LIVE_GIFTS.find(item => item.id === gift.giftType)?.emoji ?? "🎁"} {gift.giftType} · {gift.amount} credits</li>)}</ul> : <p className="text-xs text-white/70">No gifts received yet.</p>}
+          </div>}
+          {!isHost && <div className="space-y-2">
+            <p className="text-sm font-semibold">Send a gift · credits</p>
+            <div className="grid grid-cols-2 gap-2">{LIVE_GIFTS.map(gift => <Button key={gift.id} type="button" variant="outline" disabled={giftBusyId !== null || stream.status !== "live"} className="min-h-11 border-white/30 bg-white/10 text-white" onClick={() => void handleSendGift(gift.id, gift.credits)}>{gift.emoji} {gift.label} · {gift.credits}</Button>)}</div>
+            {giftNotice && <p role="status" className="text-xs text-emerald-300">{giftNotice}</p>}
+          </div>}
         </div>}
       </div>
       <GigaSocialReportDialog open={reportOpen} sessionToken={sessionToken} target={reportTarget}
