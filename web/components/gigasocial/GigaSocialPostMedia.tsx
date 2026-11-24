@@ -747,9 +747,19 @@ export const GigaSocialPendingMediaPreview = memo(function GigaSocialPendingMedi
 }: PendingMediaPreviewProps) {
   const imageFilterStyle = { filter: getCameraFilterCss(imageFilterId) };
   const [videoPreviewOpen, setVideoPreviewOpen] = useState(false);
+  const localVideoRef = useRef<HTMLVideoElement | null>(null);
+  const releaseLocalPreview = useCallback(() => {
+    const video = localVideoRef.current;
+    if (video) { video.pause(); video.removeAttribute("src"); try { video.load(); } catch { /* already released */ } }
+  }, []);
+  const bindLocalVideo = useCallback((node: HTMLVideoElement | null) => {
+    if (localVideoRef.current && localVideoRef.current !== node) releaseLocalPreview();
+    localVideoRef.current = node;
+  }, [releaseLocalPreview]);
+  const closeLocalPreview = () => { releaseLocalPreview(); setVideoPreviewOpen(false); };
   useEffect(() => {
-    setVideoPreviewOpen(false);
-  }, [video?.previewUrl, locked]);
+    releaseLocalPreview(); setVideoPreviewOpen(false);
+  }, [video?.previewUrl, locked, releaseLocalPreview]);
   if (!images.length && !video && !audio) return null;
 
   const imageMax = compact ? "aspect-square max-h-28" : "aspect-[4/5] max-h-44";
@@ -763,7 +773,7 @@ export const GigaSocialPendingMediaPreview = memo(function GigaSocialPendingMedi
             type="button"
             disabled={locked}
             onClick={() => setVideoPreviewOpen(true)}
-            className="relative flex min-h-32 w-full items-center justify-center bg-black text-white"
+            className="relative flex min-h-40 w-full items-center justify-center bg-black text-white"
             aria-label={`Play preview of ${video.name}`}
           >
             {video.thumbnailUrl ? (
@@ -771,13 +781,11 @@ export const GigaSocialPendingMediaPreview = memo(function GigaSocialPendingMedi
               <img
                 src={video.thumbnailUrl}
                 alt=""
-                className="max-h-40 w-full object-contain"
+                className="max-h-52 w-full object-contain"
                 decoding="async"
               />
             ) : (
-              <span className="flex h-32 w-full items-center justify-center bg-zinc-900">
-                <Play className="h-10 w-10" aria-hidden />
-              </span>
+              <span className="flex h-40 w-full items-end justify-center bg-zinc-900 pb-4 text-xs text-zinc-300">Tap to preview video</span>
             )}
             <span className="absolute inset-0 flex items-center justify-center bg-black/10">
               <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white/90 text-black shadow-lg">
@@ -785,7 +793,7 @@ export const GigaSocialPendingMediaPreview = memo(function GigaSocialPendingMedi
               </span>
             </span>
           </button>
-          <div className="flex items-center justify-between gap-2 px-3 py-1.5 text-xs text-muted">
+          <div className="flex items-center justify-between gap-2 px-3 py-2 text-xs text-zinc-200">
             <span className="truncate">{video.name}</span>
             <span>{Math.round(video.durationSec)}s</span>
           </div>
@@ -854,12 +862,12 @@ export const GigaSocialPendingMediaPreview = memo(function GigaSocialPendingMedi
             role="dialog"
             aria-modal="true"
             aria-label={`Video preview: ${video.name}`}
-            onClick={() => setVideoPreviewOpen(false)}
+            onClick={closeLocalPreview}
           >
             <div className="relative flex max-h-full w-full max-w-3xl flex-col items-center gap-3">
               <button
                 type="button"
-                onClick={() => setVideoPreviewOpen(false)}
+                onClick={closeLocalPreview}
                 className="self-end rounded-full bg-white/15 px-4 py-2 text-sm font-medium text-white"
                 aria-label="Close video preview"
               >
@@ -867,16 +875,16 @@ export const GigaSocialPendingMediaPreview = memo(function GigaSocialPendingMedi
               </button>
               <video
                 key={video.previewUrl}
+                ref={bindLocalVideo}
                 src={video.previewUrl}
                 controls
                 playsInline
-                autoPlay
                 preload="metadata"
                 muted
                 className="max-h-[78dvh] w-full rounded-lg bg-black object-contain"
                 aria-label={`Preview ${video.name}`}
                 onClick={(event) => event.stopPropagation()}
-                onError={(event) => event.currentTarget.pause()}
+                onError={closeLocalPreview}
               />
               <p className="max-w-full truncate text-xs text-white/70">{video.name}</p>
             </div>
