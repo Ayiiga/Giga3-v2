@@ -8,6 +8,8 @@ import {
 
 export type OfflineAssessmentEvent = {
   clientEventId: string;
+  /** Older installations may have pending rows without an attributable account. */
+  owner?: string;
   topicKey?: string;
   subject?: string;
   curriculum?: string;
@@ -33,7 +35,6 @@ export function newOfflineProgressEventId(): string {
   }
   return `gl-progress-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
-
 async function withProgressDb<T>(
   mode: IDBTransactionMode,
   run: (store: IDBObjectStore) => Promise<T> | T
@@ -55,7 +56,7 @@ async function withProgressDb<T>(
   }
 }
 
-export async function listOfflineProgressEvents(): Promise<OfflineAssessmentEvent[]> {
+export async function listOfflineProgressEvents(owner?: string): Promise<OfflineAssessmentEvent[]> {
   const rows = await withProgressDb("readonly", (store) => {
     return new Promise<OfflineAssessmentEvent[]>((resolve) => {
       const req = store.getAll();
@@ -63,7 +64,7 @@ export async function listOfflineProgressEvents(): Promise<OfflineAssessmentEven
         const all = ((req.result as OfflineAssessmentEvent[]) ?? []).sort(
           (a, b) => a.createdAt - b.createdAt
         );
-        resolve(all.filter((row) => !row.syncedAt));
+        resolve(all.filter((row) => !row.syncedAt && (owner === undefined || row.owner === owner)));
       };
       req.onerror = () => resolve([]);
     });
@@ -77,18 +78,19 @@ export async function queueOfflineAssessmentEvent(
     createdAt?: number;
   }
 ): Promise<void> {
-  const pending = await listOfflineProgressEvents();
-  if (pending.some((row) => row.clientEventId === event.clientEventId)) {
-    return;
-  }
   const row: OfflineAssessmentEvent = {
     ...event,
     attempts: event.attempts ?? 0,
     createdAt: event.createdAt ?? Date.now(),
   };
-  await withProgressDb("readwrite", (store) => {
-    store.put(row);
-  });
+  await withProgressDb("readwrite", (store) => new Promise<void>((resolve) => {
+    const existing = store.get(row.clientEventId);
+    existing.onsuccess = () => {
+      if (!existing.result) store.add(row);
+      resolve();
+    };
+    existing.onerror = () => resolve();
+  }));
 }
 
 export async function removeOfflineProgressEvent(clientEventId: string): Promise<void> {
@@ -120,8 +122,4 @@ export async function bumpOfflineProgressAttempt(
       getReq.onerror = () => resolve();
     });
   });
-}
-
-export async function offlineProgressPendingCount(): Promise<number> {
-  return (await listOfflineProgressEvents()).length;
 }

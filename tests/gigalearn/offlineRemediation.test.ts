@@ -1,4 +1,5 @@
-import { describe, expect, it, beforeEach } from "vitest";
+import { IDBFactory } from "fake-indexeddb";
+import { afterEach, describe, expect, it, beforeEach, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
@@ -16,7 +17,8 @@ import { flushOfflineProgressQueue } from "../../web/lib/gigalearn/offlineProgre
 
 const read = (p: string) => readFileSync(resolve(__dirname, "../..", p), "utf8");
 
-const hasIndexedDb = typeof indexedDB !== "undefined";
+const owner = "learner@example.com";
+afterEach(() => vi.unstubAllGlobals());
 
 describe("GigaLearn offline remediation wiring", () => {
   it("wires offline lesson reopen UI and progress queue in components", () => {
@@ -31,10 +33,9 @@ describe("GigaLearn offline remediation wiring", () => {
   });
 });
 
-describe.skipIf(!hasIndexedDb)("GigaLearn offline remediation storage", () => {
-  beforeEach(async () => {
-    indexedDB.deleteDatabase("giga3-gigalearn-offline");
-    await new Promise((r) => setTimeout(r, 20));
+describe("GigaLearn offline remediation storage", () => {
+  beforeEach(() => {
+    vi.stubGlobal("indexedDB", new IDBFactory());
   });
 
   it("lists and reopens saved offline lessons", async () => {
@@ -52,6 +53,7 @@ describe.skipIf(!hasIndexedDb)("GigaLearn offline remediation storage", () => {
   it("queues offline progress and flushes without duplicate application", async () => {
     const clientEventId = newOfflineProgressEventId();
     await queueOfflineAssessmentEvent({
+      owner,
       clientEventId,
       topicKey: "math/fractions",
       subject: "math",
@@ -59,6 +61,7 @@ describe.skipIf(!hasIndexedDb)("GigaLearn offline remediation storage", () => {
       toolId: "practice-questions",
     });
     await queueOfflineAssessmentEvent({
+      owner,
       clientEventId,
       topicKey: "math/fractions",
       subject: "math",
@@ -68,13 +71,13 @@ describe.skipIf(!hasIndexedDb)("GigaLearn offline remediation storage", () => {
     expect(await listOfflineProgressEvents()).toHaveLength(1);
 
     const applied: string[] = [];
-    const first = await flushOfflineProgressQueue(async (event) => {
+    const first = await flushOfflineProgressQueue(owner, async (event) => {
       applied.push(event.clientEventId);
     });
     expect(first.synced).toBe(1);
     expect(applied).toEqual([clientEventId]);
 
-    const second = await flushOfflineProgressQueue(async () => {
+    const second = await flushOfflineProgressQueue(owner, async () => {
       applied.push("should-not-run");
     });
     expect(second.synced).toBe(0);
@@ -84,11 +87,12 @@ describe.skipIf(!hasIndexedDb)("GigaLearn offline remediation storage", () => {
   it("keeps failed sync events retryable", async () => {
     const clientEventId = newOfflineProgressEventId();
     await queueOfflineAssessmentEvent({
+      owner,
       clientEventId,
       topicKey: "science",
       score: 70,
     });
-    const result = await flushOfflineProgressQueue(async () => {
+    const result = await flushOfflineProgressQueue(owner, async () => {
       throw new Error("network down");
     });
     expect(result.failed).toBe(1);

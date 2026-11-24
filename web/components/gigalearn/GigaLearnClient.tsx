@@ -2,6 +2,8 @@
 
 import { PracticeSession } from "./PracticeSession";
 import { LearningHome } from "./LearningHome";
+import { LearningWorlds } from "./LearningWorlds";
+import { LEARNING_WORLDS } from "@/lib/gigalearn/learningWorlds";
 import { CreateHub } from "@/components/gigalearn/hubs/CreateHub";
 import { InsightHub } from "@/components/gigalearn/hubs/InsightHub";
 import { ParentHub } from "@/components/gigalearn/hubs/ParentHub";
@@ -47,6 +49,7 @@ function GigaLearnContent() {
   const params = useSearchParams();
   const tabParam = params.get("tab");
   const intentParam = params.get("intent");
+  const worldParam = params.get("world");
   const { email, usage, mounted } = useMediaBilling();
 
   const [area, setArea] = useState<GigaLearnPrimaryArea>(() => resolvePrimaryArea(tabParam));
@@ -110,6 +113,10 @@ function GigaLearnContent() {
 
   if (!mounted) {
     return <ClientAppHydrationNotice productName="GigaLearn" />;
+  }
+
+  if (LEARNING_WORLDS.some((world) => world.id === worldParam)) {
+    return <LearningWorlds key={worldParam} worldId={worldParam} />;
   }
 
   if (!tabParam && !intentParam) return <LearningHome />;

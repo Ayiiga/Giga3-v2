@@ -6,9 +6,10 @@ import {
   type OfflineAssessmentEvent,
 } from "@/lib/gigalearn/offlineProgressQueue";
 import { useEffectiveOnline } from "@/hooks/useEffectiveOnline";
+import { offlineProgressOwner } from "@/lib/gigalearn/offlineProgressOwner";
 import { api } from "convex/_generated/api";
 import { useMutation } from "convex/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export type GigaLearnOfflineSyncUiState = "idle" | "pending" | "syncing" | "synced" | "failed";
 
@@ -18,27 +19,34 @@ export function useGigaLearnOfflineProgressSync(sessionToken: string | null) {
   const [pendingCount, setPendingCount] = useState(0);
   const [syncState, setSyncState] = useState<GigaLearnOfflineSyncUiState>("idle");
   const [lastError, setLastError] = useState<string | null>(null);
-  const syncingRef = useRef(false);
+  const owner = useMemo(() => offlineProgressOwner(sessionToken), [sessionToken]);
+  const currentToken = useRef(sessionToken);
+  currentToken.current = sessionToken;
+  const currentOwner = useRef(owner);
+  currentOwner.current = owner;
+  const syncingRef = useRef(new Set<string>());
 
   const refreshPending = useCallback(async () => {
-    const rows = await listOfflineProgressEvents();
-    setPendingCount(rows.length);
-    if (rows.length === 0) {
-      setSyncState("idle");
-    } else if (syncState !== "syncing") {
-      setSyncState("pending");
+    const count = owner ? (await listOfflineProgressEvents(owner)).length : 0;
+    if (currentToken.current === sessionToken) {
+      setPendingCount(count);
+      setSyncState((state) => {
+        if (state === "syncing") return state;
+        if (count === 0) return "idle";
+        return state === "failed" ? state : "pending";
+      });
     }
-    return rows.length;
-  }, [syncState]);
+    return count;
+  }, [owner, sessionToken]);
 
   const flush = useCallback(async () => {
-    if (!sessionToken || syncingRef.current) return;
-    if (typeof navigator !== "undefined" && !navigator.onLine) return;
-    syncingRef.current = true;
+    if (!sessionToken || !owner || sessionToken !== currentToken.current || syncingRef.current.has(owner)) return;
+    if (typeof navigator !== "undefined" && navigator.onLine === false) return;
+    syncingRef.current.add(owner);
     setSyncState("syncing");
     setLastError(null);
     try {
-      const result = await flushOfflineProgressQueue(async (event: OfflineAssessmentEvent) => {
+      const result = await flushOfflineProgressQueue(owner, async (event: OfflineAssessmentEvent) => {
         await recordAssessment({
           sessionToken,
           topicKey: event.topicKey,
@@ -50,7 +58,8 @@ export function useGigaLearnOfflineProgressSync(sessionToken: string | null) {
           clientCreatedAt: event.createdAt,
         });
       });
-      await refreshPending();
+      if (currentOwner.current !== owner) return;
+      setPendingCount(result.remaining);
       if (result.deadLettered > 0) {
         setSyncState("failed");
         setLastError(
@@ -67,15 +76,19 @@ export function useGigaLearnOfflineProgressSync(sessionToken: string | null) {
         setSyncState("idle");
       }
     } catch (err) {
+      if (currentOwner.current !== owner) return;
       setSyncState("failed");
       setLastError(err instanceof Error ? err.message : "Progress sync failed");
       await refreshPending();
     } finally {
-      syncingRef.current = false;
+      syncingRef.current.delete(owner);
     }
-  }, [recordAssessment, refreshPending, sessionToken]);
+  }, [owner, recordAssessment, refreshPending, sessionToken]);
 
   useEffect(() => {
+    setPendingCount(0);
+    setSyncState("idle");
+    setLastError(null);
     void refreshPending();
   }, [refreshPending]);
 

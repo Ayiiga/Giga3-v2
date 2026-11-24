@@ -38,6 +38,7 @@ import {
   queueOfflineAssessmentEvent,
 } from "@/lib/gigalearn/offlineProgressQueue";
 import { recordPracticeCompletion } from "@/lib/gigalearn/workspace";
+import { offlineProgressOwner } from "@/lib/gigalearn/offlineProgressOwner";
 import { useEffectiveOnline } from "@/hooks/useEffectiveOnline";
 import {
   PracticeQuestionCard,
@@ -266,9 +267,11 @@ export function PracticeSession({
       score,
       toolId,
     };
-
-    if (!effectiveOnline) {
+    const owner = offlineProgressOwner(sessionToken);
+    function queueAssessment() {
+      if (!owner) return;
       void queueOfflineAssessmentEvent({
+        owner,
         clientEventId: newOfflineProgressEventId(),
         topicKey: topic,
         subject,
@@ -276,17 +279,11 @@ export function PracticeSession({
         score,
         toolId,
       });
+    }
+    if (!effectiveOnline) {
+      queueAssessment();
     } else {
-      void recordAssessment(assessmentPayload).catch(() => {
-        void queueOfflineAssessmentEvent({
-          clientEventId: newOfflineProgressEventId(),
-          topicKey: topic,
-          subject,
-          curriculum,
-          score,
-          toolId,
-        });
-      });
+      void recordAssessment(assessmentPayload).catch(queueAssessment);
     }
     clearPracticeSession();
     onComplete?.(score);
