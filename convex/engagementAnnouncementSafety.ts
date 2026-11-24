@@ -359,7 +359,7 @@ export type InterestSegment = "learn" | "create" | "social" | "general";
 /** Reusable tip campaign keys: tip_<feature>_v<n> (stored in lastFeatureAnnouncementCampaignKey). */
 export const TIP_CAMPAIGN_PREFIX = "tip_";
 
-export type TipFeatureSlug = "gigalearn" | "gigaedit" | "gigasocial" | "general";
+export type TipFeatureSlug = "gigalearn" | "gigaedit" | "gigasocial" | "earnings" | "general";
 
 export function tipCampaignKey(feature: TipFeatureSlug, version = 1): string {
   const v = Math.max(1, Math.floor(version));
@@ -380,6 +380,7 @@ export function tipFeatureFromCampaignKey(
     slug === "gigalearn" ||
     slug === "gigaedit" ||
     slug === "gigasocial" ||
+    slug === "earnings" ||
     slug === "general"
   ) {
     return slug;
@@ -396,6 +397,7 @@ export function interestSegmentFromTipFeature(
     case "gigaedit":
       return "create";
     case "gigasocial":
+    case "earnings":
       return "social";
     default:
       return "general";
@@ -573,7 +575,7 @@ export function announcementCopyForSegment(
         bullets: [
           "Approved candidates can receive a public profile, free public votes and a shareable voting link",
           "Explore the nomination and application process and review the category requirements",
-          "Also discover exam practice and AI-powered writing tools across Giga3",
+          "Visit the GigaSocial Earnings Centre to learn about creator eligibility, gifts, tips and qualifying affiliate referrals",
         ],
         subjectLine: "GigaSocial Awards — explore, apply or nominate",
       };
@@ -634,6 +636,19 @@ export function tipCopyForFeature(feature: TipFeatureSlug): FeatureEmailCopy {
           "Post a Story when you are ready",
         ],
         subjectLine: "Tip · Offline-ready GigaSocial",
+      };
+    case "earnings":
+      return {
+        title: "Quick tip · GigaSocial Earnings",
+        lead: "The Earnings Centre shows how GigaSocial creators can get started and where to check their progress.",
+        ctaLabel: "Open the Earnings Centre",
+        ctaPath: "/gigasocial/earnings/",
+        bullets: [
+          "Review current monetisation and withdrawal requirements",
+          "Learn how gifts, tips and qualifying affiliate referrals work",
+          "Explore GigaSocial Awards when a season is open",
+        ],
+        subjectLine: "Tip · Explore ways to earn on GigaSocial",
       };
     default:
       return {

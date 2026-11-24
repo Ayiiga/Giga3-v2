@@ -318,6 +318,7 @@ export default defineSchema({
     /** Engagement email opt-in — undefined means opted in (soft default). */
     emailEngagementOptIn: v.optional(v.boolean()),
     lastEngagementEmailAt: v.optional(v.number()),
+    sentEngagementReminderKeys: v.optional(v.array(v.string())),
     /**
      * Feature-announcement campaign idempotency (separate from digest timing).
      * Digests continue to use lastEngagementEmailAt only.

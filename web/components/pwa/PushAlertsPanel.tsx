@@ -56,13 +56,21 @@ export function PushAlertsPanel({ embedded = true }: { embedded?: boolean }) {
   const [busy, setBusy] = useState(false);
 
   const enabled = pushConfig?.enabled && pushConfig.vapidPublicKey;
+  const savedPrefs = useQuery(
+    api.pushAlerts.getPushPreferences,
+    sessionToken && endpoint ? { sessionToken, endpoint } : "skip"
+  );
+
+  useEffect(() => {
+    if (savedPrefs) setPrefs(savedPrefs);
+  }, [savedPrefs]);
 
   const registerPush = useCallback(async () => {
     if (!sessionToken || !enabled || !pushConfig?.vapidPublicKey) return;
     setError(null);
     setBusy(true);
     try {
-      if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+      if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
         throw new Error("Push notifications are not supported in this browser.");
       }
       const permission = await Notification.requestPermission();
@@ -170,8 +178,7 @@ export function PushAlertsPanel({ embedded = true }: { embedded?: boolean }) {
         Intelligent notifications
       </h2>
       <p className="mt-2 text-sm text-muted">
-        Get alerts when you are away — including a numeric badge on the installed Giga3 app icon
-        (like WhatsApp) for GigaSocial activity and AI results ready to view.
+        Get phone alerts for GigaSocial activity, AI results, product updates and reminders.
       </p>
 
       {!enabled && (
@@ -212,7 +219,7 @@ export function PushAlertsPanel({ embedded = true }: { embedded?: boolean }) {
                 ["generationAlerts", "AI chat, image & video complete"],
                 ["newsAlerts", "Breaking news headlines"],
                 ["sportsAlerts", "Live sports scores"],
-                ["announcementAlerts", "Platform announcements"],
+                ["announcementAlerts", "Product announcements and reminders"],
               ] as const
             ).map(([key, label]) => (
               <label key={key} className="flex min-h-10 items-center gap-2 text-sm">
@@ -226,7 +233,7 @@ export function PushAlertsPanel({ embedded = true }: { embedded?: boolean }) {
             ))}
           </fieldset>
 
-          {!endpoint ? (
+          {endpoint && savedPrefs === undefined ? null : !savedPrefs ? (
             <Button type="button" size="sm" onClick={() => void registerPush()} disabled={busy}>
               <Bell className="mr-2 h-4 w-4" aria-hidden />
               Enable push alerts

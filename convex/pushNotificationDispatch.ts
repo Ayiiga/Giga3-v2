@@ -5,6 +5,7 @@ import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import { getVapidPublicKey, isPushAlertsEnabled } from "./featureFlags";
 import { isWithinQuietHours } from "./pushQuietHours";
+import { ENGAGEMENT_REMINDER_PUSH_PREFIX } from "./engagementControls";
 
 export const PUSH_CATEGORY = {
   NEWS: "news",
@@ -113,6 +114,12 @@ export const dispatchPushNotification = internalAction({
     const category = args.category as PushCategory;
     const tag = args.tag ?? `${category}-${Date.now()}`;
 
+    const isReminder = tag.startsWith(ENGAGEMENT_REMINDER_PUSH_PREFIX);
+    if (isReminder && !(await ctx.runQuery(internal.notificationsInternal.isEngagementReminderCurrent, {
+      userId: args.recipientId,
+      tag,
+    }))) return { sent: 0, queued: 0 };
+
     const isDuplicate = await ctx.runMutation(
       internal.pushNotificationDedupInternal.checkAndRecordDedup,
       {
@@ -157,7 +164,7 @@ export const dispatchPushNotification = internalAction({
       const ok = await sendWebPush(sub, payload);
       if (ok) {
         sent += 1;
-      } else {
+      } else if (!isReminder) {
         await ctx.runMutation(internal.pushNotificationDedupInternal.enqueuePush, {
           userId: args.recipientId,
           endpoint: sub.endpoint,

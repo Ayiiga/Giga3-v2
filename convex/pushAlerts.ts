@@ -1,6 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { requireSession } from "./auth";
+import { requireSession, tryRequireSession } from "./auth";
 import { getVapidPublicKey, isPushAlertsEnabled } from "./featureFlags";
 
 export const getPushConfig = query({
@@ -9,6 +9,28 @@ export const getPushConfig = query({
     return {
       enabled: isPushAlertsEnabled(),
       vapidPublicKey: getVapidPublicKey() ?? null,
+    };
+  },
+});
+
+export const getPushPreferences = query({
+  args: { sessionToken: v.string(), endpoint: v.string() },
+  handler: async (ctx, args) => {
+    const email = await tryRequireSession(args.sessionToken, ctx);
+    if (!email) return null;
+    const row = await ctx.db.query("pushSubscriptions")
+      .withIndex("by_endpoint", (q) => q.eq("endpoint", args.endpoint)).first();
+    if (!row || row.userId !== email) return null;
+    return {
+      muteAll: row.muteAll === true,
+      newsAlerts: row.newsAlerts,
+      sportsAlerts: row.sportsAlerts,
+      socialAlerts: row.socialAlerts !== false,
+      commentAlerts: row.commentAlerts !== false,
+      mentionAlerts: row.mentionAlerts !== false,
+      followAlerts: row.followAlerts !== false,
+      generationAlerts: row.generationAlerts !== false,
+      announcementAlerts: row.announcementAlerts !== false,
     };
   },
 });

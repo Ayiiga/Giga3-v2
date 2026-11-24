@@ -40,6 +40,10 @@ type Candidate = {
   role: string;
 };
 
+function escapeGreeting(value: string): string {
+  return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+}
+
 function pickTheme(candidate: Candidate): FeatureEmailCopy {
   return digestCopyForSegment(
     resolveInterestSegment(candidate.topics, candidate.role)
@@ -72,7 +76,7 @@ function buildFeatureAnnouncementHtml(
   const html = wrapEmailHtml({
     title: copy.title,
     bodyHtml: `
-      <p style="margin:0 0 12px;">${greet}</p>
+      <p style="margin:0 0 12px;">${escapeGreeting(greet)}</p>
       <p style="margin:0 0 12px;">${copy.lead}</p>
       <ul style="margin:0 0 20px;padding-left:18px;">
         ${copy.bullets.map((b) => `<li style="margin:0 0 6px;">${b}</li>`).join("")}
@@ -108,13 +112,13 @@ function buildFeatureAnnouncementHtml(
   };
 }
 
-function buildEngagementHtml(candidate: Candidate): {
+function buildEngagementHtml(candidate: Candidate, reminder?: FeatureEmailCopy): {
   subject: string;
   html: string;
   text: string;
 } {
   const frontend = getFrontendBaseUrl();
-  const theme = pickTheme(candidate);
+  const theme = reminder ?? pickTheme(candidate);
   const greet = candidate.name?.trim()
     ? `Hi ${candidate.name.trim().split(/\s+/)[0]},`
     : "Hi there,";
@@ -126,7 +130,7 @@ function buildEngagementHtml(candidate: Candidate): {
   const html = wrapEmailHtml({
     title: theme.title,
     bodyHtml: `
-      <p style="margin:0 0 12px;">${greet}</p>
+      <p style="margin:0 0 12px;">${escapeGreeting(greet)}</p>
       <p style="margin:0 0 12px;">${theme.lead}</p>
       <ul style="margin:0 0 20px;padding-left:18px;">
         ${theme.bullets.map((b) => `<li style="margin:0 0 6px;">${b}</li>`).join("")}
@@ -147,6 +151,7 @@ function buildEngagementHtml(candidate: Candidate): {
   const text = [
     greet.replace(/,$/, ""),
     theme.lead,
+    ...theme.bullets,
     `${theme.ctaLabel}: ${ctaUrl}`,
     `Unsubscribe: ${unsub}`,
   ]
@@ -154,7 +159,7 @@ function buildEngagementHtml(candidate: Candidate): {
     .join("\n\n");
 
   return {
-    subject: `${theme.title} · Giga3 AI`,
+    subject: reminder?.subjectLine ?? `${theme.title} · Giga3 AI`,
     html,
     text,
   };
@@ -216,15 +221,14 @@ export const sendEngagementDigests = internalAction({
     let abortedReason: string | undefined;
 
     for (const candidate of candidates as Candidate[]) {
-      const ensured = await ctx.runMutation(
-        internal.engagementEmail.ensureUnsubscribeTokenInternal,
-        {
-          email: candidate.email,
-          unsubscribeToken: candidate.unsubscribeToken,
-        }
-      );
+      const ensured = await ctx.runMutation(internal.engagementEmail.prepareDigestRecipientInternal, {
+        email: candidate.email,
+        minInactiveDays: args.minInactiveDays,
+        minDaysSinceLastEmail: args.minDaysSinceLastEmail,
+      });
+      if (!ensured) continue;
       const ready = { ...candidate, unsubscribeToken: ensured.token };
-      const content = buildEngagementHtml(ready);
+      const content = buildEngagementHtml(ready, ensured.reminder);
       const result = await sendEmailWithBoundedRetry(
         {
           to: ready.email,
@@ -246,6 +250,7 @@ export const sendEngagementDigests = internalAction({
           {
             email: ready.email,
             unsubscribeToken: ready.unsubscribeToken,
+            reminderKey: ensured.reminder?.key,
           }
         );
         continue;

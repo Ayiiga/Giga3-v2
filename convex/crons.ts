@@ -117,6 +117,13 @@ crons.daily(
   {}
 );
 
+crons.weekly(
+  "personalised communication reminders",
+  { dayOfWeek: "wednesday", hourUTC: 13, minuteUTC: 0 },
+  internal.notificationsInternal.createEngagementReminders,
+  {}
+);
+
 // Release abandoned Founding Members checkout seats (default 30 min TTL).
 crons.interval(
   "expire founding members reservations",
