@@ -32,6 +32,7 @@ export default function GigaSocialPage() {
         ]}
       />
       <ProductSeoHeader
+        className="social-seo-header"
         compact
         title="GigaSocial"
         description="Share posts, follow creators, and connect with the Giga3 AI community. Sign in to join."

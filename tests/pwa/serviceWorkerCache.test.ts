@@ -9,7 +9,7 @@ describe("service worker cache version", () => {
     expect(sw).toContain('OFFLINE_URL = "/offline.html"');
     expect(sw).toContain("requireInteraction: true");
     expect(sw).toContain("NETWORK_TIMEOUT_MS");
-    expect(sw).toContain("giga3-v125");
+    expect(sw).toContain("giga3-v126");
     expect(sw).toContain('url.searchParams.has("__giga3_connectivity_probe")');
     expect(sw).toContain("fetchWithTimeout");
     expect(sw).toContain("handleStaleChunk");

@@ -33,10 +33,10 @@ export type FeedCategoryId =
   | "creator-zone";
 
 export const FEED_CATEGORIES: { id: FeedCategoryId; label: string; emoji: string }[] = [
-  { id: "recent", label: "Newest", emoji: "🕐" },
   { id: "for-you", label: "For You", emoji: "✨" },
   { id: "following", label: "Following", emoji: "👥" },
   { id: "trending", label: "Trending", emoji: "🔥" },
+  { id: "recent", label: "Newest", emoji: "🕐" },
   { id: "nearby", label: "Nearby", emoji: "📍" },
   { id: "ai-picks", label: "AI Picks", emoji: "🤖" },
   { id: "football", label: "Football", emoji: "⚽" },

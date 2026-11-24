@@ -79,7 +79,7 @@ jobs:
           server_pid=$!
           trap 'kill "$server_pid"' EXIT
           curl --retry 8 --retry-connrefused --fail --silent http://127.0.0.1:4173/gigalearn/ >/dev/null
-          GIGA3_E2E_BASE_URL=http://127.0.0.1:4173 npx playwright test tests/e2e/mobile-interface.spec.ts tests/e2e/production-exam-practice.spec.ts --project=mobile-chrome --grep 'Learn exposes|Discover keeps|Free practice: pre-start|Practice Test setup'
+          GIGA3_E2E_BASE_URL=http://127.0.0.1:4173 npx playwright test tests/e2e/mobile-interface.spec.ts tests/e2e/production-exam-practice.spec.ts --project=mobile-chrome --grep 'Learn exposes|Discover keeps|Social media stage|Free practice: pre-start|Practice Test setup'
 
       - name: Summarize
         if: always()

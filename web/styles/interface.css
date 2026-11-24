@@ -309,3 +309,66 @@
 .document-designed-paper[data-display-title="true"] .ProseMirror h1 {font-size:clamp(2rem,7vw,3.2rem)}
 .studio-formatting {border:1px solid #d8cceb;border-radius:14px;background:#faf6ff}
 .studio-formatting summary {cursor:pointer;padding:12px 16px;font-weight:650;color:#4d2d76}
+
+.social-photo-controls {
+  position:absolute;top:max(.65rem, env(safe-area-inset-top));left:.65rem;z-index:12;
+  display:inline-flex;align-items:center;border:1px solid #a599c2;border-radius:2rem;
+  background:#201733ec;color:white;font:650 .78rem/1 system-ui;
+}
+.social-photo-controls button {display:grid;place-items:center;min-width:44px;min-height:44px;border-radius:50%}
+.social-photo-controls svg {width:19px;height:19px}
+.social-stage-caption {
+  position:absolute;z-index:5;bottom:3.8rem;left:0;right:4rem;
+  max-height:48%;overflow:auto;padding:1rem .8rem .6rem;
+  color:white;text-shadow:0 1px 3px #000;background:linear-gradient(0deg,#100b20e8, #12091fb8 75%, transparent);
+  border-radius:0 1rem 1rem 0;
+}
+.social-stage-caption .gigasocial-post-card__chrome {padding:0;background:transparent;border:0}
+.social-stage-copy {margin-top:.4rem}
+.gigasocial-premium .social-stage-caption :is(.text-foreground,.text-muted,h2,.gigasocial-post-description) {color:white!important}
+#gigasocial-feed-posts .gigasocial-post-card__media-actions button {border:1px solid #ffffff60;color:white!important;background-color:#241b34e8!important}
+#gigasocial-feed-posts .gigasocial-post-card__media-actions button[aria-label="Unlike"] {background-color:#94174a!important}
+#gigasocial-feed-posts .social-save-action[aria-pressed="true"] {color:#ffde80!important}
+.gigasocial-feed-panel-compact [aria-label="Feed categories"] button[aria-selected="true"] {background:#7528bf!important;color:#fff!important;border-color:#cc97fa}
+@media(max-width:767px) {
+  #gigasocial-feed-posts {width:100vw;margin-inline:calc(50% - 50vw)}
+  #gigasocial-feed-posts .gigasocial-post-card--visual {border:0;border-radius:0;padding:0}
+  #gigasocial-feed-posts .gigasocial-post-card--visual .gigasocial-post-card__media-region {
+    aspect-ratio:auto;height:calc(100svh - var(--primary-nav-offset,4.5rem));background:#100b1b;
+  }
+  #gigasocial-feed-posts .gigasocial-post-card__media-region > .space-y-2,
+  #gigasocial-feed-posts .gigasocial-post-card__media-region .gigasocial-feed-media {
+    width:100%;height:100%;aspect-ratio:auto;margin:0;border:0;border-radius:0;
+  }
+  #gigasocial-feed-posts .gigasocial-feed-media :is(img.gigasocial-feed-media-frame,video.gigasocial-feed-media-frame) {
+    width:100%;height:100%;max-height:none;object-fit:cover;border-radius:0;
+  }
+  #gigasocial-feed-posts .gigasocial-post-card__media-region [role="list"] {display:none}
+  #gigasocial-feed-posts .gigasocial-feed-media--gallery {touch-action:pan-y}
+  #gigasocial-feed-posts .gigasocial-post-card__media-actions {bottom:4.2rem;right:max(.45rem,env(safe-area-inset-right));gap:.35rem}
+  #gigasocial-feed-posts .gigasocial-slideshow-frame {animation:none}
+}
+.social-feed-dock {display:none}
+@media(max-width:767px) {
+  body:has(.social-feed-dock) :is(.primary-nav--mobile,.social-hub-launcher) {display:none}
+  .social-feed-dock {
+    display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:fixed;z-index:58;
+    bottom:0;left:0;right:0;margin:0!important;padding:5px 4px max(5px,env(safe-area-inset-bottom));
+    background:#171022;border:1px solid #584172;border-radius:18px 18px 0 0;color:white;
+  }
+  .social-feed-dock button {min-height:48px;display:grid;justify-items:center;align-content:center;gap:2px;
+    font-size:clamp(9px,2.6vw,12px);font-weight:650;color:#f5ebff;border-radius:14px}
+  .social-feed-dock svg {width:22px;height:22px}
+  .social-feed-dock [aria-current="page"] {background:#6322a6}
+  .social-feed-dock .social-feed-create svg {box-sizing:content-box;padding:3px 14px;border-radius:14px;background:#8b2fd6}
+}
+html:fullscreen:has([data-social-fullscreen]) {scroll-padding-top:0}
+html:fullscreen:has([data-social-fullscreen]) .marketing-site-header {display:none}
+.social-tools-toggle {display:none}
+@media(max-width:767px) {
+  body:has(.social-watch-feed) :is(.marketing-site-header,.social-seo-header) {display:none}
+  .social-watch-feed .social-tools-toggle {display:inline-flex;align-items:center;min-height:44px;padding:0 .85rem;border-radius:20px;background:#322345;color:#fff;border:1px solid #735695;font-weight:650;font-size:.8rem}
+  .social-watch-feed[data-feed-tools="false"] :is(.social-feed-tools,.gigasocial-context-nav,.gigasocial-status-banner--guest) {display:none}
+  .social-watch-feed .gigasocial-feed-shell {border:0}
+  .social-watch-feed [aria-label="Feed categories"] button {min-height:44px}
+}
