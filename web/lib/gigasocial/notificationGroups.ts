@@ -127,11 +127,11 @@ export function notificationDisplayMessage(n: SocialNotification): string {
 }
 
 export function notificationDestination(n: SocialNotification): { href: string; label: string } | null {
-  if (n.postId) return { href: `/gigasocial/post/${encodeURIComponent(n.postId)}/`, label: "View post" };
+  if (n.postId) return { href: `/gigasocial/post/?activity=1&id=${encodeURIComponent(n.postId)}`, label: "View post" };
   if (n.communitySlug) return { href: `/gigasocial/?community=${encodeURIComponent(n.communitySlug)}`, label: "Open community" };
   const handle = n.actor?.handle?.replace(/^@/, "").trim().toLowerCase();
   if (handle && ["follow", "creator", "like", "comment", "reply", "mention"].includes(n.type)) {
-    return { href: `/gigasocial/profile/${encodeURIComponent(handle)}/`, label: "View profile" };
+    return { href: `/gigasocial/profile/?activity=1&handle=${encodeURIComponent(handle)}`, label: "View profile" };
   }
   return null;
 }
