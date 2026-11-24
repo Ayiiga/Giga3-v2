@@ -261,6 +261,7 @@
   gap: 0.4rem;
 }
 .home-welcome [aria-label="Resume unfinished work"] li {
+  min-width: 0;
   margin: 0;
 }
 .home-welcome [aria-label="Resume unfinished work"] a {
@@ -268,6 +269,18 @@
   flex-direction: column;
   background: #efe8fc;
   color: #2f194e;
+  min-width: 0;
+  overflow: hidden;
+}
+.home-welcome [aria-label="Resume unfinished work"] a > span:first-child {
+  width: 100%;
+  max-width: 100%;
+  flex: 0 1 auto;
+}
+.home-welcome [aria-label="Resume unfinished work"] a > span:first-child > span {
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 /* Template shelves and creation tools */
