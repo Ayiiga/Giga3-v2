@@ -2,7 +2,7 @@ import type { Doc } from "./_generated/dataModel";
 import type { QueryCtx } from "./_generated/server";
 import { ageCategoryFromAttestation } from "./childSafetyPolicy";
 import { resolveInterestSegment, type FeatureEmailCopy } from "./engagementAnnouncementSafety";
-import { ENGAGEMENT_CHECKLIST_IDS } from "./engagementControls";
+import { ENGAGEMENT_CHECKLIST_IDS, ENGAGEMENT_FLAG_DEFAULTS } from "./engagementControls";
 import { isMonetizationUnlocked } from "./gigaSocialEconomy";
 import { parseInterestProfile } from "./userLearning";
 
@@ -19,7 +19,8 @@ export async function engagementRemindersEnabled(ctx: Pick<QueryCtx, "db">) {
       ctx.db.query("remoteConfigEntries").withIndex("by_key", (q) => q.eq("key", key)).first()
     )
   );
-  return setting?.enabled === true && killSwitch?.enabled !== true;
+  const enabled = setting?.enabled ?? ENGAGEMENT_FLAG_DEFAULTS["engagement.communication_reminders"].enabled;
+  return enabled && killSwitch?.enabled !== true;
 }
 
 export async function getEngagementReminders(
