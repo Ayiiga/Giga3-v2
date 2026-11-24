@@ -2,6 +2,7 @@
 
 import { GigaLearnToolPanel } from "@/components/gigalearn/GigaLearnToolPanel";
 import { TeacherStudio } from "@/components/gigalearn/TeacherStudio";
+import { WorldActivityGuides } from "@/components/gigalearn/WorldActivityGuides";
 import type { TeacherSubView } from "@/lib/gigalearn/sectionRouting";
 import { TEACHER_TOOLS } from "@/lib/gigalearn/tools";
 import { cn } from "@/lib/utils";
@@ -53,7 +54,10 @@ export const TeacherHub = memo(function TeacherHub({
       {subView === "studio" ? (
         <TeacherStudio credits={credits} />
       ) : (
-        <GigaLearnToolPanel tools={TEACHER_TOOLS} credits={credits} />
+        <>
+          <WorldActivityGuides />
+          <GigaLearnToolPanel tools={TEACHER_TOOLS} credits={credits} />
+        </>
       )}
     </div>
   );

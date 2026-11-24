@@ -33,6 +33,20 @@ test("Learn exposes working starter activities in all four worlds", async ({ pag
   await page.getByRole("button", { name: "Add a counter" }).click();
   await page.getByRole("button", { name: "5", exact: true }).click();
   await expect(page.getByRole("status").filter({ hasText: "Count on from three" })).toBeVisible();
+  await page.getByRole("button", { name: "Reading", exact: true }).click();
+  const reading = page.getByRole("region", { name: "Mansa and the mangoes" });
+  await reading.getByRole("button", { name: "To share them with her brother" }).click();
+  await expect(reading.getByRole("status")).toContainText("The second sentence");
+  await page.getByRole("button", { name: "Mathematics", exact: true }).click();
+  const review = page.getByRole("region", { name: "Practice and review" });
+  await expect(review.getByRole("button", { name: "Check answer" })).toBeDisabled();
+  await review.getByRole("button", { name: "Show a hint" }).click();
+  await expect(review.getByText("Use four counters", { exact: false })).toBeVisible();
+  await review.getByRole("button", { name: "6", exact: true }).click();
+  await review.getByRole("button", { name: "Check answer" }).click();
+  await expect(review.getByText("Four plus two is six", { exact: false })).toBeVisible();
+  await review.getByRole("button", { name: "Try another example" }).click();
+  await expect(review.getByText("There are five books", { exact: false })).toBeVisible();
 
   await page.getByRole("link", { name: "Back to Learn" }).click();
   await page.getByRole("link", { name: /Exploration World/ }).click();

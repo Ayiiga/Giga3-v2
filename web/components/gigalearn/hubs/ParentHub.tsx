@@ -1,6 +1,7 @@
 "use client";
 
 import { GigaLearnToolPanel } from "@/components/gigalearn/GigaLearnToolPanel";
+import { WorldActivityGuides } from "@/components/gigalearn/WorldActivityGuides";
 import { PARENT_TOOLS } from "@/lib/gigalearn/tools";
 import { memo } from "react";
 
@@ -18,15 +19,8 @@ export const ParentHub = memo(function ParentHub({ credits }: ParentHubProps) {
         </p>
       </div>
 
+      <WorldActivityGuides />
       <GigaLearnToolPanel tools={PARENT_TOOLS} credits={credits} />
-
-      <div className="rounded-2xl border border-dashed border-border bg-zinc-50/50 p-4 text-sm text-muted">
-        <p className="font-medium text-foreground">Learner profiles &amp; home progress</p>
-        <p className="mt-1 text-xs">
-          Multi-child profiles and shared home dashboards will connect here. For now, use Insight
-          for activity on this device and Parent tools for summaries and tips.
-        </p>
-      </div>
     </div>
   );
 });

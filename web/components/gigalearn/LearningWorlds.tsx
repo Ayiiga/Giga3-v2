@@ -3,7 +3,11 @@
 import Link from "next/link";
 import { useState } from "react";
 import { LEARNING_WORLDS } from "@/lib/gigalearn/learningWorlds";
+import { getSessionToken } from "@/lib/auth";
+import { offlineProgressOwner } from "@/lib/gigalearn/offlineProgressOwner";
+import { FoundationReading } from "./FoundationReading";
 import { ShapePractice } from "./ShapePractice";
+import { WorldReviewCheck } from "./WorldReviewCheck";
 
 const buttonStyle = "min-h-12 rounded-xl border border-violet-500/40 px-4 py-2 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-500 aria-pressed:bg-violet-700 aria-pressed:text-white disabled:opacity-50";
 const primaryButton = buttonStyle + " bg-violet-700 text-white";
@@ -12,6 +16,7 @@ const panelStyle = "space-y-4 rounded-3xl border border-border bg-card p-4 sm:p-
 export function LearningWorlds({ worldId }: { worldId: string | null }) {
   const world = LEARNING_WORLDS.find((candidate) => candidate.id === worldId);
   if (!world) return null;
+  const owner = offlineProgressOwner(getSessionToken());
 
   return (
     <section className="mx-auto max-w-3xl space-y-5 px-4 pb-8" aria-labelledby="world-title">
@@ -20,15 +25,36 @@ export function LearningWorlds({ worldId }: { worldId: string | null }) {
         <p className="font-semibold text-muted">{world.grades}</p>
         <h2 id="world-title" className="text-3xl font-bold">{world.title}</h2>
       </header>
-      {world.id === "discovery" && <DiscoveryActivity />}
-      {world.id === "foundation" && <CountingGroups />}
+      {world.id === "discovery" && <DiscoveryActivity owner={owner} />}
+      {world.id === "foundation" && <FoundationActivities owner={owner} />}
       {world.id === "exploration" && <FloatModel />}
       {world.id === "mastery" && <EvidencePractice />}
+      {(world.id === "exploration" || world.id === "mastery") && (
+        <WorldReviewCheck key={owner} world={world.id} owner={owner} />
+      )}
     </section>
   );
 }
 
-function DiscoveryActivity() {
+function FoundationActivities({ owner }: { owner: string | null }) {
+  const [subject, setSubject] = useState<"math" | "reading">("math");
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Foundation subjects">
+        <button type="button" className={buttonStyle} aria-pressed={subject === "math"} onClick={() => setSubject("math")}>Mathematics</button>
+        <button type="button" className={buttonStyle} aria-pressed={subject === "reading"} onClick={() => setSubject("reading")}>Reading</button>
+      </div>
+      {subject === "math" ? (
+        <>
+          <CountingGroups />
+          <WorldReviewCheck key={owner} world="foundation" owner={owner} />
+        </>
+      ) : <FoundationReading />}
+    </div>
+  );
+}
+
+function DiscoveryActivity({ owner }: { owner: string | null }) {
   const [audience, setAudience] = useState<"creche" | "kg" | null>(null);
   return (
     <div className="space-y-4">
@@ -43,7 +69,12 @@ function DiscoveryActivity() {
           <p>Stay with the child and stop when they lose interest.</p>
         </section>
       )}
-      {audience === "kg" && <ShapePractice />}
+      {audience === "kg" && (
+        <>
+          <ShapePractice />
+          <WorldReviewCheck key={owner} world="discovery" owner={owner} />
+        </>
+      )}
     </div>
   );
 }
