@@ -2022,10 +2022,16 @@ export const leaveCommunity = mutation({
 });
 
 export const markNotificationsRead = mutation({
-  args: sessionArgs,
+  args: { ...sessionArgs, notificationId: v.optional(v.id("socialNotifications")) },
   handler: async (ctx, args) => {
     try {
       const userId = await requireSession(args.sessionToken);
+      if (args.notificationId) {
+        const notification = await ctx.db.get(args.notificationId);
+        if (!notification || notification.recipientId !== userId) return { ok: false };
+        if (!notification.read) await ctx.db.patch(notification._id, { read: true });
+        return { ok: true };
+      }
       let unread: Array<{ _id: Id<"socialNotifications"> }> = [];
       try {
         unread = await ctx.db

@@ -40,6 +40,7 @@ export const getMyProfile = query({
       .withIndex("by_user", (q) => q.eq("userId", email))
       .first();
     if (!profile) return null;
+    const nationalIdNumber = profile.nationalIdNumber;
     const safeProfile = { ...profile };
     delete safeProfile.nationalIdNumber;
     delete safeProfile.idDocumentStorageId;
