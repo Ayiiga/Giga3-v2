@@ -105,7 +105,7 @@ export const GigaSocialNotificationsPanel = memo(function GigaSocialNotification
         <p className="text-sm text-muted">
           {data.unreadCount > 0
             ? `${data.unreadCount} unread notification${data.unreadCount === 1 ? "" : "s"}`
-            : "You're all caught up."}
+            : "No unread notifications."}
         </p>
         <div className="flex flex-wrap gap-2">
           {features.enableSmartNotifications ? (
@@ -114,7 +114,7 @@ export const GigaSocialNotificationsPanel = memo(function GigaSocialNotification
               size="sm"
               variant="ghost"
               onClick={() => setPrefsOpen((value) => !value)}
-              className="min-h-10"
+              className="min-h-11"
               aria-expanded={prefsOpen}
             >
               <Settings2 className="h-4 w-4" aria-hidden />
@@ -165,7 +165,7 @@ export const GigaSocialNotificationsPanel = memo(function GigaSocialNotification
                     "gigasocial-pressable min-h-11 rounded-full border px-2.5 text-[11px] font-medium",
                     enabled
                       ? "border-accent/40 bg-accent/10 text-foreground"
-                      : "border-border bg-white text-muted line-through"
+                      : "border-border bg-card text-muted line-through"
                   )}
                 >
                   {category.label}
@@ -178,7 +178,7 @@ export const GigaSocialNotificationsPanel = memo(function GigaSocialNotification
 
       {features.enableSmartNotifications ? (
         <div
-          className="flex gap-1.5 overflow-x-auto overscroll-x-contain pb-0.5"
+          className="flex flex-wrap gap-1.5 pb-0.5"
           role="tablist"
           aria-label="Notification filters"
         >
