@@ -36,10 +36,10 @@ export const CreateHub = memo(function CreateHub({ credits, initialSubView = "st
           Lessons, quizzes, worksheets, CVs, stories and rhymes — plus Document Studio for PDF/Word.
         </p>
         <a
-          href="/documents/"
-          className="mt-2 inline-flex min-h-11 items-center rounded-full border border-accent/30 bg-accent/10 px-4 text-xs font-semibold text-foreground"
+          href="/documents/#template-library"
+          className="studio-launch mt-2 inline-flex min-h-11 items-center rounded-full border border-accent/30 bg-accent/10 px-4 text-xs font-semibold text-foreground"
         >
-          Open Document Studio
+          Browse CV, poster, flyer &amp; letter templates →
         </a>
       </div>
 

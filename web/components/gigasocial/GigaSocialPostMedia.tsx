@@ -9,7 +9,8 @@ import {
 } from "@/lib/gigasocial/postMedia";
 import type { SocialPost } from "@/lib/gigasocial/types";
 import { cn } from "@/lib/utils";
-import { Music2, Pause, Play, Volume2, VolumeX } from "lucide-react";
+import { usePhotoSequence } from "@/hooks/usePhotoSequence";
+import { ChevronLeft, ChevronRight, Music2, Pause, Play, Volume2, VolumeX } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { GigaSocialMediaLightbox } from "@/components/gigasocial/GigaSocialMediaLightbox";
@@ -48,7 +49,7 @@ interface GigaSocialPostMediaProps {
   onVideoEnded?: () => void;
 }
 
-const SLIDESHOW_MS = 4000;
+const SINGLE_IMAGE_MS = 4500;
 
 export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
   post,
@@ -102,7 +103,7 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const effectiveMuted = muted || browserMuted;
-  const shouldPlay = autoPlay && !paused;
+  const shouldPlay = autoPlay && !paused && !lightboxUrl;
   const deferMedia =
     features.enableDataSaver &&
     shouldDeferMediaLoad(dataSaverMode) &&
@@ -144,10 +145,32 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
     [allowFullView, featured]
   );
 
-  const openVideoLightbox = useCallback(() => {
+  const [stageFullscreen, setStageFullscreen] = useState(false);
+  useEffect(() => {
+    if (mediaKind !== "video") return;
+    const sync = () => setStageFullscreen(Boolean(document.fullscreenElement?.contains(videoRef.current)));
+    document.addEventListener("fullscreenchange", sync);
+    return () => document.removeEventListener("fullscreenchange", sync);
+  }, [mediaKind]);
+
+  const openVideoLightbox = useCallback(async () => {
     if (!allowFullView || featured || mediaKind !== "video") return;
+    const stage = videoRef.current?.closest<HTMLElement>("#gigasocial-feed-posts article");
+    if (stage && document.fullscreenElement === stage) {
+      await document.exitFullscreen().catch(() => undefined);
+      return;
+    }
+    if (stage?.requestFullscreen) {
+      try {
+        await stage.requestFullscreen();
+        return;
+      } catch { /* Embedded browsers can restrict native fullscreen. */ }
+    }
     const url = mediaUrls[0];
-    if (url) setLightboxUrl(url);
+    if (url) {
+      videoRef.current?.pause();
+      setLightboxUrl(url);
+    }
   }, [allowFullView, featured, mediaKind, mediaUrls]);
 
   const renderExpandableImage = (
@@ -165,7 +188,7 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
       loading={eager ? "eager" : "lazy"}
       decoding="async"
       fetchPriority={eager || featured ? "high" : "auto"}
-      onClick={allowFullView && !featured ? () => openLightbox(url) : undefined}
+      onClick={allowFullView && !featured ? () => { if (!suppressGalleryClick.current) openLightbox(url); } : undefined}
     />
   );
 
@@ -217,21 +240,30 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
     if (!shouldPlay || mediaKind !== "image") return;
     const timer = window.setTimeout(() => {
       onVideoEnded?.();
-    }, SLIDESHOW_MS);
+    }, SINGLE_IMAGE_MS);
     return () => window.clearTimeout(timer);
   }, [mediaKind, onVideoEnded, post._id, shouldPlay]);
 
-  useEffect(() => {
-    if (!shouldPlay || galleryInteracting || lightboxUrl || mediaUrls.length < 2) return;
-    if (mediaKind !== "gallery" && mediaKind !== "photo-music") return;
-    const timer = window.setInterval(() => {
-      setActiveImage((index) => (index + 1) % mediaUrls.length);
-    }, SLIDESHOW_MS);
-    return () => window.clearInterval(timer);
-  }, [galleryInteracting, lightboxUrl, mediaKind, mediaUrls.length, shouldPlay]);
+  const nextPhoto = useCallback(() => setActiveImage(i => (i + 1) % mediaUrls.length), [mediaUrls.length]);
+  const previousPhoto = () => setActiveImage(i => (i + mediaUrls.length - 1) % mediaUrls.length);
+  const sequence = usePhotoSequence(activeImage, mediaUrls.length,
+    shouldPlay && !galleryInteracting && !lightboxUrl && (mediaKind === "gallery" || mediaKind === "photo-music"), nextPhoto);
+  const suppressGalleryClick = useRef(false);
+  const galleryControls = mediaUrls.length > 1 ? (
+    <div className="social-photo-controls" role="group" aria-label="Photo controls"
+      onTouchStart={event => event.stopPropagation()} onTouchEnd={event => event.stopPropagation()}
+      onDoubleClick={event => event.stopPropagation()}>
+      <button type="button" aria-label="Previous photo" onClick={previousPhoto}><ChevronLeft /></button>
+      <span>{activeImage + 1} / {mediaUrls.length}</span>
+      {autoPlay && <button type="button" aria-label={sequence.playing ? "Pause slideshow" : "Play slideshow"}
+        onClick={sequence.toggle}>{sequence.playing ? <Pause /> : <Play />}</button>}
+      <button type="button" aria-label="Next photo" onClick={nextPhoto}><ChevronRight /></button>
+    </div>
+  ) : null;
 
   const gallerySwipeHandlers = {
     onTouchStart: (event: import("react").TouchEvent<HTMLDivElement>) => {
+      suppressGalleryClick.current = false;
       const touch = event.touches[0];
       if (touch) galleryTouchStart.current = { x: touch.clientX, y: touch.clientY };
       setGalleryInteracting(true);
@@ -244,6 +276,8 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
         const dx = touch.clientX - start.x;
         const dy = touch.clientY - start.y;
         if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.25) {
+          suppressGalleryClick.current = true;
+          event.stopPropagation();
           setActiveImage((index) => (index + (dx < 0 ? 1 : mediaUrls.length - 1)) % mediaUrls.length);
         }
       }
@@ -375,20 +409,7 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
             cn(imageClass, "gigasocial-slideshow-frame"),
             featured && shouldPlay
           )}
-          {shouldPlay && mediaUrls.length > 1 ? (
-            <div className="absolute bottom-3 left-1/2 flex gap-1.5">
-              {mediaUrls.map((_, index) => (
-                <span
-                  key={index}
-                  className={cn(
-                    "h-1.5 w-1.5 rounded-full",
-                    index === activeImage ? "bg-white" : "bg-white/40"
-                  )}
-                  aria-hidden
-                />
-              ))}
-            </div>
-          ) : null}
+          {galleryControls}
           {audioBar}
         </div>
         <div className="flex gap-2 overflow-x-auto pb-1" role="list" aria-label="Photo gallery">
@@ -496,6 +517,7 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
           allowFullView && !featured
             ? (event) => {
                 event.preventDefault();
+                event.stopPropagation();
                 openVideoLightbox();
               }
             : undefined
@@ -515,7 +537,7 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
               openVideoLightbox();
             }}
           >
-            Full screen
+            {stageFullscreen ? "Exit full screen" : "Full screen"}
           </button>
         ) : null}
         <video
@@ -656,20 +678,7 @@ export const GigaSocialPostMedia = memo(function GigaSocialPostMedia({
           featured ? frameClass : "gigasocial-feed-media-frame",
           featured && shouldPlay
         )}
-        {shouldPlay && mediaUrls.length > 1 ? (
-          <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
-            {mediaUrls.map((_, index) => (
-              <span
-                key={index}
-                className={cn(
-                  "h-1.5 w-1.5 rounded-full",
-                  index === activeImage ? "bg-white" : "bg-white/40"
-                )}
-                aria-hidden
-              />
-            ))}
-          </div>
-        ) : null}
+        {galleryControls}
       </div>
       <div className="flex gap-2 overflow-x-auto pb-1" role="list" aria-label="Image gallery">
         {mediaUrls.map((url, index) => (

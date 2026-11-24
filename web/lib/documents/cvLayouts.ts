@@ -1,6 +1,7 @@
 import type { GigaDocument } from "@/lib/documents/types";
 
 export const CV_LAYOUTS = {
+  atelier: { name: "Atelier", category: "Modern", description: "Colour masthead and ruled section titles", treatment: "masthead" },
   classic: { name: "Classic", category: "Professional", description: "Single column with understated headings", treatment: "plain" },
   executive: { name: "Executive", category: "Professional", description: "Shaded section headings for quick reading", treatment: "band" },
   editorial: { name: "Editorial", category: "Modern", description: "Fine rules and strong section titles", treatment: "rule" },
@@ -16,6 +17,7 @@ export const CV_ACCENTS = {
 } as const;
 
 export type CvLayout = keyof typeof CV_LAYOUTS;
+export const CV_PALETTES = { atelier: "Violet", classic: "Slate", executive: "Navy", editorial: "Teal", signature: "Burgundy" } as const;
 export type CvAccent = keyof typeof CV_ACCENTS;
 
 export function cvAppearance(doc: Pick<GigaDocument, "templateKind" | "cvLayout" | "cvAccent">) {
@@ -28,10 +30,10 @@ export function cvAppearance(doc: Pick<GigaDocument, "templateKind" | "cvLayout"
 export type CvAppearance = NonNullable<ReturnType<typeof cvAppearance>>;
 
 export function cvHeadingStyle(appearance: Pick<CvAppearance, "color" | "treatment">, level: number) {
-  const banner = level === 1 && appearance.treatment === "signature";
+  const banner = level === 1 && (appearance.treatment === "signature" || appearance.treatment === "masthead");
   return {
     color: banner ? "#ffffff" : appearance.color,
     fill: banner ? appearance.color : level === 2 && appearance.treatment === "band" ? "#edf1f5" : undefined,
-    rule: (level === 2 && appearance.treatment === "rule") ? appearance.color : undefined,
+    rule: (level === 2 && (appearance.treatment === "rule" || appearance.treatment === "masthead")) ? appearance.color : undefined,
   };
 }

@@ -76,6 +76,7 @@ interface GigaSocialPostCardProps {
   enableUseAsTemplate?: boolean;
   enablePostAIActions?: boolean;
   enablePostTips?: boolean;
+  feedPresentation?: boolean;
   feedAutoPlay?: boolean;
   feedPaused?: boolean;
   /** Use IndexedDB-cached blobs when offline. */
@@ -101,6 +102,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
   enablePostAIActions = false,
   /** Tips are open on all posts/photos/videos — not gated by monetisation acceptance. */
   enablePostTips = true,
+  feedPresentation = false,
   feedAutoPlay = false,
   feedPaused = false,
   offlinePlayback = false,
@@ -317,23 +319,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
     }
   }
 
-  return (
-    <article
-      ref={viewRef}
-      className={cn(
-        "gigasocial-post-card saas-card rounded-2xl border border-border",
-        isVisualPost
-          ? cn(
-              "gigasocial-post-card--visual",
-              visualMediaKind === "video"
-                ? "gigasocial-post-card--video"
-                : visualMediaKind === "gallery" || visualMediaKind === "photo-music"
-                  ? "gigasocial-post-card--gallery"
-                  : "gigasocial-post-card--photo"
-            )
-          : "p-4"
-      )}
-    >
+  const authorHeader = (
       <header
         className={cn(
           "flex min-w-0 items-start justify-between gap-2 sm:gap-3",
@@ -396,6 +382,26 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
           ) : null}
         </div>
       </header>
+  );
+
+  return (
+    <article
+      ref={viewRef}
+      className={cn(
+        "gigasocial-post-card saas-card rounded-2xl border border-border",
+        isVisualPost
+          ? cn(
+              "gigasocial-post-card--visual",
+              visualMediaKind === "video"
+                ? "gigasocial-post-card--video"
+                : visualMediaKind === "gallery" || visualMediaKind === "photo-music"
+                  ? "gigasocial-post-card--gallery"
+                  : "gigasocial-post-card--photo"
+            )
+          : "p-4"
+      )}
+    >
+      {(!feedPresentation || !isVisualPost) && authorHeader}
       {post.promotion && (
         <div className="flex items-center justify-between gap-3 border-y border-border px-3 py-2 text-sm">
           <span className="text-muted">Sponsored</span>
@@ -414,12 +420,13 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
         <div className="gigasocial-post-card__content">
           <div
             ref={
-              visualMediaKind === "video" || visualMediaKind === "photo-music"
+              visualMediaKind === "video" || visualMediaKind === "photo-music" || visualMediaKind === "gallery"
                 ? videoRegionRef
                 : undefined
             }
             className="gigasocial-post-card__media-region relative"
-            onDoubleClick={() => {
+            onDoubleClick={(event) => {
+              if ((event.target as Element).closest("button,a,video,.social-stage-caption")) return;
               if (!sessionToken) {
                 promptAuth();
                 return;
@@ -427,6 +434,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
               void handleLike(true);
             }}
             onTouchEnd={(event) => {
+              if ((event.target as Element).closest("button,a,video,.social-stage-caption")) return;
               if (!sessionToken) {
                 // Single tap on media should not spam auth; only double-tap likes prompt.
                 const now = Date.now();
@@ -446,9 +454,15 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
               post={post}
               allowFullView
               autoPlay={shouldAutoPlayMedia && isActiveVideo(post._id)}
-              paused={feedPaused}
+              paused={feedPaused || actionsOpen || commentsOpen}
               offlinePlayback={offlinePlayback}
             />
+            {feedPresentation && (
+              <div className="social-stage-caption">
+                {authorHeader}
+                <div className="social-stage-copy">{captionBlock}</div>
+              </div>
+            )}
             {heartBurst ? (
               <span
                 className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center"
@@ -497,6 +511,12 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
               <button type="button" aria-label="Share post" disabled={busy} className="gigasocial-post-card__media-action" onClick={() => void handleShare()}>
                 <Share2 className="h-5 w-5" aria-hidden /><span>{shareCount}</span>
               </button>
+              <button type="button" aria-label={bookmarked ? "Unsave post" : "Save post"}
+                aria-pressed={bookmarked} disabled={busy} className="gigasocial-post-card__media-action social-save-action"
+                onClick={() => void handleBookmark()}>
+                <Bookmark className={cn("h-5 w-5", bookmarked && "fill-current")} aria-hidden />
+                <span>{bookmarked ? "Saved" : "Save"}</span>
+              </button>
               {canTip ? (
                 <GigaSocialTipButton
                   sessionToken={sessionToken!}
@@ -539,7 +559,7 @@ export const GigaSocialPostCard = memo(function GigaSocialPostCard({
           isVisualPost && "gigasocial-post-card__footer--visual"
         )}
       >
-        {isVisualPost && (display.title || display.description || post.hashtags?.length) ? (
+        {isVisualPost && !feedPresentation && (display.title || display.description || post.hashtags?.length) ? (
           <div className="gigasocial-post-card__meta px-4 pt-2">{captionBlock}</div>
         ) : null}
 

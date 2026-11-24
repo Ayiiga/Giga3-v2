@@ -1,5 +1,6 @@
 "use client";
 
+import { usePhotoSequence } from "@/hooks/usePhotoSequence";
 import { useSwipeGesture } from "@/hooks/useSwipeGesture";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, Heart, X } from "lucide-react";
@@ -44,6 +45,7 @@ export const GigaSocialMediaLightbox = memo(function GigaSocialMediaLightbox({
   const pinchStartDist = useRef<number | null>(null);
   const pinchStartScale = useRef(1);
 
+  const [holding, setHolding] = useState(false);
   const current = mediaItems[index];
   const isVideo = current?.kind === "video";
 
@@ -61,11 +63,11 @@ export const GigaSocialMediaLightbox = memo(function GigaSocialMediaLightbox({
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") onClose();
       if (event.key === "ArrowRight") {
-        setIndex((i) => Math.min(mediaItems.length - 1, i + 1));
+        setIndex((i) => (i + 1) % mediaItems.length);
         setScale(1);
       }
       if (event.key === "ArrowLeft") {
-        setIndex((i) => Math.max(0, i - 1));
+        setIndex((i) => (i + mediaItems.length - 1) % mediaItems.length);
         setScale(1);
       }
     }
@@ -77,14 +79,16 @@ export const GigaSocialMediaLightbox = memo(function GigaSocialMediaLightbox({
   }, [mediaItems.length, onClose]);
 
   const goNext = useCallback(() => {
-    setIndex((i) => Math.min(mediaItems.length - 1, i + 1));
+    setIndex((i) => (i + 1) % mediaItems.length);
     setScale(1);
   }, [mediaItems.length]);
 
   const goPrev = useCallback(() => {
-    setIndex((i) => Math.max(0, i - 1));
+    setIndex((i) => (i + mediaItems.length - 1) % mediaItems.length);
     setScale(1);
-  }, []);
+  }, [mediaItems.length]);
+
+  const sequence = usePhotoSequence(index, mediaItems.length, !isVideo && !holding && scale === 1, goNext);
 
   const appreciate = useCallback(() => {
     setHeartBurst(true);
@@ -103,6 +107,7 @@ export const GigaSocialMediaLightbox = memo(function GigaSocialMediaLightbox({
 
   const onTouchStartPinch = useCallback(
     (event: React.TouchEvent) => {
+      setHolding(true);
       swipe.onTouchStart(event);
       if (event.touches.length === 2) {
         const [a, b] = [event.touches[0], event.touches[1]];
@@ -129,6 +134,7 @@ export const GigaSocialMediaLightbox = memo(function GigaSocialMediaLightbox({
       if (event.touches.length < 2) {
         pinchStartDist.current = null;
       }
+      setHolding(false);
       swipe.onTouchEnd(event);
     },
     [swipe]
@@ -160,9 +166,8 @@ export const GigaSocialMediaLightbox = memo(function GigaSocialMediaLightbox({
         <>
           <button
             type="button"
-            className="absolute left-2 top-1/2 z-20 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/12 text-white sm:inline-flex disabled:opacity-30"
+            className="absolute left-2 top-1/2 z-20 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/12 text-white sm:inline-flex disabled:opacity-30"
             aria-label="Previous"
-            disabled={index <= 0}
             onClick={(e) => {
               e.stopPropagation();
               goPrev();
@@ -172,9 +177,8 @@ export const GigaSocialMediaLightbox = memo(function GigaSocialMediaLightbox({
           </button>
           <button
             type="button"
-            className="absolute right-2 top-1/2 z-20 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/12 text-white sm:inline-flex disabled:opacity-30"
+            className="absolute right-2 top-1/2 z-20 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/12 text-white sm:inline-flex disabled:opacity-30"
             aria-label="Next"
-            disabled={index >= mediaItems.length - 1}
             onClick={(e) => {
               e.stopPropagation();
               goNext();
@@ -192,6 +196,7 @@ export const GigaSocialMediaLightbox = memo(function GigaSocialMediaLightbox({
         )}
         onClick={(event) => event.stopPropagation()}
         onTouchStart={onTouchStartPinch}
+        onTouchCancel={() => { setHolding(false); pinchStartDist.current = null; }}
         onTouchMove={onTouchMovePinch}
         onTouchEnd={onTouchEndPinch}
       >
@@ -230,9 +235,11 @@ export const GigaSocialMediaLightbox = memo(function GigaSocialMediaLightbox({
       {!isVideo || mediaItems.length > 1 ? (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center gap-2 bg-gradient-to-t from-black/70 to-transparent px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-10">
           {mediaItems.length > 1 ? (
-            <p className="text-xs font-medium text-white/80">
+            <button type="button" className="pointer-events-auto min-h-11 rounded-full bg-violet-800 px-4 text-sm font-semibold text-white"
+              onClick={event => { event.stopPropagation(); sequence.toggle(); }}>
+              {sequence.playing ? "Pause slideshow" : "Play slideshow"} ·
               {index + 1} / {mediaItems.length}
-            </p>
+            </button>
           ) : null}
           <p className="text-[11px] text-white/55">
             {isVideo

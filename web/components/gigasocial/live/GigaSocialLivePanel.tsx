@@ -141,7 +141,7 @@ export const GigaSocialLivePanel = memo(function GigaSocialLivePanel({
   }
 
   return (
-    <div className="gigasocial-live-stable space-y-6">
+    <div className="gigasocial-live-stable live-lobby space-y-6">
       <div className="saas-card rounded-2xl border border-border bg-white p-4">
         <h3 className="text-base font-semibold text-foreground">Go live on GigaSocial</h3>
         <p className="mt-1 text-sm text-muted">

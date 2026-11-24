@@ -1034,6 +1034,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
               <GigaSocialPostCard
                 post={post}
                 sessionToken={sessionToken}
+                feedPresentation
                 feedAutoPlay={autoPlay}
                 feedPaused={paused}
                 offlinePlayback={!effectiveOnline}

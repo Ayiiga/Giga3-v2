@@ -1,5 +1,6 @@
 "use client";
 
+import { CV_PALETTES } from "@/lib/documents/cvLayouts";
 import { CvTemplateGallery } from "@/components/documents/CvTemplateGallery";
 import { DocumentStudio } from "@/components/documents/DocumentStudio";
 import { Button } from "@/components/ui/Button";
@@ -89,11 +90,11 @@ export function DocumentsPageRoot() {
 
   return (
     <div className="document-compact mx-auto w-full min-w-0 max-w-3xl space-y-4">
-      <header className="space-y-1">
+      <header className="studio-banner space-y-1">
         <p className="text-xs font-semibold uppercase tracking-wide text-accent">Shared across Chat · GigaLearn · Create</p>
         <h2 className="text-xl font-bold text-foreground">Document Studio</h2>
         <p className="text-sm text-muted">
-          Create, edit, sign, and export CVs and letters for free. Use an optional CV photo and download as PDF or Word.
+          Choose a design, add your details and download a PDF or Word copy.
         </p>
       </header>
 
@@ -103,18 +104,35 @@ export function DocumentsPageRoot() {
         </p>
       ) : null}
 
+      <section id="template-library" className="space-y-3">
+        <h3 className="text-lg font-bold">Choose a template</h3>
+        <div className="studio-shelf">
+          <a className="studio-tile" data-palette="cv" href="#cv-template-heading">
+            <span className="studio-cover" aria-hidden="true"><b>Curriculum vitae</b><i>Professional profile</i></span>
+            <strong>CV layouts</strong>
+          </a>
+          {DOCUMENT_STUDIO_TEMPLATES.filter(t => t.design).map(t => (
+            <button key={t.title} className="studio-tile" data-palette={t.kind} type="button"
+              onClick={() => openDocument(createDocumentFromTemplate(t.kind, t.title), true)}>
+              <span className="studio-cover" aria-hidden="true"><b>{t.markdown.split("\n")[0].slice(2)}</b><i>{t.kind === "poster" ? "Music · Dance · Theatre" : t.kind === "flyer" ? "Hands-on learning" : "Application letter"}</i></span>
+              <strong>{t.title}</strong>
+            </button>
+          ))}
+        </div>
+      </section>
+
       <CvTemplateGallery onChoose={(cvLayout) => {
         openDocument({
           ...createDocumentFromTemplate("cv"),
           cvLayout,
-          cvAccent: cvLayout === "signature" ? "Navy" : "Slate",
+          cvAccent: CV_PALETTES[cvLayout],
         }, true);
       }} />
 
       <section className="space-y-2">
         <h3 className="text-sm font-semibold text-foreground">Document templates</h3>
-        <div className="gigalearn-grade-scroll flex gap-2 overflow-x-auto pb-1">
-          {DOCUMENT_STUDIO_TEMPLATES.map((t) => (
+        <div className="grid gap-2 sm:grid-cols-2">
+          {DOCUMENT_STUDIO_TEMPLATES.filter(t => !t.design).map((t) => (
             <button
               key={`${t.kind}-${t.title}`}
               type="button"

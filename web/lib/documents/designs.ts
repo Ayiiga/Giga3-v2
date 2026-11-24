@@ -2,6 +2,8 @@ import { CV_ACCENTS, cvAppearance, type CvAccent, type CvAppearance } from "@/li
 import type { DocumentTemplateKind, GigaDocument } from "@/lib/documents/types";
 
 export const DOCUMENT_DESIGNS = {
+  festival: { name: "Festival", treatment: "masthead", accent: "Burgundy", serif: false },
+  bulletin: { name: "Bulletin", treatment: "masthead", accent: "Teal", serif: false },
   classic: { name: "Classic", treatment: "plain", accent: "Slate", serif: true },
   editorial: { name: "Editorial", treatment: "rule", accent: "Teal", serif: false },
   business: { name: "Business", treatment: "signature", accent: "Navy", serif: false },
@@ -11,6 +13,8 @@ export const DOCUMENT_DESIGNS = {
 export type DocumentDesign = keyof typeof DOCUMENT_DESIGNS;
 
 const DEFAULT_DESIGNS: Partial<Record<DocumentTemplateKind, DocumentDesign>> = {
+  poster: "festival",
+  flyer: "bulletin",
   "business-plan": "business",
   proposal: "business",
   presentation: "business",
@@ -26,6 +30,7 @@ export type DocumentAppearance = Pick<CvAppearance, "color" | "treatment"> & {
   layout: CvAppearance["layout"] | DocumentDesign;
   accent: CvAccent;
   serif: boolean;
+  displayTitle?: boolean;
 };
 
 export function documentAppearance(doc: Pick<GigaDocument, "templateKind" | "cvLayout" | "cvAccent" | "documentDesign" | "documentAccent">): DocumentAppearance {
@@ -37,5 +42,5 @@ export function documentAppearance(doc: Pick<GigaDocument, "templateKind" | "cvL
     : defaultLayout ?? "classic";
   const preset = DOCUMENT_DESIGNS[layout];
   const accent = doc.documentAccent && Object.hasOwn(CV_ACCENTS, doc.documentAccent) ? doc.documentAccent : preset.accent;
-  return { layout, accent, color: CV_ACCENTS[accent], treatment: preset.treatment, serif: preset.serif };
+  return { displayTitle: doc.templateKind === "poster" || doc.templateKind === "flyer", layout, accent, color: CV_ACCENTS[accent], treatment: preset.treatment, serif: preset.serif };
 }

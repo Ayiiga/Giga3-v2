@@ -5,7 +5,7 @@ import aiExamples from './ai-examples.mjs?v=114';
 import { createCertificateSerial, eligibleForCertificate, lessonUnlocked, lessonsComplete, passingScore, readProgress, projectComplete, projectCriteria, lessonCheckPassed } from './progress.mjs?v=114';
 // Older cached workspace documents may still point to the unversioned stylesheet.
 const legacyStylesheet = document.querySelector('link[rel="stylesheet"][href="style.css"]');
-if (legacyStylesheet) legacyStylesheet.href = 'style.css?v=114';
+if (legacyStylesheet) legacyStylesheet.href = 'style.css?v=125';
 
 const main = document.querySelector('main');
 const dialog = document.querySelector('#detail');

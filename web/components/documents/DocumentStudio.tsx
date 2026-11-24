@@ -506,12 +506,18 @@ export function DocumentStudio({
         )}
       </div>
 
-      {!previewOnly ? <DocumentToolbar editor={editor} /> : null}
+      {!previewOnly ? (
+        <details className="studio-formatting">
+          <summary>Text formatting</summary>
+          <DocumentToolbar editor={editor} />
+        </details>
+      ) : null}
 
       <div className="overflow-x-auto pb-1">
         <div
           className="document-designed-paper mx-auto flow-root rounded-sm border border-[#d4d4d8] bg-white shadow-md"
           data-cv-treatment={appearance.treatment}
+          data-display-title={appearance.displayTitle}
           data-document-typeface={appearance.serif ? "serif" : "sans"}
           style={{
             width: "100%",

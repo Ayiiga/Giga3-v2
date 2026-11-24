@@ -769,39 +769,3 @@ body.gigasocial-composer-video-isolation .gigasocial-post-card video {
 .gigasocial-live-room button:not(:disabled) { color: #fff; }
 .gigasocial-live-room button:disabled { color: #cbd5e1; }
 .gigasocial-live-room .gigasocial-live-controls { color-scheme: dark; }
-
-/* Immersive mobile media: bounded viewport height avoids unstable browser chrome vh. */
-@media (max-width: 767px) {
-  .gigasocial-post-card--visual .gigasocial-post-card__media-region {
-    aspect-ratio: auto;
-    height: min(160vw, calc(100svh - 7rem - env(safe-area-inset-bottom, 0px)));
-    min-height: 320px;
-    background: #080808;
-  }
-
-  .gigasocial-post-card--visual.gigasocial-post-card--gallery .gigasocial-feed-media,
-  .gigasocial-post-card--visual .gigasocial-feed-media {
-    height: 100%;
-    aspect-ratio: auto;
-    margin: 0;
-    border: 0;
-    border-radius: 0;
-  }
-
-  .gigasocial-post-card--visual .gigasocial-feed-media img,
-  .gigasocial-post-card--visual .gigasocial-feed-media video {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-  }
-
-  .gigasocial-post-card--visual .gigasocial-post-card__media-region [role="list"][aria-label="Image gallery"],
-  .gigasocial-post-card--visual .gigasocial-post-card__media-region [role="list"][aria-label="Photo gallery"] {
-    display: none;
-  }
-
-  .gigasocial-post-card--visual .gigasocial-post-card__media-actions {
-    right: max(0.75rem, env(safe-area-inset-right, 0px));
-    bottom: max(3.75rem, calc(2.5rem + env(safe-area-inset-bottom, 0px)));
-  }
-}

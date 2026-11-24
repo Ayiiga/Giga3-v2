@@ -169,3 +169,23 @@ test.describe("Document Studio — Android mobile browser workflow", () => {
     expect(rect!.y + rect!.height).toBeLessThanOrEqual(422);
   });
 });
+
+test("featured print designs open from the template shelf at phone widths", async ({ page }) => {
+  for (const width of [360, 412]) {
+    await page.setViewportSize({ width, height: 830 });
+    await page.goto("/documents/#template-library", { waitUntil: "domcontentloaded" });
+    for (const [label, heading, accent] of [
+      ["Festival poster", "Creative Arts Night", "rgb(139, 37, 75)"],
+      ["Workshop flyer", "Make It Workshop", "rgb(0, 103, 95)"],
+      ["Editorial cover letter", "[Your name]", "rgb(0, 103, 95)"],
+    ]) {
+      await page.getByRole("button", { name: label, exact: true }).click();
+      const title = page.locator(".document-designed-paper .ProseMirror h1");
+      await expect(title).toHaveText(heading);
+      await expect(title).toHaveCSS("background-color", accent);
+      await page.getByText("Text formatting", { exact: true }).click();
+      await expect(page.getByRole("toolbar", { name: "Document formatting" })).toBeVisible();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    }
+  }
+});
