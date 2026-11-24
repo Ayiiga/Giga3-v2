@@ -38,13 +38,12 @@ import {
   type QuizQuestionType,
   type StudioToolDefinition,
 } from "@/lib/gigalearn/studioTools";
-import { saveTeleprompterScript } from "@/lib/gigasocial/teleprompterScripts";
+import { triggerDownload } from "@/lib/share/clientShare";
 import { saveArtifact } from "@/lib/gigalearn/workspace";
 import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import { useMutation } from "convex/react";
-import { ChevronDown, Clapperboard, Loader2, Pencil, Presentation, Save, Sparkles } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { ChevronDown, Download, Loader2, Pencil, Presentation, Save, Sparkles } from "lucide-react";
 import { memo, useMemo, useState } from "react";
 
 interface TeacherStudioProps {
@@ -58,7 +57,6 @@ const FOLLOW_UPS = [
 ] as const;
 
 export const TeacherStudio = memo(function TeacherStudio({ credits }: TeacherStudioProps) {
-  const router = useRouter();
   const { phase, loading, error, result, questions, run, regenerate, clear } = useGigaLearnGeneration();
   const recordAssessment = useMutation(api.gigaLearnProgress.recordAssessment);
   const teacherTools = useMemo(() => studioToolsFor("teacher"), []);
@@ -210,11 +208,11 @@ export const TeacherStudio = memo(function TeacherStudio({ credits }: TeacherStu
     setTimeout(() => URL.revokeObjectURL(url), 5000);
   }
 
-  function handleSendToVideo() {
+  function handleDownloadNarration() {
     const source = editing ?? result ?? "";
     if (!source.trim()) return;
-    saveTeleprompterScript(extractNarrationScript(source));
-    router.push("/gigaedit");
+    const script = new Blob([extractNarrationScript(source)], { type: "text/plain;charset=utf-8" });
+    triggerDownload(script, "lesson-narration.txt");
   }
 
   function recordIdAssessment(score: number) {
@@ -534,9 +532,9 @@ export const TeacherStudio = memo(function TeacherStudio({ credits }: TeacherStu
               <Presentation className="h-4 w-4" aria-hidden />
               To presentation
             </Button>
-            <Button type="button" size="sm" variant="secondary" className="min-h-11" onClick={handleSendToVideo}>
-              <Clapperboard className="h-4 w-4" aria-hidden />
-              To video
+            <Button type="button" size="sm" variant="secondary" className="min-h-11" onClick={handleDownloadNarration}>
+              <Download className="h-4 w-4" aria-hidden />
+              Download narration script
             </Button>
           </div>
 

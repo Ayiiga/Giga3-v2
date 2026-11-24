@@ -191,15 +191,17 @@ describe("Phase 3 adaptive questions", () => {
   });
 });
 
-describe("Phase 3 ecosystem reuses existing systems", () => {
-  it("links images via Media Studio and scripts via teleprompter handoff", () => {
+describe("Retired GigaLearn creator handoffs", () => {
+  it("keeps legacy helpers callable and hides retired shortcuts in the Resource Library", () => {
     expect(aiStudioImageUrl("Fractions", "Mathematics", "JHS 2")).toMatch(/^\/media\?/);
     expect(socialGraphicUrl("Quiz results")).toMatch(/^\/media\?/);
     const script = shortVideoScript("# Title\nFractions help share food fairly. Practice halves and quarters daily with family examples.", "Fractions");
     expect(script).toMatch(/Quick revision/);
     const src = read("web/components/gigalearn/ResourceLibrary.tsx");
-    expect(src).toContain("saveTeleprompterScript");
-    expect(src).toContain("/gigaedit");
+    expect(src).not.toContain("saveTeleprompterScript");
+    expect(src).not.toContain("/gigaedit");
+    expect(src).not.toContain("aiStudioImageUrl");
+    expect(src).not.toContain("socialGraphicUrl");
   });
 });
 

@@ -371,14 +371,14 @@ describe("Phase 2 UI wiring", () => {
     expect(src).toContain("Change curriculum");
     expect(src).toContain("Number of questions");
     expect(src).toContain("Question types");
-    for (const action of ["Edit", "Regenerate", "Expand", "Simplify", "Translate", "Export", "Print", "Repurpose", "To presentation", "To video"]) {
+    for (const action of ["Edit", "Regenerate", "Expand", "Simplify", "Translate", "Export", "Print", "Repurpose", "To presentation", "Download narration script"]) {
       expect(src).toContain(action);
     }
     expect(src).toContain("CurriculumSelector");
     expect(src).toContain("FlashcardStudy");
     expect(src).toContain("PracticeSession");
-    expect(src).toContain("saveTeleprompterScript");
-    expect(src).toContain("/gigaedit");
+    expect(src).toContain('triggerDownload(script, "lesson-narration.txt")');
+    expect(src).not.toContain("/gigaedit");
     expect(src).toContain("studioTopicKey");
   });
 

@@ -97,8 +97,9 @@ export function gigaLearnLevelToCurriculumLevelId(level: GigaLearnLevelId): stri
 export function curriculumLevelIdToGigaLearnLevel(levelId: string): GigaLearnLevelId {
   const normalized = levelId.trim().toLowerCase();
   switch (normalized) {
-    case "kg-1":
     case "creche":
+      return "Creche";
+    case "kg-1":
     case "kg1":
       return "KG1";
     case "kg-2":
