@@ -74,7 +74,7 @@ export const GigaSocialComposerSheet = memo(function GigaSocialComposerSheet({
         className={cn(
           fullscreenFlow
             ? "gigasocial-composer-fullscreen fixed inset-0 z-[60] pointer-events-none"
-            : "gigasocial-composer-sheet fixed inset-x-0 bottom-0 z-[61] flex h-[min(85dvh,40rem)] max-h-[min(85dvh,40rem)] min-h-0 flex-col overflow-hidden border-t border-border bg-white shadow-2xl pb-[env(safe-area-inset-bottom)]"
+            : "gigasocial-composer-sheet fixed inset-0 z-[61] flex min-h-0 flex-col overflow-hidden bg-white pb-[env(safe-area-inset-bottom)] sm:inset-x-auto sm:mx-auto sm:w-full sm:max-w-xl"
         )}
         role="dialog"
         aria-modal="true"
@@ -97,7 +97,7 @@ export const GigaSocialComposerSheet = memo(function GigaSocialComposerSheet({
         ) : null}
         <div
           className={cn(
-            fullscreenFlow ? "pointer-events-auto min-h-0 h-[100dvh] overflow-y-auto overscroll-contain pb-[env(safe-area-inset-bottom)]" : "min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 [scrollbar-gutter:stable]"
+            fullscreenFlow ? "pointer-events-auto min-h-0 h-[100dvh] overflow-y-auto overscroll-contain pb-[env(safe-area-inset-bottom)]" : "min-h-0 flex-1 overflow-y-auto overscroll-contain p-3"
           )}
         >
           <GigaSocialComposer

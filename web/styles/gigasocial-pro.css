@@ -769,3 +769,8 @@ body.gigasocial-composer-video-isolation .gigasocial-post-card video {
 .gigasocial-live-room button:not(:disabled) { color: #fff; }
 .gigasocial-live-room button:disabled { color: #cbd5e1; }
 .gigasocial-live-room .gigasocial-live-controls { color-scheme: dark; }
+
+/* Android upload: no compositor promotion or animated progress surfaces. */
+.gigasocial-composer-sheet, .gigasocial-upload-stage, .gigasocial-upload-stage * {animation:none!important;transition:none!important;transform:none!important;filter:none!important;backdrop-filter:none!important;will-change:auto!important;}
+.gigasocial-media-review .review-action {background:#24242c!important;color:#fff!important;border:1px solid #686879!important;min-height:44px;}
+.gigasocial-media-review .review-action:disabled {opacity:.5;}
