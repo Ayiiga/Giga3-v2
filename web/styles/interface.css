@@ -364,3 +364,11 @@
 }
 html:fullscreen:has([data-social-fullscreen]) {scroll-padding-top:0}
 html:fullscreen:has([data-social-fullscreen]) .marketing-site-header {display:none}
+.social-tools-toggle {display:none}
+@media(max-width:767px) {
+  body:has(.social-watch-feed) :is(.marketing-site-header,.social-seo-header) {display:none}
+  .social-watch-feed .social-tools-toggle {display:inline-flex;align-items:center;min-height:44px;padding:0 .85rem;border-radius:20px;background:#322345;color:#fff;border:1px solid #735695;font-weight:650;font-size:.8rem}
+  .social-watch-feed[data-feed-tools="false"] :is(.social-feed-tools,.gigasocial-context-nav,.gigasocial-status-banner--guest) {display:none}
+  .social-watch-feed .gigasocial-feed-shell {border:0}
+  .social-watch-feed [aria-label="Feed categories"] button {min-height:44px}
+}

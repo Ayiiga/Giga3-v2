@@ -134,7 +134,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
   const [composerOpen, setComposerOpen] = useState(false);
   const [aiStudioOpen, setAiStudioOpen] = useState(false);
   const [typeFilter, setTypeFilter] = useState<"all" | SocialPostTypeId>("all");
-  const [feedCategory, setFeedCategory] = useState<FeedCategoryId>("recent");
+  const [feedCategory, setFeedCategory] = useState<FeedCategoryId>("for-you");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [composeAction, setComposeAction] = useState<GigaCreateActionId | undefined>();
@@ -895,6 +895,7 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         </p>
       ) : null}
 
+      <div className="social-feed-tools space-y-2">
       {!isSearching && !savedFeed ? (
         <GigaSocialStoriesBarWithLive
           sessionToken={sessionToken}
@@ -921,6 +922,8 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
             {SOCIAL_BOOST_COUNTRIES.map((item) => <option key={item.code} value={item.code}>{item.name}</option>)}
           </select>
         </label>
+      </div>
+
       </div>
 
       {socialOutbox.pendingCount > 0 ? (

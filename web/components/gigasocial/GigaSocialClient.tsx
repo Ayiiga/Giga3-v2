@@ -124,6 +124,7 @@ function GigaSocialContent() {
   const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const initialTab = (params.get("tab") as GigaSocialSection) || "feed";
+  const [feedToolsOpen, setFeedToolsOpen] = useState(() => params.get("stories") === "1");
   const [section, setSection] = useState<GigaSocialSection>(
     GIGASOCIAL_SECTIONS.some((s) => s.id === initialTab) ? initialTab : "feed"
   );
@@ -199,7 +200,9 @@ function GigaSocialContent() {
 
   return (
     <div
+      data-feed-tools={feedToolsOpen}
       className={cn(
+        isFeedSection && "social-watch-feed",
         "gigasocial-stable gigasocial-pro gigasocial-premium gigasocial-client-main mx-auto w-full min-w-0 max-w-6xl",
         isFeedSection ? "space-y-2" : "space-y-3 sm:space-y-4"
       )}
@@ -239,6 +242,12 @@ function GigaSocialContent() {
             Connect, share, learn, and collaborate across the Giga3 AI community.
           </p>
         </div>
+        {isFeedSection && (
+          <button type="button" className="social-tools-toggle" aria-expanded={feedToolsOpen}
+            onClick={() => setFeedToolsOpen(open => !open)}>
+            {french ? "Recherche et outils" : "Search & more"}
+          </button>
+        )}
         {communitySlug ? (
           <div className="rounded-full border border-border px-2.5 py-1 text-xs sm:rounded-2xl sm:px-4 sm:py-2 sm:text-sm">
             <span className="font-medium capitalize">{communitySlug}</span>
