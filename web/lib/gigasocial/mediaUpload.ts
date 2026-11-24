@@ -427,15 +427,23 @@ export async function uploadSocialImages(
     throw new Error(`You can attach up to ${SOCIAL_MAX_PHOTOS_PER_POST} photos per post.`);
   }
 
+  throwIfUploadAborted(options?.signal);
   const client = isSupabaseConfigured() ? requireSupabaseClient() : null;
-  const supabaseUid = client ? await getSupabaseUserId(client) : null;
+  const supabaseUid = client ? await waitForSocialRequest(getSupabaseUserId(client), 20_000, "Could not confirm upload account. Try again.", options?.signal).catch(error => { if (options?.signal?.aborted) throw error; return null; }) : null;
   const compressOpts = options?.fastCompress
     ? { maxDimension: 1280, quality: 0.72, maxBytes: SOCIAL_MAX_IMAGE_BYTES }
     : { maxDimension: 1440, quality: 0.78, maxBytes: SOCIAL_MAX_IMAGE_BYTES };
 
+  const controller = new AbortController();
+  const abort = () => controller.abort();
+  options?.signal?.addEventListener("abort", abort, { once: true });
+  if (options?.signal?.aborted) abort();
+  const signal = controller.signal;
   const uploadOne = async (file: File, index: number): Promise<SocialPostMediaItemInput> => {
+    throwIfUploadAborted(signal);
     validateImageFile(file);
     const compressed = await compressImageFile(file, compressOpts);
+    throwIfUploadAborted(signal);
 
     if (client && supabaseUid) {
       const objectPath = buildUserStoragePath(supabaseUid, file.name);
@@ -445,6 +453,7 @@ export async function uploadSocialImages(
         objectPath,
         body: compressed.blob,
         contentType: compressed.mimeType,
+        signal,
       });
       if (directUrl) {
         options?.onProgress?.(index, { loaded: 1, total: 1, percent: 100 });
@@ -463,25 +472,34 @@ export async function uploadSocialImages(
       kind: "image",
       filterId: options?.filterId,
       onProgress: (progress) => options?.onProgress?.(index, progress),
-      signal: options?.signal,
+      signal,
     });
   };
 
-  // Parallel uploads (pool of 3) — major win for multi-photo posts on mobile.
-  const concurrency = Math.min(3, files.length);
+  // Keep memory and network contention bounded on mobile.
+  const concurrency = Math.min(2, files.length);
   const results: SocialPostMediaItemInput[] = new Array(files.length);
   let nextIndex = 0;
 
   async function worker() {
-    while (nextIndex < files.length) {
+    while (nextIndex < files.length && !signal.aborted) {
       const index = nextIndex;
       nextIndex += 1;
       results[index] = await uploadOne(files[index], index);
     }
   }
 
-  await Promise.all(Array.from({ length: concurrency }, () => worker()));
-  return results;
+  let firstError: unknown;
+  try {
+    await Promise.allSettled(Array.from({ length: concurrency }, async () => {
+      try { await worker(); } catch (error) { if (firstError === undefined) firstError = error; controller.abort(); }
+    }));
+    if (firstError !== undefined) throw firstError;
+    throwIfUploadAborted(signal);
+    return results;
+  } finally {
+    options?.signal?.removeEventListener("abort", abort);
+  }
 }
 
 export async function uploadSocialVideo(
