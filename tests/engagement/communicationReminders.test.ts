@@ -30,12 +30,12 @@ async function seedLearner(
   });
 }
 
-async function setFlag(t: ReturnType<typeof convexTest>, key = "engagement.communication_reminders") {
+async function setFlag(t: ReturnType<typeof convexTest>, key: string, enabled: boolean) {
   await t.run(async (ctx) => {
     await ctx.db.insert("remoteConfigEntries", {
       key,
-      value: "enabled",
-      enabled: true,
+      value: enabled ? "enabled" : "disabled",
+      enabled,
       rolloutPercent: 0,
       updatedAt: Date.now(),
     });
@@ -45,7 +45,6 @@ async function setFlag(t: ReturnType<typeof convexTest>, key = "engagement.commu
 describe("communication reminders", () => {
   it("uses recorded course progress for email and skips a completed course", async () => {
     const t = convexTest(schema, modules);
-    await setFlag(t);
     const email = "learner@example.com";
     await seedLearner(t, email, { emailEngagementOptIn: true });
     const enrolmentId = await t.run((ctx) => ctx.db.insert("gigaLearnAcademyEnrolments", {
@@ -66,7 +65,6 @@ describe("communication reminders", () => {
 
   it("honours explicit email consent, the kill switch, and prior email delivery", async () => {
     const t = convexTest(schema, modules);
-    await setFlag(t);
     const optedIn = "optin@example.com";
     const legacy = "legacy@example.com";
     const optedOut = "optout@example.com";
@@ -90,13 +88,12 @@ describe("communication reminders", () => {
 
     const next = "next@example.com";
     await seedLearner(t, next, { emailEngagementOptIn: true });
-    await setFlag(t, "engagement.kill_switch");
+    await setFlag(t, "engagement.kill_switch", true);
     expect((await prepare(next))?.reminder).toBeUndefined();
   });
 
   it("links adult creators to their own monetisation requirements", async () => {
     const t = convexTest(schema, modules);
-    await setFlag(t);
     const email = "creator@example.com";
     await seedLearner(t, email, {
       birthYear: 1990,
@@ -120,6 +117,17 @@ describe("communication reminders", () => {
     });
   });
 
+  it("honours an explicit administrator override that disables automatic reminders", async () => {
+    const t = convexTest(schema, modules);
+    const email = "learner@example.com";
+    await seedLearner(t, email, { emailEngagementOptIn: true });
+    await setFlag(t, "engagement.communication_reminders", false);
+    await t.mutation(internal.notificationsInternal.createEngagementReminders, {});
+    expect(await t.run((ctx) => ctx.db.query("platformNotifications").collect())).toEqual([]);
+    const prepared = await t.mutation(internal.engagementEmail.prepareDigestRecipientInternal, { email });
+    expect(prepared?.reminder).toBeUndefined();
+  });
+
   it("creates one inbox item across repeated runs and respects notification preferences", async () => {
     vi.useFakeTimers();
     try {
@@ -131,9 +139,6 @@ describe("communication reminders", () => {
       });
       const run = () => t.mutation(internal.notificationsInternal.createEngagementReminders, {});
       const read = () => t.run((ctx) => ctx.db.query("platformNotifications").collect());
-      await run();
-      expect(await read()).toEqual([]);
-      await setFlag(t);
       await run();
       await run();
       expect(await read()).toMatchObject([{ userId: email, category: "learning", read: false }]);

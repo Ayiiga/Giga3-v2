@@ -1,6 +1,5 @@
 /**
  * Smart Engagement / lifecycle feature flags.
- * Defaults keep production unchanged (all modules OFF).
  * Admins enable via remoteConfig; each key is independently reversible.
  *
  * Keys:
@@ -47,9 +46,9 @@ export const ENGAGEMENT_FLAG_DEFAULTS: Record<
     enabled: false,
   },
   "engagement.communication_reminders": {
-    value: "disabled",
+    value: "enabled",
     description: "Personalised course, feature discovery and creator earnings reminders",
-    enabled: false,
+    enabled: true,
   },
   "engagement.campaigns_admin": {
     value: "disabled",
