@@ -33,7 +33,7 @@ import { cn } from "@/lib/utils";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
-import { Gift, MessageCircle, MonitorUp, Radio, Shield, Type, Users, X } from "lucide-react";
+import { Gift, MessageCircle, MonitorUp, Radio, Shield, Type, Users, X, Mic, MicOff, Video, VideoOff, Maximize, Minimize, SlidersHorizontal } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -80,7 +80,14 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
   const [mediaError, setMediaError] = useState<string | null>(null);
   const [showTeleprompter, setShowTeleprompter] = useState(false);
   const [showChatPanel, setShowChatPanel] = useState(false);
-  const [fillCamera, setFillCamera] = useState(true);
+  const [fillCamera, setFillCamera] = useState(false);
+  const [micOn, setMicOn] = useState(false);
+  const [cameraOn, setCameraOn] = useState(false);
+  const [hasMic, setHasMic] = useState(false);
+  const [hasCamera, setHasCamera] = useState(false);
+  const [showGifts, setShowGifts] = useState(false);
+  const [showTools, setShowTools] = useState(false);
+  const [giftNotice, setGiftNotice] = useState("");
   const [showPreSnap, setShowPreSnap] = useState(false);
   const [filterId, setFilterId] = useState<CameraFilterId>("none");
   const [captureModeId, setCaptureModeId] = useState<CameraCaptureModeId>("standard");
@@ -114,8 +121,9 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
     mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
     mediaStreamRef.current = null;
     if (videoRef.current) videoRef.current.srcObject = null;
-    recognitionRef.current?.stop();
+    try { recognitionRef.current?.stop(); } catch { /* already stopped */ }
     recognitionRef.current = null;
+    setMicOn(false); setCameraOn(false); setHasMic(false); setHasCamera(false);
   }, []);
 
   const startCaptions = useCallback(() => {
@@ -154,8 +162,8 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
         void addCaption({ sessionToken, streamId, line }).catch(() => undefined);
       }
     };
-    recognition.start();
-    recognitionRef.current = recognition;
+    if (recognitionRef.current) return;
+    try { recognition.start(); recognitionRef.current = recognition; } catch { /* captions unavailable; capture still works */ }
   }, [addCaption, isHost, sessionToken, streamId]);
 
   const attachHostMedia = useCallback(
@@ -166,6 +174,10 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
       }
       stopMedia();
       mediaStreamRef.current = media;
+      const audioTracks = media.getAudioTracks();
+      const videoTracks = media.getVideoTracks();
+      setHasMic(audioTracks.length > 0); setMicOn(audioTracks.some(track => track.enabled));
+      setHasCamera(videoTracks.length > 0); setCameraOn(videoTracks.some(track => track.enabled));
       setScreenSource(source);
       setAwaitingScreenShare(false);
       setMediaError(null);
@@ -180,7 +192,7 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
           setAwaitingScreenShare(true);
         }, { once: true });
       }
-      if (liveMediaAllowed.current) startCaptions();
+      if (liveMediaAllowed.current && audioTracks.some(track => track.enabled)) startCaptions();
     },
     [mode, startCaptions, stopMedia]
   );
@@ -344,9 +356,29 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
     }
   }
 
+  function toggleMic() {
+    const tracks = mediaStreamRef.current?.getAudioTracks().filter(t => t.readyState === "live") ?? [];
+    if (!tracks.length) { setMediaError("No active microphone. Retry device capture."); return; }
+    const next = !tracks.some(t => t.enabled);
+    tracks.forEach(t => { t.enabled = next; });
+    setMicOn(next);
+    if (!next) { try { recognitionRef.current?.stop(); } catch { /* already stopped */ } recognitionRef.current = null; }
+    else startCaptions();
+  }
+
+  function toggleCamera() {
+    const tracks = mediaStreamRef.current?.getVideoTracks().filter(t => t.readyState === "live") ?? [];
+    if (!tracks.length) { setMediaError("No active camera. Retry device capture."); return; }
+    const next = !tracks.some(t => t.enabled);
+    tracks.forEach(t => { t.enabled = next; });
+    setCameraOn(next);
+  }
+
   async function handleSendGift(giftId: string, credits: number) {
     if (isHost || busy || giftBusyId) return;
+    if (!window.confirm(`Send this gift for ${credits} credits?`)) return;
     setGiftBusyId(giftId);
+    setGiftNotice("");
     setMediaError(null);
     try {
       await sendGift({
@@ -355,6 +387,7 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
         giftType: giftId,
         amount: credits,
       });
+      setGiftNotice("Gift sent.");
     } catch (e) {
       setMediaError(getLiveActionErrorMessage(e));
     } finally {
@@ -548,11 +581,22 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
           />
         ) : null}
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="live-quick-actions">
+          {isHost && stream.status === "live" && <>
+            <Button type="button" size="sm" variant="outline" disabled={!hasMic} aria-pressed={micOn} className="border-white/25 bg-white/10 text-white" onClick={toggleMic}>{micOn ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}{micOn ? "Mic on" : "Mic off"}</Button>
+            {isCameraPreview && <Button type="button" size="sm" variant="outline" disabled={!hasCamera} aria-pressed={cameraOn} className="border-white/25 bg-white/10 text-white" onClick={toggleCamera}>{cameraOn ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}{cameraOn ? "Camera on" : "Camera off"}</Button>}
+          </>}
+          <Button type="button" size="sm" variant="outline" aria-expanded={showGifts} className="border-white/25 bg-white/10 text-white" onClick={() => { setShowGifts(v => !v); setShowChatPanel(false); setShowTools(false); setShowPreSnap(false); }}><Gift className="h-5 w-5" />{isHost ? "Gifts received" : "Send gift"}</Button>
+          <Button type="button" size="sm" variant="outline" aria-expanded={showChatPanel} className="border-white/25 bg-white/10 text-white" onClick={() => { setShowChatPanel(v => !v); setShowGifts(false); setShowTools(false); setShowPreSnap(false); }}><MessageCircle className="h-5 w-5" />Chat</Button>
+          {isHost && <Button type="button" size="sm" variant="outline" aria-expanded={showTools} className="border-white/25 bg-white/10 text-white" onClick={() => { setShowTools(v => !v); setShowChatPanel(false); setShowGifts(false); setShowPreSnap(false); }}><SlidersHorizontal className="h-5 w-5" />More</Button>}
+        </div>
+        {isHost && stream.status === "live" && !hasMic && !hasCamera && mode !== "screen" && <Button type="button" size="sm" variant="outline" disabled={busy} className="border-white/25 bg-white/10 text-white" onClick={async () => { setBusy(true); try { await startHostMedia(); } finally { setBusy(false); } }}>Retry camera / microphone</Button>}
+        {showTools && <div className="flex flex-wrap items-center gap-2">
           {isCameraPreview && (
             <Button type="button" size="sm" variant="outline" aria-pressed={fillCamera}
               className="min-h-11 border-white/25 bg-white/10 text-white" onClick={() => setFillCamera(value => !value)}>
-              Fill camera frame
+              {fillCamera ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+              {fillCamera ? "Fit full frame" : "Fill camera frame"}
             </Button>
           )}
           {isHost && stream.status === "live" ? (
@@ -600,21 +644,8 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
               ) : null}
             </>
           ) : null}
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            className="min-h-11 border-white/25 bg-white/10 text-white hover:bg-white/20 hover:text-white"
-            aria-expanded={showChatPanel}
-            onClick={() => {
-              setShowPreSnap(false);
-              setShowChatPanel((value) => !value);
-            }}
-          >
-            <MessageCircle className="h-4 w-4" aria-hidden />
-            {showChatPanel ? "Hide chat" : "Chat"}
-          </Button>
-          {showChatPanel && LIVE_REACTIONS.map((emoji) => (
+        </div>}
+        {showChatPanel && <div className="flex flex-wrap gap-2">{LIVE_REACTIONS.map((emoji) => (
             <button
               key={emoji}
               type="button"
@@ -627,8 +658,7 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
             >
               {emoji} {getLiveReactionCount(stream.reactionCounts, emoji)}
             </button>
-          ))}
-        </div>
+          ))}</div>}
 
         {showChatPanel ? (
           <div className="grid max-h-[34vh] gap-2 overflow-y-auto overscroll-contain sm:grid-cols-2">
@@ -748,29 +778,14 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
               </div>
             ) : null}
 
-            {!isHost && <div className="space-y-2 rounded-xl border border-white/15 bg-white/5 p-3">
-              <p className="text-sm font-medium">
-                <Gift className="mr-1 inline h-4 w-4" aria-hidden />
-                Send a gift
-              </p>
-                <div className="flex flex-wrap gap-2">
-                  {LIVE_GIFTS.map((gift) => (
-                    <Button
-                      key={gift.id}
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      disabled={giftBusyId !== null}
-                      className="min-h-9 border-white/40 bg-white/10 text-white hover:bg-white/20 disabled:opacity-60"
-                      onClick={() => void handleSendGift(gift.id, gift.credits)}
-                    >
-                      {gift.emoji} {gift.label} · {gift.credits}
-                    </Button>
-                  ))}
-                </div>
-            </div>}
+
           </div>
         ) : null}
+        {showGifts && <div className="space-y-2 rounded-xl border border-white/15 bg-white/5 p-3">
+          <p className="text-sm font-semibold">{isHost ? "Recent gifts received" : "Send a gift · credits"}</p>
+          {isHost ? (data.gifts.length ? <ul className="max-h-32 overflow-y-auto space-y-1">{data.gifts.map((gift, i) => <li key={i} className="text-xs text-white/90">{gift.sender.displayName} sent {LIVE_GIFTS.find(item => item.id === gift.giftType)?.emoji ?? "🎁"} {gift.giftType} · {gift.amount} credits</li>)}</ul> : <p className="text-xs text-white/70">No gifts received yet.</p>) : <div className="grid grid-cols-2 gap-2">{LIVE_GIFTS.map(gift => <Button key={gift.id} type="button" variant="outline" disabled={giftBusyId !== null || stream.status !== "live"} className="min-h-11 border-white/30 bg-white/10 text-white" onClick={() => void handleSendGift(gift.id, gift.credits)}>{gift.emoji} {gift.label} · {gift.credits}</Button>)}</div>}
+          {giftNotice && <p role="status" className="text-xs text-emerald-300">{giftNotice}</p>}
+        </div>}
       </div>
       <GigaSocialReportDialog open={reportOpen} sessionToken={sessionToken} target={reportTarget}
         title="Report live stream" onClose={() => setReportOpen(false)} onSubmitted={setReportNotice} />
