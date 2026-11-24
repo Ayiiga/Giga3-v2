@@ -21,6 +21,8 @@ import {
   markWelcomeEmailUncertainInTxn,
 } from "./welcomeEmailClaim";
 
+import { engagementRemindersEnabled, getEngagementReminders, type EngagementReminder } from "./engagementReminders";
+
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 function newUnsubscribeToken(): string {
@@ -49,7 +51,7 @@ export type EngagementCandidate = {
 export const getEngagementPrefs = query({
   args: sessionArgs,
   handler: async (ctx, args) => {
-    const email = await tryRequireSession(args.sessionToken);
+    const email = await tryRequireSession(args.sessionToken, ctx);
     if (!email) return null;
     const user = await ctx.db
       .query("users")
@@ -58,6 +60,7 @@ export const getEngagementPrefs = query({
     if (!user) return null;
     return {
       emailEngagementOptIn: user.emailEngagementOptIn !== false,
+      personalisedRemindersOptIn: user.emailEngagementOptIn === true,
       lastEngagementEmailAt: user.lastEngagementEmailAt ?? null,
     };
   },
@@ -69,7 +72,7 @@ export const setEngagementPrefs = mutation({
     emailEngagementOptIn: v.boolean(),
   },
   handler: async (ctx, args) => {
-    const email = await requireSession(args.sessionToken);
+    const email = await requireSession(args.sessionToken, ctx);
     const user = await ctx.db
       .query("users")
       .withIndex("by_email", (q) => q.eq("email", email))
@@ -133,6 +136,38 @@ export const listEngagementCandidatesInternal = internalQuery({
   },
 });
 
+export const prepareDigestRecipientInternal = internalMutation({
+  args: {
+    email: v.string(),
+    minInactiveDays: v.optional(v.number()),
+    minDaysSinceLastEmail: v.optional(v.number()),
+  },
+  handler: async (ctx, args): Promise<{ token: string; reminder?: EngagementReminder } | null> => {
+    const user = await ctx.db.query("users").withIndex("by_email", (q) => q.eq("email", args.email)).first();
+    if (!user) return null;
+    const now = Date.now();
+    const eligible = evaluateEngagementEligibility({
+      emailEngagementOptIn: user.emailEngagementOptIn,
+      accountStatus: user.accountStatus,
+      lastEngagementEmailAt: user.lastEngagementEmailAt,
+      minDaysSinceLastEmail: args.minDaysSinceLastEmail ?? 6,
+      now,
+    });
+    const inactiveDays = daysSinceDateKey(user.lastActiveDateKey, now) ?? (user.lastActiveDateKey ? 0 : 14);
+    if (!eligible.ok || inactiveDays < (args.minInactiveDays ?? 3)) return null;
+
+    const token = user.emailUnsubscribeToken || newUnsubscribeToken();
+    if (!user.emailUnsubscribeToken) await ctx.db.patch(user._id, { emailUnsubscribeToken: token });
+    const personalised = user.emailEngagementOptIn === true && user.emailVerificationTime &&
+      await engagementRemindersEnabled(ctx);
+    const reminder = personalised
+      ? (await getEngagementReminders(ctx, user, now))
+          .find((item) => !user.sentEngagementReminderKeys?.includes(item.key))
+      : undefined;
+    return { token, reminder };
+  },
+});
+
 export const ensureUnsubscribeTokenInternal = internalMutation({
   args: {
     email: v.string(),
@@ -159,6 +194,7 @@ export const markEngagementEmailSentInternal = internalMutation({
   args: {
     email: v.string(),
     unsubscribeToken: v.optional(v.string()),
+    reminderKey: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const email = args.email.trim().toLowerCase();
@@ -170,6 +206,11 @@ export const markEngagementEmailSentInternal = internalMutation({
     const patch: Record<string, unknown> = {
       lastEngagementEmailAt: Date.now(),
     };
+    if (args.reminderKey) {
+      const sentKeys: string[] = user.sentEngagementReminderKeys ?? [];
+      const previous = sentKeys.filter((key) => key !== args.reminderKey);
+      patch.sentEngagementReminderKeys = [args.reminderKey, ...previous].slice(0, 20);
+    }
     if (!user.emailUnsubscribeToken && args.unsubscribeToken) {
       patch.emailUnsubscribeToken = args.unsubscribeToken;
     } else if (!user.emailUnsubscribeToken) {

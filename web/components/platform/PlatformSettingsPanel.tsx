@@ -3,6 +3,9 @@
 import { Button } from "@/components/ui/Button";
 import { SettingsPanelSkeleton } from "@/components/platform/SettingsPanelSkeleton";
 import { usePlatformProfileContext } from "@/components/platform/PlatformProfileProvider";
+import { getSessionToken } from "@/lib/auth";
+import { api } from "convex/_generated/api";
+import { useMutation, useQuery } from "convex/react";
 import { USER_ROLES, type UserRoleId } from "@/lib/vision";
 import { useEffect, useState } from "react";
 
@@ -174,6 +177,8 @@ export function PlatformSettingsPanel() {
         </p>
       </div>
 
+      <EmailCommunicationSettings />
+
       <div className="flex flex-wrap items-center gap-3">
         <Button type="submit" size="sm" disabled={busy}>
           {busy ? "Saving…" : "Save settings"}
@@ -190,5 +195,50 @@ export function PlatformSettingsPanel() {
         )}
       </div>
     </form>
+  );
+}
+
+function EmailCommunicationSettings() {
+  const sessionToken = getSessionToken();
+  const prefs = useQuery(api.engagementEmail.getEngagementPrefs, sessionToken ? { sessionToken } : "skip");
+  const updatePrefs = useMutation(api.engagementEmail.setEngagementPrefs);
+  const [pending, setPending] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  if (!sessionToken || !prefs) return null;
+
+  async function save(optIn: boolean) {
+    if (!sessionToken) return;
+    setPending(true);
+    setFeedback(null);
+    try {
+      await updatePrefs({ sessionToken, emailEngagementOptIn: optIn });
+      setFeedback(optIn ? "Personalised email reminders enabled." : "Product emails turned off.");
+    } catch {
+      setFeedback("Could not save email preferences. Try again.");
+    } finally {
+      setPending(false);
+    }
+  }
+
+  return (
+    <div className="space-y-2 rounded-xl border border-border p-4">
+      <p className="text-sm font-medium">Product emails</p>
+      <p className="text-xs text-muted">
+        Get feature tips, activity reminders and information about creator earnings.
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {!prefs.personalisedRemindersOptIn && (
+          <Button type="button" size="sm" disabled={pending} onClick={() => void save(true)}>
+            Enable personalised emails
+          </Button>
+        )}
+        {prefs.emailEngagementOptIn && (
+          <Button type="button" size="sm" variant="secondary" disabled={pending} onClick={() => void save(false)}>
+            Turn off product emails
+          </Button>
+        )}
+      </div>
+      {feedback && <p className="text-xs text-muted" role="status">{feedback}</p>}
+    </div>
   );
 }

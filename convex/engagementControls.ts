@@ -17,6 +17,7 @@ export const ENGAGEMENT_FLAG_KEYS = [
   "engagement.checklist",
   "engagement.rating",
   "engagement.campaigns_admin",
+  "engagement.communication_reminders",
 ] as const;
 
 export type EngagementFlagKey = (typeof ENGAGEMENT_FLAG_KEYS)[number];
@@ -43,6 +44,11 @@ export const ENGAGEMENT_FLAG_DEFAULTS: Record<
   "engagement.rating": {
     value: "disabled",
     description: "Smart app-rating prompt after successful interactions",
+    enabled: false,
+  },
+  "engagement.communication_reminders": {
+    value: "disabled",
+    description: "Personalised course, feature discovery and creator earnings reminders",
     enabled: false,
   },
   "engagement.campaigns_admin": {
@@ -78,3 +84,5 @@ export const ENGAGEMENT_CHECKLIST_IDS = [
 ] as const;
 
 export type EngagementChecklistId = (typeof ENGAGEMENT_CHECKLIST_IDS)[number];
+
+export const ENGAGEMENT_REMINDER_PUSH_PREFIX = "engagement-reminder-";
