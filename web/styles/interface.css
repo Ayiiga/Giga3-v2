@@ -362,3 +362,5 @@
   .social-feed-dock [aria-current="page"] {background:#6322a6}
   .social-feed-dock .social-feed-create svg {box-sizing:content-box;padding:3px 14px;border-radius:14px;background:#8b2fd6}
 }
+html:fullscreen:has([data-social-fullscreen]) {scroll-padding-top:0}
+html:fullscreen:has([data-social-fullscreen]) .marketing-site-header {display:none}

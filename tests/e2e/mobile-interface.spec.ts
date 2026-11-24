@@ -57,8 +57,11 @@ test("Social media stage loops photos and keeps manual controls on screen", asyn
   await controls.getByRole("button", { name: "Next photo" }).click();
   await expect(controls).toContainText("1 / 2");
   const frame = card.locator(".gigasocial-feed-media--gallery").first();
-  await frame.dispatchEvent("touchstart", { touches: [{clientX: 160, clientY: 120}] });
-  await frame.dispatchEvent("touchend", { changedTouches: [{clientX: 65, clientY: 124}] });
+  await frame.evaluate(target => {
+    const touch = (clientX: number) => new Touch({ identifier: 1, target, clientX, clientY: 120 });
+    target.dispatchEvent(new TouchEvent("touchstart", { bubbles: true, touches: [touch(160)] }));
+    target.dispatchEvent(new TouchEvent("touchend", { bubbles: true, changedTouches: [touch(65)] }));
+  });
   await expect(controls).toContainText("2 / 2");
   await expect(card.getByRole("button", { name: "Save post", exact: true })).toBeVisible();
   await expect(page.getByRole("navigation", { name: "Feed navigation" }).getByText("Create")).toBeVisible();
