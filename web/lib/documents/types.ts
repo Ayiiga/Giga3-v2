@@ -41,6 +41,8 @@ export type DocJson = {
 };
 
 export type DocumentTemplateKind =
+  | "poster"
+  | "flyer"
   | "cv"
   | "application-letter"
   | "business-plan"

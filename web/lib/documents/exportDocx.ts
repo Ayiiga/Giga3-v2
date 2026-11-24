@@ -155,7 +155,7 @@ function paragraphsFromJson(doc: DocJson | null | undefined, appearance: Documen
 function wordHeading(appearance: DocumentAppearance, level: number) {
   const style = cvHeadingStyle(appearance, level);
   return {
-    run: { color: style.color, size: level === 1 ? 46 : level === 2 ? 27 : 23 },
+    run: { color: style.color, size: level === 1 ? (appearance.displayTitle ? 72 : 46) : level === 2 ? 27 : 23 },
     paragraph: {
       keepNext: true,
       shading: style.fill ? { fill: colorHex(style.fill) } : undefined,

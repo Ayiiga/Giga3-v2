@@ -29,7 +29,7 @@ describe("fullscreen camera / live / teleprompter UI", () => {
     expect(source).toContain("Viewer playback is unavailable");
   });
 
-  it("keeps the host camera uncropped and bounded within the live room", () => {
+  it("offers an uncropped fit alongside the full-frame host preview", () => {
     const source = readFileSync(
       resolve(root, "web/components/gigasocial/live/GigaSocialLiveRoom.tsx"),
       "utf8"
@@ -37,7 +37,8 @@ describe("fullscreen camera / live / teleprompter UI", () => {
     const css = readFileSync(resolve(root, "web/styles/gigasocial-pro.css"), "utf8");
     expect(source).toContain('isHost && mode === "video"');
     expect(source).toContain('"gigasocial-live-camera-preview"');
-    expect(source).not.toContain("object-cover");
+    expect(source).toContain("aria-pressed={fillCamera}");
+    expect(source).toContain("data-fill-camera={isCameraPreview && fillCamera}");
     expect(css).toMatch(/\.gigasocial-live-camera-preview\s*{[^}]*height: 72%/);
   });
 

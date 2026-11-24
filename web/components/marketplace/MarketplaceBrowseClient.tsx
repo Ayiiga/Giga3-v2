@@ -82,14 +82,14 @@ function MarketplaceBrowseInner() {
     <Container className="discover-stable document-compact px-4 py-3 pb-[calc(var(--primary-nav-offset,0px)+1rem)] sm:px-6 sm:py-4">
       <div id="marketplace-catalogue" className="mx-auto max-w-5xl scroll-mt-20 space-y-4">
         <header className="space-y-2.5">
-          <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="market-welcome flex flex-wrap items-center justify-between gap-2">
             <div className="min-w-0">
               <p className="inline-flex items-center gap-1.5 text-xs font-medium text-accent sm:text-sm">
                 <Store className="h-4 w-4" aria-hidden />
                 Marketplace
               </p>
               <h2 className="text-lg font-bold tracking-tight text-foreground sm:text-xl">
-                Discover. Buy. Sell.
+                Shop the marketplace
               </h2>
             </div>
             <div className="flex flex-wrap gap-2">

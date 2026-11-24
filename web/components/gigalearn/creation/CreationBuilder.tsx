@@ -328,7 +328,7 @@ export function CreationBuilder({
   const controlsRow = (children: React.ReactNode) => <div className="mt-4 flex flex-wrap gap-2">{children}</div>;
   const btn = "inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold disabled:opacity-50";
   const primary = cn(btn, "bg-accent text-accent-foreground");
-  const secondary = cn(btn, "border border-border bg-white text-foreground");
+  const secondary = cn(btn, "studio-secondary", "border border-border bg-white text-foreground");
 
   if (step === "intake") {
     if (!currentField) return <div aria-busy="true" />;
@@ -585,13 +585,15 @@ export function CreationBuilder({
             )}
           </div>
         ) : (
-          <div className="rounded-2xl border border-border bg-white p-4">
+          <div className="studio-generated rounded-2xl border border-border bg-white p-4">
             {section.demonstrationData ? (
               <p className="mb-3 rounded-lg bg-amber-100 px-3 py-2 text-xs font-bold text-amber-900">
                 {DEMONSTRATION_LABEL}
               </p>
             ) : null}
-            <MessageMarkdown content={section.content} />
+            {complete && template.id === "cv" ? (
+              <a className="studio-launch" href="#complete-creation-document">Open your CV layout and export options ↓</a>
+            ) : <MessageMarkdown content={section.content} />}
           </div>
         )
       ) : (
@@ -735,7 +737,7 @@ export function CreationBuilder({
       ) : null}
 
       {complete ? (
-        <div className="mt-4 space-y-3">
+        <div id="complete-creation-document" className="mt-4 space-y-3">
           <h4 className="text-sm font-semibold text-foreground">Complete {template.documentNoun}</h4>
           <DocumentResultCard
             content={documentText}

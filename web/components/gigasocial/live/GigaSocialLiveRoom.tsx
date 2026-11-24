@@ -80,6 +80,7 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
   const [mediaError, setMediaError] = useState<string | null>(null);
   const [showTeleprompter, setShowTeleprompter] = useState(false);
   const [showChatPanel, setShowChatPanel] = useState(false);
+  const [fillCamera, setFillCamera] = useState(true);
   const [showPreSnap, setShowPreSnap] = useState(false);
   const [filterId, setFilterId] = useState<CameraFilterId>("none");
   const [captureModeId, setCaptureModeId] = useState<CameraCaptureModeId>("standard");
@@ -469,6 +470,7 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
                     ? "gigasocial-live-camera-preview"
                     : "gigasocial-live-video--fullscreen"
                 )}
+                data-fill-camera={isCameraPreview && fillCamera}
                 style={mode === "video" && previewFilter ? { filter: previewFilter } : undefined}
                 aria-label="Live stream preview"
               />
@@ -547,6 +549,12 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
         ) : null}
 
         <div className="flex flex-wrap items-center gap-2">
+          {isCameraPreview && (
+            <Button type="button" size="sm" variant="outline" aria-pressed={fillCamera}
+              className="min-h-11 border-white/25 bg-white/10 text-white" onClick={() => setFillCamera(value => !value)}>
+              Fill camera frame
+            </Button>
+          )}
           {isHost && stream.status === "live" ? (
             <>
               <Button

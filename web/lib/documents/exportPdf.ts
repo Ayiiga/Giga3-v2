@@ -362,7 +362,8 @@ export async function exportDocumentPdf(doc: GigaDocument): Promise<Uint8Array> 
       continue;
     }
     if (block.kind === "heading") {
-      const size = block.level === 1 ? bodySize + 12 : block.level === 2 ? bodySize + 4 : bodySize + 2;
+      const displayTitle = doc.templateKind === "poster" || doc.templateKind === "flyer";
+      const size = block.level === 1 ? bodySize + (displayTitle ? 24 : 12) : block.level === 2 ? bodySize + 4 : bodySize + 2;
       const style = cvHeadingStyle(appearance, block.level);
       const runs = block.runs.map((r) => ({ ...r, color: style.color === "#ffffff" ? style.color : r.color ?? style.color, bold: true, fontSize: size }));
       ensureSpace(size * 1.35 + bodySize * 1.35);

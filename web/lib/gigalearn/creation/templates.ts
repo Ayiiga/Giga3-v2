@@ -791,7 +791,7 @@ export const CREATION_TEMPLATES: CreationTemplate[] = [
           "References",
         ],
         instruction:
-          "Format a clean, professional CV. Use ONLY the details the user supplied — polish wording but never add employers, dates, qualifications, metrics or skills they did not give. Omit sections the user left empty.",
+          "Start with a level-one heading containing the candidate’s name, then their professional title. Use level-two headings for each CV section. Begin directly with the document. Use ONLY the details the user supplied — polish wording but never add employers, dates, qualifications, metrics or skills they did not give. Omit sections the user left empty.",
       },
     ],
     integrityRules: ORIGINALITY_RULES,

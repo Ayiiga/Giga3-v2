@@ -1,11 +1,12 @@
 "use client";
 
-import { CV_ACCENTS, CV_LAYOUTS, type CvLayout } from "@/lib/documents/cvLayouts";
+import { CV_ACCENTS, CV_PALETTES, CV_LAYOUTS, type CvLayout } from "@/lib/documents/cvLayouts";
 import { useState, type CSSProperties } from "react";
 
 const FILTERS = ["All", "Professional", "Modern"] as const;
 
 const EXAMPLE_PROFILES: Record<CvLayout, { name: string; town: string; role: string }> = {
+  atelier: { name: "Ama Mensah", town: "Accra", role: "Design Educator" },
   classic: { name: "Mpoko Charles", town: "Binduri", role: "Project Coordinator" },
   executive: { name: "Godwin Atia", town: "Walewale", role: "Administrative Officer" },
   editorial: { name: "Mpoko Charles", town: "Nalerigu", role: "Programme Assistant" },
@@ -37,7 +38,7 @@ export function CvTemplateGallery({ onChoose }: { onChoose: (layout: CvLayout) =
                 className="group flex h-full w-full flex-col gap-2 rounded-xl border border-violet-200 bg-white p-2 text-left hover:border-violet-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600">
                 <div aria-hidden="true" data-cv-treatment={layout.treatment}
                   className="cv-paper cv-paper-sample aspect-[210/297] w-full overflow-hidden rounded-sm border border-slate-200 bg-white p-2 text-slate-700"
-                  style={{ "--cv-accent": id === "signature" ? CV_ACCENTS.Navy : CV_ACCENTS.Slate } as CSSProperties}>
+                  style={{ "--cv-accent": CV_ACCENTS[CV_PALETTES[id]] } as CSSProperties}>
                   <h1>{example.name}</h1>
                   <p>{example.role} · {example.town}</p>
                   <h2>Profile</h2>

@@ -32,6 +32,7 @@ const destinations = [
     "/gigalearn/?tab=create",
     "creator",
   ],
+  ["Document templates", "CVs, posters, flyers and cover letters", "/documents/#template-library", "certificate"],
   ["AI Tutor", "Get help with a subject", "/gigalearn/?tab=tutor", "tutor"],
   [
     "Teaching materials",
