@@ -96,7 +96,7 @@ export const GigaSocialNotificationsPanel = memo(function GigaSocialNotification
 
   return (
     <div className="space-y-4 min-w-0">
-      <div className="rounded-2xl border border-violet-400/25 bg-violet-500/10 p-4">
+      <div className="gigasocial-inbox-summary rounded-2xl border p-3">
         <div className="flex items-center gap-3">
           <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-violet-600 text-white"><Bell className="h-5 w-5" aria-hidden /></span>
           <div className="min-w-0"><h3 className="font-semibold text-foreground">Your activity</h3><p className="text-xs text-muted">Open a notification to see what happened.</p></div>
@@ -178,7 +178,7 @@ export const GigaSocialNotificationsPanel = memo(function GigaSocialNotification
 
       {features.enableSmartNotifications ? (
         <div
-          className="flex flex-wrap gap-1.5 pb-0.5"
+          className="gigasocial-inbox-filters flex flex-nowrap gap-1.5 overflow-x-auto overscroll-x-contain pb-1"
           role="tablist"
           aria-label="Notification filters"
         >
