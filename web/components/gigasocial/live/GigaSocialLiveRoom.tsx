@@ -100,6 +100,8 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
   const joinedRef = useRef(false);
   const startLiveCalledRef = useRef(false);
   const hostMediaStartedRef = useRef(false);
+  const captureInFlight = useRef(false);
+  const [capturePending, setCapturePending] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -158,7 +160,7 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
     recognition.interimResults = false;
     recognition.onresult = (event) => {
       const line = event.results[event.results.length - 1]?.[0]?.transcript?.trim();
-      if (line) {
+      if (line && mediaStreamRef.current?.getAudioTracks().some(track => track.enabled && track.readyState === "live")) {
         void addCaption({ sessionToken, streamId, line }).catch(() => undefined);
       }
     };
@@ -198,7 +200,9 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
   );
 
   const startHostMedia = useCallback(async () => {
-    if (!isHost || stream?.status !== "live") return;
+    if (!isHost || stream?.status !== "live" || captureInFlight.current) return;
+    captureInFlight.current = true;
+    setCapturePending(true);
     setMediaError(null);
     try {
       if (mode === "screen") {
@@ -223,6 +227,9 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
     } catch (e) {
       setMediaError(getLiveMediaErrorMessage(e, mode));
       if (mode === "screen") setAwaitingScreenShare(true);
+    } finally {
+      captureInFlight.current = false;
+      setCapturePending(false);
     }
   }, [attachHostMedia, isHost, mode, stream?.status]);
 
@@ -400,15 +407,18 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
       const confirmed = window.confirm("End this live stream for everyone?");
       if (!confirmed) return;
     }
-    stopMedia();
+    if (busy) return;
+    setBusy(true);
     try {
       if (isHost && stream.status === "live") {
         await endLive({ sessionToken, streamId });
       }
-    } catch {
-      /* still leave the room UI */
-    }
-    onClose();
+      liveMediaAllowed.current = false;
+      stopMedia();
+      onClose();
+    } catch (error) {
+      setMediaError(getLiveActionErrorMessage(error));
+    } finally { setBusy(false); }
   }
 
   const showScreenPicker =
@@ -546,6 +556,7 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
             type="button"
             variant="outline"
             size="sm"
+            disabled={busy}
             onClick={() => void handleEnd()}
             className="min-h-11 shrink-0 border-white/30 bg-black/70 text-white hover:bg-white/20 hover:text-white"
           >
@@ -590,7 +601,7 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
           <Button type="button" size="sm" variant="outline" aria-expanded={showChatPanel} className="border-white/25 bg-white/10 text-white" onClick={() => { setShowChatPanel(v => !v); setShowGifts(false); setShowTools(false); setShowPreSnap(false); }}><MessageCircle className="h-5 w-5" />Chat</Button>
           {isHost && <Button type="button" size="sm" variant="outline" aria-expanded={showTools} className="border-white/25 bg-white/10 text-white" onClick={() => { setShowTools(v => !v); setShowChatPanel(false); setShowGifts(false); setShowPreSnap(false); }}><SlidersHorizontal className="h-5 w-5" />More</Button>}
         </div>
-        {isHost && stream.status === "live" && !hasMic && !hasCamera && mode !== "screen" && <Button type="button" size="sm" variant="outline" disabled={busy} className="border-white/25 bg-white/10 text-white" onClick={async () => { setBusy(true); try { await startHostMedia(); } finally { setBusy(false); } }}>Retry camera / microphone</Button>}
+        {isHost && stream.status === "live" && !hasMic && !hasCamera && !capturePending && mode !== "screen" && <Button type="button" size="sm" variant="outline" disabled={busy} className="border-white/25 bg-white/10 text-white" onClick={async () => { setBusy(true); try { await startHostMedia(); } finally { setBusy(false); } }}>Retry camera / microphone</Button>}
         {showTools && <div className="flex flex-wrap items-center gap-2">
           {isCameraPreview && (
             <Button type="button" size="sm" variant="outline" aria-pressed={fillCamera}
@@ -783,7 +794,7 @@ export const GigaSocialLiveRoom = memo(function GigaSocialLiveRoom({
         ) : null}
         {showGifts && <div className="space-y-2 rounded-xl border border-white/15 bg-white/5 p-3">
           <p className="text-sm font-semibold">{isHost ? "Recent gifts received" : "Send a gift · credits"}</p>
-          {isHost ? (data.gifts.length ? <ul className="max-h-32 overflow-y-auto space-y-1">{data.gifts.map((gift, i) => <li key={i} className="text-xs text-white/90">{gift.sender.displayName} sent {LIVE_GIFTS.find(item => item.id === gift.giftType)?.emoji ?? "🎁"} {gift.giftType} · {gift.amount} credits</li>)}</ul> : <p className="text-xs text-white/70">No gifts received yet.</p>) : <div className="grid grid-cols-2 gap-2">{LIVE_GIFTS.map(gift => <Button key={gift.id} type="button" variant="outline" disabled={giftBusyId !== null || stream.status !== "live"} className="min-h-11 border-white/30 bg-white/10 text-white" onClick={() => void handleSendGift(gift.id, gift.credits)}>{gift.emoji} {gift.label} · {gift.credits}</Button>)}</div>}
+          {isHost ? (data.gifts.length ? <ul className="max-h-32 overflow-y-auto space-y-1">{data.gifts.map((gift, i) => <li key={i} className="text-xs text-white/90">{gift.sender?.displayName ?? "A viewer"} sent {LIVE_GIFTS.find(item => item.id === gift.giftType)?.emoji ?? "🎁"} {gift.giftType} · {gift.amount} credits</li>)}</ul> : <p className="text-xs text-white/70">No gifts received yet.</p>) : <div className="grid grid-cols-2 gap-2">{LIVE_GIFTS.map(gift => <Button key={gift.id} type="button" variant="outline" disabled={giftBusyId !== null || stream.status !== "live"} className="min-h-11 border-white/30 bg-white/10 text-white" onClick={() => void handleSendGift(gift.id, gift.credits)}>{gift.emoji} {gift.label} · {gift.credits}</Button>)}</div>}
           {giftNotice && <p role="status" className="text-xs text-emerald-300">{giftNotice}</p>}
         </div>}
       </div>
