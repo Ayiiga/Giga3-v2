@@ -886,6 +886,11 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
     onPosted: closeComposer,
   };
 
+  // Unmount the entire feed playback tree while creating a post; CSS hiding does not release every Android decoder surface.
+  if (sessionToken && composerOpen) {
+    return <GigaSocialPanelErrorBoundary panelName="Create post"><GigaSocialComposerSheet open={composerOpen} onClose={closeComposer} {...composerProps} /></GigaSocialPanelErrorBoundary>;
+  }
+
   return (
     <FeedVideoPlaybackProvider enabled={autoPlay && !paused}>
     <div className="gigasocial-feed-panel-compact gigasocial-stable min-w-0 max-w-full space-y-1.5 pb-20 sm:space-y-2.5 sm:pb-24">
@@ -985,12 +990,6 @@ export const GigaSocialFeedPanel = memo(function GigaSocialFeedPanel({
         )
       ) : !isSearching && !savedFeed && !posts.length && !postsLoading ? (
         <GigaSocialFeedHero postCount={posts.length} compact />
-      ) : null}
-
-      {sessionToken && composerOpen ? (
-        <GigaSocialPanelErrorBoundary panelName="Create post">
-          <GigaSocialComposerSheet open={composerOpen} onClose={closeComposer} {...composerProps} />
-        </GigaSocialPanelErrorBoundary>
       ) : null}
 
       {postsLoading ? (
