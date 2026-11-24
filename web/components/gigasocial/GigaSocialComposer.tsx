@@ -217,8 +217,8 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   const [busy, setBusy] = useState(false);
   const [publishing, setPublishing] = useState(false);
   useEffect(() => {
-    onPublishingChange?.(publishing);
-  }, [onPublishingChange, publishing]);
+    onPublishingChange?.(busy || publishing);
+  }, [onPublishingChange, busy, publishing]);
   const [uploadPercent, setUploadPercent] = useState<number | null>(null);
   // Limit Android composer repaints during upload; always preserve 0% and 100%.
   const updateUploadPercent = (value: number) => {
@@ -280,6 +280,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
     return () => {
       mountedRef.current = false;
       uploadAbortRef.current?.abort();
+      videoProbeAbortRef.current?.abort();
       for (const url of enhancementPreviewUrlsRef.current) URL.revokeObjectURL(url);
       enhancementPreviewUrlsRef.current.clear();
     };
@@ -1256,6 +1257,21 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
     }
   }
 
+  // During upload render only static DOM, never a preview, template or editing surface.
+  if (busy && uploadPercent !== null) {
+    return <section className="gigasocial-upload-stage mx-auto flex min-h-[65dvh] max-w-md flex-col justify-center gap-5 px-4 py-8 text-center" aria-label="Post upload" aria-busy="true">
+      <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-violet-100 text-violet-700"><Send className="h-8 w-8" aria-hidden /></div>
+      <h2 className="text-xl font-semibold text-slate-900">{publishing ? "Publishing your post" : "Uploading your media"}</h2>
+      <p className="text-sm text-slate-600 break-all">{pendingVideo?.name ?? (pendingImages.length ? `${pendingImages.length} photo(s)` : "Your post")}</p>
+      <div className="h-[44px] shrink-0 space-y-1.5 overflow-hidden [overflow-anchor:none]">
+        <div role="progressbar" aria-label="Upload progress" aria-valuenow={uploadPercent} aria-valuemin={0} aria-valuemax={100} className="h-3 overflow-hidden rounded-full bg-slate-200"><div className="h-full bg-violet-600" style={{width: `${uploadPercent}%`}} /></div>
+        <p className="text-sm font-medium tabular-nums text-slate-700" role="status">{publishing ? "Confirming publication…" : `${uploadPercent}%`}</p>
+      </div>
+      <p className="text-sm text-slate-600">Keep this screen open. Your selected media and caption stay available if you need to retry.</p>
+      {!publishing && <Button type="button" variant="outline" className="min-h-11" onClick={handleCancelUpload}>Cancel upload</Button>}
+    </section>;
+  }
+
   if (episodeSplitDraft) {
     return (
       <GigaSocialEpisodeConfirm
@@ -1306,10 +1322,11 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           kind={mediaReviewDraft.kind}
           filterId={mediaReviewDraft.filterId}
           durationSec={mediaReviewDraft.durationSec}
+          probeBusy={mediaProbeBusy}
           postType={postType}
           enableAI={enableAIAssistant}
-          onClose={() => setMediaReviewDraft(null)}
-          onRemove={() => setMediaReviewDraft(null)}
+          onClose={() => { videoProbeAbortRef.current?.abort(); setMediaReviewDraft(null); }}
+          onRemove={() => { videoProbeAbortRef.current?.abort(); setMediaReviewDraft(null); }}
           onReplace={() => {
             if (mediaReviewDraft.kind === "video") {
               videoInputRef.current?.click();
