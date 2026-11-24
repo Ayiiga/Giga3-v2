@@ -3,12 +3,13 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("GigaSocial composer compactness", () => {
-  it("uses compact sheet height and passes compact to composer", () => {
+  it("uses a stable full-screen mobile sheet and passes compact controls to composer", () => {
     const sheet = readFileSync(
       resolve(__dirname, "../../web/components/gigasocial/GigaSocialComposerSheet.tsx"),
       "utf8"
     );
-    expect(sheet).toContain("85dvh");
+    expect(sheet).toContain("gigasocial-composer-sheet fixed inset-0");
+    expect(sheet).not.toContain("85dvh");
     expect(sheet).toContain("min-h-0");
     expect(sheet).toContain("overflow-hidden");
     expect(sheet).toContain("safe-area-inset-bottom");
