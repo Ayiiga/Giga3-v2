@@ -19,12 +19,12 @@ export const LIVE_STREAM_MODES: { id: LiveStreamMode; label: string; description
   },
 ];
 
-/** Preferred capture shape for portrait live video (9:16). */
+/** Prefer a standard camera capture size; preserve the native frame in the preview. */
 export const LIVE_VIDEO_CAPTURE_CONSTRAINTS: MediaTrackConstraints = {
   facingMode: "user",
-  width: { ideal: 1080 },
-  height: { ideal: 1920 },
-  aspectRatio: { ideal: 9 / 16 },
+  width: { ideal: 1280 },
+  height: { ideal: 720 },
+  frameRate: { ideal: 24, max: 30 },
 };
 
 /**
