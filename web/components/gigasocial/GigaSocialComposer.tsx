@@ -224,7 +224,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
   const updateUploadPercent = (value: number) => {
     const next = Math.max(0, Math.min(100, Math.round(value)));
     setUploadPercent((previous) => {
-      if (previous === next || (next !== 100 && previous !== null && next > previous && next - previous < 5)) return previous;
+      if (previous !== null && (next <= previous || (next !== 100 && next - previous < 5))) return previous;
       return next;
     });
   };
@@ -1184,13 +1184,19 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
           publishPostType = "video";
         } else if (pendingImages.length) {
           const imageFiles = pendingImages.map((image) => image.file);
+          const photoProgress = imageFiles.map(() => 0);
           const uploadedImages = await uploadSocialImages(uploadDeps, imageFiles, {
             filterId: previewFilterId === "none" ? undefined : previewFilterId,
             signal: controller.signal,
             fastCompress: true,
-            onProgress: (_index, progress) => updateUploadPercent(progress.percent),
+            onProgress: (index, progress) => {
+              if (controller.signal.aborted) return;
+              photoProgress[index] = Math.max(photoProgress[index] ?? 0, progress.percent);
+              updateUploadPercent(photoProgress.reduce((sum, percent) => sum + percent, 0) / imageFiles.length);
+            },
           });
           mediaItems = [...uploadedImages];
+          updateUploadPercent(100);
         }
 
         if (controller.signal.aborted) return;
