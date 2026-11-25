@@ -20,7 +20,10 @@ test("Learn exposes each school band, the university pathway and searchable tool
 test("Learn exposes working starter activities in all four worlds", async ({ page }) => {
   await page.goto("/gigalearn/");
   await page.getByRole("link", { name: /Discovery World/ }).click();
-  await page.getByRole("button", { name: "Crèche caregiver activity" }).click();
+  const caregiver = page.getByRole("button", { name: "Crèche caregiver activity" });
+  await caregiver.click();
+  await expect(caregiver).toHaveAttribute("aria-pressed", "true");
+  await expect(caregiver).toHaveCSS("color", "rgb(255, 255, 255)");
   await expect(page.getByRole("heading", { name: "Roll and take turns" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Sphere" })).toHaveCount(0);
   await page.getByRole("button", { name: "KG shape activity" }).click();
@@ -30,11 +33,18 @@ test("Learn exposes working starter activities in all four worlds", async ({ pag
 
   await page.getByRole("link", { name: "Back to Learn" }).click();
   await page.getByRole("link", { name: /Foundation World/ }).click();
+  const subjects = page.getByRole("group", { name: "Foundation subjects" });
+  const math = subjects.getByRole("button", { name: "Mathematics" });
+  const readingTab = subjects.getByRole("button", { name: "Reading" });
+  await expect(math).toHaveAttribute("aria-pressed", "true");
+  await expect(math).not.toHaveCSS("background-image", "none");
   await page.getByRole("button", { name: "Add a counter" }).click();
   await page.getByRole("button", { name: "Add a counter" }).click();
   await page.getByRole("button", { name: "5", exact: true }).click();
   await expect(page.getByRole("status").filter({ hasText: "Count on from three" })).toBeVisible();
-  await page.getByRole("button", { name: "Reading", exact: true }).click();
+  await readingTab.click();
+  await expect(readingTab).toHaveAttribute("aria-pressed", "true");
+  await expect(math).toHaveAttribute("aria-pressed", "false");
   const reading = page.getByRole("region", { name: "Mansa and the mangoes" });
   await reading.getByRole("button", { name: "To share them with her brother" }).click();
   await expect(reading.getByRole("status")).toContainText("The second sentence");

@@ -91,10 +91,9 @@ export function AcademyChrome({
                   <Link
                     key={`${item.href}:${item.label}`}
                     href={item.href}
-                    className={cn(
-                      "academy-visual-nav-link",
-                      isActive && "academy-visual-nav-link--active"
-                    )}
+                    aria-current={isActive ? "page" : undefined}
+                    data-learn-tone={item.key === "certificates" || item.href === "/gigalearn/exam/" ? "gold" : item.key === "catalogue" ? "blue" : "violet"}
+                    className="gigalearn-control shrink-0 px-3 py-2 text-xs"
                   >
                     {item.label}
                   </Link>

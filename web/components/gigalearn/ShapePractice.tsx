@@ -51,7 +51,8 @@ export function ShapePractice() {
                 type="button"
                 aria-pressed={choice === answer}
                 onClick={() => setChoice(answer)}
-                className="min-h-12 rounded-xl border border-accent/40 px-2 font-semibold aria-pressed:bg-violet-700 aria-pressed:text-white"
+                className="gigalearn-control px-2"
+                data-learn-tone="green"
               >
                 {answer}
               </button>
@@ -64,7 +65,7 @@ export function ShapePractice() {
             type="button"
             disabled={!correct}
             onClick={advance}
-            className="min-h-12 rounded-xl bg-violet-700 px-4 font-semibold text-white disabled:opacity-50"
+            className="gigalearn-control gigalearn-control--primary px-4"
           >
             {step === questions.length - 1 ? "See the home activity" : "Next question"}
           </button>
@@ -72,7 +73,7 @@ export function ShapePractice() {
       ) : (
         <div className="space-y-3">
           <p role="status">With an adult, trace one face of a carton on paper. Point to the flat shape you drew, then explain how it differs from the whole carton.</p>
-          <button type="button" onClick={advance} className="min-h-12 rounded-xl bg-violet-700 px-4 font-semibold text-white">
+          <button type="button" onClick={advance} className="gigalearn-control gigalearn-control--primary px-4">
             Play again
           </button>
         </div>

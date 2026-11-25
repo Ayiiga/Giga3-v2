@@ -2,7 +2,6 @@
 
 import type { CreateSubView } from "@/lib/gigalearn/sectionRouting";
 import { buildCreationLink } from "@/lib/gigalearn/creation/links";
-import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { memo, useState } from "react";
@@ -54,12 +53,9 @@ export const CreateHub = memo(function CreateHub({ credits, initialSubView = "st
             key={item.id}
             type="button"
             onClick={() => setSubView(item.id)}
-            className={cn(
-              "min-h-11 rounded-full border px-4 py-1.5 text-xs font-medium",
-              subView === item.id
-                ? "border-accent/40 bg-accent/10 text-foreground"
-                : "border-border bg-white text-muted"
-            )}
+            aria-current={subView === item.id ? "page" : undefined}
+            data-learn-tone="pink"
+            className="gigalearn-control px-3 py-2 text-xs"
           >
             {item.label}
           </button>

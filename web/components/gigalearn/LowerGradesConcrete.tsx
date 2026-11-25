@@ -215,12 +215,8 @@ function LevelSelector({
                 aria-selected={active}
                 onClick={() => onChange(level.id)}
                 title={`${level.label} · ages ${level.ages}`}
-                className={cn(
-                  "min-h-12 min-w-12 shrink-0 rounded-full border px-3 py-2 text-xs font-semibold",
-                  active
-                    ? "border-[#FCD116]/50 bg-gradient-to-br from-[#FCD116] to-[#CE1126] font-extrabold text-black"
-                    : "border-[#2A3441] bg-[#1A233A] text-gray-300 hover:border-[#3A4A61] hover:text-white"
-                )}
+                className="gigalearn-control min-w-12 shrink-0 px-3 py-2 text-xs"
+                data-learn-tone="gold"
               >
                 {level.emoji} {level.label}
               </button>

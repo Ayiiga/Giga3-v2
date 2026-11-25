@@ -36,12 +36,13 @@ import { loadPracticeSession } from "@/lib/gigalearn/practiceSessionStorage";
 import { getStudioContext, saveStudioContext, type StudioContext } from "@/lib/gigalearn/studioContext";
 import type { LearnerRole } from "@/lib/gigalearn/curricula";
 import { siteConfig } from "@/lib/site";
-import { cn } from "@/lib/utils";
 import { warmUpBrowserVoices } from "@/lib/speech/loadBrowserVoices";
 import { ArrowLeft, GraduationCap } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
+
+const AREA_TONES = { student: "violet", teacher: "blue", create: "pink", parent: "gold", insight: "green", tutor: "violet" } as const;
 
 function GigaLearnContent() {
   useRenderDiagnostic("GigaLearnContent");
@@ -179,17 +180,18 @@ function GigaLearnContent() {
           <div className="mt-2.5 flex flex-wrap gap-2">
             {hasUnfinishedPractice ? (
               <Link href="/gigalearn/?tab=resume"
-                className="inline-flex min-h-10 items-center rounded-xl border border-accent/40 bg-accent/10 px-3 text-sm font-semibold text-foreground hover:bg-accent/15"
+                className="gigalearn-control gigalearn-control--primary px-3 text-sm"
+                data-learn-tone="green"
               >
                 Continue Learning
               </Link>
             ) : null}
-            <ButtonLink href="/gigalearn/academy/" className="min-h-10">
+            <Link href="/gigalearn/academy/" className="gigalearn-control px-3 text-sm">
               Open GigaLearn Academy
-            </ButtonLink>
-            <ButtonLink href="/gigalearn/exam/" variant="secondary" className="min-h-10">
+            </Link>
+            <Link href="/gigalearn/exam/" className="gigalearn-control px-3 text-sm" data-learn-tone="gold">
               Exam Practice Centre
-            </ButtonLink>
+            </Link>
           </div>
           {intentParam === "promotion-practice" && area === "teacher" ? (
             <p
@@ -214,14 +216,8 @@ function GigaLearnContent() {
         ) : null}
       </header>
 
-      <nav
-        className="relative -mx-1"
-        aria-label="GigaLearn areas"
-      >
-        <div
-          className="gigalearn-grade-scroll flex gap-2 overflow-x-auto overscroll-x-contain px-1 pb-1 sm:grid sm:grid-cols-6 sm:overflow-visible sm:px-0"
-          role="list"
-        >
+      <nav aria-label="GigaLearn areas">
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
           {GIGALEARN_PRIMARY_AREAS.map((item) => {
             const Icon = item.icon;
             const active = area === item.id;
@@ -230,15 +226,10 @@ function GigaLearnContent() {
               <button
                 key={item.id}
                 type="button"
-                role="listitem"
+                data-learn-tone={AREA_TONES[item.id]}
                 aria-current={active ? "page" : undefined}
                 onClick={() => selectArea(item.id)}
-                className={cn(
-                  "flex min-h-11 min-w-[4.75rem] shrink-0 flex-col items-center justify-center gap-1 rounded-xl border px-2.5 py-2 text-center text-xs font-medium sm:min-w-0 sm:text-sm",
-                  active
-                    ? "border-accent/40 bg-accent/10 text-foreground ring-1 ring-accent/20"
-                    : "border-border bg-white text-muted hover:border-accent/25"
-                )}
+                className="gigalearn-control min-w-0 flex-col px-1.5 py-2 text-center text-xs sm:text-sm"
               >
                 <Icon className="h-4 w-4 shrink-0" aria-hidden />
                 <span className="sm:hidden">{shortLabel}</span>
@@ -247,10 +238,7 @@ function GigaLearnContent() {
             );
           })}
         </div>
-        <div
-          className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-[var(--background,#faf8ff)] to-transparent sm:hidden"
-          aria-hidden
-        />
+
       </nav>
 
       <section className="saas-card rounded-2xl border border-border p-4 sm:p-6">

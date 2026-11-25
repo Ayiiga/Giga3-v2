@@ -9,8 +9,8 @@ import { FoundationReading } from "./FoundationReading";
 import { ShapePractice } from "./ShapePractice";
 import { WorldReviewCheck } from "./WorldReviewCheck";
 
-const buttonStyle = "min-h-12 rounded-xl border border-violet-500/40 px-4 py-2 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-500 aria-pressed:bg-violet-700 aria-pressed:text-white disabled:opacity-50";
-const primaryButton = buttonStyle + " bg-violet-700 text-white";
+const buttonStyle = "gigalearn-control px-4 py-2";
+const primaryButton = "gigalearn-control gigalearn-control--primary px-4 py-2";
 const panelStyle = "space-y-4 rounded-3xl border border-border bg-card p-4 sm:p-6";
 
 export function LearningWorlds({ worldId }: { worldId: string | null }) {
@@ -20,7 +20,7 @@ export function LearningWorlds({ worldId }: { worldId: string | null }) {
 
   return (
     <section className="mx-auto max-w-3xl space-y-5 px-4 pb-8" aria-labelledby="world-title">
-      <Link href="/gigalearn/" className="inline-flex min-h-12 items-center underline">Back to Learn</Link>
+      <Link href="/gigalearn/" className="gigalearn-control px-3 text-sm">Back to Learn</Link>
       <header>
         <p className="font-semibold text-muted">{world.grades}</p>
         <h2 id="world-title" className="text-3xl font-bold">{world.title}</h2>
@@ -41,8 +41,8 @@ function FoundationActivities({ owner }: { owner: string | null }) {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2" role="group" aria-label="Foundation subjects">
-        <button type="button" className={buttonStyle} aria-pressed={subject === "math"} onClick={() => setSubject("math")}>Mathematics</button>
-        <button type="button" className={buttonStyle} aria-pressed={subject === "reading"} onClick={() => setSubject("reading")}>Reading</button>
+        <button type="button" className={buttonStyle} data-learn-tone="blue" aria-pressed={subject === "math"} onClick={() => setSubject("math")}>Mathematics</button>
+        <button type="button" className={buttonStyle} data-learn-tone="pink" aria-pressed={subject === "reading"} onClick={() => setSubject("reading")}>Reading</button>
       </div>
       {subject === "math" ? (
         <>
@@ -59,8 +59,8 @@ function DiscoveryActivity({ owner }: { owner: string | null }) {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2" aria-label="Discovery activities">
-        <button className={buttonStyle} type="button" aria-pressed={audience === "creche"} onClick={() => setAudience("creche")}>Crèche caregiver activity</button>
-        <button className={buttonStyle} type="button" aria-pressed={audience === "kg"} onClick={() => setAudience("kg")}>KG shape activity</button>
+        <button className={buttonStyle} type="button" data-learn-tone="gold" aria-pressed={audience === "creche"} onClick={() => setAudience("creche")}>Crèche caregiver activity</button>
+        <button className={buttonStyle} type="button" data-learn-tone="green" aria-pressed={audience === "kg"} onClick={() => setAudience("kg")}>KG shape activity</button>
       </div>
       {audience === "creche" && (
         <section className={panelStyle} aria-label="Caregiver activity">
@@ -92,7 +92,7 @@ function CountingGroups() {
         ))}
       </div>
       <div className="flex flex-wrap gap-2">
-        <button type="button" className={primaryButton} disabled={moved === 2} onClick={() => setMoved((value) => Math.min(2, value + 1))}>Add a counter</button>
+        <button type="button" className={primaryButton} data-learn-tone="blue" disabled={moved === 2} onClick={() => setMoved((value) => Math.min(2, value + 1))}>Add a counter</button>
         <button type="button" className={buttonStyle} disabled={moved === 0} onClick={() => { setMoved(0); setTotal(null); }}>Start again</button>
       </div>
       <p role="status">{moved} of 2 extra counters added.</p>
@@ -139,9 +139,9 @@ function FloatModel() {
       <fieldset className="space-y-2">
         <legend className="font-semibold">What do you predict?</legend>
         <div className="flex flex-wrap gap-2">
-          <button type="button" className={buttonStyle} aria-pressed={prediction === "floats"} onClick={() => setPrediction("floats")}>Floats</button>
-          <button type="button" className={buttonStyle} aria-pressed={prediction === "sinks"} onClick={() => setPrediction("sinks")}>Sinks</button>
-          <button type="button" className={primaryButton} disabled={!prediction} onClick={() => {
+          <button type="button" className={buttonStyle} data-learn-tone="blue" aria-pressed={prediction === "floats"} onClick={() => setPrediction("floats")}>Floats</button>
+          <button type="button" className={buttonStyle} data-learn-tone="violet" aria-pressed={prediction === "sinks"} onClick={() => setPrediction("sinks")}>Sinks</button>
+          <button type="button" className={primaryButton} data-learn-tone="green" disabled={!prediction} onClick={() => {
             if (prediction) setObservations((rows) => ({ ...rows, [object.id]: prediction }));
           }}>Test in the model</button>
         </div>
@@ -178,7 +178,7 @@ function EvidencePractice() {
       <p>Someone claims that shade makes the soil cooler at midday. Choose the source you would examine first to investigate that claim.</p>
       <div className="grid gap-2">
         {options.map((option, index) => (
-          <button type="button" key={option} aria-pressed={picked === index} className={buttonStyle + " text-left"} onClick={() => setPicked(index)}>{option}</button>
+          <button type="button" key={option} aria-pressed={picked === index} className={buttonStyle + " gigalearn-control--choice"} onClick={() => setPicked(index)}>{option}</button>
         ))}
       </div>
       <p role="status" className="min-h-12">
@@ -187,7 +187,7 @@ function EvidencePractice() {
       {picked === 1 && (
         <p>On paper, design a check for your school grounds. State what you would measure, what you would keep the same, and what evidence would change your conclusion.</p>
       )}
-      <Link href="/gigalearn/exam/bece/" className="inline-flex min-h-12 items-center underline">Open BECE practice</Link>
+      <Link href="/gigalearn/exam/bece/" className="gigalearn-control gigalearn-control--primary px-3 text-sm" data-learn-tone="violet">Open BECE practice</Link>
     </section>
   );
 }

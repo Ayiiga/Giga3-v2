@@ -13,7 +13,6 @@ import type { StudentSubView } from "@/lib/gigalearn/sectionRouting";
 import { STUDENT_TOOLS } from "@/lib/gigalearn/tools";
 import { getStudioContext, saveStudioContext, type StudioContext } from "@/lib/gigalearn/studioContext";
 import type { GigaLearnLevelId } from "@/lib/gigalearn/levels";
-import { cn } from "@/lib/utils";
 import { memo, useEffect, useState } from "react";
 
 const SUB_VIEWS: Array<{ id: StudentSubView; label: string }> = [
@@ -64,29 +63,21 @@ export const StudentHub = memo(function StudentHub({
 
       <StudioContextBar ctx={ctx} onChange={setCtx} idPrefix="gl-student" changeLabel="Learner context" />
 
-      <nav className="relative -mx-1" aria-label="Student sections">
-        <div className="gigalearn-grade-scroll flex gap-2 overflow-x-auto overscroll-x-contain px-1 pb-1">
+      <nav aria-label="Student sections">
+        <div className="flex flex-wrap gap-2">
           {SUB_VIEWS.map((item) => (
             <button
               key={item.id}
               type="button"
               aria-current={subView === item.id ? "page" : undefined}
               onClick={() => setSubView(item.id)}
-              className={cn(
-                "min-h-11 shrink-0 rounded-full border px-3.5 py-2 text-xs font-semibold",
-                subView === item.id
-                  ? "border-accent/40 bg-accent/10 text-foreground"
-                  : "border-border bg-white text-muted hover:border-accent/25"
-              )}
+              data-learn-tone="green"
+              className="gigalearn-control px-3 py-2 text-xs"
             >
               {item.label}
             </button>
           ))}
         </div>
-        <div
-          className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-[var(--background,#faf8ff)] to-transparent"
-          aria-hidden
-        />
       </nav>
 
       {subView === "home" && (

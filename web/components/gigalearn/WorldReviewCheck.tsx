@@ -8,7 +8,7 @@ import {
   saveWorldReview,
 } from "@/lib/gigalearn/worldReview";
 
-const optionStyle = "min-h-12 rounded-xl border border-violet-500/40 px-4 py-2 text-left font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-500 aria-pressed:bg-violet-700 aria-pressed:text-white disabled:opacity-60";
+const optionStyle = "gigalearn-control gigalearn-control--choice px-4 py-2";
 
 export function WorldReviewCheck({ world, owner }: { world: WorldId; owner: string | null }) {
   const [review, setReview] = useState(() => owner ? loadWorldReview(owner, world) : null);
@@ -54,7 +54,8 @@ export function WorldReviewCheck({ world, owner }: { world: WorldId; owner: stri
         </div>
         <div className="flex flex-wrap gap-2">
           <button
-            className={optionStyle}
+            className="gigalearn-control px-4 py-2"
+            data-learn-tone="gold"
             type="button"
             disabled={result !== null || hintCount === question.hints.length}
             onClick={() => setHintCount((count) => Math.min(count + 1, question.hints.length))}
@@ -62,7 +63,8 @@ export function WorldReviewCheck({ world, owner }: { world: WorldId; owner: stri
             {hintCount === 0 ? "Show a hint" : "Show another hint"}
           </button>
           <button
-            className={optionStyle + " bg-violet-700 text-white"}
+            className="gigalearn-control gigalearn-control--primary px-4 py-2"
+            data-learn-tone="green"
             type="button"
             disabled={choice === null || result !== null}
             onClick={submit}
