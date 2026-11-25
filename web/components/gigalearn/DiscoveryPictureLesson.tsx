@@ -1,8 +1,8 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Maximize2, Minimize2, Volume2 } from "lucide-react";
+import { Apple, Backpack, ChevronLeft, ChevronRight, Dog, Hand, Maximize2, Minimize2, PawPrint, Volume2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { discoveryAudioPath, discoveryFruits, discoveryPhotoPath, discoveryThings } from "./discoveryObjects";
+import { discoveryAudioPath, discoveryDecks, type DiscoveryDeck } from "./discoveryObjects";
 
 export function useDiscoveryAudio() {
   const player = useRef<HTMLAudioElement | null>(null);
@@ -31,13 +31,21 @@ export function useDiscoveryAudio() {
 
 const control = "gigalearn-control px-3 py-2";
 
+const deckButtons = [
+  { id: "fruit", label: "Fruits", icon: Apple, tone: "gold" },
+  { id: "domestic", label: "Domestic animals", icon: Dog, tone: "blue" },
+  { id: "wildlife", label: "Wildlife", icon: PawPrint, tone: "green" },
+  { id: "body", label: "Body parts", icon: Hand, tone: "pink" },
+  { id: "things", label: "Home and school", icon: Backpack, tone: "blue" },
+] as const;
+
 export function DiscoveryPictureLesson({ onPlay }: { onPlay: () => void }) {
-  const [deck, setDeck] = useState<"fruit" | "things">("fruit");
+  const [deck, setDeck] = useState<DiscoveryDeck>("fruit");
   const [index, setIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [zoomed, setZoomed] = useState(false);
   const { play, stop, audioError } = useDiscoveryAudio();
-  const pictures = deck === "fruit" ? discoveryFruits : discoveryThings;
+  const pictures = discoveryDecks[deck];
   const picture = pictures[index]!;
 
   function resetCard(next: number) {
@@ -49,9 +57,19 @@ export function DiscoveryPictureLesson({ onPlay }: { onPlay: () => void }) {
 
   return (
     <section className="gigalearn-play-panel gigalearn-picture-lesson space-y-3" aria-label="Look and say">
-      <div className="flex flex-wrap gap-2" role="group" aria-label="Choose pictures">
-        <button className={control} type="button" data-learn-tone="gold" aria-pressed={deck === "fruit"} onClick={() => { setDeck("fruit"); resetCard(0); }}>Fruits</button>
-        <button className={control} type="button" data-learn-tone="blue" aria-pressed={deck === "things"} onClick={() => { setDeck("things"); resetCard(0); }}>Everyday things</button>
+      <div className="gigalearn-picture-decks" role="group" aria-label="Choose pictures">
+        {deckButtons.map(({ id, label, icon: Icon, tone }) => (
+          <button
+            key={id}
+            className={control}
+            type="button"
+            data-learn-tone={tone}
+            aria-pressed={deck === id}
+            onClick={() => { setDeck(id); resetCard(0); }}
+          >
+            <Icon aria-hidden /> {label}
+          </button>
+        ))}
       </div>
       <button
         type="button"
@@ -60,7 +78,7 @@ export function DiscoveryPictureLesson({ onPlay }: { onPlay: () => void }) {
         aria-pressed={zoomed}
         onClick={() => setZoomed(!zoomed)}
       >
-        <img src={`${discoveryPhotoPath}/${picture.image}`} alt={revealed ? picture.name : "Object to guess"} width="768" height="768" />
+        <img src={picture.image} alt={revealed ? picture.name : "Object to guess"} width="768" height="768" />
         <span className="gigalearn-zoom-symbol">{zoomed ? <Minimize2 aria-hidden /> : <Maximize2 aria-hidden />}</span>
       </button>
       <div className="gigalearn-picture-word" aria-live="polite">
