@@ -181,38 +181,42 @@ test("Learn exposes fruit play, audio tracks and lab awards", async ({ page }) =
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
-test("Learn exposes offline replay for a previously loaded Discovery sound", async ({ page }) => {
-  await page.goto("/gigalearn/?world=discovery", { waitUntil: "domcontentloaded" });
-  // Install the released worker explicitly so this test isolates its audio
-  // behavior. The production service-worker suite checks app registration.
-  await page.evaluate(async () => {
-    await navigator.serviceWorker.register("/sw.js", { scope: "/" });
+test.describe("Discovery service worker", () => {
+  test.use({ serviceWorkers: "allow" });
+
+  test("Learn exposes offline replay for a previously loaded Discovery sound", async ({ page }) => {
+    await page.goto("/gigalearn/?world=discovery", { waitUntil: "domcontentloaded" });
+    // Install the released worker explicitly so this test isolates its audio
+    // behavior. The production service-worker suite checks app registration.
+    await page.evaluate(async () => {
+      await navigator.serviceWorker.register("/sw.js", { scope: "/" });
+    });
+    await expect.poll(() => page.evaluate(() => navigator.serviceWorker.controller?.state), {
+      timeout: 15_000,
+      message: "The Discovery page should be controlled by the released service worker",
+    }).toBe("activated");
+    const clip = "/gigalearn/activities/discovery/mango.mp3";
+    async function readSample() {
+      return page.evaluate(async (path) => {
+        const response = await fetch(path, { headers: { Range: "bytes=0-511" } });
+        return {
+          status: response.status,
+          range: response.headers.get("Content-Range"),
+          bytes: Array.from(new Uint8Array(await response.arrayBuffer())),
+        };
+      }, clip);
+    }
+    const online = await readSample();
+    expect(online.status).toBe(206);
+    expect(online.range).toMatch(/^bytes 0-511\/\d+$/);
+    expect(online.bytes).toHaveLength(512);
+    await page.context().setOffline(true);
+    try {
+      expect(await readSample()).toEqual(online);
+    } finally {
+      await page.context().setOffline(false);
+    }
   });
-  await expect.poll(() => page.evaluate(() => navigator.serviceWorker.controller?.state), {
-    timeout: 15_000,
-    message: "The Discovery page should be controlled by the released service worker",
-  }).toBe("activated");
-  const clip = "/gigalearn/activities/discovery/mango.mp3";
-  async function readSample() {
-    return page.evaluate(async (path) => {
-      const response = await fetch(path, { headers: { Range: "bytes=0-511" } });
-      return {
-        status: response.status,
-        range: response.headers.get("Content-Range"),
-        bytes: Array.from(new Uint8Array(await response.arrayBuffer())),
-      };
-    }, clip);
-  }
-  const online = await readSample();
-  expect(online.status).toBe(206);
-  expect(online.range).toMatch(/^bytes 0-511\/\d+$/);
-  expect(online.bytes).toHaveLength(512);
-  await page.context().setOffline(true);
-  try {
-    expect(await readSample()).toEqual(online);
-  } finally {
-    await page.context().setOffline(false);
-  }
 });
 
 test("Discover keeps the keyboard target while filters and results update", async ({ page }) => {
