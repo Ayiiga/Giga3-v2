@@ -92,7 +92,7 @@ export function AcademyChrome({
                     key={`${item.href}:${item.label}`}
                     href={item.href}
                     aria-current={isActive ? "page" : undefined}
-                    data-learn-tone={item.key === "certificates" || item.href === "/gigalearn/exam/" ? "gold" : item.key === "catalogue" ? "blue" : "violet"}
+                    data-learn-tone={item.key === "certificates" || item.label === "Exam Practice" ? "gold" : item.key === "catalogue" ? "blue" : "violet"}
                     className="gigalearn-control shrink-0 px-3 py-2 text-xs"
                   >
                     {item.label}
