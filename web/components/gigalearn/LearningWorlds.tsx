@@ -1,10 +1,12 @@
 "use client";
 
+import { Apple, Eye, Music2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { LEARNING_WORLDS } from "@/lib/gigalearn/learningWorlds";
 import { getSessionToken } from "@/lib/auth";
 import { offlineProgressOwner } from "@/lib/gigalearn/offlineProgressOwner";
+import { DiscoveryPictureLesson } from "./DiscoveryPictureLesson";
 import { DiscoveryMusic, DiscoveryPlay } from "./DiscoveryPlay";
 import { FloatLab } from "./FloatLab";
 import { LearningAward } from "./LearningAward";
@@ -58,17 +60,24 @@ function FoundationActivities({ owner }: { owner: string | null }) {
 }
 
 function DiscoveryActivity({ owner }: { owner: string | null }) {
-  const [audience, setAudience] = useState<"creche" | "kg" | "fruit" | "music">("fruit");
+  const [audience, setAudience] = useState<"look" | "creche" | "kg" | "fruit" | "music">("look");
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-2" aria-label="Discovery activities">
-        <button className={buttonStyle} type="button" data-learn-tone="gold" aria-pressed={audience === "creche"} onClick={() => setAudience("creche")}>Crèche caregiver activity</button>
-        <button className={buttonStyle} type="button" data-learn-tone="green" aria-pressed={audience === "kg"} onClick={() => setAudience("kg")}>KG shape activity</button>
-        <button className={buttonStyle} type="button" data-learn-tone="blue" aria-pressed={audience === "fruit"} onClick={() => setAudience("fruit")}>Fruit Finder game</button>
-        <button className={buttonStyle} type="button" data-learn-tone="pink" aria-pressed={audience === "music"} onClick={() => setAudience("music")}>Songs and rhymes</button>
+      <div className="gigalearn-discovery-tabs" role="group" aria-label="Discovery activities">
+        <button className={buttonStyle} type="button" data-learn-tone="green" aria-pressed={audience === "look"} onClick={() => setAudience("look")}><Eye aria-hidden /> Look &amp; say</button>
+        <button className={buttonStyle} type="button" data-learn-tone="blue" aria-label="Fruit Finder game" aria-pressed={audience === "fruit"} onClick={() => setAudience("fruit")}><Apple aria-hidden /> Fruit Finder</button>
+        <button className={buttonStyle} type="button" data-learn-tone="pink" aria-label="Songs and rhymes" aria-pressed={audience === "music"} onClick={() => setAudience("music")}><Music2 aria-hidden /> Rhythms</button>
       </div>
-      {audience === "fruit" && <DiscoveryPlay />}
+      {audience === "look" && <DiscoveryPictureLesson onPlay={() => setAudience("fruit")} />}
+      {audience === "fruit" && <DiscoveryPlay onPractise={() => setAudience("look")} />}
       {audience === "music" && <DiscoveryMusic />}
+      <details className="gigalearn-play-details">
+        <summary className="font-semibold">Caregiver and KG activities</summary>
+        <div className="mt-2 flex flex-wrap gap-2">
+          <button className={buttonStyle} type="button" data-learn-tone="gold" aria-pressed={audience === "creche"} onClick={() => setAudience("creche")}>Crèche caregiver activity</button>
+          <button className={buttonStyle} type="button" data-learn-tone="green" aria-pressed={audience === "kg"} onClick={() => setAudience("kg")}>KG shape activity</button>
+        </div>
+      </details>
       {audience === "creche" && (
         <section className={panelStyle} aria-label="Caregiver activity">
           <h3 className="text-xl font-bold">Roll and take turns</h3>
