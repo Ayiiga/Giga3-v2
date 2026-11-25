@@ -586,6 +586,90 @@ html:fullscreen:has([data-social-fullscreen]) .marketing-site-header {display:no
   color: #3b220a;
 }
 
+.gigalearn-discovery-tabs,
+.gigalearn-picture-actions {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.gigalearn-discovery-tabs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.gigalearn-discovery-tabs .gigalearn-control {
+  padding-inline: 0.25rem;
+  line-height: 1.2;
+  font-size: 0.8rem;
+}
+.gigalearn-discovery-tabs svg { width: 1rem; height: 1rem; flex-shrink: 0; }
+
+.gigalearn-picture-lesson {
+  border-color: #c4a6f7;
+  background: #f7f0ff;
+  color: #381565;
+}
+.dark .gigalearn-picture-lesson { background: #26203e; color: #f0e5ff; }
+
+.gigalearn-picture-zoom {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  margin-inline: auto;
+  width: min(100%, 28rem);
+  aspect-ratio: 1;
+  border-radius: 1rem;
+  background: #e9dafa;
+  cursor: zoom-in;
+}
+
+.gigalearn-picture-zoom img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gigalearn-picture-zoom[aria-pressed="true"] { cursor: zoom-out; }
+.gigalearn-picture-zoom[aria-pressed="true"] img {
+  inset: -17% auto auto -17%;
+  width: 134%;
+  height: 134%;
+  max-width: none;
+}
+
+.gigalearn-zoom-symbol {
+  position: absolute;
+  right: 0.65rem;
+  bottom: 0.65rem;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 999px;
+  background: #381565;
+  color: white;
+}
+
+.gigalearn-picture-word {
+  min-height: 2rem;
+  text-align: center;
+  font-size: 1.4rem;
+  line-height: 2rem;
+  font-weight: 700;
+}
+
+.gigalearn-picture-actions { grid-template-columns: 2.75rem 1fr 1fr 2.75rem; }
+.gigalearn-picture-actions .gigalearn-control {
+  min-width: 0;
+  min-height: 2.75rem;
+  padding-inline: 0.22rem;
+  font-size: 0.8rem;
+  line-height: 1.15;
+}
+.gigalearn-picture-actions svg { flex-shrink: 0; }
+@media (max-width: 380px) {
+  .gigalearn-discovery-tabs .gigalearn-control,
+  .gigalearn-picture-actions .gigalearn-control { flex-direction: column; }
+}
+
 .gigalearn-music-panel {
   border-color: #f3afcf;
   background: #fdf2f8;
@@ -619,6 +703,8 @@ html:fullscreen:has([data-social-fullscreen]) .marketing-site-header {display:no
   object-fit: cover;
   border-radius: 0.5rem;
 }
+
+.gigalearn-big-fruit img { aspect-ratio: 1; }
 
 .gigalearn-material-card {
   min-height: 5.5rem;

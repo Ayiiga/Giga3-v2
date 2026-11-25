@@ -20,6 +20,7 @@ test("Learn exposes each school band, the university pathway and searchable tool
 test("Learn exposes working starter activities in all four worlds", async ({ page }) => {
   await page.goto("/gigalearn/");
   await page.getByRole("link", { name: /Discovery World/ }).click();
+  await page.getByText("Caregiver and KG activities", { exact: true }).click();
   const caregiver = page.getByRole("button", { name: "Crèche caregiver activity" });
   await caregiver.click();
   await expect(caregiver).toHaveAttribute("aria-pressed", "true");
@@ -83,20 +84,48 @@ test("Learn exposes working starter activities in all four worlds", async ({ pag
 test("Learn exposes fruit play, audio tracks and lab awards", async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 800 });
   await page.goto("/gigalearn/?world=discovery");
+  const lesson = page.getByRole("region", { name: "Look and say" });
+  const photo = lesson.locator("img");
+  const zoom = lesson.getByRole("button", { name: "Zoom picture" });
+  await expect(photo).toHaveAttribute("alt", "Object to guess");
+  await expect(photo).toHaveJSProperty("complete", true);
+  expect((await photo.boundingBox())!.width).toBeGreaterThan(240);
+  await zoom.tap();
+  await expect(lesson.getByRole("button", { name: "Zoom out" })).toHaveAttribute("aria-pressed", "true");
+  expect((await photo.boundingBox())!.width).toBeGreaterThan(320);
+
+  const heardMango = page.waitForResponse(/activities\/discovery\/mango\.mp3/);
+  await lesson.getByRole("button", { name: "Hear name" }).tap();
+  expect((await heardMango).ok()).toBe(true);
+  await expect(photo).toHaveAttribute("alt", "Mango");
+  await lesson.getByRole("button", { name: "Next picture" }).tap();
+  await expect(photo).toHaveAttribute("alt", "Object to guess");
+  await lesson.getByRole("button", { name: "Everyday things" }).tap();
+  const heardBall = page.waitForResponse(/activities\/discovery\/ball\.mp3/);
+  await lesson.getByRole("button", { name: "Hear name" }).tap();
+  expect((await heardBall).ok()).toBe(true);
+  await expect(photo).toHaveAttribute("alt", "Ball");
+  await lesson.getByRole("button", { name: "Fruits" }).tap();
+  await lesson.getByRole("button", { name: "Hear name" }).tap();
+  await lesson.getByRole("button", { name: "Play Fruit Finder" }).tap();
+
   const game = page.getByRole("region", { name: "Fruit Finder", exact: true });
-  await expect(game.locator("img").filter({ visible: true })).toHaveCount(3);
-  await game.getByRole("button", { name: "Mango", exact: true }).tap();
-  await expect(game.getByText(/Nice try/)).toBeVisible();
-  for (const [fruit, next] of [
-    ["Orange", "Find the next fruit"],
-    ["Banana", "Find the next fruit"],
-    ["Mango", "See my award"],
-  ]) {
+  await expect(game.locator("img").filter({ visible: true })).toHaveCount(2);
+  const heardPrompt = page.waitForResponse(/activities\/discovery\/find-orange\.mp3/);
+  await game.getByRole("button", { name: "Find the orange", exact: true }).tap();
+  expect((await heardPrompt).ok()).toBe(true);
+  await game.getByRole("button", { name: "Pineapple", exact: true }).tap();
+  await expect(game.getByText("Try the other picture.")).toBeVisible();
+  await expect(game.getByRole("button", { name: "Find the next fruit" })).toBeDisabled();
+  const fruits = ["Orange", "Banana", "Mango", "Pawpaw", "Pineapple", "Coconut", "Apple", "Plantain"];
+  for (const [index, fruit] of fruits.entries()) {
     await game.getByRole("button", { name: fruit, exact: true }).tap();
-    await expect(game.getByText(/Well spotted/)).toBeVisible();
-    await game.getByRole("button", { name: next }).tap();
+    await expect(game.getByText(`Well spotted! ${fruit}.`)).toBeVisible();
+    await game.getByRole("button", { name: index === fruits.length - 1 ? "See my award" : "Find the next fruit" }).tap();
   }
   await expect(game.getByText("Fruit Finder award")).toBeVisible();
+  await expect(game.getByText("You matched all 8 fruits!")).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.getByRole("button", { name: "Songs and rhymes" }).tap();
   const music = page.getByRole("region", { name: "Songs and rhymes" });
   const audio = music.locator("audio");
