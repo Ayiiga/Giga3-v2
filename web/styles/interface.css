@@ -397,7 +397,7 @@ html:fullscreen:has([data-social-fullscreen]) .marketing-site-header {display:no
 .gigasocial-live-room .live-quick-actions button {min-width:0;min-height:48px;padding:.35rem;display:flex;flex-direction:column;justify-content:center;gap:.2rem;font-size:11px;line-height:1.2;white-space:normal;}
 
 /* Shared colors for GigaLearn destinations and interactive controls. */
-:where(.gigalearn-control, .gigalearn-world-link) {
+:where(.gigalearn-control, .gigalearn-world-link, .gigalearn-practical, .gigalearn-play-award) {
   --learn-ink: #4c1d95;
   --learn-fill: #6d28d9;
   --learn-edge: #5b21b6;
@@ -407,7 +407,7 @@ html:fullscreen:has([data-social-fullscreen]) .marketing-site-header {display:no
   --learn-light: #eadcff;
 }
 
-:where(.gigalearn-control, .gigalearn-world-link)[data-learn-tone="green"] {
+:where(.gigalearn-control, .gigalearn-world-link, .gigalearn-practical, .gigalearn-play-award)[data-learn-tone="green"] {
   --learn-ink: #065f46;
   --learn-fill: #047857;
   --learn-edge: #065f46;
@@ -417,7 +417,7 @@ html:fullscreen:has([data-social-fullscreen]) .marketing-site-header {display:no
   --learn-light: #a7f3d0;
 }
 
-:where(.gigalearn-control, .gigalearn-world-link)[data-learn-tone="blue"] {
+:where(.gigalearn-control, .gigalearn-world-link, .gigalearn-practical, .gigalearn-play-award)[data-learn-tone="blue"] {
   --learn-ink: #1e3a8a;
   --learn-fill: #1d4ed8;
   --learn-edge: #1e40af;
@@ -427,7 +427,7 @@ html:fullscreen:has([data-social-fullscreen]) .marketing-site-header {display:no
   --learn-light: #dbeafe;
 }
 
-:where(.gigalearn-control, .gigalearn-world-link)[data-learn-tone="gold"] {
+:where(.gigalearn-control, .gigalearn-world-link, .gigalearn-practical, .gigalearn-play-award)[data-learn-tone="gold"] {
   --learn-ink: #713a0b;
   --learn-fill: #92400e;
   --learn-edge: #78350f;
@@ -437,7 +437,7 @@ html:fullscreen:has([data-social-fullscreen]) .marketing-site-header {display:no
   --learn-light: #fde68a;
 }
 
-:where(.gigalearn-control, .gigalearn-world-link)[data-learn-tone="pink"] {
+:where(.gigalearn-control, .gigalearn-world-link, .gigalearn-practical, .gigalearn-play-award)[data-learn-tone="pink"] {
   --learn-ink: #831843;
   --learn-fill: #a21caf;
   --learn-edge: #86198f;
@@ -642,6 +642,11 @@ html:fullscreen:has([data-social-fullscreen]) .marketing-site-header {display:no
   object-fit: cover;
 }
 
+@media (max-width: 640px) and (orientation: portrait) {
+  .gigalearn-picture-lesson { padding-inline: 0.55rem; }
+  .gigalearn-picture-zoom { min-height: 54vh; min-height: 54svh; }
+}
+
 .gigalearn-picture-zoom[aria-pressed="true"] { cursor: zoom-out; }
 .gigalearn-picture-zoom[aria-pressed="true"] img {
   inset: -17% auto auto -17%;
@@ -757,6 +762,80 @@ html:fullscreen:has([data-social-fullscreen]) .marketing-site-header {display:no
   background: #fde68a;
   color: #713a0b;
 }
+
+.gigalearn-school-activities {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 8.25rem), 1fr));
+  gap: 0.45rem;
+}
+
+.gigalearn-school-activities .gigalearn-control {
+  min-width: 0;
+  padding-inline: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.2;
+}
+
+.gigalearn-practical {
+  border: 1px solid var(--learn-border);
+  border-radius: 1.5rem;
+  padding: clamp(0.85rem, 4vw, 1.5rem);
+  background: var(--learn-tint);
+  color: var(--learn-ink);
+}
+
+.gigalearn-practical-results {
+  padding: 0.85rem;
+  border-radius: 1rem;
+  border: 1px solid var(--learn-border);
+  background: #fff9;
+}
+
+.gigalearn-practical-units {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem;
+  margin-block: 0.3rem 0.5rem;
+}
+
+.gigalearn-practical-units svg {
+  width: clamp(1rem, 5vw, 1.5rem);
+  height: clamp(1rem, 5vw, 1.5rem);
+}
+
+.gigalearn-practical-units img {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.4rem;
+  object-fit: cover;
+}
+
+.gigalearn-practical-track {
+  height: 0.65rem;
+  border-radius: 99px;
+  overflow: hidden;
+  background: var(--learn-border);
+}
+
+.gigalearn-practical-track > span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--learn-fill), var(--learn-edge));
+  border-radius: inherit;
+}
+
+.gigalearn-play-award[data-learn-tone] {
+  border-color: var(--learn-edge);
+  background: linear-gradient(130deg, var(--learn-fill), var(--learn-edge));
+  color: #fff;
+}
+
+.dark .gigalearn-practical {
+  background: color-mix(in srgb, var(--learn-edge) 22%, #181423);
+  color: #f4effb;
+}
+
+.dark .gigalearn-practical-results { background: #0003; }
 
 .gigalearn-tank {
   position: relative;
