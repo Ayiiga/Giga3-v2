@@ -77,6 +77,7 @@ function DiscoveryActivity({ owner }: { owner: string | null }) {
           <button className={buttonStyle} type="button" data-learn-tone="gold" aria-pressed={audience === "creche"} onClick={() => setAudience("creche")}>Crèche caregiver activity</button>
           <button className={buttonStyle} type="button" data-learn-tone="green" aria-pressed={audience === "kg"} onClick={() => setAudience("kg")}>KG shape activity</button>
         </div>
+        <a className="mt-3 inline-block text-sm underline" href="/gigalearn/media/discovery/credits.html">Picture credits</a>
       </details>
       {audience === "creche" && (
         <section className={panelStyle} aria-label="Caregiver activity">

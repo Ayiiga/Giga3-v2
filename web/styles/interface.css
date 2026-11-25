@@ -600,6 +600,21 @@ html:fullscreen:has([data-social-fullscreen]) .marketing-site-header {display:no
 }
 .gigalearn-discovery-tabs svg { width: 1rem; height: 1rem; flex-shrink: 0; }
 
+.gigalearn-picture-decks {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.gigalearn-picture-decks .gigalearn-control {
+  padding-inline: 0.45rem;
+  font-size: 0.77rem;
+  line-height: 1.2;
+}
+
+.gigalearn-picture-decks svg { width: 1rem; height: 1rem; flex-shrink: 0; }
+
 .gigalearn-picture-lesson {
   border-color: #c4a6f7;
   background: #f7f0ff;

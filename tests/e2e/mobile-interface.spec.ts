@@ -100,11 +100,24 @@ test("Learn exposes fruit play, audio tracks and lab awards", async ({ page }) =
   await expect(photo).toHaveAttribute("alt", "Mango");
   await lesson.getByRole("button", { name: "Next picture" }).tap();
   await expect(photo).toHaveAttribute("alt", "Object to guess");
-  await lesson.getByRole("button", { name: "Everyday things" }).tap();
+  await lesson.getByRole("button", { name: "Home and school" }).tap();
   const heardBall = page.waitForResponse(/activities\/discovery\/ball\.mp3/);
   await lesson.getByRole("button", { name: "Hear name" }).tap();
   expect((await heardBall).ok()).toBe(true);
   await expect(photo).toHaveAttribute("alt", "Ball");
+  for (const [category, firstPicture, count] of [
+    ["Domestic animals", "Dog", 20],
+    ["Wildlife", "Lion", 20],
+    ["Body parts", "Eye", 10],
+  ] as const) {
+    await lesson.getByRole("button", { name: category }).tap();
+    await expect(lesson.locator('[aria-label="Picture progress"]')).toHaveText(`1 / ${count}`);
+    await expect(photo).toHaveAttribute("alt", "Object to guess");
+    await lesson.getByRole("button", { name: "Hear name" }).tap();
+    await expect(photo).toHaveAttribute("alt", firstPicture);
+    await expect(photo).toHaveJSProperty("complete", true);
+    expect(await photo.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
+  }
   await lesson.getByRole("button", { name: "Fruits" }).tap();
   await lesson.getByRole("button", { name: "Hear name" }).tap();
   await lesson.getByRole("button", { name: "Play Fruit Finder" }).tap();
@@ -117,14 +130,30 @@ test("Learn exposes fruit play, audio tracks and lab awards", async ({ page }) =
   await game.getByRole("button", { name: "Pineapple", exact: true }).tap();
   await expect(game.getByText("Try the other picture.")).toBeVisible();
   await expect(game.getByRole("button", { name: "Find the next fruit" })).toBeDisabled();
-  const fruits = ["Orange", "Banana", "Mango", "Pawpaw", "Pineapple", "Coconut", "Apple", "Plantain"];
-  for (const [index, fruit] of fruits.entries()) {
-    await game.getByRole("button", { name: fruit, exact: true }).tap();
-    await expect(game.getByText(`Well spotted! ${fruit}.`)).toBeVisible();
-    await game.getByRole("button", { name: index === fruits.length - 1 ? "See my award" : "Find the next fruit" }).tap();
+  const baskets = [
+    ["Orange", "Banana", "Mango", "Pawpaw", "Pineapple"],
+    ["Coconut", "Apple", "Plantain", "Watermelon", "Guava"],
+    ["Avocado", "Lemon", "Lime", "Grapes", "Strawberry"],
+    ["Pear", "Plum", "Dates", "Peach", "Passion fruit"],
+  ];
+  for (const [basketIndex, fruits] of baskets.entries()) {
+    await expect(game.getByText(`Basket ${basketIndex + 1} of 4 · Fruit 1 of 5`)).toBeVisible();
+    for (const [index, fruit] of fruits.entries()) {
+      const choice = game.getByRole("button", { name: fruit, exact: true });
+      const picture = choice.locator("img");
+      await choice.tap();
+      await expect(picture).toHaveJSProperty("complete", true);
+      expect(await picture.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
+      await expect(game.getByText(`Well spotted! ${fruit}.`)).toBeVisible();
+      await game.getByRole("button", { name: index === fruits.length - 1 ? "See my award" : "Find the next fruit" }).tap();
+    }
+    if (basketIndex < baskets.length - 1) {
+      await expect(game.getByText("Basket award")).toBeVisible();
+      await game.getByRole("button", { name: "Next basket" }).tap();
+    }
   }
   await expect(game.getByText("Fruit Finder award")).toBeVisible();
-  await expect(game.getByText("You matched all 8 fruits!")).toBeVisible();
+  await expect(game.getByText("You matched all 20 fruits!")).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.getByRole("button", { name: "Songs and rhymes" }).tap();
   const music = page.getByRole("region", { name: "Songs and rhymes" });

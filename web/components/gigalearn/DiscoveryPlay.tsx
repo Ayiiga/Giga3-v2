@@ -4,18 +4,23 @@ import { Headphones, Music2, RotateCcw, Volume2 } from "lucide-react";
 import { useState } from "react";
 import { LearningAward } from "./LearningAward";
 import { useDiscoveryAudio } from "./DiscoveryPictureLesson";
-import { discoveryFruits, discoveryPhotoPath } from "./discoveryObjects";
+import { discoveryFruits } from "./discoveryObjects";
 
-const rounds = [1, 2, 0, 3, 4, 5, 6, 7] as const;
-const leftTargets = new Set([1, 4, 5, 7]);
+const [mango, orange, banana, ...rest] = discoveryFruits;
+const gameFruits = [orange, banana, mango, ...rest];
+const basketSize = 5;
+const basketCount = Math.ceil(gameFruits.length / basketSize);
+const leftTargets = new Set([1, 3]);
 
 export function DiscoveryPlay({ onPractise }: { onPractise: () => void }) {
+  const [basket, setBasket] = useState(0);
   const [round, setRound] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
   const { play, stop, audioError } = useDiscoveryAudio();
-  const targetIndex = rounds[round];
-  const target = targetIndex === undefined ? null : discoveryFruits[targetIndex];
-  const correct = target !== null && picked === target.id;
+  const fruits = gameFruits.slice(basket * basketSize, (basket + 1) * basketSize);
+  const target = fruits[round];
+  const correct = Boolean(target && picked === target.id);
+  const finishedAll = basket === basketCount - 1;
 
   function goNext() {
     stop();
@@ -23,7 +28,14 @@ export function DiscoveryPlay({ onPractise }: { onPractise: () => void }) {
     setRound(round + 1);
   }
 
-  const distractor = targetIndex === undefined ? null : discoveryFruits[(targetIndex + 3) % discoveryFruits.length]!;
+  function openBasket(next: number) {
+    stop();
+    setBasket(next);
+    setRound(0);
+    setPicked(null);
+  }
+
+  const distractor = fruits[(round + fruits.length - 1) % fruits.length];
   const choices = target && distractor ? (leftTargets.has(round) ? [target, distractor] : [distractor, target]) : [];
 
   return (
@@ -54,7 +66,7 @@ export function DiscoveryPlay({ onPractise }: { onPractise: () => void }) {
                   play(fruit.id === target.id ? target.id : "try-again");
                 }}
               >
-                <img src={`${discoveryPhotoPath}/${fruit.image}`} alt="" width="320" height="320" />
+                <img src={fruit.image} alt="" width="320" height="320" />
               </button>
             ))}
           </div>
@@ -63,7 +75,7 @@ export function DiscoveryPlay({ onPractise }: { onPractise: () => void }) {
           </div>
           {audioError && <p role="status" className="text-sm">Audio could not play. A grown-up can say the fruit name.</p>}
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-sm">Fruit {round + 1} of {rounds.length}</p>
+            <p className="text-sm">Basket {basket + 1} of {basketCount} · Fruit {round + 1} of {fruits.length}</p>
             <button
               className="gigalearn-control gigalearn-control--primary px-3"
               data-learn-tone="green"
@@ -71,15 +83,21 @@ export function DiscoveryPlay({ onPractise }: { onPractise: () => void }) {
               disabled={!correct}
               onClick={goNext}
             >
-              {round === rounds.length - 1 ? "See my award" : "Find the next fruit"}
+              {round === fruits.length - 1 ? "See my award" : "Find the next fruit"}
             </button>
           </div>
         </>
       ) : (
         <>
-          <LearningAward title="Fruit Finder award" detail={`You matched all ${rounds.length} fruits!`} />
+          <LearningAward
+            title={finishedAll ? "Fruit Finder award" : "Basket award"}
+            detail={finishedAll ? `You matched all ${gameFruits.length} fruits!` : `You found all ${fruits.length} fruits in this basket!`}
+          />
           <div className="flex flex-wrap gap-2">
-            <button className="gigalearn-control px-3" type="button" onClick={() => { setPicked(null); setRound(0); }}>
+            {!finishedAll && (
+              <button className="gigalearn-control gigalearn-control--primary px-3" data-learn-tone="green" type="button" onClick={() => openBasket(basket + 1)}>Next basket</button>
+            )}
+            <button className="gigalearn-control px-3" type="button" onClick={() => openBasket(finishedAll ? 0 : basket)}>
               <RotateCcw className="h-4 w-4" aria-hidden /> Play again
             </button>
             <button className="gigalearn-control px-3" type="button" onClick={onPractise}>Practise names</button>
