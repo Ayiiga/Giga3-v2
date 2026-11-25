@@ -39,6 +39,7 @@ test("Learn exposes working starter activities in all four worlds", async ({ pag
   const readingTab = subjects.getByRole("button", { name: "Reading" });
   await expect(math).toHaveAttribute("aria-pressed", "true");
   await expect(math).not.toHaveCSS("background-image", "none");
+  await page.getByRole("button", { name: "Counting groups", exact: true }).click();
   await page.getByRole("button", { name: "Add a counter" }).click();
   await page.getByRole("button", { name: "Add a counter" }).click();
   await page.getByRole("button", { name: "5", exact: true }).click();
@@ -50,6 +51,7 @@ test("Learn exposes working starter activities in all four worlds", async ({ pag
   await reading.getByRole("button", { name: "To share them with her brother" }).click();
   await expect(reading.getByRole("status")).toContainText("The second sentence");
   await page.getByRole("button", { name: "Mathematics", exact: true }).click();
+  await page.getByRole("button", { name: "Counting groups", exact: true }).click();
   const review = page.getByRole("region", { name: "Practice and review" });
   await expect(review.getByRole("button", { name: "Check answer" })).toBeDisabled();
   await review.getByRole("button", { name: "Show a hint" }).click();
@@ -223,6 +225,59 @@ test("Learn exposes Foundation counters, words, code and colour activities", asy
     if (await next.isVisible()) await next.tap();
   }
   await expect(patterns.getByText("Pattern Artist award", { exact: true })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
+test("Learn exposes the Maths Path and unlocks operations only after number mastery", async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 800 });
+  await page.goto("/gigalearn/?world=foundation");
+  const chooser = page.getByRole("group", { name: "Choose a maths stage" });
+  const stages = ["One-digit multiplication", "Two-digit multiplication", "Three-digit multiplication", "Addition", "Subtraction", "Division"];
+  const stageButton = (name: string) => chooser.getByRole("button", { name, exact: true });
+  for (const stage of stages) await expect(stageButton(stage)).toBeDisabled();
+
+  async function finish(name: string, answers: number[]) {
+    const quiz = page.getByRole("region", { name, exact: true });
+    for (const [index, answer] of answers.entries()) {
+      await quiz.getByRole("button", { name: String(answer), exact: true }).tap();
+      await quiz.getByRole("button", { name: index + 1 === answers.length ? "See my result" : "Next question", exact: true }).tap();
+    }
+    return quiz;
+  }
+
+  const numbers = page.getByRole("region", { name: "Counting and place value", exact: true });
+  await numbers.getByRole("button", { name: "3", exact: true }).tap();
+  await expect(numbers.getByText("Try again.", { exact: false })).toBeVisible();
+  await finish("Counting and place value", [4, 29, 30, 235, 122]);
+  await expect(numbers.getByText("Good practice.", { exact: false })).toBeVisible();
+  for (const stage of stages) await expect(stageButton(stage)).toBeDisabled();
+
+  await numbers.getByRole("button", { name: "Try a fresh set", exact: true }).tap();
+  const masteredNumbers = await finish("Counting and place value", [5, 30, 40, 346, 123]);
+  await expect(masteredNumbers.getByText("Number Explorer award", { exact: true })).toBeVisible();
+  await expect(stageButton("One-digit multiplication")).toBeEnabled();
+  await expect(stageButton("Two-digit multiplication")).toBeDisabled();
+  for (const stage of ["Addition", "Subtraction", "Division"]) await expect(stageButton(stage)).toBeEnabled();
+
+  await page.reload();
+  await expect(page.getByRole("region", { name: "One-digit multiplication", exact: true })).toBeVisible();
+  const one = await finish("One-digit multiplication", [6, 15, 10, 28, 21]);
+  await one.getByRole("button", { name: "Continue to Two-digit multiplication", exact: true }).tap();
+  const two = await finish("Two-digit multiplication", [36, 120, 180, 169, 364]);
+  await two.getByRole("button", { name: "Continue to Three-digit multiplication", exact: true }).tap();
+  const three = await finish("Three-digit multiplication", [336, 1170, 1512, 3195, 11536]);
+  await expect(three.getByText("Brilliant Multiplier award", { exact: true })).toBeVisible();
+
+  for (const [stage, answers, award] of [
+    ["Addition", [14, 24, 62, 183, 385], "Addition Builder award"],
+    ["Subtraction", [2, 10, 14, 91, 71], "Subtraction Explorer award"],
+    ["Division", [3, 5, 12, 18, 24], "Fair Share Mathematician award"],
+  ] as const) {
+    await stageButton(stage).tap();
+    const quiz = await finish(stage, [...answers]);
+    await expect(quiz.getByText(award, { exact: true })).toBeVisible();
+  }
+  await expect(page.getByText("7 of 7 stages mastered", { exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 

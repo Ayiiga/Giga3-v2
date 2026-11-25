@@ -14,6 +14,7 @@ import { ExperimentLab } from "./ExperimentLab";
 import { FOUNDATION_ACTIVITIES, FoundationPractical } from "./FoundationPracticals";
 import { LearningAward } from "./LearningAward";
 import { FoundationReading } from "./FoundationReading";
+import { FoundationMathPath } from "./FoundationMathPath";
 import { ShapePractice } from "./ShapePractice";
 import { WorldReviewCheck } from "./WorldReviewCheck";
 import { WorldPractical } from "./WorldPractical";
@@ -42,7 +43,7 @@ export function LearningWorlds({ worldId }: { worldId: string | null }) {
 }
 
 const foundationSubjects = [
-  { id: "math", label: "Mathematics", tone: "blue", starter: "math" },
+  { id: "math", label: "Mathematics", tone: "blue", starter: "maths-path" },
   { id: "reading", label: "Reading", tone: "pink", starter: "reading" },
   { id: "computing", label: "Computing", tone: "green", starter: "route" },
   { id: "arts", label: "Creative Arts", tone: "gold", starter: "pattern" },
@@ -50,7 +51,7 @@ const foundationSubjects = [
 
 function FoundationActivities({ owner }: { owner: string | null }) {
   const [subject, setSubject] = useState<keyof typeof FOUNDATION_ACTIVITIES>("math");
-  const [active, setActive] = useState("math");
+  const [active, setActive] = useState("maths-path");
   const catalogue = FOUNDATION_ACTIVITIES[subject];
   const starter = subject === "math" ? { id: "math", label: "Counting groups" }
     : subject === "reading" ? { id: "reading", label: "Story time" } : null;
@@ -66,6 +67,10 @@ function FoundationActivities({ owner }: { owner: string | null }) {
         ))}
       </div>
       <div className="gigalearn-school-activities" role="group" aria-label="Foundation activities">
+        {subject === "math" && (
+          <button type="button" className={buttonStyle} data-learn-tone="green"
+            aria-pressed={active === "maths-path"} onClick={() => setActive("maths-path")}>Maths Path</button>
+        )}
         {starter && <button type="button" className={buttonStyle} aria-pressed={active === starter.id}
           onClick={() => setActive(starter.id)}>{starter.label}</button>}
         {catalogue.map(({ id, label }) => (
@@ -77,6 +82,7 @@ function FoundationActivities({ owner }: { owner: string | null }) {
             aria-pressed={active === id} onClick={() => setActive(id)}>{title}</button>
         ))}
       </div>
+      {active === "maths-path" && <FoundationMathPath key={owner ?? "guest"} owner={owner} />}
       {active === "math" && <><CountingGroups /><WorldReviewCheck key={owner} world="foundation" owner={owner} /></>}
       {active === "reading" && <FoundationReading />}
       <FoundationPractical key={active} activity={active} />
