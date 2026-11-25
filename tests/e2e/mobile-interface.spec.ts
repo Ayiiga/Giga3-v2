@@ -182,8 +182,16 @@ test("Learn exposes fruit play, audio tracks and lab awards", async ({ page }) =
 });
 
 test("Learn exposes offline replay for a previously loaded Discovery sound", async ({ page }) => {
-  await page.goto("/gigalearn/?world=discovery");
-  await page.waitForFunction(() => Boolean(navigator.serviceWorker?.controller));
+  await page.goto("/gigalearn/?world=discovery", { waitUntil: "domcontentloaded" });
+  // Install the released worker explicitly so this test isolates its audio
+  // behavior. The production service-worker suite checks app registration.
+  await page.evaluate(async () => {
+    await navigator.serviceWorker.register("/sw.js", { scope: "/" });
+  });
+  await expect.poll(() => page.evaluate(() => navigator.serviceWorker.controller?.state), {
+    timeout: 15_000,
+    message: "The Discovery page should be controlled by the released service worker",
+  }).toBe("activated");
   const clip = "/gigalearn/activities/discovery/mango.mp3";
   async function readSample() {
     return page.evaluate(async (path) => {

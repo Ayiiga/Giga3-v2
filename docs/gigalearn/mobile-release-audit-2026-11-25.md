@@ -14,7 +14,7 @@ Baseline: main at `b30563926e8c3dce3f7e6a0f9c84456ff3012654` on 25 November 2026
 
 ## Confirmed defects and changes
 
-- [Production browser run 45440701094](https://github.com/Ayiiga/Giga3-v2/actions/runs/45440701094) was cancelled during Playwright. An empty result could also make the summary process exit successfully. Empty, wholly skipped, interrupted and timed-out results now fail. Scheduled runs exercise bounded mobile browser flows without sending paid chat prompts or making authenticated posts. The full production suite remains a manual selection.
+- [Production browser run 45440701094](https://github.com/Ayiiga/Giga3-v2/actions/runs/45440701094) recorded failures in authenticated GigaLearn and exam checks before it was cancelled during Playwright. The cancelled run does not establish their cause. An empty result could also make the summary process exit successfully. Empty, wholly skipped, interrupted and timed-out results now fail. Scheduled runs exercise bounded mobile browser flows without sending paid chat prompts or making authenticated posts. The full production suite remains a manual selection.
 - Discovery audio bypassed static caching, and a browser may initially request only part of an MP3. The service worker now caches the complete Discovery clip after loading it and serves byte ranges from that copy. This does not preload all 112 clips on metered connections.
 - A multi-episode upload did not retain confirmed progress or stable publish IDs. The composer now releases confirmed files, resumes at the unconfirmed episode, and reuses that episode's uploaded media and publish ID when acknowledgement is lost. Resume is held in the open composer.
 
