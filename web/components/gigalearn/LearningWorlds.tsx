@@ -1,8 +1,9 @@
 "use client";
 
-import { Apple, Eye, Music2 } from "lucide-react";
+import { Apple, Beaker, BookOpen, Eye, Music2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { WORLD_PRACTICALS } from "@/lib/gigalearn/worldPracticals";
 import { LEARNING_WORLDS } from "@/lib/gigalearn/learningWorlds";
 import { getSessionToken } from "@/lib/auth";
 import { offlineProgressOwner } from "@/lib/gigalearn/offlineProgressOwner";
@@ -13,6 +14,7 @@ import { LearningAward } from "./LearningAward";
 import { FoundationReading } from "./FoundationReading";
 import { ShapePractice } from "./ShapePractice";
 import { WorldReviewCheck } from "./WorldReviewCheck";
+import { WorldPractical } from "./WorldPractical";
 
 const buttonStyle = "gigalearn-control px-4 py-2";
 const primaryButton = "gigalearn-control gigalearn-control--primary px-4 py-2";
@@ -31,30 +33,48 @@ export function LearningWorlds({ worldId }: { worldId: string | null }) {
         <h2 id="world-title" className="text-3xl font-bold">{world.title}</h2>
       </header>
       {world.id === "discovery" && <DiscoveryActivity owner={owner} />}
-      {world.id === "foundation" && <FoundationActivities owner={owner} />}
-      {world.id === "exploration" && <FloatLab />}
-      {world.id === "mastery" && <EvidencePractice />}
-      {(world.id === "exploration" || world.id === "mastery") && (
-        <WorldReviewCheck key={owner} world={world.id} owner={owner} />
-      )}
+      {world.id !== "discovery" && <SchoolWorldActivities key={world.id} world={world.id} owner={owner} />}
     </section>
   );
 }
 
-function FoundationActivities({ owner }: { owner: string | null }) {
-  const [subject, setSubject] = useState<"math" | "reading">("math");
+const schoolWorldTabs = {
+  foundation: [
+    { id: "math", label: "Mathematics", tone: "blue" },
+    { id: "reading", label: "Reading", tone: "pink" },
+  ],
+  exploration: [{ id: "float", label: "Sink or float", tone: "blue" }],
+  mastery: [{ id: "evidence", label: "Check evidence", tone: "violet" }],
+} as const;
+
+function SchoolWorldActivities({ world, owner }: { world: keyof typeof WORLD_PRACTICALS; owner: string | null }) {
+  const starter = schoolWorldTabs[world];
+  const practicals = WORLD_PRACTICALS[world];
+  const [active, setActive] = useState(starter[0].id as string);
+  const lesson = practicals.find(({ id }) => id === active);
+
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-2" role="group" aria-label="Foundation subjects">
-        <button type="button" className={buttonStyle} data-learn-tone="blue" aria-pressed={subject === "math"} onClick={() => setSubject("math")}>Mathematics</button>
-        <button type="button" className={buttonStyle} data-learn-tone="pink" aria-pressed={subject === "reading"} onClick={() => setSubject("reading")}>Reading</button>
+      <div className="gigalearn-school-activities" role="group" aria-label={world === "foundation" ? "Foundation subjects" : `${world} activities`}>
+        {starter.map(({ id, label, tone }) => (
+          <button key={id} className={buttonStyle} type="button" data-learn-tone={tone}
+            aria-pressed={active === id} onClick={() => setActive(id)}>
+            <BookOpen aria-hidden className="h-4 w-4 shrink-0" /> {label}
+          </button>
+        ))}
+        {practicals.map(({ id, title, tone }) => (
+          <button key={id} className={buttonStyle} type="button" data-learn-tone={tone}
+            aria-pressed={active === id} onClick={() => setActive(id)}>
+            <Beaker aria-hidden className="h-4 w-4 shrink-0" /> {title}
+          </button>
+        ))}
       </div>
-      {subject === "math" ? (
-        <>
-          <CountingGroups />
-          <WorldReviewCheck key={owner} world="foundation" owner={owner} />
-        </>
-      ) : <FoundationReading />}
+      {active === "math" && <CountingGroups />}
+      {active === "reading" && <FoundationReading />}
+      {active === "float" && <FloatLab />}
+      {active === "evidence" && <EvidencePractice />}
+      {lesson && <WorldPractical key={lesson.id} lesson={lesson} />}
+      {["math", "float", "evidence"].includes(active) && <WorldReviewCheck key={owner} world={world} owner={owner} />}
     </div>
   );
 }
@@ -158,7 +178,10 @@ function EvidencePractice() {
         {picked === 1 ? "The paired observations compare the conditions directly. Check the actual temperatures and whether the soil and measuring method were comparable." : picked !== null ? "This source offers no repeated comparison. Look for observations taken under comparable conditions." : ""}
       </p>
       {picked === 1 && (
-        <p>On paper, design a check for your school grounds. State what you would measure, what you would keep the same, and what evidence would change your conclusion.</p>
+        <>
+          <LearningAward title="Brilliant Evidence Detective award" detail="You chose evidence that compares the two conditions directly." tone="violet" />
+          <p>On paper, design a check for your school grounds. State what you would measure, what you would keep the same, and what evidence would change your conclusion.</p>
+        </>
       )}
       <Link href="/gigalearn/exam/bece/" className="gigalearn-control gigalearn-control--primary px-3 text-sm" data-learn-tone="violet">Open BECE practice</Link>
     </section>

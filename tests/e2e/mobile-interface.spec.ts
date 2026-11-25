@@ -81,6 +81,42 @@ test("Learn exposes working starter activities in all four worlds", async ({ pag
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
+test("Learn exposes six practicals with recorded comparisons and earned awards", async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 800 });
+  const activities = [
+    ["foundation", "Paper Clip Ruler", "Strip A", "Strip B", "7 clips", "Use clips of different sizes", "Use equal clips with no gaps", "Brilliant Measuring award"],
+    ["foundation", "Mini Market", "Three oranges", "Two mangoes", "8 cedis", "Two mangoes", "Three oranges", "Excellent Shopper award"],
+    ["exploration", "Shadow Lab", "40 cm from the light", "20 cm from the light", "16 cm", "Moving the object farther from the light", "Moving the object closer to the light", "Excellent Light Investigator award"],
+    ["exploration", "Paper Bridge Challenge", "Flat paper", "Accordion folds", "7 counters", "Thicker paper and a smaller gap for the folded bridge", "Same paper and same gap", "Brilliant Bridge Builder award"],
+    ["mastery", "Shade Data Lab", "Shaded soil", "Unshaded soil", "32 °C", "Unshaded soil is always exactly 4 °C warmer", "Unshaded soil averaged 4 °C warmer at these sites", "Brilliant Data Analyst award"],
+    ["mastery", "Ramp Investigation", "Low ramp", "High ramp", "65 cm", "It guarantees that every run goes the same distance", "It avoids adding a push that could change the distance", "Excellent Experiment Designer award"],
+  ];
+  let previousWorld = "";
+  for (const [world, title, first, second, result, wrong, right, award] of activities) {
+    if (world !== previousWorld) await page.goto(`/gigalearn/?world=${world}`);
+    previousWorld = world;
+    await page.getByRole("button", { name: title, exact: true }).tap();
+    const lab = page.getByRole("region", { name: title, exact: true });
+    const firstTest = lab.getByRole("button", { name: `Test ${first}`, exact: true });
+    const secondTest = lab.getByRole("button", { name: `Test ${second}`, exact: true });
+    await expect(firstTest).toBeDisabled();
+    await lab.getByRole("button", { name: first, exact: true }).tap();
+    await firstTest.tap();
+    await secondTest.tap();
+    await expect(lab.getByText(result, { exact: true })).toBeVisible();
+    await expect(lab.getByText("Good investigating!", { exact: false })).toBeVisible();
+    await lab.getByRole("button", { name: wrong, exact: true }).last().tap();
+    await expect(lab.getByText(award, { exact: true })).toHaveCount(0);
+    await lab.getByRole("button", { name: right, exact: true }).last().tap();
+    await expect(lab.getByText(award, { exact: true })).toBeVisible();
+    await lab.getByText("Try it away from the screen", { exact: true }).tap();
+    await expect(lab.locator("details p")).toBeVisible();
+    await lab.getByRole("button", { name: "Start again" }).tap();
+    await expect(lab.getByText(award, { exact: true })).toHaveCount(0);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  }
+});
+
 test("Learn exposes fruit play, audio tracks and lab awards", async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 800 });
   await page.goto("/gigalearn/?world=discovery");
@@ -90,6 +126,7 @@ test("Learn exposes fruit play, audio tracks and lab awards", async ({ page }) =
   await expect(photo).toHaveAttribute("alt", "Object to guess");
   await expect(photo).toHaveJSProperty("complete", true);
   expect((await photo.boundingBox())!.width).toBeGreaterThan(240);
+  expect((await zoom.boundingBox())!.height).toBeGreaterThan(800 / 2);
   await zoom.tap();
   await expect(lesson.getByRole("button", { name: "Zoom out" })).toHaveAttribute("aria-pressed", "true");
   expect((await photo.boundingBox())!.width).toBeGreaterThan(320);

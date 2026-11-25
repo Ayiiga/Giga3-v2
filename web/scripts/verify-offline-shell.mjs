@@ -19,5 +19,5 @@ assert.equal(
 assert.match(source, /__giga3_connectivity_probe=/, "Offline shell must use origin connectivity probe");
 assert.match(source, /RETRY_MS = 10000/, "Retry interval must remain 10 seconds");
 assert.match(sw, /url\.searchParams\.has\("__giga3_connectivity_probe"\)/, "SW must bypass cache for origin probe");
-assert.match(sw, /CACHE_VERSION = "giga3-v135"/, "SW cache generation must be updated");
+assert.match(sw, /CACHE_VERSION = "giga3-v136"/, "SW cache generation must be updated");
 console.log("Verified: exported offline.html, Cloudflare HTML bundle, origin probe, 10s retry, SW refresh");
