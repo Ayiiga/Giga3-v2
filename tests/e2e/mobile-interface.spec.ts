@@ -117,6 +117,115 @@ test("Learn exposes six practicals with recorded comparisons and earned awards",
   }
 });
 
+test("Learn exposes 16 runnable experiments and records three settings in each", async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 800 });
+  await page.goto("/gigalearn/?world=exploration");
+  await page.getByRole("button", { name: "Experiment Lab", exact: true }).tap();
+  const picker = page.getByRole("combobox", { name: "Choose an experiment", exact: true });
+  const topics = page.getByRole("group", { name: "Experiment topics" });
+  const visited = new Set<string>();
+  for (const topic of ["Motion", "Light and sound", "Materials and energy"]) {
+    await topics.getByRole("button", { name: topic, exact: true }).tap();
+    const titles = await picker.locator("option").allTextContents();
+    for (const title of titles) {
+      visited.add(title);
+      await picker.selectOption({ label: title });
+      const lab = page.getByRole("region", { name: title, exact: true });
+      const run = lab.getByRole("button", { name: "Run model", exact: true });
+      await expect(run).toBeDisabled();
+      await lab.getByRole("group").first().getByRole("button").first().tap();
+      for (const choice of await lab.getByRole("group", { name: "Change the test setting" }).getByRole("button").all()) {
+        await choice.tap();
+        await run.tap();
+      }
+      await expect(lab.getByText("Recorded results · 3 of 3")).toBeVisible();
+      await expect(lab.getByText("Brilliant Investigator award", { exact: true })).toBeVisible();
+      if (title === "Sliding Block") await expect(lab.getByText("40 cm", { exact: true })).toBeVisible();
+      if (title === "Light the Circuit") {
+        await expect(lab.getByText("Yes", { exact: true })).toBeVisible();
+        await expect(lab.getByText("No", { exact: true })).toHaveCount(2);
+      }
+      await lab.getByRole("button", { name: "Start again", exact: true }).tap();
+      await expect(run).toBeDisabled();
+    }
+  }
+  expect(visited.size).toBe(16);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
+test("Learn exposes Foundation counters, words, code and colour activities", async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 800 });
+  await page.goto("/gigalearn/?world=foundation");
+  const subjects = page.getByRole("group", { name: "Foundation subjects" });
+  const chooser = page.getByRole("group", { name: "Foundation activities" });
+  async function activity(name: string) {
+    await chooser.getByRole("button", { name, exact: true }).tap();
+    return page.getByRole("region", { name, exact: true });
+  }
+  for (const [name, counts, award] of [
+    ["Make Ten", [["More counters", 4]], "Ten Builder award"],
+    ["Fair Shares", [["Plate A", 4], ["Plate B", 4], ["Plate C", 4]], "Fair Share Champion award"],
+    ["Tens and Ones", [["Ten bundles", 2], ["Single counters", 4]], "Place Value Builder award"],
+  ] as const) {
+    const task = await activity(name);
+    await task.getByRole("button", { name: "Check my work" }).tap();
+    await expect(task.getByText("Try another arrangement", { exact: false })).toBeVisible();
+    for (const [group, count] of counts) {
+      for (let index = 0; index < count; index++) await task.getByRole("button", { name: `Add to ${group}` }).tap();
+    }
+    await task.getByRole("button", { name: "Check my work" }).tap();
+    await expect(task.getByText(award, { exact: true })).toBeVisible();
+  }
+
+  await subjects.getByRole("button", { name: "Reading", exact: true }).tap();
+  const sentence = await activity("Sentence Builder");
+  for (const words of [["Mansa", "counts", "mangoes."], ["Kofi", "opens", "the", "bag."], ["Ama", "sings", "a", "song."]]) {
+    for (const word of words) await sentence.getByRole("button", { name: word, exact: true }).tap();
+    await sentence.getByRole("button", { name: "Check sentence" }).tap();
+    const next = sentence.getByRole("button", { name: "Next sentence" });
+    if (await next.isVisible()) await next.tap();
+  }
+  await expect(sentence.getByText("Sentence Builder award", { exact: true })).toBeVisible();
+  for (const [name, words, award] of [
+    ["Rhyme Pairs", ["hat", "night", "fun"], "Rhyme Finder award"],
+    ["Phonics Sound Match", ["mango", "sun", "ship"], "Sound Detective award"],
+  ] as const) {
+    const task = await activity(name);
+    await expect(task.getByRole("button", { name: "Hear the words" })).toBeVisible();
+    for (const word of words) {
+      await task.getByRole("button", { name: word, exact: true }).tap();
+      const next = task.getByRole("button", { name: "Next words" });
+      if (await next.isVisible()) await next.tap();
+    }
+    await expect(task.getByText(award, { exact: true })).toBeVisible();
+  }
+
+  await subjects.getByRole("button", { name: "Computing", exact: true }).tap();
+  const route = await activity("Robot Routes");
+  await route.getByRole("button", { name: "Add left" }).tap();
+  await route.getByRole("button", { name: "Run commands" }).tap();
+  await expect(route.getByText("edge or a barrier", { exact: false })).toBeVisible();
+  await route.getByRole("button", { name: "Undo command" }).tap();
+  for (const move of ["up", "up", "up", "right", "right"]) await route.getByRole("button", { name: `Add ${move}` }).tap();
+  await route.getByRole("button", { name: "Run commands" }).tap();
+  await expect(route.getByText("Robot Coder award", { exact: true })).toBeVisible();
+
+  const sorting = await activity("Sort by a Rule");
+  for (const fruit of ["Mango", "Orange", "Banana"]) await sorting.getByRole("button", { name: fruit, exact: true }).tap();
+  await sorting.getByRole("button", { name: "Check filter" }).tap();
+  await expect(sorting.getByText("Rule Maker award", { exact: true })).toBeVisible();
+
+  await subjects.getByRole("button", { name: "Creative Arts", exact: true }).tap();
+  const patterns = await activity("Colour Patterns");
+  for (const colour of ["Blue", "Green", "Pink"]) {
+    await patterns.getByRole("button", { name: colour, exact: true }).tap();
+    const next = patterns.getByRole("button", { name: "Next pattern" });
+    if (await next.isVisible()) await next.tap();
+  }
+  await expect(patterns.getByText("Pattern Artist award", { exact: true })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
 test("Learn exposes fruit play, audio tracks and lab awards", async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 800 });
   await page.goto("/gigalearn/?world=discovery");

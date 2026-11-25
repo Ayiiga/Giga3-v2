@@ -931,3 +931,259 @@ html:fullscreen:has([data-social-fullscreen]) .marketing-site-header {display:no
     to { top: var(--gigalearn-drop-target); }
   }
 }
+
+.gigalearn-experiment-choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 7rem), 1fr));
+  gap: 0.4rem;
+}
+
+.gigalearn-experiment-choices .gigalearn-control {
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.gigalearn-experiment-select {
+  width: 100%;
+  min-height: 2.75rem;
+  border: 1px solid var(--learn-border);
+  border-radius: 0.75rem;
+  padding: 0.4rem 0.65rem;
+  background: #fff;
+  color: #16315d;
+}
+
+.dark .gigalearn-experiment-select {
+  background: #221a35;
+  color: #fff;
+}
+
+.gigalearn-experiment-model {
+  position: relative;
+  display: grid;
+  min-height: 9rem;
+  place-items: center;
+  padding: 0.75rem 2.25rem 2rem;
+  overflow: hidden;
+  border: 2px solid #a0b8e5;
+  border-radius: 1.2rem;
+  color: #143d84;
+  background: linear-gradient(155deg, #f6fbff, #c6dafe);
+}
+
+.gigalearn-experiment-model svg {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.gigalearn-experiment-model[data-scene="light"] {
+  background: linear-gradient(155deg, #fffbee, #f1dfae);
+  color: #704813;
+}
+
+.gigalearn-experiment-model[data-scene="light"][data-active="true"] {
+  background: radial-gradient(ellipse, #fffdf2, #f8df92);
+}
+
+.gigalearn-experiment-model[data-scene="magnet"] {
+  background: linear-gradient(155deg, #fff7fc, #ebd0ff);
+  color: #591577;
+}
+
+.gigalearn-experiment-caption {
+  position: absolute;
+  bottom: 0.35rem;
+  left: 0.4rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 10rem;
+  background: #fff;
+  color: #152b4f;
+  font-weight: 700;
+  font-size: 0.75rem;
+}
+
+.gigalearn-experiment-track {
+  position: relative;
+  width: calc(100% - 2.5rem);
+  justify-self: start;
+  height: 3.3rem;
+  border-bottom: 4px solid #547ac1;
+}
+
+.gigalearn-experiment-track svg {
+  position: absolute;
+  bottom: 0.3rem;
+  transition: left 350ms ease-out;
+}
+
+.gigalearn-experiment-magnet,
+.gigalearn-experiment-meter {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.gigalearn-experiment-magnet svg { transition: margin-inline-start 350ms ease-out; }
+.gigalearn-experiment-meter { width: 100%; }
+.gigalearn-experiment-meter svg { flex-shrink: 0; }
+
+.gigalearn-experiment-meter-track {
+  width: 100%;
+  height: 1.1rem;
+  overflow: hidden;
+  background: #9db9ea;
+  border-radius: 0.8rem;
+}
+
+.gigalearn-experiment-meter-track > span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #2755c5, #805bf1);
+  transition: width 350ms ease-out;
+}
+
+.gigalearn-mirror {
+  position: relative;
+  align-self: end;
+  width: 10rem;
+  height: 5.25rem;
+  border-bottom: 3px solid #4d6492;
+}
+
+.gigalearn-mirror-normal,
+.gigalearn-mirror-ray {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 4.4rem;
+}
+
+.gigalearn-mirror-normal { border-left: 2px dashed #725f81; }
+.gigalearn-mirror-ray { border-left: 3px solid #a75407; transform-origin: bottom center; }
+
+.gigalearn-bench-counters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.28rem;
+}
+
+.gigalearn-bench-counters > span {
+  width: 1.45rem;
+  height: 1.45rem;
+  border: 2px solid #244bb1;
+  border-radius: 50%;
+  background: #b7cafe;
+}
+
+.gigalearn-bench-counters > span[data-bundle="true"] {
+  width: 2.5rem;
+  border-radius: 0.35rem;
+  background: repeating-linear-gradient(90deg, #b9cdff 0 0.35rem, #657fcb 0.35rem 0.48rem);
+}
+
+.gigalearn-robot-grid {
+  display: grid;
+  max-width: 20rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.25rem;
+  margin-inline: auto;
+}
+
+.gigalearn-robot-grid > div {
+  display: grid;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid #48a890;
+  border-radius: 0.4rem;
+  background: #f4fffa;
+  color: #075649;
+  font-size: 1.45rem;
+  font-weight: 700;
+}
+
+.gigalearn-robot-grid > div[data-barrier="true"] { background: #f9c4d7; color: #6f1140; }
+.gigalearn-robot-grid > div[data-robot="true"] { background: #126352; color: #fff; }
+
+.gigalearn-pattern-cell {
+  display: grid;
+  min-width: 3rem;
+  min-height: 2.25rem;
+  place-items: center;
+  border: 1px solid #ddac39;
+  border-radius: 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  background: #fff4c9;
+  color: #3b220a;
+}
+
+.gigalearn-pattern-cell[data-colour="Blue"] { background: #d5e6ff; color: #153b88; }
+.gigalearn-pattern-cell[data-colour="Pink"] { background: #ffe1ef; color: #761640; }
+.gigalearn-pattern-cell[data-colour="Green"] { background: #d3f8e6; color: #085341; }
+
+@media (prefers-reduced-motion: reduce) {
+  .gigalearn-experiment-model * { transition: none; }
+}
+
+.gigalearn-pendulum {
+  position: relative;
+  width: 3px;
+  align-self: start;
+  margin-top: 0.3rem;
+  background: #385da1;
+  transform-origin: top center;
+}
+
+.gigalearn-pendulum span {
+  position: absolute;
+  bottom: -0.75rem;
+  left: -0.55rem;
+  width: 1.2rem;
+  height: 1.2rem;
+  border: 2px solid #203e7b;
+  border-radius: 50%;
+  background: #9ab9ed;
+}
+
+.gigalearn-experiment-model[data-active="true"] .gigalearn-pendulum {
+  animation: gigalearn-pendulum-swing ease-in-out 3;
+}
+
+@keyframes gigalearn-pendulum-swing {
+  0%, 100% { rotate: 18deg; }
+  50% { rotate: -18deg; }
+}
+
+.gigalearn-model-spring {
+  position: relative;
+  width: 1.3rem;
+  align-self: start;
+  background: repeating-linear-gradient(160deg, #31549a 0 3px, transparent 3px 7px);
+}
+
+.gigalearn-model-spring > svg {
+  position: absolute;
+  bottom: -1.25rem;
+  left: -0.3rem;
+  width: 1.8rem;
+  height: 1.8rem;
+  fill: #c2dcff;
+}
+
+.gigalearn-model-gears { display: flex; align-items: center; }
+
+.gigalearn-model-circuit {
+  display: grid;
+  min-width: 7rem;
+  min-height: 4.4rem;
+  place-items: center;
+  border: 3px dashed #94672d;
+  border-radius: 0.75rem;
+}
+
+.gigalearn-model-circuit[data-closed="true"] { border-style: solid; }
+
+@media (prefers-reduced-motion: reduce) {
+  .gigalearn-experiment-model[data-active="true"] .gigalearn-pendulum { animation: none; }
+}
