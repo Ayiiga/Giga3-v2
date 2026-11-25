@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ArrowUpRight, Check } from "lucide-react";
 import { useState } from "react";
 import { CURRICULUM_LEVELS } from "@/lib/gigalearn/curriculumEngine";
 import { LEARNING_WORLDS } from "@/lib/gigalearn/learningWorlds";
@@ -16,6 +17,13 @@ const bands = [
   ["jhs", "JHS"],
   ["shs", "SHS"],
 ] as const;
+
+const worldArt = {
+  discovery: ["early-years", "green"],
+  foundation: ["primary", "blue"],
+  exploration: ["materials", "violet"],
+  mastery: ["jhs", "gold"],
+} as const;
 
 const destinations = [
   [
@@ -80,7 +88,7 @@ export function LearningHome() {
         onChange={(event) => setQuery(event.target.value)}
         className="w-full rounded-full border border-violet-300 bg-card px-4 py-3"
       />
-      <Link href="/gigalearn/?tab=my-learning" className="learning-progress">
+      <Link href="/gigalearn/?tab=my-learning" className="learning-progress gigalearn-focus">
         <strong>Your learning progress</strong>
         <span>
           {progress.quizzesCompleted} quizzes completed
@@ -92,18 +100,24 @@ export function LearningHome() {
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {LEARNING_WORLDS.map((world) => {
               const review = owner ? loadWorldReview(owner, world.id) : null;
+              const [photo, tone] = worldArt[world.id];
               return (
                 <Link
                   key={world.id}
                   href={`/gigalearn/?world=${world.id}`}
-                  className="flex min-h-24 flex-col gap-1 rounded-2xl border border-violet-500/30 bg-card p-4 hover:border-violet-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-500"
+                  className="gigalearn-world-link gigalearn-focus"
+                  data-learn-tone={tone}
                 >
-                  <strong className="text-lg">{world.title}</strong>
-                  <span className="text-sm text-muted">{world.grades}</span>
-                  <span className="text-sm font-semibold">{world.activity}</span>
-                  {review && review.dueAt <= Date.now() && (
-                    <span className="text-sm font-semibold text-accent">Review due</span>
-                  )}
+                  <span className="gigalearn-world-text">
+                    <strong className="text-lg leading-tight">{world.title}</strong>
+                    <span className="text-xs font-semibold">{world.grades}</span>
+                    <span className="text-sm">{world.activity}</span>
+                    {review && review.dueAt <= Date.now() && (
+                      <span className="text-sm font-bold">Review due</span>
+                    )}
+                  </span>
+                  <img src={`/images/interface/${photo}.webp`} alt="" width="128" height="112" />
+                  <ArrowUpRight className="gigalearn-world-arrow h-4 w-4" aria-hidden />
                 </Link>
               );
             })}
@@ -117,10 +131,14 @@ export function LearningHome() {
             <button
               type="button"
               key={id}
+              className="gigalearn-focus"
               aria-pressed={band === id}
               onClick={() => setBand(id)}
             >
-              {label}
+              <span className="gigalearn-level-label">
+                {label}
+                {band === id && <Check className="h-3.5 w-3.5 shrink-0" aria-hidden />}
+              </span>
               <img
                 alt=""
                 src={"/images/interface/" + id + ".webp"}
@@ -131,10 +149,14 @@ export function LearningHome() {
           ))}
           <button
             type="button"
+            className="gigalearn-focus"
             aria-pressed={band === "university"}
             onClick={() => setBand("university")}
           >
-            University
+            <span className="gigalearn-level-label">
+              University
+              {band === "university" && <Check className="h-3.5 w-3.5 shrink-0" aria-hidden />}
+            </span>
             <img
               alt=""
               src="/images/interface/academy.webp"
@@ -162,7 +184,8 @@ export function LearningHome() {
           {levels.map((level) => (
             <a
               key={level.id}
-              className="rounded-xl border border-violet-300 px-3 py-3 text-sm font-semibold"
+              className="gigalearn-control px-3 py-2 text-sm"
+              data-learn-tone={level.band === "early-years" ? "green" : level.band === "jhs" ? "violet" : "blue"}
               href={
                 "/gigalearn/?tab=" +
                 (level.band === "early-years" ? "early-years" : "learn")
@@ -190,7 +213,7 @@ export function LearningHome() {
           <Link
             key={href}
             href={href}
-            className={illustration ? "illustrated-tool" : undefined}
+            className={illustration ? "illustrated-tool gigalearn-focus" : "gigalearn-focus"}
           >
             {illustration && (
               <img
@@ -213,7 +236,8 @@ export function LearningHome() {
           <p role="status">No matching levels or tools.</p>
         )}
       <Link
-        className="certificate-banner block rounded-xl bg-violet-800 p-4 font-semibold text-white"
+        className="certificate-banner gigalearn-control gigalearn-control--primary w-full px-4 py-3"
+        data-learn-tone="violet"
         href="/gigalearn/academy/certificates/"
       >
         View my certificates →

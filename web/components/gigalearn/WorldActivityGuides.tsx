@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/Button";
 import { LEARNING_WORLDS } from "@/lib/gigalearn/learningWorlds";
 import { triggerDownload } from "@/lib/share/clientShare";
 import Link from "next/link";
@@ -64,8 +63,8 @@ export function WorldActivityGuides() {
         {guides[worldId].map((step) => <li key={step}>{step}</li>)}
       </ul>
       <div className="flex flex-wrap items-center gap-3">
-        <Button type="button" className="min-h-11" onClick={downloadGuide}>Download guide</Button>
-        <Link href={`/gigalearn/?world=${worldId}`} className="inline-flex min-h-11 items-center underline">Open learner activity</Link>
+        <button type="button" className="gigalearn-control gigalearn-control--primary px-3 py-2" data-learn-tone="blue" onClick={downloadGuide}>Download guide</button>
+        <Link href={`/gigalearn/?world=${worldId}`} className="gigalearn-control px-3 py-2" data-learn-tone="green">Open learner activity</Link>
       </div>
       {failed && <p role="status">The guide could not be downloaded. You can copy it from this page.</p>}
     </section>

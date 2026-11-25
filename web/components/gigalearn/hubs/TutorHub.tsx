@@ -33,7 +33,7 @@ export const TutorHub = memo(function TutorHub({ credits }: TutorHubProps) {
         <ul className="grid gap-2 sm:grid-cols-2">
           {LEARNING_WORLDS.map((world) => (
             <li key={world.id}>
-              <Link className="flex min-h-12 items-center rounded-xl border border-border px-3 font-semibold" href={`/gigalearn/?world=${world.id}`}>
+              <Link className="gigalearn-control w-full px-3 py-2" href={`/gigalearn/?world=${world.id}`}>
                 {world.title}
               </Link>
             </li>

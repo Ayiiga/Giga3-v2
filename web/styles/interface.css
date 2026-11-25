@@ -395,3 +395,181 @@ html:fullscreen:has([data-social-fullscreen]) .marketing-site-header {display:no
 .gigasocial-live-room video.gigasocial-live-camera-preview[data-fill-camera="false"] {width:calc(100% - 1rem);height:calc(100% - 5rem);max-width:32rem;max-height:none;object-fit:contain;object-position:center;border-radius:1rem;}
 .gigasocial-live-room .live-quick-actions {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.4rem;}
 .gigasocial-live-room .live-quick-actions button {min-width:0;min-height:48px;padding:.35rem;display:flex;flex-direction:column;justify-content:center;gap:.2rem;font-size:11px;line-height:1.2;white-space:normal;}
+
+/* Shared colors for GigaLearn destinations and interactive controls. */
+:where(.gigalearn-control, .gigalearn-world-link) {
+  --learn-ink: #4c1d95;
+  --learn-fill: #6d28d9;
+  --learn-edge: #5b21b6;
+  --learn-tint: #f3e8ff;
+  --learn-border: #c4b5fd;
+  --learn-dark: #29203f;
+  --learn-light: #eadcff;
+}
+
+:where(.gigalearn-control, .gigalearn-world-link)[data-learn-tone="green"] {
+  --learn-ink: #065f46;
+  --learn-fill: #047857;
+  --learn-edge: #065f46;
+  --learn-tint: #dcfce7;
+  --learn-border: #6ee7b7;
+  --learn-dark: #123530;
+  --learn-light: #a7f3d0;
+}
+
+:where(.gigalearn-control, .gigalearn-world-link)[data-learn-tone="blue"] {
+  --learn-ink: #1e3a8a;
+  --learn-fill: #1d4ed8;
+  --learn-edge: #1e40af;
+  --learn-tint: #dbeafe;
+  --learn-border: #93c5fd;
+  --learn-dark: #1a2c49;
+  --learn-light: #dbeafe;
+}
+
+:where(.gigalearn-control, .gigalearn-world-link)[data-learn-tone="gold"] {
+  --learn-ink: #713a0b;
+  --learn-fill: #92400e;
+  --learn-edge: #78350f;
+  --learn-tint: #fef3c7;
+  --learn-border: #fbbf24;
+  --learn-dark: #392916;
+  --learn-light: #fde68a;
+}
+
+:where(.gigalearn-control, .gigalearn-world-link)[data-learn-tone="pink"] {
+  --learn-ink: #831843;
+  --learn-fill: #a21caf;
+  --learn-edge: #86198f;
+  --learn-tint: #fce7f3;
+  --learn-border: #f9a8d4;
+  --learn-dark: #392138;
+  --learn-light: #fbcfe8;
+}
+
+.gigalearn-control {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border: 1px solid var(--learn-border);
+  border-radius: 0.8rem;
+  background: var(--learn-tint);
+  color: var(--learn-ink);
+  font-weight: 700;
+}
+
+.dark :is(.gigalearn-control, .gigalearn-world-link) {
+  background: var(--learn-dark);
+  color: var(--learn-light);
+}
+
+.gigalearn-control:hover:not(:disabled),
+.gigalearn-world-link:hover {
+  border-color: var(--learn-fill);
+  box-shadow: inset 0 0 0 1px var(--learn-fill);
+}
+
+.gigalearn-control:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.gigalearn-control--choice {
+  justify-content: flex-start;
+  text-align: start;
+}
+
+:is(.gigalearn-control, .gigalearn-focus):focus-visible {
+  outline: 2px solid #6d28d9;
+  outline-offset: 2px;
+}
+
+.dark :is(.gigalearn-control, .gigalearn-focus):focus-visible {
+  outline-color: #fbbf24;
+}
+
+.gigalearn-control--primary,
+.gigalearn-control:is([aria-pressed="true"], [aria-selected="true"], [aria-current="page"]),
+.dark .gigalearn-control--primary,
+.dark .gigalearn-control:is([aria-pressed="true"], [aria-selected="true"], [aria-current="page"]) {
+  border-color: var(--learn-edge);
+  background: linear-gradient(145deg, var(--learn-fill), var(--learn-edge));
+  color: #fff;
+}
+
+.gigalearn-control:is([aria-pressed="true"], [aria-selected="true"], [aria-current="page"]),
+.gigalearn-control:is([aria-pressed="true"], [aria-selected="true"], [aria-current="page"]):hover:not(:disabled) {
+  box-shadow: inset 0 -3px 0 #fcd34d;
+}
+
+.gigalearn-world-link {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(5rem, 30%);
+  min-height: 7rem;
+  overflow: hidden;
+  border: 1px solid var(--learn-border);
+  border-radius: 1.1rem;
+  background: var(--learn-tint);
+  color: var(--learn-ink);
+}
+
+.gigalearn-world-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.8rem 0.55rem 0.8rem 0.9rem;
+}
+
+.gigalearn-world-link img {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: max(5rem, 30%);
+  height: 100%;
+  object-fit: cover;
+}
+
+.gigalearn-world-arrow {
+  position: absolute;
+  right: 0.4rem;
+  bottom: 0.4rem;
+  box-sizing: content-box;
+  padding: 0.3rem;
+  border-radius: 50%;
+  background: var(--learn-edge);
+  color: white;
+}
+
+.gigalearn-level-label {
+  display: inline-flex;
+  min-height: 2.2rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  padding: 0 0.15rem;
+}
+
+.learning-home .level-cards {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .learning-home .level-cards {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+.learning-home .level-cards [aria-pressed="true"] {
+  background: #5b21b6;
+  color: #fff;
+  outline: 2px solid #a78bfa;
+}
+
+.learning-home .level-cards [aria-pressed="true"]:focus-visible {
+  outline: 2px solid #d97706;
+  outline-offset: 2px;
+}

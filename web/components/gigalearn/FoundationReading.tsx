@@ -40,7 +40,7 @@ export function FoundationReading() {
       <h3 id="foundation-reading" className="text-xl font-bold">Mansa and the mangoes</h3>
       <p>Say the /m/ sound with your lips together. Listen for it at the start of Mansa and mangoes.</p>
       <p className="rounded-xl border border-border p-3 text-lg leading-relaxed">{story}</p>
-      <button type="button" className="min-h-12 rounded-xl bg-violet-700 px-4 font-semibold text-white" onClick={() => void readStory()}>
+      <button type="button" className="gigalearn-control gigalearn-control--primary px-4" data-learn-tone="pink" onClick={() => void readStory()}>
         {playing ? "Stop reading" : "Read the story aloud"}
       </button>
       {audioError && <p role="status">Audio is unavailable on this device. You can read the story above with an adult.</p>}
@@ -50,7 +50,8 @@ export function FoundationReading() {
           {["To share them with her brother", "To take all three to school", "To keep them all for herself"].map((answer) => (
             <button
               key={answer}
-              className="min-h-12 rounded-xl border border-violet-500/40 px-4 py-2 text-left aria-pressed:bg-violet-700 aria-pressed:text-white"
+              className="gigalearn-control gigalearn-control--choice px-4 py-2"
+              data-learn-tone="pink"
               type="button"
               aria-pressed={choice === answer}
               onClick={() => setChoice(answer)}

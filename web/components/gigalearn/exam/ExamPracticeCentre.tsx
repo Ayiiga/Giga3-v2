@@ -119,10 +119,9 @@ function ExamPracticeChrome({ children }: { children: ReactNode }) {
                   <Link
                     key={item.href + item.label}
                     href={item.href}
-                    className={cn(
-                      "academy-visual-nav-link",
-                      isActive && "academy-visual-nav-link--active"
-                    )}
+                    aria-current={isActive ? "page" : undefined}
+                    data-learn-tone={item.key === "exam" ? "gold" : item.key === "tutor" ? "blue" : "violet"}
+                    className="gigalearn-control shrink-0 px-3 py-2 text-xs"
                   >
                     {item.label}
                   </Link>

@@ -5,7 +5,6 @@ import { TeacherStudio } from "@/components/gigalearn/TeacherStudio";
 import { WorldActivityGuides } from "@/components/gigalearn/WorldActivityGuides";
 import type { TeacherSubView } from "@/lib/gigalearn/sectionRouting";
 import { TEACHER_TOOLS } from "@/lib/gigalearn/tools";
-import { cn } from "@/lib/utils";
 import { memo, useState } from "react";
 
 interface TeacherHubProps {
@@ -39,12 +38,9 @@ export const TeacherHub = memo(function TeacherHub({
             key={item.id}
             type="button"
             onClick={() => setSubView(item.id)}
-            className={cn(
-              "min-h-10 rounded-full border px-4 py-1.5 text-xs font-medium",
-              subView === item.id
-                ? "border-accent/40 bg-accent/10 text-foreground"
-                : "border-border bg-white text-muted"
-            )}
+            aria-current={subView === item.id ? "page" : undefined}
+            data-learn-tone="blue"
+            className="gigalearn-control px-3 py-2 text-xs"
           >
             {item.label}
           </button>
