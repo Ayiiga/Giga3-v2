@@ -5,6 +5,9 @@ import { useState } from "react";
 import { LEARNING_WORLDS } from "@/lib/gigalearn/learningWorlds";
 import { getSessionToken } from "@/lib/auth";
 import { offlineProgressOwner } from "@/lib/gigalearn/offlineProgressOwner";
+import { DiscoveryMusic, DiscoveryPlay } from "./DiscoveryPlay";
+import { FloatLab } from "./FloatLab";
+import { LearningAward } from "./LearningAward";
 import { FoundationReading } from "./FoundationReading";
 import { ShapePractice } from "./ShapePractice";
 import { WorldReviewCheck } from "./WorldReviewCheck";
@@ -19,7 +22,7 @@ export function LearningWorlds({ worldId }: { worldId: string | null }) {
   const owner = offlineProgressOwner(getSessionToken());
 
   return (
-    <section className="mx-auto max-w-3xl space-y-5 px-4 pb-8" aria-labelledby="world-title">
+    <section className="gigalearn-world-page mx-auto max-w-3xl space-y-5 px-4" aria-labelledby="world-title">
       <Link href="/gigalearn/" className="gigalearn-control px-3 text-sm">Back to Learn</Link>
       <header>
         <p className="font-semibold text-muted">{world.grades}</p>
@@ -27,7 +30,7 @@ export function LearningWorlds({ worldId }: { worldId: string | null }) {
       </header>
       {world.id === "discovery" && <DiscoveryActivity owner={owner} />}
       {world.id === "foundation" && <FoundationActivities owner={owner} />}
-      {world.id === "exploration" && <FloatModel />}
+      {world.id === "exploration" && <FloatLab />}
       {world.id === "mastery" && <EvidencePractice />}
       {(world.id === "exploration" || world.id === "mastery") && (
         <WorldReviewCheck key={owner} world={world.id} owner={owner} />
@@ -55,13 +58,17 @@ function FoundationActivities({ owner }: { owner: string | null }) {
 }
 
 function DiscoveryActivity({ owner }: { owner: string | null }) {
-  const [audience, setAudience] = useState<"creche" | "kg" | null>(null);
+  const [audience, setAudience] = useState<"creche" | "kg" | "fruit" | "music">("fruit");
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2" aria-label="Discovery activities">
         <button className={buttonStyle} type="button" data-learn-tone="gold" aria-pressed={audience === "creche"} onClick={() => setAudience("creche")}>Crèche caregiver activity</button>
         <button className={buttonStyle} type="button" data-learn-tone="green" aria-pressed={audience === "kg"} onClick={() => setAudience("kg")}>KG shape activity</button>
+        <button className={buttonStyle} type="button" data-learn-tone="blue" aria-pressed={audience === "fruit"} onClick={() => setAudience("fruit")}>Fruit Finder game</button>
+        <button className={buttonStyle} type="button" data-learn-tone="pink" aria-pressed={audience === "music"} onClick={() => setAudience("music")}>Songs and rhymes</button>
       </div>
+      {audience === "fruit" && <DiscoveryPlay />}
+      {audience === "music" && <DiscoveryMusic />}
       {audience === "creche" && (
         <section className={panelStyle} aria-label="Caregiver activity">
           <h3 className="text-xl font-bold">Roll and take turns</h3>
@@ -85,10 +92,17 @@ function CountingGroups() {
   return (
     <section className={panelStyle} aria-label="Counting groups activity">
       <h3 className="text-xl font-bold">How many are in the basket?</h3>
-      <p>Set out three large blocks. Place two more beside them. Now use the counters to show what happens when you combine the groups.</p>
-      <div className="flex min-h-16 items-center gap-2 rounded-xl border border-border p-3" aria-label={`${3 + moved} counters in the basket`}>
+      <p>Put three real fruits or blocks together. Use the picture counters to add two more.</p>
+      <div className="flex min-h-16 flex-wrap items-center gap-2 rounded-xl border border-amber-400 bg-amber-50 p-3 dark:bg-amber-950" role="img" aria-label={`${3 + moved} counters in the basket`}>
         {Array.from({ length: 3 + moved }, (_, index) => (
-          <span key={index} aria-hidden className={`h-8 w-8 rounded-full ${index < 3 ? "bg-violet-700" : "bg-amber-500"}`} />
+          <img
+            key={index}
+            src="/gigalearn/media/ghana/kg2/hq/mango.webp"
+            alt=""
+            width="36"
+            height="36"
+            className={`h-9 w-9 rounded-lg border-2 object-cover ${index < 3 ? "border-violet-500" : "border-amber-500"}`}
+          />
         ))}
       </div>
       <div className="flex flex-wrap gap-2">
@@ -109,58 +123,7 @@ function CountingGroups() {
           )}
         </fieldset>
       )}
-    </section>
-  );
-}
-
-const floatObjects = [
-  { id: "wood", label: "Dry wooden block", outcome: "floats", explanation: "In this model, the block is less dense than water." },
-  { id: "stone", label: "Dense solid stone", outcome: "sinks", explanation: "In this model, the stone is denser than water." },
-  { id: "bottle", label: "Sealed empty plastic bottle", outcome: "floats", explanation: "The trapped air lowers the average density of the bottle and its contents." },
-] as const;
-
-function FloatModel() {
-  const [objectIndex, setObjectIndex] = useState(0);
-  const [prediction, setPrediction] = useState<"floats" | "sinks" | null>(null);
-  const [observations, setObservations] = useState<Partial<Record<string, "floats" | "sinks">>>({});
-  const object = floatObjects[objectIndex]!;
-  const observed = observations[object.id];
-
-  return (
-    <section className={panelStyle} aria-label="Sink or float simulation">
-      <h3 className="text-xl font-bold">Will it sink or float?</h3>
-      <p>In this simulation, choose an object, make a prediction, then release it into the model tank.</p>
-      <label className="block font-semibold">
-        Object
-        <select className="mt-1 block min-h-12 max-w-full rounded-xl border border-border bg-card p-2" value={objectIndex} onChange={(event) => { setObjectIndex(Number(event.target.value)); setPrediction(null); }}>
-          {floatObjects.map((item, index) => <option key={item.id} value={index}>{item.label}</option>)}
-        </select>
-      </label>
-      <fieldset className="space-y-2">
-        <legend className="font-semibold">What do you predict?</legend>
-        <div className="flex flex-wrap gap-2">
-          <button type="button" className={buttonStyle} data-learn-tone="blue" aria-pressed={prediction === "floats"} onClick={() => setPrediction("floats")}>Floats</button>
-          <button type="button" className={buttonStyle} data-learn-tone="violet" aria-pressed={prediction === "sinks"} onClick={() => setPrediction("sinks")}>Sinks</button>
-          <button type="button" className={primaryButton} data-learn-tone="green" disabled={!prediction} onClick={() => {
-            if (prediction) setObservations((rows) => ({ ...rows, [object.id]: prediction }));
-          }}>Test in the model</button>
-        </div>
-      </fieldset>
-      <div role="status" className="min-h-12">
-        {observed && <p>You predicted it {observed}. In the model, it {object.outcome}. {object.explanation}</p>}
-      </div>
-      {Object.keys(observations).length > 0 && (
-        <table className="w-full text-left text-sm">
-          <caption className="text-left font-semibold">Model observations</caption>
-          <thead><tr><th scope="col">Object</th><th scope="col">Prediction</th><th scope="col">Result</th></tr></thead>
-          <tbody>
-            {floatObjects.filter((item) => observations[item.id]).map((item) => (
-              <tr key={item.id}><th className="py-1 font-normal" scope="row">{item.label}</th><td>{observations[item.id]}</td><td>{item.outcome}</td></tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-      <p>With an adult, compare a sealed empty bottle and the same bottle filled with water in a shallow container. Record what you actually observe.</p>
+      {total === 5 && <LearningAward title="Counting Builder award" detail="You joined two groups and counted all five." />}
     </section>
   );
 }
