@@ -63,9 +63,12 @@ test("Learn exposes working starter activities in all four worlds", async ({ pag
   await page.getByRole("link", { name: /Exploration World/ }).click();
   const model = page.getByRole("region", { name: "Sink or float simulation" });
   await expect(model.getByRole("button", { name: "Test in the model" })).toBeDisabled();
-  await model.getByLabel("Object").selectOption("1");
+  await model.getByRole("button", { name: "Dense solid stone" }).click();
   await model.getByRole("button", { name: "Sinks", exact: true }).click();
   await model.getByRole("button", { name: "Test in the model" }).click();
+  await expect(model.locator(".gigalearn-tank-piece")).toHaveAttribute("data-position", "sinks");
+  await expect(model.locator(".gigalearn-tank-piece")).toHaveCSS("animation-name", "gigalearn-drop");
+  await model.getByText(/Model observations ·/).click();
   await expect(model.getByRole("table")).toContainText("Dense solid stone");
   await expect(model.getByRole("status")).toContainText("denser than water");
 
@@ -74,6 +77,49 @@ test("Learn exposes working starter activities in all four worlds", async ({ pag
   await page.getByRole("button", { name: /paired shaded and unshaded plots/ }).click();
   await expect(page.getByRole("status").filter({ hasText: "compare the conditions directly" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Open BECE practice" })).toHaveAttribute("href", "/gigalearn/exam/bece/");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
+test("Learn exposes fruit play, audio tracks and lab awards", async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 800 });
+  await page.goto("/gigalearn/?world=discovery");
+  const game = page.getByRole("region", { name: "Fruit Finder", exact: true });
+  await expect(game.locator("img").filter({ visible: true })).toHaveCount(3);
+  await game.getByRole("button", { name: "Mango", exact: true }).tap();
+  await expect(game.getByText(/Nice try/)).toBeVisible();
+  for (const [fruit, next] of [
+    ["Orange", "Find the next fruit"],
+    ["Banana", "Find the next fruit"],
+    ["Mango", "See my award"],
+  ]) {
+    await game.getByRole("button", { name: fruit, exact: true }).tap();
+    await expect(game.getByText(/Well spotted/)).toBeVisible();
+    await game.getByRole("button", { name: next }).tap();
+  }
+  await expect(game.getByText("Fruit Finder award")).toBeVisible();
+  await page.getByRole("button", { name: "Songs and rhymes" }).tap();
+  const music = page.getByRole("region", { name: "Songs and rhymes" });
+  const audio = music.locator("audio");
+  const song = await audio.getAttribute("src");
+  expect(song).toContain("count-and-clap.mp3");
+  expect((await page.request.get(song!)).ok()).toBe(true);
+  await music.getByRole("button", { name: "Mango Sweet" }).tap();
+  const rhyme = await audio.getAttribute("src");
+  expect(rhyme).toContain("rhyme-mango-en.mp3");
+  expect((await page.request.get(rhyme!)).ok()).toBe(true);
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/gigalearn/?world=exploration");
+  const model = page.getByRole("region", { name: "Sink or float simulation" });
+  for (const [name, position] of [["Dry wooden block", "floats"], ["Dense solid stone", "sinks"], ["Sealed empty plastic bottle", "floats"]]) {
+    await model.getByRole("button", { name }).tap();
+    await model.getByRole("button", { name: "Sinks", exact: true }).tap();
+    await model.getByRole("button", { name: "Test in the model" }).tap();
+    await expect(model.locator(".gigalearn-tank-piece")).toHaveAttribute("data-position", position);
+    await expect(model.locator(".gigalearn-tank-piece")).toHaveCSS("animation-name", "none");
+  }
+  await expect(model.getByText("Water Investigator award")).toBeVisible();
+  await expect(model.getByText(/Model observations · 3 of 3/)).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
