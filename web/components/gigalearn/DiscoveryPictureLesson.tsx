@@ -11,17 +11,18 @@ export function useDiscoveryAudio() {
   function stop() {
     player.current?.pause();
     player.current = null;
+    setAudioError(false);
   }
 
   useEffect(() => () => {
     player.current?.pause();
+    player.current = null;
   }, []);
 
   function play(cue: string) {
     stop();
     const next = new Audio(`${discoveryAudioPath}/${cue}.mp3`);
     player.current = next;
-    setAudioError(false);
     void next.play().catch(() => {
       if (player.current === next) setAudioError(true);
     });

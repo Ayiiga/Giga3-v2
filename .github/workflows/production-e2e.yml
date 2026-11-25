@@ -8,6 +8,11 @@ on:
         required: false
         default: https://www.giga3ai.com
         type: string
+      full_suite:
+        description: Include authenticated and potentially credit-consuming production tests
+        required: false
+        default: false
+        type: boolean
   schedule:
     # Daily at 06:00 UTC
     - cron: "0 6 * * *"
@@ -61,7 +66,14 @@ jobs:
         run: npx playwright install chromium --with-deps
 
       - name: Run production Playwright suite
-        run: npm run test:e2e:production
+        env:
+          GIGA3_E2E_FULL_SUITE: ${{ inputs.full_suite }}
+        run: |
+          if [ "$GIGA3_E2E_FULL_SUITE" = "true" ]; then
+            npm run test:e2e:production
+          else
+            npx playwright test tests/e2e/mobile-interface.spec.ts tests/e2e/production-exam-practice.spec.ts tests/e2e/production-service-worker.spec.ts --project=mobile-chrome --grep-invert 'authenticated \(optional\)' --global-timeout=300000
+          fi
         continue-on-error: true
         id: playwright
 

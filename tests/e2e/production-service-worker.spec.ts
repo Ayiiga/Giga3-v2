@@ -12,12 +12,11 @@ test.describe("Production — service worker", () => {
     expect(liveVersion, "production CACHE_VERSION in /sw.js").toBeTruthy();
     expect(liveVersion).toMatch(/^giga3-v\d+$/);
 
-    const registered = await page.evaluate(async () => {
+    await expect.poll(() => page.evaluate(async () => {
       if (!("serviceWorker" in navigator)) return false;
       const reg = await navigator.serviceWorker.getRegistration();
-      return Boolean(reg);
-    });
-    expect(registered).toBe(true);
+      return reg?.active?.state === "activated";
+    }), { timeout: 15_000, message: "Chat should activate the production service worker" }).toBe(true);
   });
 
   test("production CACHE_VERSION matches repository release when comparison enabled", async ({
