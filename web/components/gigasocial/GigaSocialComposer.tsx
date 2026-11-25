@@ -124,6 +124,14 @@ interface EpisodeSplitDraft {
   reason: "oversized" | "creator";
 }
 
+type PublishPost = Parameters<GigaSocialComposerProps["onSubmit"]>[0];
+
+type PendingEpisodeSeries = {
+  episodes: Array<{ file: File; post: PublishPost } | null>;
+  nextIndex: number;
+  pendingPost: PublishPost | null;
+};
+
 export type GigaSocialComposerInitialMedia = {
   images?: File[];
   video?: File | null;
@@ -255,6 +263,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
     filterId?: CameraFilterId;
     durationSec?: number;
   } | null>(null);
+  const [pendingEpisodeSeries, setPendingEpisodeSeries] = useState<PendingEpisodeSeries | null>(null);
   const uploadAbortRef = useRef<AbortController | null>(null);
   const pendingPublishRef = useRef<{
     signature: string;
@@ -1029,49 +1038,71 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
     setError("Upload cancelled.");
   }
 
-  async function publishEpisodeSeries(result: GigaSocialEpisodeConfirmResult) {
-    if (uploadAbortRef.current || busy || disabled) return;
-    setBusy(true);
-    setError(null);
-    setSuccess(null);
-    setUploadPercent(0);
-    const controller = new AbortController();
-    uploadAbortRef.current = controller;
-
-    try {
-      const total = result.episodes.length;
-      for (let i = 0; i < total; i += 1) {
-        const episode = result.episodes[i];
-        setSuccess(`Uploading episode ${i + 1} of ${total}…`);
-        const uploaded = await uploadSocialVideo(uploadDeps, episode.file, {
-          signal: controller.signal,
-          onProgress: (progress) => {
-            if (controller.signal.aborted) return;
-            const overall = Math.round(((i + progress.percent / 100) / total) * 100);
-            updateUploadPercent(overall);
-          },
-        });
-        if (controller.signal.aborted) return;
-        let finalBody = episode.body.trim();
-        if (locationTag.trim()) {
-          finalBody = `${finalBody}\n📍 ${locationTag.trim()}`.trim();
-        }
-        if (soundAttribution && !finalBody.includes(soundAttribution)) {
-          finalBody = `${finalBody}\n🎵 ${soundAttribution}`.trim();
-        }
-        setPublishing(true);
-        await waitForSocialRequest(onSubmit({
+  function startEpisodeSeries(result: GigaSocialEpisodeConfirmResult) {
+    const episodes = result.episodes.map(({ file, body: episodeBody }) => {
+      let finalBody = episodeBody.trim();
+      if (locationTag.trim()) finalBody = `${finalBody}\n📍 ${locationTag.trim()}`.trim();
+      if (soundAttribution && !finalBody.includes(soundAttribution)) {
+        finalBody = `${finalBody}\n🎵 ${soundAttribution}`.trim();
+      }
+      return {
+        file,
+        post: {
           body: finalBody,
-          postType: "video",
-          mediaItems: [uploaded],
+          postType: "video" as const,
           communitySlug,
           visibility,
           profileId,
           ...(features.enableUseAsTemplate ? { templatePolicy } : {}),
-        }), 45_000, "Could not confirm the episode. Check your profile before posting it again.", controller.signal);
+          publishRequestId: crypto.randomUUID(),
+        },
+      };
+    });
+    clearEpisodeSplitDraft();
+    void publishEpisodeSeries({ episodes, nextIndex: 0, pendingPost: null });
+  }
+
+  async function publishEpisodeSeries(series: PendingEpisodeSeries) {
+    if (uploadAbortRef.current || busy || disabled || !series.episodes.length) return;
+    setPendingEpisodeSeries(series);
+    setBusy(true);
+    setError(null);
+    setSuccess(null);
+    setUploadPercent(Math.round(series.nextIndex * 100 / series.episodes.length));
+    const controller = new AbortController();
+    uploadAbortRef.current = controller;
+
+    try {
+      const total = series.episodes.length;
+      while (series.nextIndex < total && !controller.signal.aborted) {
+        const index = series.nextIndex;
+        const episode = series.episodes[index]!;
+        setSuccess(`Uploading episode ${index + 1} of ${total}…`);
+        if (!series.pendingPost) {
+          const uploaded = await uploadSocialVideo(uploadDeps, episode.file, {
+            signal: controller.signal,
+            onProgress: (progress) => {
+              if (controller.signal.aborted) return;
+              updateUploadPercent(((index + progress.percent / 100) / total) * 100);
+            },
+          });
+          if (controller.signal.aborted) return;
+          series.pendingPost = { ...episode.post, mediaItems: [uploaded] };
+        }
+        setPublishing(true);
+        await waitForSocialRequest(
+          onSubmit(series.pendingPost),
+          45_000,
+          "Could not confirm the episode. Resume to check and continue.",
+          controller.signal
+        );
+        series.pendingPost = null;
+        series.episodes[index] = null;
+        series.nextIndex += 1;
         setPublishing(false);
-        if (controller.signal.aborted) return;
       }
+      if (controller.signal.aborted) return;
+      setPendingEpisodeSeries(null);
       setBody("");
       clearPendingMedia();
       setSoundAttribution(null);
@@ -1273,6 +1304,18 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
     </section>;
   }
 
+  if (pendingEpisodeSeries) {
+    return (
+      <section className="mx-auto max-w-md space-y-4 px-4 py-8" aria-label="Resume episode series">
+        <h2 className="text-xl font-semibold">Episode series paused</h2>
+        <p>{pendingEpisodeSeries.nextIndex} of {pendingEpisodeSeries.episodes.length} episodes confirmed.</p>
+        {error && <p role="alert">{error}</p>}
+        <p>Keep this composer open so you can continue from the last confirmed episode.</p>
+        <Button type="button" disabled={disabled} onClick={() => void publishEpisodeSeries(pendingEpisodeSeries)}>Resume upload</Button>
+      </section>
+    );
+  }
+
   if (episodeSplitDraft) {
     return (
       <GigaSocialEpisodeConfirm
@@ -1282,10 +1325,7 @@ export const GigaSocialComposer = memo(function GigaSocialComposer({
         caption={body}
         reason={episodeSplitDraft.reason}
         onCancel={clearEpisodeSplitDraft}
-        onConfirm={(result) => {
-          clearEpisodeSplitDraft();
-          void publishEpisodeSeries(result);
-        }}
+        onConfirm={startEpisodeSeries}
       />
     );
   }

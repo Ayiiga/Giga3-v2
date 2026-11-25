@@ -2,7 +2,7 @@
  * Giga3 AI PWA service worker — Cloudflare Pages static export.
  * Bump CACHE_VERSION on every deploy that changes JS/CSS.
  */
-const CACHE_VERSION = "giga3-v134";
+const CACHE_VERSION = "giga3-v135";
 const OFFLINE_URL = "/offline.html";
 const NETWORK_TIMEOUT_MS = 15000;
 
@@ -151,6 +151,46 @@ self.addEventListener("message", (event) => {
   }
 });
 
+// These clips are short and versioned. Cache the complete file even when the
+// browser starts playback with a byte-range request. Cache Storage rejects 206.
+async function discoveryAudioResponse(request, url) {
+  const cache = await caches.open(CACHE_VERSION).catch(() => undefined);
+  let full = await cache?.match(url.href).catch(() => undefined);
+  if (!full) {
+    try {
+      full = await fetchWithTimeout(new Request(url.href), NETWORK_TIMEOUT_MS);
+    } catch {
+      return jsonOffline();
+    }
+    if (full.status !== 200 || !full.headers.get("content-type")?.startsWith("audio/")) {
+      return full.ok ? jsonOffline() : full;
+    }
+    await cache?.put(url.href, full.clone()).catch(() => {});
+  }
+  const range = request.headers.get("range");
+  if (!range) return full;
+
+  const bytes = await full.arrayBuffer();
+  const match = /^bytes=(\d*)-(\d*)$/.exec(range);
+  const start = match?.[1] ? Number(match[1]) : Math.max(0, bytes.byteLength - Number(match?.[2]));
+  const end = match?.[1] && match[2] ? Math.min(Number(match[2]), bytes.byteLength - 1) : bytes.byteLength - 1;
+  if (!match || start >= bytes.byteLength || end < start) {
+    return new Response(null, {
+      status: 416,
+      headers: { "Content-Range": `bytes */${bytes.byteLength}` },
+    });
+  }
+  return new Response(bytes.slice(start, end + 1), {
+    status: 206,
+    headers: {
+      "Accept-Ranges": "bytes",
+      "Content-Type": full.headers.get("content-type") || "audio/mpeg",
+      "Content-Range": `bytes ${start}-${end}/${bytes.byteLength}`,
+      "Content-Length": String(end - start + 1),
+    },
+  });
+}
+
 // --- Fetch ---
 
 self.addEventListener("fetch", (event) => {
@@ -215,6 +255,11 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  if (/^\/gigalearn\/activities\/discovery\/[a-z-]+\.mp3$/.test(url.pathname)) {
+    event.respondWith(discoveryAudioResponse(request, url));
+    return;
+  }
+
   // (c) Static — cache-first, then network, update cache
   if (isStaticAsset(url.pathname)) {
     event.respondWith(
@@ -227,7 +272,7 @@ self.addEventListener("fetch", (event) => {
           }
           if (response.ok) {
             const clone = response.clone();
-            caches.open(CACHE_VERSION).then((cache) => cache.put(request, clone));
+            await caches.open(CACHE_VERSION).then((cache) => cache.put(request, clone)).catch(() => {});
           }
           return response.ok ? response : cached || response;
         } catch {

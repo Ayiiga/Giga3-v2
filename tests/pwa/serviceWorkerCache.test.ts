@@ -9,7 +9,7 @@ describe("service worker cache version", () => {
     expect(sw).toContain('OFFLINE_URL = "/offline.html"');
     expect(sw).toContain("requireInteraction: true");
     expect(sw).toContain("NETWORK_TIMEOUT_MS");
-    expect(sw).toContain("giga3-v134");
+    expect(sw).toContain("giga3-v135");
     expect(sw).toContain('url.searchParams.has("__giga3_connectivity_probe")');
     expect(sw).toContain("fetchWithTimeout");
     expect(sw).toContain("handleStaleChunk");
@@ -70,7 +70,7 @@ describe("SPA routing fallbacks", () => {
 });
 
 describe("offline fetch behavior", () => {
-  async function offlineFetch(path: string, mode: string, cached?: Response, networkResponse?: Response) {
+  async function offlineFetch(path: string, mode: string, cached?: Response, networkResponse?: Response, range?: string) {
     const { runInNewContext } = await import("node:vm");
     const listeners = new Map<string, (event: {
       request: { method: string; url: string; mode: string; headers: Headers };
@@ -83,6 +83,10 @@ describe("offline fetch behavior", () => {
         addEventListener: (type: string, handler: (event: never) => void) => listeners.set(type, handler),
       },
       caches: {
+        open: async () => ({
+          match: async (key: string) => key === url ? cached : undefined,
+          put: async (_key: string, response: Response) => expect(response.status).toBe(200),
+        }),
         match: async (request: { url: string } | string) =>
           typeof request !== "string" && request.url === url ? cached : undefined,
       },
@@ -90,11 +94,11 @@ describe("offline fetch behavior", () => {
         if (networkResponse) return networkResponse;
         throw new Error("offline");
       },
-      URL, Response, AbortController, setTimeout, clearTimeout,
+      URL, Request, Response, AbortController, setTimeout, clearTimeout,
     });
     return new Promise<Response>((resolveResponse) => {
       listeners.get("fetch")!({
-        request: { method: "GET", url, mode, headers: new Headers() },
+        request: { method: "GET", url, mode, headers: new Headers(range ? { Range: range } : {}) },
         respondWith: resolveResponse,
       });
     });
@@ -131,6 +135,24 @@ describe("offline fetch behavior", () => {
     const healthy = await offlineFetch("/?__giga3_connectivity_probe=2", "cors", cached, live);
     expect(healthy.status).toBe(200);
     expect(await healthy.text()).toContain("Live homepage");
+  });
+
+  it("serves ranged Discovery clips online and from a complete cached response offline", async () => {
+    const path = "/gigalearn/activities/discovery/mango.mp3";
+    const audio = () => new Response("abcde", { headers: { "Content-Type": "audio/mpeg" } });
+    const first = await offlineFetch(path, "cors", undefined, audio(), "bytes=0-1");
+    expect(first.status).toBe(206);
+    expect(first.headers.get("Content-Range")).toBe("bytes 0-1/5");
+    expect(await first.text()).toBe("ab");
+
+    const cached = await offlineFetch(path, "cors", audio(), undefined, "bytes=-2");
+    expect(cached.status).toBe(206);
+    expect(await cached.text()).toBe("de");
+    const invalid = await offlineFetch(path, "cors", audio(), undefined, "bytes=6-");
+    expect(invalid.status).toBe(416);
+    expect(invalid.headers.get("Content-Range")).toBe("bytes */5");
+    const unavailable = await offlineFetch(path, "cors");
+    expect(unavailable.status).toBe(503);
   });
 
   it("does not delete offline caches when an uncached script cannot load", async () => {

@@ -19,9 +19,13 @@ function categoryFor(suiteTitles, file) {
   if (base.includes("production-service-worker")) return "Service worker";
   if (base.includes("production-paystack")) return "Paystack-safe";
   if (base.includes("production-seo")) return "SEO/indexability";
-  if (base.includes("production-gigalearn")) return "GigaLearn";
-  if (joined.includes("unauthenticated") || joined.includes("production smoke")) return "Public smoke";
+  if (joined.includes("unauthenticated")) return "Public smoke";
   if (joined.includes("authenticated")) return "Authenticated";
+  if (base.includes("production-gigalearn") || base.includes("production-exam-practice")) return "GigaLearn";
+  if (base.includes("mobile-interface")) {
+    return joined.includes("learn exposes") ? "GigaLearn" : "GigaSocial";
+  }
+  if (joined.includes("production smoke")) return "Public smoke";
   if (base.includes("verified-release-410")) return "Release 410 (chat)";
   return "Other";
 }
@@ -30,33 +34,37 @@ function walkSuites(suites, ancestors = [], file = "") {
   const rows = [];
   for (const suite of suites ?? []) {
     const titles = [...ancestors, suite.title].filter(Boolean);
+    const suiteFile = suite.file ?? file;
     for (const spec of suite.specs ?? []) {
-      const specFile = spec.file ?? file;
+      const specFile = spec.file ?? suiteFile;
       for (const test of spec.tests ?? []) {
         const results = test.results ?? [];
         const result = results[results.length - 1];
-        if (!result) continue;
         rows.push({
-          category: categoryFor(titles, specFile),
+          category: categoryFor([...titles, spec.title], specFile),
           title: [...titles, spec.title].filter(Boolean).join(" › "),
           file: specFile,
           project: test.projectName ?? "unknown",
-          status: result.status ?? "unknown",
+          status: result?.status ?? "unknown",
           duration: results.reduce((sum, r) => sum + (r.duration ?? 0), 0),
-          error: result.error?.message ?? result.errors?.[0]?.message ?? null,
+          error: result?.error?.message ?? result?.errors?.[0]?.message ?? null,
         });
       }
     }
-    rows.push(...walkSuites(suite.suites, titles, file));
+    rows.push(...walkSuites(suite.suites, titles, suiteFile));
   }
   return rows;
+}
+
+function isFailed(row) {
+  return ["failed", "timedOut", "interrupted", "unknown"].includes(row.status);
 }
 
 function summarizeCategory(rows, name) {
   const subset = rows.filter((r) => r.category === name);
   if (subset.length === 0) return "NOT TESTED";
   const passed = subset.filter((r) => r.status === "passed").length;
-  const failed = subset.filter((r) => r.status === "failed").length;
+  const failed = subset.filter(isFailed).length;
   const skipped = subset.filter((r) => r.status === "skipped").length;
   if (failed > 0) return `FAIL (${passed} pass, ${failed} fail, ${skipped} skip)`;
   if (passed > 0 && skipped === 0) return `PASS (${passed})`;
@@ -82,10 +90,10 @@ if (existsSync(resultsPath)) {
 }
 
 const passed = rows.filter((r) => r.status === "passed").length;
-const failed = rows.filter((r) => r.status === "failed" || r.status === "timedOut").length;
+const failed = rows.filter(isFailed).length;
 const skipped = rows.filter((r) => r.status === "skipped").length;
 const durationMs = rows.reduce((sum, r) => sum + r.duration, 0);
-const failing = rows.filter((r) => r.status === "failed" || r.status === "timedOut");
+const failing = rows.filter(isFailed);
 
 const authConfigured = Boolean(
   process.env.GIGA3_E2E_EMAIL?.trim() && process.env.GIGA3_E2E_PASSWORD
@@ -102,7 +110,8 @@ const lines = [
   `| Public smoke result | ${summarizeCategory(rows, "Public smoke")} |`,
   `| Authenticated result | ${authConfigured ? summarizeCategory(rows, "Authenticated") : "SKIPPED — GIGA3_E2E_EMAIL/GIGA3_E2E_PASSWORD not configured."} |`,
   `| Paystack-safe result | ${summarizeCategory(rows, "Paystack-safe")} |`,
-  `| GigaLearn result | ${authConfigured ? summarizeCategory(rows, "GigaLearn") : "SKIPPED — credentials not configured."} |`,
+  `| GigaLearn result | ${summarizeCategory(rows, "GigaLearn")} |`,
+  `| GigaSocial result | ${summarizeCategory(rows, "GigaSocial")} |`,
   `| SEO/indexability result | ${summarizeCategory(rows, "SEO/indexability")} |`,
   `| Service-worker result | ${summarizeCategory(rows, "Service worker")} |`,
   `| Release 410 (chat) | ${summarizeCategory(rows, "Release 410 (chat)")} |`,
@@ -121,6 +130,8 @@ const lines = [
   "| Actual search-engine indexing | NOT TESTED (requires Search Console/Webmaster data) |",
   "",
 ];
+
+if (passed === 0) lines.push("**Unverified run. No tests passed.**", "");
 
 if (failing.length) {
   lines.push("### Failing tests", "");
@@ -142,4 +153,4 @@ if (summaryPath) {
 }
 console.log(body);
 
-process.exit(failed > 0 ? 1 : 0);
+process.exit(failed > 0 || passed === 0 ? 1 : 0);
