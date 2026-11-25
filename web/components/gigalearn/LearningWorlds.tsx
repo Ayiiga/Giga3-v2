@@ -10,6 +10,8 @@ import { offlineProgressOwner } from "@/lib/gigalearn/offlineProgressOwner";
 import { DiscoveryPictureLesson } from "./DiscoveryPictureLesson";
 import { DiscoveryMusic, DiscoveryPlay } from "./DiscoveryPlay";
 import { FloatLab } from "./FloatLab";
+import { ExperimentLab } from "./ExperimentLab";
+import { FOUNDATION_ACTIVITIES, FoundationPractical } from "./FoundationPracticals";
 import { LearningAward } from "./LearningAward";
 import { FoundationReading } from "./FoundationReading";
 import { ShapePractice } from "./ShapePractice";
@@ -33,35 +35,80 @@ export function LearningWorlds({ worldId }: { worldId: string | null }) {
         <h2 id="world-title" className="text-3xl font-bold">{world.title}</h2>
       </header>
       {world.id === "discovery" && <DiscoveryActivity owner={owner} />}
-      {world.id !== "discovery" && <SchoolWorldActivities key={world.id} world={world.id} owner={owner} />}
+      {world.id === "foundation" && <FoundationActivities owner={owner} />}
+      {(world.id === "exploration" || world.id === "mastery") && <SchoolWorldActivities key={world.id} world={world.id} owner={owner} />}
     </section>
   );
 }
 
+const foundationSubjects = [
+  { id: "math", label: "Mathematics", tone: "blue", starter: "math" },
+  { id: "reading", label: "Reading", tone: "pink", starter: "reading" },
+  { id: "computing", label: "Computing", tone: "green", starter: "route" },
+  { id: "arts", label: "Creative Arts", tone: "gold", starter: "pattern" },
+] as const;
+
+function FoundationActivities({ owner }: { owner: string | null }) {
+  const [subject, setSubject] = useState<keyof typeof FOUNDATION_ACTIVITIES>("math");
+  const [active, setActive] = useState("math");
+  const catalogue = FOUNDATION_ACTIVITIES[subject];
+  const starter = subject === "math" ? { id: "math", label: "Counting groups" }
+    : subject === "reading" ? { id: "reading", label: "Story time" } : null;
+
+  return (
+    <div className="space-y-4">
+      <div className="gigalearn-school-activities" role="group" aria-label="Foundation subjects">
+        {foundationSubjects.map(({ id, label, tone, starter: first }) => (
+          <button key={id} type="button" className={buttonStyle} data-learn-tone={tone}
+            aria-pressed={subject === id} onClick={() => { setSubject(id); setActive(first); }}>
+            <BookOpen aria-hidden className="h-4 w-4 shrink-0" /> {label}
+          </button>
+        ))}
+      </div>
+      <div className="gigalearn-school-activities" role="group" aria-label="Foundation activities">
+        {starter && <button type="button" className={buttonStyle} aria-pressed={active === starter.id}
+          onClick={() => setActive(starter.id)}>{starter.label}</button>}
+        {catalogue.map(({ id, label }) => (
+          <button key={id} type="button" className={buttonStyle} aria-pressed={active === id}
+            onClick={() => setActive(id)}>{label}</button>
+        ))}
+        {subject === "math" && WORLD_PRACTICALS.foundation.map(({ id, title, tone }) => (
+          <button key={id} type="button" className={buttonStyle} data-learn-tone={tone}
+            aria-pressed={active === id} onClick={() => setActive(id)}>{title}</button>
+        ))}
+      </div>
+      {active === "math" && <><CountingGroups /><WorldReviewCheck key={owner} world="foundation" owner={owner} /></>}
+      {active === "reading" && <FoundationReading />}
+      <FoundationPractical key={active} activity={active} />
+      {WORLD_PRACTICALS.foundation.filter(({ id }) => id === active).map((lesson) => (
+        <WorldPractical key={lesson.id} lesson={lesson} />
+      ))}
+    </div>
+  );
+}
+
 const schoolWorldTabs = {
-  foundation: [
-    { id: "math", label: "Mathematics", tone: "blue" },
-    { id: "reading", label: "Reading", tone: "pink" },
-  ],
-  exploration: [{ id: "float", label: "Sink or float", tone: "blue" }],
-  mastery: [{ id: "evidence", label: "Check evidence", tone: "violet" }],
+  exploration: { id: "float", label: "Sink or float", tone: "blue" },
+  mastery: { id: "evidence", label: "Check evidence", tone: "violet" },
 } as const;
 
-function SchoolWorldActivities({ world, owner }: { world: keyof typeof WORLD_PRACTICALS; owner: string | null }) {
+function SchoolWorldActivities({ world, owner }: { world: keyof typeof schoolWorldTabs; owner: string | null }) {
   const starter = schoolWorldTabs[world];
   const practicals = WORLD_PRACTICALS[world];
-  const [active, setActive] = useState(starter[0].id as string);
+  const [active, setActive] = useState<string>(starter.id);
   const lesson = practicals.find(({ id }) => id === active);
 
   return (
     <div className="space-y-4">
-      <div className="gigalearn-school-activities" role="group" aria-label={world === "foundation" ? "Foundation subjects" : `${world} activities`}>
-        {starter.map(({ id, label, tone }) => (
-          <button key={id} className={buttonStyle} type="button" data-learn-tone={tone}
-            aria-pressed={active === id} onClick={() => setActive(id)}>
-            <BookOpen aria-hidden className="h-4 w-4 shrink-0" /> {label}
-          </button>
-        ))}
+      <div className="gigalearn-school-activities" role="group" aria-label={`${world} activities`}>
+        <button className={buttonStyle} type="button" data-learn-tone={starter.tone}
+          aria-pressed={active === starter.id} onClick={() => setActive(starter.id)}>
+          <BookOpen aria-hidden className="h-4 w-4 shrink-0" /> {starter.label}
+        </button>
+        <button className={buttonStyle} type="button" data-learn-tone="green"
+          aria-pressed={active === "lab"} onClick={() => setActive("lab")}>
+          <Beaker aria-hidden className="h-4 w-4 shrink-0" /> Experiment Lab
+        </button>
         {practicals.map(({ id, title, tone }) => (
           <button key={id} className={buttonStyle} type="button" data-learn-tone={tone}
             aria-pressed={active === id} onClick={() => setActive(id)}>
@@ -69,12 +116,11 @@ function SchoolWorldActivities({ world, owner }: { world: keyof typeof WORLD_PRA
           </button>
         ))}
       </div>
-      {active === "math" && <CountingGroups />}
-      {active === "reading" && <FoundationReading />}
       {active === "float" && <FloatLab />}
       {active === "evidence" && <EvidencePractice />}
+      {active === "lab" && <ExperimentLab />}
       {lesson && <WorldPractical key={lesson.id} lesson={lesson} />}
-      {["math", "float", "evidence"].includes(active) && <WorldReviewCheck key={owner} world={world} owner={owner} />}
+      {active === starter.id && <WorldReviewCheck key={owner} world={world} owner={owner} />}
     </div>
   );
 }
