@@ -161,10 +161,17 @@ function SoundPractice({ task }: { task: (typeof soundTasks)[keyof typeof soundT
   async function hearWords() {
     const request = Symbol();
     audioRequest.current = request;
-    const played = await speakWithGigaLearnVoice({ text: `${lesson.cue} ${lesson.choices.join(". ")}.`, voiceId: "english" }).catch(() => false);
-    if (audioRequest.current === request) {
+    setAudioError(false);
+    const queued = await speakWithGigaLearnVoice({
+      text: `${lesson.cue} ${lesson.choices.join(". ")}.`,
+      voiceId: "english",
+      onEnd: () => {
+        if (audioRequest.current === request) audioRequest.current = null;
+      },
+    }).catch(() => false);
+    if (!queued && audioRequest.current === request) {
       audioRequest.current = null;
-      setAudioError(!played);
+      setAudioError(true);
     }
   }
 
