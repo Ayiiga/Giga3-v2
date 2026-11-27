@@ -414,6 +414,25 @@ test.describe("Discovery service worker", () => {
     await page.context().setOffline(true);
     try {
       expect(await readSample()).toEqual(online);
+      // Verify real media playback, not just a successful range response.
+      await page.evaluate(() => {
+        const probe = { ended: false, failed: false };
+        Object.assign(window, { __discoveryOfflinePlayback: probe });
+        const original = HTMLMediaElement.prototype.play;
+        HTMLMediaElement.prototype.play = function () {
+          if (this.src.includes("/activities/discovery/mango.mp3")) {
+            this.addEventListener("ended", () => { probe.ended = true; }, { once: true });
+            this.addEventListener("error", () => { probe.failed = true; }, { once: true });
+          }
+          return original.call(this);
+        };
+      });
+      const lesson = page.getByRole("region", { name: "Look and say" });
+      await lesson.getByRole("button", { name: "Hear name" }).tap();
+      await expect.poll(() => page.evaluate(() => {
+        const probe = (window as unknown as { __discoveryOfflinePlayback: { ended: boolean; failed: boolean } }).__discoveryOfflinePlayback;
+        return probe.ended && !probe.failed;
+      }), { timeout: 15_000 }).toBe(true);
     } finally {
       await page.context().setOffline(false);
     }
