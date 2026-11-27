@@ -100,7 +100,7 @@ export function DiscoveryPlay({ onPractise }: { onPractise: () => void }) {
             <button className="gigalearn-control px-3" type="button" onClick={() => openBasket(finishedAll ? 0 : basket)}>
               <RotateCcw className="h-4 w-4" aria-hidden /> Play again
             </button>
-            <button className="gigalearn-control px-3" type="button" onClick={onPractise}>Practise names</button>
+            <button className="gigalearn-control px-3" type="button" onClick={() => { stop(); onPractise(); }}>Practise names</button>
           </div>
         </>
       )}
