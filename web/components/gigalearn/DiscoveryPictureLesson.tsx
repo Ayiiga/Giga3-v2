@@ -8,24 +8,42 @@ export function useDiscoveryAudio() {
   const player = useRef<HTMLAudioElement | null>(null);
   const [audioError, setAudioError] = useState(false);
 
-  function stop() {
-    player.current?.pause();
+  function release() {
+    const previous = player.current;
     player.current = null;
+    if (!previous) return;
+    previous.onended = null;
+    previous.onerror = null;
+    previous.pause();
+    previous.removeAttribute("src");
+    previous.load();
+  }
+
+  function stop() {
+    release();
     setAudioError(false);
   }
 
-  useEffect(() => () => {
-    player.current?.pause();
-    player.current = null;
-  }, []);
+  useEffect(() => () => release(), []);
 
   function play(cue: string) {
     stop();
     const next = new Audio(`${discoveryAudioPath}/${cue}.mp3`);
     player.current = next;
-    void next.play().catch(() => {
-      if (player.current === next) setAudioError(true);
-    });
+    next.onended = () => {
+      if (player.current === next) release();
+    };
+    const fail = () => {
+      if (player.current !== next) return;
+      release();
+      setAudioError(true);
+    };
+    next.onerror = fail;
+    try {
+      void next.play().catch(fail);
+    } catch {
+      fail();
+    }
   }
   return { play, stop, audioError };
 }
@@ -108,7 +126,7 @@ export function DiscoveryPictureLesson({ onPlay }: { onPlay: () => void }) {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="text-sm" aria-label="Picture progress">{index + 1} / {pictures.length}</span>
         {deck === "fruit" && revealed && (
-          <button className={control} data-learn-tone="pink" type="button" onClick={onPlay}>Play Fruit Finder</button>
+          <button className={control} data-learn-tone="pink" type="button" onClick={() => { stop(); onPlay(); }}>Play Fruit Finder</button>
         )}
       </div>
     </section>
