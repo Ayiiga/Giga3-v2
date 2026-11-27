@@ -154,8 +154,9 @@ function SoundPractice({ task }: { task: (typeof soundTasks)[keyof typeof soundT
   const done = correct && round === task.lessons.length - 1;
 
   useEffect(() => () => {
-    if (audioRequest.current) stopGigaLearnVoice();
+    const active = audioRequest.current !== null;
     audioRequest.current = null;
+    if (active) stopGigaLearnVoice();
   }, []);
 
   async function hearWords() {
@@ -176,8 +177,9 @@ function SoundPractice({ task }: { task: (typeof soundTasks)[keyof typeof soundT
   }
 
   function goTo(nextRound: number) {
-    if (audioRequest.current) stopGigaLearnVoice();
+    const active = audioRequest.current !== null;
     audioRequest.current = null;
+    if (active) stopGigaLearnVoice();
     setRound(nextRound);
     setPicked(null);
     setAudioError(false);
@@ -351,7 +353,7 @@ export function FoundationPractical({ activity }: { activity: string }) {
       return <SentenceBuilder />;
     case "rhyme":
     case "phonics":
-      return <SoundPractice task={soundTasks[activity]} />;
+      return <SoundPractice key={activity} task={soundTasks[activity]} />;
     case "route":
       return <RobotRoutes />;
     case "sort":
