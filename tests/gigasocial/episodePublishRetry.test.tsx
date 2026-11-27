@@ -28,14 +28,17 @@ vi.mock("@/components/gigasocial/studio/GigaSocialEpisodeConfirm", () => ({
   ),
 }));
 
-it("resumes at the unconfirmed episode without uploading it again or creating a second publish ID", async () => {
+it.each(["timeout", "rejection"] as const)("resumes the unconfirmed episode after %s without re-upload or a second publish ID", async (failure) => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   vi.useFakeTimers();
+  upload.mockReset();
   upload.mockResolvedValue({ type: "video", url: "https://example.test/clip.mp4" });
   const submit = vi.fn<(post: { body: string; publishRequestId?: string }) => Promise<void>>()
     .mockResolvedValue(undefined)
     .mockResolvedValueOnce(undefined)
-    .mockImplementationOnce(() => new Promise<void>(() => {}));
+    .mockImplementationOnce(() => failure === "timeout"
+      ? new Promise<void>(() => {})
+      : Promise.reject(new Error("Temporary connection failure")));
   const host = document.body.appendChild(document.createElement("div"));
   const root = createRoot(host);
   const screen = within(host);
@@ -45,7 +48,7 @@ it("resumes at the unconfirmed episode without uploading it again or creating a 
     ));
     await act(async () => fireEvent.click(screen.getByRole("button", { name: "Confirm test episodes" })));
     expect(submit.mock.calls.map(([post]) => post.body)).toEqual(["Part 1", "Part 2"]);
-    await act(async () => vi.advanceTimersByTimeAsync(45_000));
+    if (failure === "timeout") await act(async () => vi.advanceTimersByTimeAsync(45_000));
     expect(screen.getByText("1 of 3 episodes confirmed.")).toBeTruthy();
     await act(async () => fireEvent.click(screen.getByRole("button", { name: "Resume upload" })));
     expect(submit.mock.calls.map(([post]) => post.body)).toEqual(["Part 1", "Part 2", "Part 2", "Part 3"]);
