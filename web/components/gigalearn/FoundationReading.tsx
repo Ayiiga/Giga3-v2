@@ -27,11 +27,18 @@ export function FoundationReading() {
     audioRequest.current = request;
     setPlaying(true);
     setAudioError(false);
-    const spoken = await speakWithGigaLearnVoice({ text: story, voiceId: "english" }).catch(() => false);
-    if (audioRequest.current === request) {
+    const queued = await speakWithGigaLearnVoice({
+      text: story, voiceId: "english",
+      onEnd: () => {
+        if (audioRequest.current !== request) return;
+        audioRequest.current = null;
+        setPlaying(false);
+      },
+    }).catch(() => false);
+    if (!queued && audioRequest.current === request) {
       audioRequest.current = null;
       setPlaying(false);
-      setAudioError(!spoken);
+      setAudioError(true);
     }
   }
 
